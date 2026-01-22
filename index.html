@@ -27,6 +27,12 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+  <!-- QR Code Generation -->
+  <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+  <!-- LZ-String for compression (QR sync) -->
+  <script src="https://unpkg.com/lz-string@1.5.0/libs/lz-string.min.js"></script>
+
   <!-- Tailwind Config -->
   <script>
     tailwind.config = {
@@ -92,6 +98,63 @@
     .chat-bubble { border-radius: 1rem; }
     .chat-bubble-user { border-bottom-right-radius: 0.25rem; }
     .chat-bubble-ai { border-bottom-left-radius: 0.25rem; }
+    /* Drop Zone Styling */
+    .drop-zone {
+      border: 3px dashed #006EC7;
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      background: rgba(0, 110, 199, 0.05);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: #ED1D24;
+      background: rgba(237, 29, 36, 0.1);
+      transform: scale(1.02);
+    }
+    .drop-zone .drop-icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
+    .drop-zone .file-path {
+      display: block;
+      margin-top: 0.5rem;
+      font-size: 0.7rem;
+      color: #006EC7;
+      font-family: monospace;
+      opacity: 0.7;
+    }
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+    }
+    .modal {
+      background: #2D2D2D;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      border: 3px solid #1A1A1A;
+      box-shadow: 4px 4px 0px #1A1A1A;
+    }
+    /* Spinner */
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #2D2D2D;
+      border-top-color: #ED1D24;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    /* QR Code Container */
+    .qr-container { background: white; padding: 1rem; border-radius: 8px; display: inline-block; }
   </style>
 </head>
 <body>
@@ -101,7 +164,7 @@
     const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
     // ==================== CONSTANTS ====================
-    const GOOGLE_CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
+    const GOOGLE_CLIENT_ID = '770573636629-tddodsck0vtmtqpdh7uj7dtevr07orn2.apps.googleusercontent.com';
 
     // ==================== CARD DATA ====================
     const CARD_DATA = [
@@ -469,6 +532,230 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
       if (!response.ok) throw new Error(`MKG error: ${response.status}`);
       const data = await response.json();
       return data.choices?.[0]?.message?.content || 'No response';
+    };
+
+    // ==================== LOG PARSER ====================
+    const LogParser = {
+      parsePlayerLog(logContent) {
+        const matches = [];
+        const lines = logContent.split('\n');
+
+        let currentTimestamp = null;
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+
+          // Extract timestamp if present
+          const tsMatch = line.match(/^\[(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\]/);
+          if (tsMatch) {
+            currentTimestamp = tsMatch[1];
+          }
+
+          // Look for game result patterns in the log
+          if (line.includes('GameResult') || line.includes('MatchComplete') ||
+              line.includes('BattleResult') || line.includes('GameOutcome') ||
+              line.includes('"Result"') || line.includes('CubesDelta')) {
+            try {
+              // Try to find JSON object in the line
+              const jsonMatch = line.match(/\{[^{}]*\}/);
+              if (jsonMatch) {
+                const data = JSON.parse(jsonMatch[0]);
+
+                const result = this.normalizeResult(data.Result || data.GameOutcome || data.Outcome);
+                const cubes = parseInt(data.CubesDelta || data.Cubes || data.cubes || 0);
+
+                if (result && cubes !== 0) {
+                  matches.push({
+                    id: crypto.randomUUID ? crypto.randomUUID() : generateId(),
+                    timestamp: currentTimestamp ? new Date(currentTimestamp).toISOString() : new Date().toISOString(),
+                    result: result,
+                    cubes: Math.abs(cubes),
+                    deckId: data.DeckId || data.DeckName || null,
+                    opponent: data.OpponentName || null,
+                    snapped: this.parseSnapState(data),
+                    source: 'log_import',
+                    notes: ''
+                  });
+                }
+              }
+            } catch (e) {
+              // Not valid JSON, continue scanning
+            }
+          }
+
+          // Alternative pattern: look for win/loss with cube values
+          const simpleMatch = line.match(/(WIN|LOSS|VICTORY|DEFEAT|RETREAT)[^\d]*(\d+)\s*cube/i);
+          if (simpleMatch && !matches.find(m => m.timestamp === currentTimestamp)) {
+            const result = this.normalizeResult(simpleMatch[1]);
+            const cubes = parseInt(simpleMatch[2]);
+            if (result && cubes > 0) {
+              matches.push({
+                id: crypto.randomUUID ? crypto.randomUUID() : generateId(),
+                timestamp: currentTimestamp ? new Date(currentTimestamp).toISOString() : new Date().toISOString(),
+                result: result,
+                cubes: cubes,
+                deckId: null,
+                opponent: null,
+                snapped: 'NONE',
+                source: 'log_import',
+                notes: ''
+              });
+            }
+          }
+        }
+
+        const unique = this.deduplicateMatches(matches);
+
+        return {
+          matches: unique,
+          parseDate: new Date().toISOString(),
+          rawLineCount: lines.length,
+          matchCount: unique.length
+        };
+      },
+
+      normalizeResult(result) {
+        if (!result) return null;
+        const r = String(result).toUpperCase();
+        if (r.includes('WIN') || r === 'VICTORY') return 'WIN';
+        if (r.includes('LOSS') || r.includes('LOSE') || r === 'DEFEAT') return 'LOSS';
+        if (r.includes('RETREAT')) return 'LOSS';
+        return null;
+      },
+
+      parseSnapState(data) {
+        if (data.PlayerSnapped && data.OpponentSnapped) return 'BOTH';
+        if (data.PlayerSnapped) return 'PLAYER';
+        if (data.OpponentSnapped) return 'OPPONENT';
+        return 'NONE';
+      },
+
+      deduplicateMatches(matches) {
+        const seen = new Set();
+        return matches.filter(m => {
+          const key = `${m.timestamp}-${m.result}-${m.cubes}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      },
+
+      mergeWithExisting(newMatches, existingMatches) {
+        const existingKeys = new Set(
+          existingMatches.map(m => `${m.timestamp}-${m.result}-${m.cubes}`)
+        );
+
+        const toAdd = newMatches.filter(m => {
+          const key = `${m.timestamp}-${m.result}-${m.cubes}`;
+          return !existingKeys.has(key);
+        });
+
+        return {
+          added: toAdd,
+          skipped: newMatches.length - toAdd.length,
+          merged: [...existingMatches, ...toAdd].sort((a, b) =>
+            new Date(b.timestamp) - new Date(a.timestamp)
+          )
+        };
+      }
+    };
+
+    // ==================== COLLECTION INFERRER ====================
+    const CollectionInferrer = {
+      inferFromMatches(matches) {
+        const usedCards = new Set();
+        for (const match of matches) {
+          if (match.deckCards && Array.isArray(match.deckCards)) {
+            match.deckCards.forEach(card => usedCards.add(card));
+          }
+        }
+        return Array.from(usedCards);
+      },
+
+      mergeWithCollection(inferredCards, existingCollection) {
+        const existing = new Set(existingCollection.owned || []);
+        let addedCount = 0;
+
+        for (const card of inferredCards) {
+          if (!existing.has(card)) {
+            existing.add(card);
+            addedCount++;
+          }
+        }
+
+        return {
+          owned: Array.from(existing),
+          addedCount,
+          lastUpdated: new Date().toISOString()
+        };
+      }
+    };
+
+    // ==================== VAULT MANAGER ====================
+    const VaultManager = {
+      exportFullVault(collection, matches, settings) {
+        const totalWins = matches.filter(m => m.result === 'WIN').length;
+        const totalGames = matches.length;
+        const netCubes = matches.reduce((sum, m) => sum + (m.result === 'WIN' ? m.cubes : -m.cubes), 0);
+
+        return {
+          version: '1.0',
+          exportDate: new Date().toISOString(),
+          collection: collection,
+          matches: matches,
+          settings: settings,
+          stats: {
+            totalGames,
+            wins: totalWins,
+            losses: totalGames - totalWins,
+            winRate: totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0,
+            netCubes
+          }
+        };
+      },
+
+      generateSyncData(collection, matches) {
+        const totalWins = matches.filter(m => m.result === 'WIN').length;
+        const netCubes = matches.reduce((sum, m) => sum + (m.result === 'WIN' ? m.cubes : -m.cubes), 0);
+
+        return {
+          v: 1,
+          c: collection.owned || [],
+          s: {
+            wins: totalWins,
+            losses: matches.length - totalWins,
+            cubes: netCubes
+          }
+        };
+      },
+
+      compressForQR(syncData) {
+        try {
+          return LZString.compressToEncodedURIComponent(JSON.stringify(syncData));
+        } catch (e) {
+          console.error('Compression failed:', e);
+          return null;
+        }
+      },
+
+      decompressFromQR(compressed) {
+        try {
+          const decompressed = LZString.decompressFromEncodedURIComponent(compressed);
+          return JSON.parse(decompressed);
+        } catch (e) {
+          console.error('Decompression failed:', e);
+          return null;
+        }
+      }
+    };
+
+    // ==================== LOG ERROR MESSAGES ====================
+    const LogErrors = {
+      NO_MATCHES: 'No match data found. Make sure this is the Player.log file from Marvel Snap.',
+      PARSE_FAILED: 'Could not parse log file. The game may have updated its format.',
+      FILE_TOO_LARGE: 'File is too large (>50MB). Try using a more recent log file.',
+      INVALID_FORMAT: 'This doesn\'t appear to be a Marvel Snap log file.',
+      READ_ERROR: 'Could not read the file. Please try again.'
     };
 
     // ==================== UTILITY FUNCTIONS ====================
@@ -1005,6 +1292,129 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
       );
     };
 
+    // Log Preview Modal Component
+    const LogPreviewModal = ({ matches, skippedCount, onConfirm, onCancel }) => {
+      const wins = matches.filter(m => m.result === 'WIN').length;
+      const losses = matches.filter(m => m.result === 'LOSS').length;
+      const totalCubes = matches.reduce((sum, m) => sum + (m.result === 'WIN' ? m.cubes : -m.cubes), 0);
+
+      return (
+        <div className="modal-overlay" onClick={onCancel}>
+          <div className="modal p-4" onClick={e => e.stopPropagation()}>
+            <h3 className="text-xl font-comic text-marvel-gold mb-4 text-center">Log Analysis Complete</h3>
+
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="bg-gray-700 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-white">{matches.length}</div>
+                <div className="text-xs text-gray-400">New Matches</div>
+              </div>
+              <div className="bg-gray-700 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-gray-400">{skippedCount}</div>
+                <div className="text-xs text-gray-400">Duplicates Skipped</div>
+              </div>
+              <div className="bg-green-900/50 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-green-400">{wins}</div>
+                <div className="text-xs text-gray-400">Wins</div>
+              </div>
+              <div className="bg-red-900/50 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-red-400">{losses}</div>
+                <div className="text-xs text-gray-400">Losses</div>
+              </div>
+            </div>
+
+            <div className="bg-gray-700 rounded-lg p-3 mb-4 text-center">
+              <div className="text-xs text-gray-400 mb-1">Net Cubes from Import</div>
+              <div className={`text-2xl font-bold ${totalCubes >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {totalCubes >= 0 ? '+' : ''}{totalCubes}
+              </div>
+            </div>
+
+            {matches.length > 0 && (
+              <div className="mb-4">
+                <h4 className="text-sm font-medium text-gray-300 mb-2">Preview (Recent 5):</h4>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
+                  {matches.slice(0, 5).map((m, i) => (
+                    <div key={i} className={`flex items-center justify-between p-2 rounded text-sm ${
+                      m.result === 'WIN' ? 'bg-green-900/30' : 'bg-red-900/30'
+                    }`}>
+                      <span className={m.result === 'WIN' ? 'text-green-400' : 'text-red-400'}>{m.result}</span>
+                      <span className="text-white">{m.result === 'WIN' ? '+' : '-'}{m.cubes}</span>
+                      <span className="text-gray-400 text-xs">{formatDate(m.timestamp)}</span>
+                    </div>
+                  ))}
+                  {matches.length > 5 && (
+                    <div className="text-center text-gray-400 text-xs py-1">...and {matches.length - 5} more</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <button onClick={() => onConfirm(matches)}
+                className="flex-1 bg-marvel-blue text-white py-3 rounded-lg font-medium hover:bg-blue-600">
+                Import {matches.length} Matches
+              </button>
+              <button onClick={onCancel}
+                className="flex-1 bg-gray-600 text-white py-3 rounded-lg font-medium hover:bg-gray-500">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Sync Confirm Modal Component
+    const SyncConfirmModal = ({ syncData, onConfirm, onCancel }) => {
+      return (
+        <div className="modal-overlay" onClick={onCancel}>
+          <div className="modal p-4" onClick={e => e.stopPropagation()}>
+            <h3 className="text-xl font-comic text-marvel-gold mb-4 text-center">Sync Data Received</h3>
+
+            <div className="bg-gray-700 rounded-lg p-4 mb-4">
+              <div className="text-center mb-3">
+                <div className="text-3xl font-bold text-marvel-blue">{syncData.c?.length || 0}</div>
+                <div className="text-sm text-gray-400">Cards in Collection</div>
+              </div>
+              {syncData.s && (
+                <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                  <div>
+                    <div className="text-green-400 font-bold">{syncData.s.wins || 0}</div>
+                    <div className="text-gray-400 text-xs">Wins</div>
+                  </div>
+                  <div>
+                    <div className="text-red-400 font-bold">{syncData.s.losses || 0}</div>
+                    <div className="text-gray-400 text-xs">Losses</div>
+                  </div>
+                  <div>
+                    <div className={`font-bold ${(syncData.s.cubes || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {(syncData.s.cubes || 0) >= 0 ? '+' : ''}{syncData.s.cubes || 0}
+                    </div>
+                    <div className="text-gray-400 text-xs">Cubes</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <p className="text-gray-400 text-sm mb-4 text-center">
+              This will merge the synced collection with your current data.
+            </p>
+
+            <div className="flex gap-2">
+              <button onClick={onConfirm}
+                className="flex-1 bg-marvel-blue text-white py-3 rounded-lg font-medium hover:bg-blue-600">
+                Import Collection
+              </button>
+              <button onClick={onCancel}
+                className="flex-1 bg-gray-600 text-white py-3 rounded-lg font-medium hover:bg-gray-500">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
     // Settings Component
     const Settings = ({ settings, setSettings, collection, matches, setCollection, setMatches, aiConfig, setAiConfig }) => {
       const [showImport, setShowImport] = useState(false);
@@ -1013,6 +1423,19 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
       const [testStatus, setTestStatus] = useState({});
       const [rapidApiKey, setRapidApiKey] = useState(loadFromStorage('snap_rapidapi_key', ''));
       const [isRefreshingCards, setIsRefreshingCards] = useState(false);
+
+      // Phase 4: Log Ingestor state
+      const [isDragOver, setIsDragOver] = useState(false);
+      const [isProcessingLog, setIsProcessingLog] = useState(false);
+      const [logError, setLogError] = useState(null);
+      const [showLogPreview, setShowLogPreview] = useState(false);
+      const [parsedMatches, setParsedMatches] = useState([]);
+      const [skippedCount, setSkippedCount] = useState(0);
+      const fileInputRef = useRef(null);
+
+      // Phase 4: QR Sync state
+      const [qrDataUrl, setQrDataUrl] = useState(null);
+      const [qrError, setQrError] = useState(null);
 
       // Google OAuth initialization
       useEffect(() => {
@@ -1134,6 +1557,140 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
         }
       };
 
+      // Phase 4: Log file handlers
+      const handleDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragOver(true);
+      };
+
+      const handleDragLeave = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragOver(false);
+      };
+
+      const handleLogDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragOver(false);
+        const file = e.dataTransfer?.files[0];
+        if (file) processLogFile(file);
+      };
+
+      const handleFileSelect = (e) => {
+        const file = e.target.files?.[0];
+        if (file) processLogFile(file);
+      };
+
+      const processLogFile = (file) => {
+        setLogError(null);
+
+        // Validate file
+        if (!file.name.endsWith('.log') && !file.name.endsWith('.txt')) {
+          setLogError('Please select a .log or .txt file');
+          return;
+        }
+
+        // Size check (50MB limit)
+        if (file.size > 50 * 1024 * 1024) {
+          setLogError(LogErrors.FILE_TOO_LARGE);
+          return;
+        }
+
+        setIsProcessingLog(true);
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const content = event.target.result;
+            const parsed = LogParser.parsePlayerLog(content);
+
+            if (parsed.matches.length === 0) {
+              setLogError(LogErrors.NO_MATCHES);
+              setIsProcessingLog(false);
+              return;
+            }
+
+            // Check for duplicates against existing data
+            const merged = LogParser.mergeWithExisting(parsed.matches, matches);
+
+            setParsedMatches(merged.added);
+            setSkippedCount(merged.skipped);
+            setShowLogPreview(true);
+            setIsProcessingLog(false);
+          } catch (err) {
+            console.error('Log parse error:', err);
+            setLogError(LogErrors.PARSE_FAILED);
+            setIsProcessingLog(false);
+          }
+        };
+
+        reader.onerror = () => {
+          setLogError(LogErrors.READ_ERROR);
+          setIsProcessingLog(false);
+        };
+
+        reader.readAsText(file);
+      };
+
+      const handleLogImport = (matchesToImport) => {
+        setMatches(prev => [...prev, ...matchesToImport].sort((a, b) =>
+          new Date(b.timestamp) - new Date(a.timestamp)
+        ));
+        setShowLogPreview(false);
+        setParsedMatches([]);
+        alert(`Successfully imported ${matchesToImport.length} matches!`);
+      };
+
+      // Phase 4: QR Code generation
+      const generateSyncQR = async () => {
+        setQrError(null);
+        setQrDataUrl(null);
+
+        try {
+          const syncData = VaultManager.generateSyncData(collection, matches);
+          const compressed = VaultManager.compressForQR(syncData);
+
+          if (!compressed) {
+            setQrError('Failed to compress data');
+            return;
+          }
+
+          // QR codes have size limits (~2.5KB for reliable scanning)
+          if (compressed.length > 2500) {
+            setQrError('Collection too large for QR sync. Use file export instead.');
+            return;
+          }
+
+          const syncUrl = `https://platano78.github.io/Marvel-Snap-Tactics-/?sync=${compressed}`;
+
+          // Generate QR code using the QRCode library
+          const dataUrl = await QRCode.toDataURL(syncUrl, {
+            width: 200,
+            margin: 2,
+            color: { dark: '#1A1A1A', light: '#FFFFFF' }
+          });
+
+          setQrDataUrl(dataUrl);
+        } catch (err) {
+          console.error('QR generation error:', err);
+          setQrError('Failed to generate QR code');
+        }
+      };
+
+      // Phase 4: Vault export
+      const exportVault = () => {
+        const vault = VaultManager.exportFullVault(collection, matches, settings);
+        const blob = new Blob([JSON.stringify(vault, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `snapapoulous-vault-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
       const handleExport = (type) => {
         let data, filename;
         if (type === 'all') {
@@ -1196,9 +1753,87 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
               </div>
               <div>
                 <div className="text-white font-bold">Snapapoulous Prime</div>
-                <div className="text-gray-400 text-sm">v2.0.0 - Full Release</div>
+                <div className="text-gray-400 text-sm">v2.1.0 - Log Sync Edition</div>
               </div>
             </div>
+          </div>
+
+          {/* PC Data Sync - Phase 4 */}
+          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+            <h3 className="text-lg font-comic text-marvel-gold mb-3">PC Data Sync</h3>
+            <p className="text-gray-400 text-sm mb-4">
+              Playing on PC/Steam? Drag your Player.log file here to automatically import your match history.
+            </p>
+
+            <div
+              className={`drop-zone ${isDragOver ? 'drag-over' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleLogDrop}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {isProcessingLog ? (
+                <div className="flex flex-col items-center">
+                  <div className="spinner mb-2"></div>
+                  <span className="text-gray-300">Analyzing Player.log...</span>
+                  <span className="text-gray-500 text-xs mt-1">This may take a moment for large files</span>
+                </div>
+              ) : (
+                <>
+                  <span className="drop-icon">📂</span>
+                  <span className="text-gray-300">Drop Player.log here or click to browse</span>
+                  <span className="file-path">
+                    Windows: %AppData%\LocalLow\Second Dinner\SNAP\...\Player.log
+                  </span>
+                  <span className="file-path">
+                    Mac: ~/Library/Application Support/Second Dinner/SNAP/.../Player.log
+                  </span>
+                </>
+              )}
+            </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              accept=".log,.txt"
+              className="hidden"
+            />
+
+            {logError && (
+              <div className="mt-3 bg-red-900/50 border border-red-500 rounded-lg p-3">
+                <p className="text-red-300 text-sm">{logError}</p>
+              </div>
+            )}
+          </div>
+
+          {/* QR Sync - Phase 4 */}
+          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+            <h3 className="text-lg font-comic text-marvel-gold mb-3">Cross-Device Sync</h3>
+            <p className="text-gray-400 text-sm mb-4">
+              Generate a QR code to quickly sync your collection to another device.
+            </p>
+
+            <button
+              onClick={generateSyncQR}
+              className="w-full bg-marvel-blue text-white py-3 rounded-lg font-medium hover:bg-blue-600 mb-3"
+            >
+              📱 Generate Sync QR Code
+            </button>
+
+            {qrError && (
+              <div className="bg-red-900/50 border border-red-500 rounded-lg p-3 mb-3">
+                <p className="text-red-300 text-sm">{qrError}</p>
+              </div>
+            )}
+
+            {qrDataUrl && (
+              <div className="text-center">
+                <div className="qr-container inline-block mb-2">
+                  <img src={qrDataUrl} alt="Sync QR Code" />
+                </div>
+                <p className="text-gray-400 text-xs">Scan with your phone camera to sync collection</p>
+              </div>
+            )}
           </div>
 
           {/* AI Provider Configuration */}
@@ -1339,10 +1974,15 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
           {/* Export/Import */}
           <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
             <h3 className="text-lg font-comic text-marvel-gold mb-3">Export Data</h3>
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              <button onClick={() => handleExport('all')} className="bg-marvel-blue text-white py-2 rounded text-sm hover:bg-blue-600">All</button>
-              <button onClick={() => handleExport('collection')} className="bg-series-3 text-white py-2 rounded text-sm hover:opacity-80">Collection</button>
-              <button onClick={() => handleExport('matches')} className="bg-series-2 text-white py-2 rounded text-sm hover:opacity-80">Matches</button>
+            <div className="space-y-2 mb-4">
+              <button onClick={exportVault} className="w-full bg-marvel-gold text-black py-3 rounded-lg font-medium hover:bg-yellow-400 flex items-center justify-center gap-2">
+                <span>📦</span> Export Full Vault (Recommended)
+              </button>
+              <div className="grid grid-cols-3 gap-2">
+                <button onClick={() => handleExport('all')} className="bg-marvel-blue text-white py-2 rounded text-sm hover:bg-blue-600">Backup</button>
+                <button onClick={() => handleExport('collection')} className="bg-series-3 text-white py-2 rounded text-sm hover:opacity-80">Collection</button>
+                <button onClick={() => handleExport('matches')} className="bg-series-2 text-white py-2 rounded text-sm hover:opacity-80">Matches</button>
+              </div>
             </div>
 
             <h3 className="text-lg font-comic text-marvel-gold mb-3">Import Data</h3>
@@ -1377,6 +2017,16 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
               }
             }} className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-500">Clear All Data</button>
           </div>
+
+          {/* Log Preview Modal */}
+          {showLogPreview && (
+            <LogPreviewModal
+              matches={parsedMatches}
+              skippedCount={skippedCount}
+              onConfirm={handleLogImport}
+              onCancel={() => { setShowLogPreview(false); setParsedMatches([]); }}
+            />
+          )}
         </div>
       );
     };
@@ -1396,10 +2046,53 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
         mkgEndpoint: 'http://localhost:8000'
       }));
 
+      // Phase 4: URL Sync state
+      const [syncImportData, setSyncImportData] = useState(null);
+      const [showSyncConfirm, setShowSyncConfirm] = useState(false);
+
       useEffect(() => { saveToStorage('snap_collection', collection); }, [collection]);
       useEffect(() => { saveToStorage('snap_matches', matches); }, [matches]);
       useEffect(() => { saveToStorage('snap_settings', settings); }, [settings]);
       useEffect(() => { saveToStorage('snap_ai_config', aiConfig); }, [aiConfig]);
+
+      // Phase 4: Check for sync parameter in URL on load
+      useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const syncData = params.get('sync');
+
+        if (syncData) {
+          try {
+            const data = VaultManager.decompressFromQR(syncData);
+
+            if (data && data.v === 1 && data.c) {
+              setSyncImportData(data);
+              setShowSyncConfirm(true);
+
+              // Clean URL
+              window.history.replaceState({}, '', window.location.pathname);
+            }
+          } catch (e) {
+            console.error('Invalid sync data:', e);
+          }
+        }
+      }, []);
+
+      const handleSyncImport = () => {
+        if (syncImportData && syncImportData.c) {
+          // Merge collections - add new cards without removing existing
+          const existingOwned = new Set(collection.owned || []);
+          syncImportData.c.forEach(card => existingOwned.add(card));
+
+          setCollection({
+            owned: Array.from(existingOwned),
+            lastUpdated: new Date().toISOString()
+          });
+
+          setShowSyncConfirm(false);
+          setSyncImportData(null);
+          alert(`Synced ${syncImportData.c.length} cards to your collection!`);
+        }
+      };
 
       const handleQuickMatch = (result, cubes) => {
         setMatches(prev => [...prev, {
@@ -1426,6 +2119,15 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
           {activeTab === 'calculator' && <Calculator />}
           {activeTab === 'settings' && <Settings settings={settings} setSettings={setSettings} collection={collection} matches={matches} setCollection={setCollection} setMatches={setMatches} aiConfig={aiConfig} setAiConfig={setAiConfig} />}
           <NavBar activeTab={activeTab} setActiveTab={setActiveTab} />
+
+          {/* Phase 4: Sync Confirm Modal */}
+          {showSyncConfirm && syncImportData && (
+            <SyncConfirmModal
+              syncData={syncImportData}
+              onConfirm={handleSyncImport}
+              onCancel={() => { setShowSyncConfirm(false); setSyncImportData(null); }}
+            />
+          )}
         </div>
       );
     };
