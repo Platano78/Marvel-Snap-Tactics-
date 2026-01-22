@@ -1257,28 +1257,247 @@
       }, []);
     })();
 
+    // ==================== DYNAMIC META CONTEXT ====================
+    // Phase 3: Centralized meta information - update this with each patch/season
+    const META_CONTEXT = {
+      currentDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+      season: "Dragons Season",
+      lastUpdated: "January 2026",
+      recentOTA: [
+        "Merlin: 3/5 → 3/4 (nerfed)",
+        "Fantomex: 4/4 → 4/5 (buffed)",
+        "Vulture: 3/3 → 3/4 (buffed)",
+        "Iron Lad: 4/6 → 4/7 (buffed)",
+        "Shou-Lao: New card enabling dragon combos"
+      ],
+      topArchetypes: [
+        { name: "Shou-Lao Combo", tier: "S", description: "Dragon synergy with Shou-Lao and Draconic cards" },
+        { name: "Destroy", tier: "S", description: "Knull/Death/Deadpool core with Killmonger tech" },
+        { name: "High Evo", tier: "A", description: "High Evolutionary with no-ability cards" },
+        { name: "Bounce", tier: "A", description: "Beast/Falcon with Hitmonkey/Angela payoffs" },
+        { name: "Discard", tier: "A", description: "Apocalypse/MODOK/Hela control" },
+        { name: "Move", tier: "B+", description: "Dagger/Human Torch with Heimdall finisher" }
+      ],
+      hotCards: ["Shou-Lao", "Knull", "Death", "High Evolutionary", "Hela", "Hit-Monkey", "Angela"],
+      techCards: ["Killmonger", "Enchantress", "Shadow King", "Rogue", "Shang-Chi", "Cosmo"]
+    };
+
     // ==================== SNAPAPOULOUS PERSONA ====================
-    const SNAPAPOULOUS_PERSONA = {
+    // Phase 4: Default fallback persona (used if persona.json fails to load)
+    const DEFAULT_PERSONA = {
       name: "Snapapoulous",
       role: "Marvel Snap Tactical Advisor",
       personality: {
         tone: "Confident, knowledgeable, encouraging",
         style: "Direct tactical guidance with clear reasoning",
-        voice: "Like a seasoned hero mentoring a new Avenger"
+        voice: "Like a seasoned hero mentoring a new Avenger",
+        quirks: [
+          "References Marvel lore when relevant to strategy",
+          "Uses card game terminology naturally",
+          "Celebrates good plays with enthusiasm",
+          "Constructively critiques mistakes without being harsh"
+        ]
       },
       expertise: [
         "Deck building and optimization",
         "Meta analysis and counter-strategies",
-        "Probability and statistics",
+        "Probability and statistics (hypergeometric draw calculations)",
         "Snap/retreat decision making",
-        "Card synergies and combos"
+        "Card synergies and combos",
+        "Location priority mathematics",
+        "OTA balance impact analysis"
       ],
       principles: [
         "The 8-Cube Mandate: Play for high-value wins when the odds favor you",
         "Retreat is not defeat: Preserving cubes is a winning strategy",
         "Adapt or fall: The meta shifts constantly, flexibility is power",
         "Know your outs: Always calculate the probability before snapping"
-      ]
+      ],
+      knowledgeBase: {
+        archetypes: ["Destroy", "Discard", "High Evolutionary", "Move", "Bounce", "Cerebro", "Shou-Lao Combo", "Zoo/Swarm", "Control", "Ongoing", "On Reveal"],
+        keyConcepts: ["Cube equity", "Win condition identification", "Tech card flexibility", "Lane management", "Turn 6 power calculations"]
+      },
+      sampleResponses: {
+        greeting: "Ready to climb the ranks? Let's review your arsenal and find your path to Infinite.",
+        deckApproved: "This deck has solid synergy. You've got the tools - now trust your reads and snap with confidence.",
+        retreatAdvice: "Sometimes the smartest play is knowing when to fold. Live to fight another match.",
+        snapEncouragement: "The odds are in your favor. This is your moment - SNAP!"
+      }
+    };
+
+    // Phase 4: Cached persona from persona.json (loaded async)
+    let loadedPersona = null;
+    let personaLoadAttempted = false;
+
+    // Load persona.json asynchronously (enabled by default)
+    const loadPersonaFromFile = async () => {
+      if (personaLoadAttempted) return loadedPersona || DEFAULT_PERSONA;
+      personaLoadAttempted = true;
+
+      try {
+        const response = await fetch('persona.json');
+        if (response.ok) {
+          const data = await response.json();
+          loadedPersona = data.persona || data;
+          console.log('Loaded persona from persona.json');
+          return loadedPersona;
+        }
+      } catch (e) {
+        console.log('Using default persona (persona.json not available):', e.message);
+      }
+      return DEFAULT_PERSONA;
+    };
+
+    // Get active persona (supports toggle via settings)
+    const getActivePersona = () => {
+      const settings = JSON.parse(localStorage.getItem('snap_settings') || '{}');
+      // Phase 4: Enhanced persona ON by default, toggle to turn OFF
+      if (settings.useSimplePersona) {
+        return DEFAULT_PERSONA;
+      }
+      return loadedPersona || DEFAULT_PERSONA;
+    };
+
+    // Initialize persona loading on startup
+    loadPersonaFromFile();
+
+    // ==================== CONTEXT ANALYSIS HELPERS ====================
+    // Phase 2: Rich context injection helpers
+
+    const analyzeRecentMatches = (matches, recentCount = 10) => {
+      if (!matches || matches.length === 0) {
+        return {
+          hasData: false,
+          summary: "No match history recorded yet"
+        };
+      }
+
+      const sortedMatches = [...matches].sort((a, b) =>
+        new Date(b.timestamp) - new Date(a.timestamp)
+      );
+
+      const recentMatches = sortedMatches.slice(0, recentCount);
+      const allTimeStats = calculateStats(matches);
+      const recentStats = calculateStats(recentMatches);
+
+      // Analyze trends
+      const trend = recentStats.winRate > allTimeStats.winRate ? 'improving' :
+                    recentStats.winRate < allTimeStats.winRate ? 'declining' : 'stable';
+
+      // Analyze decks played (if tracked)
+      const deckStats = analyzeDeckPerformance(matches);
+
+      // Calculate streak
+      let streak = 0;
+      let streakType = null;
+      for (const match of sortedMatches) {
+        if (streakType === null) {
+          streakType = match.result;
+          streak = 1;
+        } else if (match.result === streakType) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+
+      return {
+        hasData: true,
+        allTime: allTimeStats,
+        recent: recentStats,
+        trend,
+        streak: { count: streak, type: streakType },
+        deckStats,
+        recentMatchCount: recentMatches.length
+      };
+    };
+
+    const calculateStats = (matches) => {
+      if (matches.length === 0) return { games: 0, wins: 0, winRate: 0, netCubes: 0, avgCubes: 0 };
+
+      const wins = matches.filter(m => m.result === 'WIN').length;
+      const netCubes = matches.reduce((sum, m) =>
+        sum + (m.result === 'WIN' ? m.cubes : -m.cubes), 0
+      );
+
+      return {
+        games: matches.length,
+        wins,
+        winRate: Math.round((wins / matches.length) * 100),
+        netCubes,
+        avgCubes: (netCubes / matches.length).toFixed(2)
+      };
+    };
+
+    const analyzeDeckPerformance = (matches) => {
+      const deckMatches = matches.filter(m => m.deck && m.deck.trim());
+      if (deckMatches.length === 0) return null;
+
+      const deckData = {};
+      for (const match of deckMatches) {
+        const deck = match.deck.trim();
+        if (!deckData[deck]) {
+          deckData[deck] = { games: 0, wins: 0, cubes: 0 };
+        }
+        deckData[deck].games++;
+        if (match.result === 'WIN') deckData[deck].wins++;
+        deckData[deck].cubes += match.result === 'WIN' ? match.cubes : -match.cubes;
+      }
+
+      return Object.entries(deckData)
+        .map(([name, stats]) => ({
+          name,
+          ...stats,
+          winRate: Math.round((stats.wins / stats.games) * 100)
+        }))
+        .sort((a, b) => b.games - a.games)
+        .slice(0, 5); // Top 5 most played decks
+    };
+
+    const analyzeCollectionGaps = (collection, allCards) => {
+      const owned = new Set(collection.owned || []);
+      const missing = allCards.filter(c => !owned.has(c.name));
+
+      // Group missing by series
+      const missingBySeries = {};
+      for (const card of missing) {
+        const series = card.series || 'Unknown';
+        if (!missingBySeries[series]) missingBySeries[series] = [];
+        missingBySeries[series].push(card.name);
+      }
+
+      // Identify key missing cards from current meta
+      const metaCards = [...META_CONTEXT.hotCards, ...META_CONTEXT.techCards];
+      const missingMetaCards = metaCards.filter(name => !owned.has(name));
+
+      // Identify archetypes user can/cannot play
+      const archetypeCards = {
+        'Destroy': ['Knull', 'Death', 'Deadpool', 'Carnage', 'Venom', 'Deathlok'],
+        'Discard': ['Hela', 'Apocalypse', 'MODOK', 'Blade', 'Moon Knight', 'Morbius'],
+        'Bounce': ['Beast', 'Falcon', 'Hit-Monkey', 'Angela', 'Kitty Pryde'],
+        'High Evo': ['High Evolutionary', 'Wasp', 'Misty Knight', 'Cyclops', 'Thing', 'Hulk'],
+        'Move': ['Dagger', 'Human Torch', 'Heimdall', 'Doctor Strange', 'Iron Fist', 'Cloak']
+      };
+
+      const archetypeAccess = {};
+      for (const [archetype, cards] of Object.entries(archetypeCards)) {
+        const ownedCount = cards.filter(c => owned.has(c)).length;
+        archetypeAccess[archetype] = {
+          owned: ownedCount,
+          total: cards.length,
+          percent: Math.round((ownedCount / cards.length) * 100),
+          missing: cards.filter(c => !owned.has(c))
+        };
+      }
+
+      return {
+        totalOwned: owned.size,
+        totalCards: allCards.length,
+        completionPercent: Math.round((owned.size / allCards.length) * 100),
+        missingBySeries,
+        missingMetaCards,
+        archetypeAccess
+      };
     };
 
     // ==================== AI PROVIDER MANAGER ====================
@@ -1335,37 +1554,112 @@
       }
     };
 
-    // Build system prompt with user context
+    // Build system prompt with user context (Phase 2: Enhanced context injection)
     const buildSystemPrompt = (collection, matches) => {
-      const totalWins = matches.filter(m => m.result === 'WIN').length;
-      const totalGames = matches.length;
-      const winRate = totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0;
-      const netCubes = matches.reduce((sum, m) => sum + (m.result === 'WIN' ? m.cubes : -m.cubes), 0);
+      const persona = getActivePersona();
+      const matchAnalysis = analyzeRecentMatches(matches);
+      const collectionAnalysis = analyzeCollectionGaps(collection, uniqueCards);
 
-      return `You are ${SNAPAPOULOUS_PERSONA.name}, a ${SNAPAPOULOUS_PERSONA.role}.
+      // Build personality section from persona
+      const personalitySection = `PERSONALITY:
+- Tone: ${persona.personality?.tone || 'Confident and encouraging'}
+- Style: ${persona.personality?.style || 'Direct tactical guidance'}
+- Voice: ${persona.personality?.voice || 'Like a seasoned hero mentoring a new Avenger'}
+${persona.personality?.quirks ? `- Quirks: ${persona.personality.quirks.join('; ')}` : ''}`;
 
-PERSONALITY:
-- Tone: ${SNAPAPOULOUS_PERSONA.personality.tone}
-- Style: ${SNAPAPOULOUS_PERSONA.personality.style}
-- Voice: ${SNAPAPOULOUS_PERSONA.personality.voice}
+      // Build expertise section
+      const expertiseSection = persona.expertise ?
+        `YOUR EXPERTISE:\n${persona.expertise.map(e => `- ${e}`).join('\n')}` : '';
 
-YOUR EXPERTISE:
-${SNAPAPOULOUS_PERSONA.expertise.map(e => `- ${e}`).join('\n')}
+      // Build principles section
+      const principlesSection = persona.principles || persona.guiding_principles ?
+        `GUIDING PRINCIPLES:\n${(persona.principles || persona.guiding_principles).map(p => `- ${p}`).join('\n')}` : '';
 
-GUIDING PRINCIPLES:
-${SNAPAPOULOUS_PERSONA.principles.map(p => `- ${p}`).join('\n')}
+      // Build rich user context section
+      let userContextSection = `USER CONTEXT (${META_CONTEXT.currentDate}):`;
 
-USER CONTEXT:
-- Collection: ${collection.owned.length} cards owned out of ~250 total
-- Total Games Played: ${totalGames}
-- Win Rate: ${winRate}%
-- Net Cubes: ${netCubes >= 0 ? '+' : ''}${netCubes}
+      // Collection info
+      userContextSection += `\n- Collection: ${collectionAnalysis.totalOwned}/${collectionAnalysis.totalCards} cards (${collectionAnalysis.completionPercent}% complete)`;
 
-CURRENT META (January 2026):
-- Top Archetypes: Destroy, Bounce, High Evo, Discard, Move
-- Strong Cards: Knull, Death, Angela, Hit-Monkey, Silver Surfer
+      // Match history section
+      if (matchAnalysis.hasData) {
+        userContextSection += `\n\nMATCH STATISTICS:`;
+        userContextSection += `\n- All-Time: ${matchAnalysis.allTime.games} games, ${matchAnalysis.allTime.winRate}% win rate, ${matchAnalysis.allTime.netCubes >= 0 ? '+' : ''}${matchAnalysis.allTime.netCubes} cubes`;
+        userContextSection += `\n- Recent (last ${matchAnalysis.recentMatchCount}): ${matchAnalysis.recent.winRate}% win rate, ${matchAnalysis.recent.netCubes >= 0 ? '+' : ''}${matchAnalysis.recent.netCubes} cubes`;
+        userContextSection += `\n- Trend: ${matchAnalysis.trend === 'improving' ? '📈 Improving' : matchAnalysis.trend === 'declining' ? '📉 Declining' : '➡️ Stable'}`;
 
-Respond with practical, actionable Marvel Snap advice. Be concise but thorough. Reference Marvel lore when relevant. Use card game terminology naturally.`;
+        if (matchAnalysis.streak.count > 1) {
+          userContextSection += `\n- Current streak: ${matchAnalysis.streak.count} ${matchAnalysis.streak.type === 'WIN' ? 'wins' : 'losses'}`;
+        }
+
+        // Deck performance if available
+        if (matchAnalysis.deckStats && matchAnalysis.deckStats.length > 0) {
+          userContextSection += `\n\nDECK PERFORMANCE:`;
+          for (const deck of matchAnalysis.deckStats.slice(0, 3)) {
+            userContextSection += `\n- ${deck.name}: ${deck.games} games, ${deck.winRate}% WR, ${deck.cubes >= 0 ? '+' : ''}${deck.cubes} cubes`;
+          }
+        }
+      } else {
+        userContextSection += `\n- No match history recorded yet`;
+      }
+
+      // Collection gaps - key missing meta cards
+      if (collectionAnalysis.missingMetaCards.length > 0) {
+        userContextSection += `\n\nKEY MISSING META CARDS: ${collectionAnalysis.missingMetaCards.slice(0, 8).join(', ')}`;
+      }
+
+      // Archetype access summary
+      const playableArchetypes = Object.entries(collectionAnalysis.archetypeAccess)
+        .filter(([_, data]) => data.percent >= 60)
+        .map(([name, data]) => `${name} (${data.percent}%)`)
+        .join(', ');
+
+      if (playableArchetypes) {
+        userContextSection += `\n- Playable Archetypes: ${playableArchetypes}`;
+      }
+
+      // Build dynamic meta section
+      const metaSection = `CURRENT META (${META_CONTEXT.lastUpdated} - ${META_CONTEXT.season}):
+Top Archetypes:
+${META_CONTEXT.topArchetypes.slice(0, 5).map(a => `- ${a.tier} Tier: ${a.name} - ${a.description}`).join('\n')}
+
+Recent Balance Changes:
+${META_CONTEXT.recentOTA.map(c => `- ${c}`).join('\n')}
+
+Hot Cards: ${META_CONTEXT.hotCards.join(', ')}
+Tech Options: ${META_CONTEXT.techCards.join(', ')}`;
+
+      // Build knowledge base section if available from persona
+      let knowledgeSection = '';
+      if (persona.knowledgeBase || persona.knowledge_base) {
+        const kb = persona.knowledgeBase || persona.knowledge_base;
+        knowledgeSection = `\nKNOWLEDGE BASE:
+- Archetypes: ${(kb.archetypes || []).join(', ')}
+- Key Concepts: ${(kb.keyConcepts || kb.key_concepts || []).join(', ')}`;
+      }
+
+      // Assemble the complete system prompt
+      return `You are ${persona.name}, a ${persona.role || persona.identity?.role}.
+${persona.identity?.philosophy ? `\nPHILOSOPHY: "${persona.identity.philosophy}"` : ''}
+
+${personalitySection}
+
+${expertiseSection}
+
+${principlesSection}
+
+${userContextSection}
+
+${metaSection}
+${knowledgeSection}
+
+RESPONSE GUIDELINES:
+- Provide practical, actionable Marvel Snap advice
+- Be thorough but focused - give complete answers without unnecessary padding
+- Reference Marvel lore when it adds flavor or helps explain strategy
+- Use card game terminology naturally (cube equity, snap decision, tech card, etc.)
+- Consider the user's collection and recent performance when making recommendations
+- If discussing decks, mention which cards the user owns vs. needs to acquire`;
     };
 
     // API call functions for each provider
@@ -1391,7 +1685,7 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
               parts: [{ text: m.content }]
             })),
             generationConfig: {
-              maxOutputTokens: 1024,
+              maxOutputTokens: 8192,
               temperature: 0.7
             }
           })
@@ -1430,7 +1724,11 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
             contents: messages.map(m => ({
               role: m.role === 'assistant' ? 'model' : 'user',
               parts: [{ text: m.content }]
-            }))
+            })),
+            generationConfig: {
+              maxOutputTokens: 8192,
+              temperature: 0.7
+            }
           })
         }
       );
@@ -1446,7 +1744,7 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ model, messages, max_tokens: 1024 })
+        body: JSON.stringify({ model, messages, max_tokens: 32768 })
       });
       if (!response.ok) throw new Error(`Groq error: ${response.status}`);
       const data = await response.json();
@@ -1467,7 +1765,7 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
         },
         body: JSON.stringify({
           model,
-          max_tokens: 1024,
+          max_tokens: 8192,
           system: systemMsg?.content || '',
           messages: otherMsgs
         })
@@ -1484,7 +1782,7 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ model, messages, max_tokens: 1024 })
+        body: JSON.stringify({ model, messages, max_tokens: 32768 })
       });
       if (!response.ok) throw new Error(`OpenAI error: ${response.status}`);
       const data = await response.json();
@@ -4448,6 +4746,56 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
                   Active: <strong>{AIProviders[aiConfig.provider]?.name}</strong>
                   {aiConfig.model && <span className="text-green-300"> ({aiConfig.model})</span>}
                 </div>
+              </div>
+            )}
+          </div>
+
+          {/* AI Context Settings - Phase 4 */}
+          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+            <h3 className="text-lg font-comic text-marvel-gold mb-3">AI Context</h3>
+            <p className="text-gray-400 text-sm mb-3">
+              Configure how much context Snapapoulous has access to for personalized advice.
+            </p>
+
+            {/* Enhanced Persona Toggle */}
+            <div className="flex items-center justify-between py-2 border-b border-gray-700">
+              <div>
+                <span className="text-white font-medium">Enhanced AI Context</span>
+                <p className="text-gray-500 text-xs mt-1">
+                  Includes rich match analysis, collection gaps, meta context, and persona from persona.json
+                </p>
+              </div>
+              <button
+                onClick={() => setSettings(prev => ({ ...prev, useSimplePersona: !prev.useSimplePersona }))}
+                className={`relative w-12 h-6 rounded-full transition-colors ${
+                  !settings.useSimplePersona ? 'bg-series-2' : 'bg-gray-600'
+                }`}
+              >
+                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                  !settings.useSimplePersona ? 'left-7' : 'left-1'
+                }`} />
+              </button>
+            </div>
+
+            {/* Context Preview */}
+            {!settings.useSimplePersona && (
+              <div className="mt-3 p-3 bg-gray-700 rounded-lg text-xs text-gray-300">
+                <p className="font-medium text-marvel-gold mb-2">Context includes:</p>
+                <ul className="space-y-1 list-disc list-inside">
+                  <li>Current date & season (Dragons Season)</li>
+                  <li>Your match history analysis (trends, streaks, deck performance)</li>
+                  <li>Collection gaps & playable archetypes</li>
+                  <li>Recent OTA balance changes</li>
+                  <li>Current meta tier list</li>
+                  <li>Full persona from persona.json</li>
+                </ul>
+              </div>
+            )}
+
+            {settings.useSimplePersona && (
+              <div className="mt-3 p-3 bg-gray-700 rounded-lg text-xs text-gray-300">
+                <p className="font-medium text-gray-400 mb-2">Simplified mode active:</p>
+                <p>Basic stats only. Faster responses but less personalized advice.</p>
               </div>
             )}
           </div>
