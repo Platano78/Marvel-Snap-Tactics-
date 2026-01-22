@@ -1966,7 +1966,11 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
             <div className="flex gap-2 flex-wrap">
               <button onClick={() => markAllSeries(1)} className="bg-series-1 text-white text-xs px-2 py-1 rounded hover:opacity-80">Own S1</button>
               <button onClick={() => markAllSeries(2)} className="bg-series-2 text-white text-xs px-2 py-1 rounded hover:opacity-80">Own S2</button>
-              <button onClick={() => setCollection({ owned: [], lastUpdated: new Date().toISOString() })}
+              <button onClick={() => {
+                if (confirm(`Are you sure you want to clear your entire collection? This will remove ${collection.owned.length} cards.`)) {
+                  setCollection({ owned: [], lastUpdated: new Date().toISOString() });
+                }
+              }}
                 className="bg-red-600 text-white text-xs px-2 py-1 rounded hover:opacity-80 ml-auto">Clear All</button>
             </div>
           </div>
