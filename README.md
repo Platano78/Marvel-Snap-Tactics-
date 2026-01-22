@@ -41,11 +41,19 @@ Track your collection, log matches, calculate snap decisions, and get tactical a
 - **PC Players:** Drag & drop your Player.log file to auto-import matches
 - Export your match data
 
-### 🔄 Cross-Device Sync (New!)
-- **PC Log Import:** Drag your Marvel Snap Player.log file to automatically import match history
+### 🔄 Game Data Sync (New in v2.2!)
+- **Direct JSON Import:** Import collection, stats, and card performance from game files
+- **Link Folder (Chrome/Edge):** One-time setup, then sync with a single click
+- **Drag & Drop:** Works in all browsers - drop your game JSON files to import
+- **PC Log Import:** Drag your Player.log file to auto-import match history
 - **QR Code Sync:** Generate a QR code on PC, scan with your phone to sync collection
-- **Full Vault Export:** Backup everything (collection, matches, stats) to a single file
-- **Smart Deduplication:** Won't double-count matches you've already logged
+- **Full Vault Export:** Backup everything to a single file
+
+### 📊 Analytics Tab (New!)
+- **Lifetime Stats:** See your total games, wins, losses, and win rate from game data
+- **Card Performance:** Track net cubes gained/lost per card
+- **Best/Worst Performers:** Know which cards win (and lose) you the most cubes
+- **Currency Tracking:** View your Credits, Gold, and Collector's Tokens
 
 ### 🎲 Snap Calculator
 - Select the turn and your win confidence
@@ -157,6 +165,17 @@ python -m http.server 8000
 - **Smart Deduplication:** Prevents duplicate match entries
 - **Log Preview:** Review imported matches before confirming
 - Real Google OAuth integration for Gemini
+
+### v2.2 - Phase 5 (Game Data Sync)
+- **JSON Game File Import:** Direct import from CollectionState.json, ProfileState.json, etc.
+- **Linked Folder Sync (Chrome/Edge):** Link your game folder once, sync with one click
+- **Drag & Drop JSON:** Works in all browsers - drop multiple files at once
+- **Analytics Tab:** New dedicated view for lifetime stats and card performance
+- **Card Performance Tracking:** See net cubes earned/lost per card
+- **Lifetime Stats Display:** View imported game stats on Dashboard
+- **Selective Import:** Choose which data types to import (collection, stats, mastery)
+- **Currency Display:** Track Credits, Gold, and Collector's Tokens
+- **Character Mastery Import:** Track card mastery levels
 
 ---
 
