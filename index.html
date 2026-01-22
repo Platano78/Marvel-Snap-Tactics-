@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#ED1D24">
+  <meta name="theme-color" content="#ED1D24" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)">
   <meta name="description" content="Marvel Snap AI Companion & Tracker - Track your collection, log matches, and get tactical advice">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,6 +16,48 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+
+  <!-- iOS Splash Screens -->
+  <!-- iPhone X / XS / 11 Pro (1125x2436) -->
+  <link rel="apple-touch-startup-image"
+        href="assets/icons/icon-512.png"
+        media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+  <!-- iPhone XR / 11 (828x1792) -->
+  <link rel="apple-touch-startup-image"
+        href="assets/icons/icon-512.png"
+        media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)">
+  <!-- iPhone XS Max / 11 Pro Max (1242x2688) -->
+  <link rel="apple-touch-startup-image"
+        href="assets/icons/icon-512.png"
+        media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)">
+  <!-- iPhone 12 / 12 Pro / 13 / 13 Pro / 14 (1170x2532) -->
+  <link rel="apple-touch-startup-image"
+        href="assets/icons/icon-512.png"
+        media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+  <!-- iPhone 12/13 Mini (1080x2340) -->
+  <link rel="apple-touch-startup-image"
+        href="assets/icons/icon-512.png"
+        media="(device-width: 360px) and (device-height: 780px) and (-webkit-device-pixel-ratio: 3)">
+  <!-- iPhone 12 Pro Max / 13 Pro Max / 14 Plus (1284x2778) -->
+  <link rel="apple-touch-startup-image"
+        href="assets/icons/icon-512.png"
+        media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3)">
+  <!-- iPhone 14 Pro (1179x2556) -->
+  <link rel="apple-touch-startup-image"
+        href="assets/icons/icon-512.png"
+        media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)">
+  <!-- iPhone 14 Pro Max (1290x2796) -->
+  <link rel="apple-touch-startup-image"
+        href="assets/icons/icon-512.png"
+        media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
+  <!-- iPhone SE 2/3, iPhone 8 (750x1334) -->
+  <link rel="apple-touch-startup-image"
+        href="assets/icons/icon-512.png"
+        media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+  <!-- iPhone 8 Plus (1242x2208) -->
+  <link rel="apple-touch-startup-image"
+        href="assets/icons/icon-512.png"
+        media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
 
   <!-- Google Identity Services for OAuth -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -155,6 +198,107 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     /* QR Code Container */
     .qr-container { background: white; padding: 1rem; border-radius: 8px; display: inline-block; }
+
+    /* ==================== ACCESSIBILITY & PERFORMANCE ==================== */
+    /* Respect user's reduced motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .pulse-snap {
+        animation: none !important;
+      }
+      .typing-dot {
+        animation: none !important;
+        opacity: 1 !important;
+      }
+      .card-hover {
+        transition: none !important;
+      }
+    }
+
+    /* Low-power mode styles (applied via JS) */
+    .low-power-mode *,
+    .low-power-mode *::before,
+    .low-power-mode *::after {
+      animation-duration: 0ms !important;
+      transition-duration: 0ms !important;
+    }
+    .low-power-mode .card-hover {
+      transform: none !important;
+    }
+    .low-power-mode .halftone {
+      background-image: none !important;
+    }
+    .low-power-mode .panel-border {
+      box-shadow: none !important;
+    }
+
+    /* Low-end device optimizations */
+    .low-end-mode * {
+      animation-duration: 0ms !important;
+      transition-duration: 0ms !important;
+    }
+    .low-end-mode .card-hover {
+      transform: none !important;
+    }
+    .low-end-mode .halftone {
+      background-image: none !important;
+    }
+    .low-end-mode .panel-border {
+      box-shadow: none !important;
+      border-width: 2px !important;
+    }
+
+    /* CSS Grid fallbacks for older browsers */
+    .card-grid {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .card-grid > * {
+      flex: 0 0 calc(33.333% - 8px);
+      margin: 4px;
+    }
+    @supports (display: grid) {
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .card-grid > * {
+        flex: none;
+        margin: 0;
+      }
+    }
+
+    /* Swipe-to-delete styles */
+    .swipe-item-container {
+      position: relative;
+      overflow: hidden;
+    }
+    .swipe-delete-bg {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 80px;
+      background: #DC2626;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+    .swipe-item {
+      position: relative;
+      background: #2D2D2D;
+      transition: transform 0.2s ease-out;
+    }
   </style>
 </head>
 <body>
@@ -162,6 +306,136 @@
 
   <script type="text/babel">
     const { useState, useEffect, useMemo, useCallback, useRef } = React;
+
+    // ==================== GESTURE HOOKS ====================
+    // Pull-to-refresh hook
+    const usePullToRefresh = (onRefresh, { threshold = 80 } = {}) => {
+      const [pulling, setPulling] = useState(false);
+      const [pullDistance, setPullDistance] = useState(0);
+      const [refreshing, setRefreshing] = useState(false);
+      const startY = useRef(0);
+      const containerRef = useRef(null);
+
+      const handleTouchStart = useCallback((e) => {
+        if (containerRef.current && containerRef.current.scrollTop === 0) {
+          startY.current = e.touches[0].clientY;
+        }
+      }, []);
+
+      const handleTouchMove = useCallback((e) => {
+        if (startY.current === 0) return;
+        const currentY = e.touches[0].clientY;
+        const distance = Math.max(0, Math.min(currentY - startY.current, 150));
+
+        if (distance > 0) {
+          setPullDistance(distance);
+          setPulling(distance > threshold);
+        }
+      }, [threshold]);
+
+      const handleTouchEnd = useCallback(async () => {
+        if (pulling && !refreshing) {
+          setRefreshing(true);
+          try {
+            await onRefresh();
+          } finally {
+            setRefreshing(false);
+          }
+        }
+        setPullDistance(0);
+        setPulling(false);
+        startY.current = 0;
+      }, [pulling, refreshing, onRefresh]);
+
+      return {
+        containerRef,
+        pullDistance,
+        pulling,
+        refreshing,
+        handlers: {
+          onTouchStart: handleTouchStart,
+          onTouchMove: handleTouchMove,
+          onTouchEnd: handleTouchEnd
+        }
+      };
+    };
+
+    // Swipe-to-delete hook
+    const useSwipeToDelete = (onDelete) => {
+      const [translateX, setTranslateX] = useState(0);
+      const [showDelete, setShowDelete] = useState(false);
+      const startX = useRef(0);
+      const swiping = useRef(false);
+
+      const handleTouchStart = useCallback((e) => {
+        startX.current = e.touches[0].clientX;
+        swiping.current = true;
+      }, []);
+
+      const handleTouchMove = useCallback((e) => {
+        if (!swiping.current) return;
+        const diff = e.touches[0].clientX - startX.current;
+        if (diff < 0 && diff > -100) {
+          setTranslateX(diff);
+        }
+      }, []);
+
+      const handleTouchEnd = useCallback(() => {
+        swiping.current = false;
+        if (translateX < -50) {
+          setTranslateX(-80);
+          setShowDelete(true);
+        } else {
+          setTranslateX(0);
+          setShowDelete(false);
+        }
+      }, [translateX]);
+
+      const resetSwipe = useCallback(() => {
+        setTranslateX(0);
+        setShowDelete(false);
+      }, []);
+
+      const handleDelete = useCallback(() => {
+        onDelete();
+        resetSwipe();
+      }, [onDelete, resetSwipe]);
+
+      return {
+        translateX,
+        showDelete,
+        resetSwipe,
+        handleDelete,
+        handlers: {
+          onTouchStart: handleTouchStart,
+          onTouchMove: handleTouchMove,
+          onTouchEnd: handleTouchEnd
+        }
+      };
+    };
+
+    // Pull-to-refresh visual indicator
+    const PullToRefreshIndicator = ({ pullDistance, refreshing }) => {
+      if (pullDistance === 0 && !refreshing) return null;
+
+      const rotation = Math.min(pullDistance * 3, 360);
+      const opacity = Math.min(pullDistance / 80, 1);
+
+      return (
+        <div
+          className="flex justify-center py-2 transition-all"
+          style={{
+            height: refreshing ? 50 : Math.min(pullDistance, 80),
+            opacity: refreshing ? 1 : opacity
+          }}
+        >
+          <div
+            className={`w-8 h-8 border-4 border-marvel-red border-t-transparent rounded-full ${refreshing ? 'animate-spin' : ''}`}
+            style={{ transform: refreshing ? 'none' : `rotate(${rotation}deg)` }}
+          />
+        </div>
+      );
+    };
 
     // ==================== CONSTANTS ====================
     const GOOGLE_CLIENT_ID = '770573636629-tddodsck0vtmtqpdh7uj7dtevr07orn2.apps.googleusercontent.com';
@@ -2109,6 +2383,50 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
             .then(reg => console.log('SW registered:', reg.scope))
             .catch(err => console.error('SW error:', err));
         }
+      }, []);
+
+      // Battery optimization - reduce animations when battery is low
+      useEffect(() => {
+        const checkBattery = async () => {
+          if ('getBattery' in navigator) {
+            try {
+              const battery = await navigator.getBattery();
+
+              const updatePowerMode = () => {
+                const isLowPower = battery.level < 0.2 && !battery.charging;
+                document.body.classList.toggle('low-power-mode', isLowPower);
+              };
+
+              updatePowerMode();
+              battery.addEventListener('levelchange', updatePowerMode);
+              battery.addEventListener('chargingchange', updatePowerMode);
+
+              return () => {
+                battery.removeEventListener('levelchange', updatePowerMode);
+                battery.removeEventListener('chargingchange', updatePowerMode);
+              };
+            } catch (e) {
+              console.log('Battery API not available');
+            }
+          }
+        };
+
+        // Low-end device detection
+        const isLowEndDevice = () => {
+          if (navigator.deviceMemory && navigator.deviceMemory < 4) return true;
+          if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) return true;
+          if (navigator.connection) {
+            const { effectiveType, saveData } = navigator.connection;
+            if (saveData || effectiveType === '2g' || effectiveType === 'slow-2g') return true;
+          }
+          return false;
+        };
+
+        if (isLowEndDevice()) {
+          document.body.classList.add('low-end-mode');
+        }
+
+        checkBattery();
       }, []);
 
       return (
