@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#ED1D24">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#ED1D24" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)">
   <meta name="description" content="Marvel Snap AI Companion & Tracker - Track your collection, log matches, and get tactical advice">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -65,13 +66,68 @@
   </script>
 
   <style>
+    /* CSS Custom Properties for Accessibility */
+    :root {
+      --text-muted: #9CA3AF;      /* WCAG AA compliant - 5.4:1 contrast on #1A1A1A */
+      --text-placeholder: #9CA3AF; /* WCAG AA compliant - 5.4:1 contrast */
+      --text-disabled: #D1D5DB;    /* Higher contrast for disabled states */
+    }
+
     * { -webkit-tap-highlight-color: transparent; }
+
+    /* Custom focus ring for all interactive elements */
+    :focus-visible {
+      outline: 3px solid #FFC107;
+      outline-offset: 2px;
+    }
+    :focus:not(:focus-visible) {
+      outline: none;
+    }
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 3px solid #FFC107;
+      outline-offset: 2px;
+      box-shadow: 0 0 0 6px rgba(255, 193, 7, 0.25);
+    }
+
+    /* Screen reader only utility class */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background-color: #1A1A1A;
       color: #FFFFFF;
       min-height: 100vh;
       overflow-x: hidden;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+    @media (orientation: landscape) {
+      .app-container {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+      }
+    }
+    /* Safe area support for fixed elements */
+    nav.fixed.bottom-0 {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    header {
+      padding-top: calc(1rem + env(safe-area-inset-top));
     }
     .panel-border { border: 3px solid #1A1A1A; box-shadow: 4px 4px 0px #1A1A1A; }
     .halftone { background-image: radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px); background-size: 8px 8px; }
@@ -164,7 +220,7 @@
       display: flex;
       align-items: center;
       margin: 20px 0;
-      color: #666;
+      color: #9CA3AF;
     }
     .sync-divider::before,
     .sync-divider::after {
@@ -231,7 +287,7 @@
     .unlink-btn {
       background: none;
       border: none;
-      color: #888;
+      color: #9CA3AF;
       cursor: pointer;
       font-size: 0.85em;
     }
@@ -254,7 +310,7 @@
     .last-sync {
       margin: 0;
       font-size: 0.8em;
-      color: #888;
+      color: #9CA3AF;
       text-align: center;
     }
     .not-supported-msg {
@@ -273,7 +329,7 @@
     }
     .drag-drop-section .description {
       margin: 0 0 12px 0;
-      color: #666;
+      color: #9CA3AF;
       font-size: 0.8em;
     }
     .drop-zone-json {
@@ -372,7 +428,7 @@
     }
     .preview-stat .label {
       font-size: 0.75em;
-      color: #888;
+      color: #9CA3AF;
     }
     .card-performance-preview {
       display: grid;
@@ -409,7 +465,7 @@
     .summary-stat .label {
       display: block;
       font-size: 0.75em;
-      color: #888;
+      color: #9CA3AF;
       margin-bottom: 4px;
     }
     .summary-stat .value {
@@ -451,7 +507,7 @@
     }
     .stat-card .stat-label {
       font-size: 0.75em;
-      color: #888;
+      color: #9CA3AF;
     }
     .stat-card.highlight .stat-value { color: #FFC107; }
     .stat-card.positive .stat-value { color: #22c55e; }
@@ -459,13 +515,13 @@
     .data-source {
       margin-top: 8px;
       font-size: 0.75em;
-      color: #666;
+      color: #9CA3AF;
       text-align: right;
     }
     .import-prompt {
       text-align: center;
       padding: 20px;
-      color: #888;
+      color: #9CA3AF;
     }
     .import-prompt a {
       color: #006EC7;
@@ -2731,14 +2787,14 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
             <h3 className="text-lg font-comic text-marvel-gold mb-3">Draw Probability</h3>
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div>
-                <label className="text-sm text-gray-400">Cards to Draw</label>
-                <input type="number" min="1" max="12" value={cardsToDraw}
+                <label htmlFor="cards-to-draw" className="text-sm text-gray-400">Cards to Draw</label>
+                <input id="cards-to-draw" type="number" min="1" max="12" value={cardsToDraw}
                   onChange={(e) => setCardsToDraw(Math.max(1, Math.min(12, parseInt(e.target.value) || 1)))}
                   className="w-full bg-gray-700 text-white rounded px-3 py-2 mt-1 border-2 border-gray-600 focus:border-marvel-red focus:outline-none" />
               </div>
               <div>
-                <label className="text-sm text-gray-400">Copies in Deck</label>
-                <input type="number" min="1" max="4" value={copiesInDeck}
+                <label htmlFor="copies-in-deck" className="text-sm text-gray-400">Copies in Deck</label>
+                <input id="copies-in-deck" type="number" min="1" max="4" value={copiesInDeck}
                   onChange={(e) => setCopiesInDeck(Math.max(1, Math.min(4, parseInt(e.target.value) || 1)))}
                   className="w-full bg-gray-700 text-white rounded px-3 py-2 mt-1 border-2 border-gray-600 focus:border-marvel-red focus:outline-none" />
               </div>
@@ -2884,6 +2940,8 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
 
       const toast = document.createElement('div');
       toast.className = 'toast';
+      toast.setAttribute('role', 'alert');
+      toast.setAttribute('aria-live', 'polite');
       toast.textContent = message;
       document.body.appendChild(toast);
 
@@ -3072,7 +3130,7 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
               <button className="link-folder-btn" onClick={handleLinkFolder}>
                 Select nvprod Folder
               </button>
-              <p style={{ fontSize: '0.75em', color: '#888', marginTop: '8px' }}>
+              <p style={{ fontSize: '0.75em', color: '#9CA3AF', marginTop: '8px' }}>
                 Navigate to:<br />
                 <code style={{ background: '#1A1A1A', padding: '2px 6px', borderRadius: '4px', color: '#FFC107' }}>
                   %AppData%\LocalLow\Second Dinner\SNAP\Standalone\States\nvprod
@@ -3344,7 +3402,7 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
               <>
                 <span style={{ fontSize: '2.5em', display: 'block', marginBottom: '8px' }}>📁</span>
                 <p style={{ margin: '0 0 8px 0', fontWeight: 'bold' }}>Drop JSON files here</p>
-                <p style={{ margin: 0, fontSize: '0.85em', color: '#888' }}>
+                <p style={{ margin: 0, fontSize: '0.85em', color: '#9CA3AF' }}>
                   CollectionState.json, ProfileState.json, etc.
                 </p>
                 <code>%AppData%\LocalLow\Second Dinner\SNAP\Standalone\States\nvprod\</code>
@@ -3487,7 +3545,7 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
             <>
               <div className="stats-section" style={{ padding: '12px 16px' }}>
                 <h3 style={{ marginBottom: '8px' }}>Card Performance</h3>
-                <p style={{ margin: 0, fontSize: '0.8em', color: '#888' }}>Net cubes earned/lost per card (lifetime)</p>
+                <p style={{ margin: 0, fontSize: '0.8em', color: '#9CA3AF' }}>Net cubes earned/lost per card (lifetime)</p>
 
                 <div className="performance-summary" style={{ marginTop: '12px' }}>
                   <div className="summary-stat positive">
@@ -3540,7 +3598,7 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
                 </div>
               </div>
 
-              <p style={{ textAlign: 'center', fontSize: '0.75em', color: '#666' }}>
+              <p style={{ textAlign: 'center', fontSize: '0.75em', color: '#9CA3AF' }}>
                 Data from: {new Date(performanceData.importedAt).toLocaleDateString()}
               </p>
             </>
@@ -4328,6 +4386,71 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
       );
     };
 
+    // ==================== ERROR BOUNDARY ====================
+    class ErrorBoundary extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null };
+      }
+
+      static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+      }
+
+      componentDidCatch(error, errorInfo) {
+        console.error('App Error:', error, errorInfo);
+      }
+
+      render() {
+        if (this.state.hasError) {
+          return (
+            <div className="p-4 bg-red-900/50 rounded-lg text-center m-4">
+              <h2 className="text-xl font-comic text-marvel-red mb-2">Something went wrong</h2>
+              <p className="text-gray-300 mb-4">{this.state.error?.message || 'An unexpected error occurred'}</p>
+              <button
+                onClick={() => this.setState({ hasError: false, error: null })}
+                className="bg-marvel-blue px-4 py-2 rounded font-medium hover:bg-blue-600"
+              >
+                Try Again
+              </button>
+            </div>
+          );
+        }
+        return this.props.children;
+      }
+    }
+
+    // ==================== OFFLINE INDICATOR ====================
+    const OfflineIndicator = () => {
+      const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+      useEffect(() => {
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
+        return () => {
+          window.removeEventListener('online', handleOnline);
+          window.removeEventListener('offline', handleOffline);
+        };
+      }, []);
+
+      if (isOnline) return null;
+
+      return (
+        <div
+          className="fixed top-0 left-0 right-0 bg-yellow-600 text-black text-center py-2 text-sm font-medium z-50"
+          role="alert"
+          aria-live="polite"
+          style={{ paddingTop: 'calc(0.5rem + env(safe-area-inset-top))' }}
+        >
+          You're offline - AI features unavailable
+        </div>
+      );
+    };
+
     // ==================== MAIN APP ====================
     const App = () => {
       const [activeTab, setActiveTab] = useState('dashboard');
@@ -4409,14 +4532,73 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
         }
       }, []);
 
+      // Android back button handling
+      useEffect(() => {
+        // Push initial state
+        if (!window.history.state?.tab) {
+          window.history.replaceState({ tab: activeTab }, '');
+        }
+
+        const handlePopState = (event) => {
+          if (event.state?.tab) {
+            setActiveTab(event.state.tab);
+          } else if (activeTab !== 'dashboard') {
+            // Navigate back to dashboard instead of closing app
+            setActiveTab('dashboard');
+            window.history.pushState({ tab: 'dashboard' }, '');
+          }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+      }, []);
+
+      // Push state when tab changes
+      useEffect(() => {
+        if (window.history.state?.tab !== activeTab) {
+          window.history.pushState({ tab: activeTab }, '');
+        }
+      }, [activeTab]);
+
       return (
         <div className="min-h-screen bg-marvel-black">
-          {activeTab === 'dashboard' && <Dashboard collection={collection} matches={matches} onQuickMatch={handleQuickMatch} />}
-          {activeTab === 'ai' && <AIChat collection={collection} matches={matches} aiConfig={aiConfig} setActiveTab={setActiveTab} />}
-          {activeTab === 'collection' && <Collection collection={collection} setCollection={setCollection} />}
-          {activeTab === 'decks' && <Decks decks={decks} setDecks={setDecks} collection={collection} />}
-          {activeTab === 'calculator' && <Calculator />}
-          {activeTab === 'settings' && <Settings settings={settings} setSettings={setSettings} collection={collection} matches={matches} setCollection={setCollection} setMatches={setMatches} aiConfig={aiConfig} setAiConfig={setAiConfig} decks={decks} setDecks={setDecks} />}
+          {/* Skip link for keyboard accessibility */}
+          <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:bg-marvel-red focus:text-white focus:px-4 focus:py-2 focus:font-medium">
+            Skip to main content
+          </a>
+          <OfflineIndicator />
+          <div id="main-content" tabIndex="-1">
+            {activeTab === 'dashboard' && (
+              <ErrorBoundary>
+                <Dashboard collection={collection} matches={matches} onQuickMatch={handleQuickMatch} />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'ai' && (
+              <ErrorBoundary>
+                <AIChat collection={collection} matches={matches} aiConfig={aiConfig} setActiveTab={setActiveTab} />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'collection' && (
+              <ErrorBoundary>
+                <Collection collection={collection} setCollection={setCollection} />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'decks' && (
+              <ErrorBoundary>
+                <Decks decks={decks} setDecks={setDecks} collection={collection} />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'calculator' && (
+              <ErrorBoundary>
+                <Calculator />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'settings' && (
+              <ErrorBoundary>
+                <Settings settings={settings} setSettings={setSettings} collection={collection} matches={matches} setCollection={setCollection} setMatches={setMatches} aiConfig={aiConfig} setAiConfig={setAiConfig} decks={decks} setDecks={setDecks} />
+              </ErrorBoundary>
+            )}
+          </div>
           <NavBar activeTab={activeTab} setActiveTab={setActiveTab} />
 
           {/* Phase 4: Sync Confirm Modal */}
