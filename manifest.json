@@ -1,13 +1,16 @@
 {
   "name": "Snapapoulous Prime",
   "short_name": "SnapPrime",
-  "description": "Marvel Snap AI Companion & Tracker",
+  "description": "Marvel Snap AI Companion & Tracker - Track your collection, log matches, and get tactical advice from Snapapoulous",
   "start_url": "./index.html?source=pwa",
   "scope": "./",
   "display": "standalone",
   "background_color": "#1A1A1A",
   "theme_color": "#ED1D24",
   "orientation": "portrait-primary",
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
   "icons": [
     {
       "src": "assets/icons/icon-192.png",
@@ -32,6 +35,29 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Quick Match",
+      "short_name": "Match",
+      "description": "Log a match result quickly",
+      "url": "./index.html?tab=dashboard&action=quick-match",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ask Snapapoulous",
+      "short_name": "Ask AI",
+      "description": "Get tactical advice",
+      "url": "./index.html?tab=ai",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Collection",
+      "short_name": "Cards",
+      "description": "View your card collection",
+      "url": "./index.html?tab=collection",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
     }
   ],
   "categories": ["games", "utilities"],
