@@ -155,6 +155,338 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     /* QR Code Container */
     .qr-container { background: white; padding: 1rem; border-radius: 8px; display: inline-block; }
+
+    /* Phase 5: Sync Section Styles */
+    .pc-sync-section { margin: 0; }
+
+    .sync-divider {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+      color: #666;
+    }
+    .sync-divider::before,
+    .sync-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #444;
+    }
+    .sync-divider span {
+      padding: 0 16px;
+      font-size: 0.9em;
+    }
+
+    /* Linked Folder Styles */
+    .linked-folder-section {
+      background: rgba(0, 110, 199, 0.1);
+      border: 2px solid #006EC7;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .linked-folder-section h4 {
+      margin: 0 0 8px 0;
+      color: #006EC7;
+      font-family: Impact, 'Arial Black', sans-serif;
+    }
+    .linked-folder-section .description {
+      margin: 0 0 12px 0;
+      color: #aaa;
+      font-size: 0.85em;
+    }
+    .link-folder-btn {
+      width: 100%;
+      padding: 14px 20px;
+      font-size: 1em;
+      background: #006EC7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .link-folder-btn:hover { background: #0088ee; }
+    .linked-status {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .status-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: bold;
+    }
+    .status-badge.linked {
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+    }
+    .unlink-btn {
+      background: none;
+      border: none;
+      color: #888;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
+    .unlink-btn:hover {
+      color: #ef4444;
+      text-decoration: underline;
+    }
+    .sync-btn {
+      padding: 12px 20px;
+      font-size: 1em;
+      background: #006EC7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .sync-btn:hover { background: #0088ee; }
+    .sync-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .last-sync {
+      margin: 0;
+      font-size: 0.8em;
+      color: #888;
+      text-align: center;
+    }
+    .not-supported-msg {
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid #FFC107;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.85em;
+      color: #ccc;
+    }
+
+    /* Drag & Drop JSON Styles */
+    .drag-drop-section h4 {
+      margin: 0 0 4px 0;
+      color: #aaa;
+    }
+    .drag-drop-section .description {
+      margin: 0 0 12px 0;
+      color: #666;
+      font-size: 0.8em;
+    }
+    .drop-zone-json {
+      border: 3px dashed #006EC7;
+      border-radius: 12px;
+      padding: 30px 20px;
+      text-align: center;
+      background: rgba(0, 110, 199, 0.05);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .drop-zone-json:hover,
+    .drop-zone-json.drag-over {
+      border-color: #FFC107;
+      background: rgba(255, 193, 7, 0.1);
+    }
+    .drop-zone-json code {
+      background: #1A1A1A;
+      color: #FFC107;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75em;
+      word-break: break-all;
+      display: block;
+      margin-top: 8px;
+    }
+
+    /* Card Performance Styles */
+    .performance-card {
+      display: flex;
+      align-items: center;
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin: 4px 0;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .performance-card.positive { border-left: 4px solid #22c55e; }
+    .performance-card.negative { border-left: 4px solid #ef4444; }
+    .performance-card .rank {
+      width: 36px;
+      font-weight: bold;
+      color: #FFC107;
+      font-size: 0.9em;
+    }
+    .performance-card .card-name {
+      flex: 1;
+      font-size: 0.95em;
+    }
+    .performance-card .net-cubes {
+      font-weight: bold;
+      font-size: 1em;
+    }
+    .performance-card.positive .net-cubes { color: #22c55e; }
+    .performance-card.negative .net-cubes { color: #ef4444; }
+
+    /* Sync Preview Modal */
+    .sync-preview-modal {
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .preview-section {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 14px;
+      margin: 10px 0;
+    }
+    .import-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .import-toggle input {
+      width: 18px;
+      height: 18px;
+      accent-color: #ED1D24;
+    }
+    .preview-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .preview-stat {
+      text-align: center;
+      padding: 8px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 6px;
+    }
+    .preview-stat .value {
+      display: block;
+      font-size: 1.3em;
+      font-weight: bold;
+      color: white;
+    }
+    .preview-stat .label {
+      font-size: 0.75em;
+      color: #888;
+    }
+    .card-performance-preview {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .card-stat {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+    .card-stat.positive { background: rgba(34, 197, 94, 0.15); }
+    .card-stat.negative { background: rgba(239, 68, 68, 0.15); }
+    .card-stat .cubes { font-weight: bold; }
+    .card-stat.positive .cubes { color: #22c55e; }
+    .card-stat.negative .cubes { color: #ef4444; }
+
+    /* Performance Summary */
+    .performance-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .summary-stat {
+      text-align: center;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+    }
+    .summary-stat .label {
+      display: block;
+      font-size: 0.75em;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    .summary-stat .value {
+      font-size: 1.3em;
+      font-weight: bold;
+    }
+    .summary-stat.positive .value { color: #22c55e; }
+    .summary-stat.negative .value { color: #ef4444; }
+    .summary-stat.net .value { color: #FFC107; }
+
+    /* Stats Section Styling */
+    .stats-section {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .stats-section h3 {
+      margin: 0 0 12px 0;
+      font-size: 1em;
+      color: #FFC107;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .stat-card {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+    .stat-card .stat-value {
+      display: block;
+      font-size: 1.5em;
+      font-weight: bold;
+      color: white;
+    }
+    .stat-card .stat-label {
+      font-size: 0.75em;
+      color: #888;
+    }
+    .stat-card.highlight .stat-value { color: #FFC107; }
+    .stat-card.positive .stat-value { color: #22c55e; }
+    .stat-card.negative .stat-value { color: #ef4444; }
+    .data-source {
+      margin-top: 8px;
+      font-size: 0.75em;
+      color: #666;
+      text-align: right;
+    }
+    .import-prompt {
+      text-align: center;
+      padding: 20px;
+      color: #888;
+    }
+    .import-prompt a {
+      color: #006EC7;
+      text-decoration: underline;
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1000;
+      white-space: pre-line;
+      max-width: 90%;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -660,6 +992,231 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
       }
     };
 
+    // ==================== GAME DATA PARSER (Phase 5) ====================
+    const GameDataParser = {
+      /**
+       * Parse CollectionState.json for owned cards
+       */
+      parseCollection(json) {
+        const cards = new Set();
+
+        // Helper to recursively find all CardDefId values
+        const findCards = (obj) => {
+          if (!obj || typeof obj !== 'object') return;
+
+          if (obj.CardDefId && typeof obj.CardDefId === 'string') {
+            // Filter out tokens/created cards (usually have special naming)
+            if (!obj.CardDefId.includes('Token') &&
+                !obj.CardDefId.includes('Stone') &&
+                !obj.CardDefId.includes('Shard') &&
+                !obj.CardDefId.startsWith('_')) {
+              cards.add(obj.CardDefId);
+            }
+          }
+
+          // Recurse into arrays and objects
+          if (Array.isArray(obj)) {
+            obj.forEach(findCards);
+          } else {
+            Object.values(obj).forEach(findCards);
+          }
+        };
+
+        findCards(json);
+
+        return {
+          type: 'collection',
+          cards: Array.from(cards).sort(),
+          count: cards.size,
+          parseDate: new Date().toISOString()
+        };
+      },
+
+      /**
+       * Parse ProfileState.json for stats and card performance
+       */
+      parseProfile(json) {
+        const account = json?.ServerState?.Account;
+        if (!account) return null;
+
+        // Parse card stats (net cubes per card)
+        const cardStats = account.CardStats || {};
+        const cardPerformance = Object.entries(cardStats)
+          .map(([card, netCubes]) => ({ card, netCubes }))
+          .sort((a, b) => b.netCubes - a.netCubes);
+
+        // Parse wallet
+        const wallet = json?.ServerState?.Wallet || {};
+        const currencies = wallet.Currencies || {};
+
+        const wins = account.Wins || 0;
+        const losses = account.Losses || 0;
+
+        return {
+          type: 'profile',
+          player: {
+            name: account.Name || 'Unknown',
+            tag: account.Tag || 0,
+            snapId: `${account.Name || 'Unknown'}#${account.Tag || 0}`
+          },
+          stats: {
+            wins: wins,
+            losses: losses,
+            ties: account.Ties || 0,
+            totalGames: wins + losses + (account.Ties || 0),
+            winRate: wins > 0 ? ((wins / (wins + losses)) * 100).toFixed(1) : '0.0',
+            snaps: account.Snaps || 0,
+            concedes: account.Concedes || 0,
+            opponentConcedes: account.OpponentConcedes || 0
+          },
+          cardPerformance: {
+            top10: cardPerformance.filter(c => c.netCubes > 0).slice(0, 10),
+            bottom10: cardPerformance.filter(c => c.netCubes < 0).slice(-10).reverse(),
+            all: cardPerformance
+          },
+          currencies: {
+            credits: currencies.Credits?.TotalAmount || 0,
+            gold: currencies.Gold?.TotalAmount || 0,
+            tokens: currencies.CollectorsToken?.TotalAmount || 0
+          },
+          lastLogin: account.LastLogin,
+          parseDate: new Date().toISOString()
+        };
+      },
+
+      /**
+       * Parse CharacterMasteryState.json for mastery levels
+       */
+      parseMastery(json) {
+        const progress = json?.ServerState?.CharacterMasteryProgress?.CharacterProgressData;
+        if (!progress) return null;
+
+        const masteryData = Object.entries(progress)
+          .map(([card, data]) => ({
+            card,
+            experience: data.Experience || 0,
+            level: parseInt(data.LastClaimedLevel) || 1,
+            levelCap: parseInt(data.LevelCap) || 30
+          }))
+          .sort((a, b) => b.level - a.level || b.experience - a.experience);
+
+        return {
+          type: 'mastery',
+          cards: masteryData,
+          totalCards: masteryData.length,
+          avgLevel: masteryData.length > 0 ? (masteryData.reduce((sum, c) => sum + c.level, 0) / masteryData.length).toFixed(1) : '0',
+          maxedCards: masteryData.filter(c => c.level >= c.levelCap).length,
+          parseDate: new Date().toISOString()
+        };
+      },
+
+      /**
+       * Parse BattlePassState.json for season pass progress
+       */
+      parseBattlePass(json) {
+        const battlePass = json?.ServerState?.BattlePass;
+        if (!battlePass) return null;
+
+        return {
+          type: 'battlePass',
+          season: battlePass.BattlePassDefId || 'Unknown',
+          level: battlePass.Level || 0,
+          xp: battlePass.Xp || 0,
+          claimedLevels: battlePass.LevelsClaimed || [],
+          parseDate: new Date().toISOString()
+        };
+      }
+    };
+
+    // ==================== INDEXEDDB HELPER (Phase 5) ====================
+    const openSyncDB = () => {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open('SnapSyncDB', 1);
+
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+          const db = request.result;
+          resolve({
+            get: (store, key) => new Promise((res, rej) => {
+              const tx = db.transaction(store, 'readonly');
+              const req = tx.objectStore(store).get(key);
+              req.onsuccess = () => res(req.result);
+              req.onerror = () => rej(req.error);
+            }),
+            put: (store, value, key) => new Promise((res, rej) => {
+              const tx = db.transaction(store, 'readwrite');
+              const req = tx.objectStore(store).put(value, key);
+              req.onsuccess = () => res();
+              req.onerror = () => rej(req.error);
+            }),
+            delete: (store, key) => new Promise((res, rej) => {
+              const tx = db.transaction(store, 'readwrite');
+              const req = tx.objectStore(store).delete(key);
+              req.onsuccess = () => res();
+              req.onerror = () => rej(req.error);
+            })
+          });
+        };
+
+        request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('settings')) {
+            db.createObjectStore('settings');
+          }
+        };
+      });
+    };
+
+    // Auto-import all data without preview (for linked folder sync)
+    const autoImportAll = (data) => {
+      const timestamp = new Date().toISOString();
+      const results = [];
+
+      if (data.collection) {
+        const existing = JSON.parse(localStorage.getItem('snap_collection') || '{"owned":[]}');
+        const merged = [...new Set([...existing.owned, ...data.collection.cards])];
+        localStorage.setItem('snap_collection', JSON.stringify({
+          owned: merged,
+          lastUpdated: timestamp,
+          source: 'LinkedFolder'
+        }));
+        results.push(`Collection: ${merged.length} cards`);
+      }
+
+      if (data.profile) {
+        localStorage.setItem('snap_profile_stats', JSON.stringify({
+          ...data.profile.stats,
+          snapId: data.profile.player.snapId,
+          currencies: data.profile.currencies,
+          importedAt: timestamp
+        }));
+        results.push(`Stats: ${data.profile.stats.winRate}% win rate`);
+
+        // Card performance
+        if (data.profile.cardPerformance) {
+          const performanceMap = {};
+          data.profile.cardPerformance.all.forEach(({ card, netCubes }) => {
+            performanceMap[card] = { netCubes };
+          });
+          localStorage.setItem('snap_card_performance', JSON.stringify({
+            cards: performanceMap,
+            importedAt: timestamp
+          }));
+          results.push(`Card Performance: ${data.profile.cardPerformance.all.length} cards`);
+        }
+      }
+
+      if (data.mastery) {
+        localStorage.setItem('snap_mastery', JSON.stringify({
+          cards: data.mastery.cards,
+          importedAt: timestamp
+        }));
+        results.push(`Mastery: ${data.mastery.totalCards} cards`);
+      }
+
+      return results;
+    };
+
     // ==================== COLLECTION INFERRER ====================
     const CollectionInferrer = {
       inferFromMatches(matches) {
@@ -790,6 +1347,7 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
         { id: 'dashboard', label: 'Home', icon: '⚡' },
         { id: 'ai', label: 'AI', icon: '🤖' },
         { id: 'collection', label: 'Cards', icon: '🃏' },
+        { id: 'analytics', label: 'Stats', icon: '📊' },
         { id: 'calculator', label: 'Calc', icon: '🎯' },
         { id: 'settings', label: 'Config', icon: '⚙️' }
       ];
@@ -819,6 +1377,19 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
 
     // Dashboard Component
     const Dashboard = ({ collection, matches, onQuickMatch }) => {
+      const [importedStats, setImportedStats] = useState(null);
+
+      // Load imported stats on mount and when data updates
+      useEffect(() => {
+        const loadImportedStats = () => {
+          const stats = loadFromStorage('snap_profile_stats', null);
+          setImportedStats(stats);
+        };
+        loadImportedStats();
+        window.addEventListener('snap-data-updated', loadImportedStats);
+        return () => window.removeEventListener('snap-data-updated', loadImportedStats);
+      }, []);
+
       const totalCards = uniqueCards.length;
       const ownedCount = collection.owned.length;
       const completionPercent = Math.round((ownedCount / totalCards) * 100);
@@ -829,6 +1400,23 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
       const totalGames = matches.length;
       const winRate = totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0;
       const netCubes = matches.reduce((sum, m) => sum + (m.result === 'WIN' ? m.cubes : -m.cubes), 0);
+
+      // Use imported stats if available, otherwise use local tracking
+      const displayStats = importedStats ? {
+        wins: importedStats.wins,
+        losses: importedStats.losses,
+        totalGames: importedStats.totalGames || (importedStats.wins + importedStats.losses),
+        winRate: importedStats.winRate,
+        hasImported: true,
+        snapId: importedStats.snapId
+      } : {
+        wins: totalWins,
+        losses: totalGames - totalWins,
+        totalGames: totalGames,
+        winRate: winRate,
+        hasImported: false,
+        snapId: null
+      };
 
       const getStreak = () => {
         if (matches.length === 0) return { count: 0, type: 'none' };
@@ -846,6 +1434,37 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
       return (
         <div className="px-4 pb-20">
           <Header title="SNAPAPOULOUS PRIME" />
+          {/* Lifetime Stats (from imported data) */}
+          {displayStats.hasImported && (
+            <div className="bg-gray-800 rounded-lg p-3 mb-4 panel-border border-l-4 border-marvel-blue">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs uppercase text-gray-400">Lifetime Stats</span>
+                <span className="text-xs px-2 py-0.5 bg-marvel-blue/30 text-marvel-blue rounded">From Game</span>
+              </div>
+              <div className="grid grid-cols-4 gap-2 text-center">
+                <div>
+                  <div className="text-lg font-bold text-white">{displayStats.totalGames.toLocaleString()}</div>
+                  <div className="text-xs text-gray-500">Games</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-green-400">{displayStats.wins.toLocaleString()}</div>
+                  <div className="text-xs text-gray-500">Wins</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-red-400">{displayStats.losses.toLocaleString()}</div>
+                  <div className="text-xs text-gray-500">Losses</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-marvel-gold">{displayStats.winRate}%</div>
+                  <div className="text-xs text-gray-500">Win Rate</div>
+                </div>
+              </div>
+              {displayStats.snapId && (
+                <div className="text-xs text-gray-500 text-right mt-2">{displayStats.snapId}</div>
+              )}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-gray-800 rounded-lg p-3 border-l-4 border-marvel-red panel-border">
               <div className="text-gray-400 text-xs uppercase">Collection</div>
@@ -853,9 +1472,9 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
               <div className="text-sm text-gray-400">{ownedCount}/{totalCards} cards</div>
             </div>
             <div className="bg-gray-800 rounded-lg p-3 border-l-4 border-marvel-gold panel-border">
-              <div className="text-gray-400 text-xs uppercase">Win Rate</div>
+              <div className="text-gray-400 text-xs uppercase">{displayStats.hasImported ? 'Session' : 'Win Rate'}</div>
               <div className="text-2xl font-comic text-white">{winRate}%</div>
-              <div className="text-sm text-gray-400">{totalWins}/{totalGames} games</div>
+              <div className="text-sm text-gray-400">{totalWins}/{totalGames} {displayStats.hasImported ? 'tracked' : 'games'}</div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 mb-4">
@@ -1415,6 +2034,678 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
       );
     };
 
+    // Phase 5: Toast notification helper
+    const showToast = (message) => {
+      const existing = document.querySelector('.toast');
+      if (existing) existing.remove();
+
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => toast.remove(), 3500);
+    };
+
+    // Phase 5: Linked Folder Sync Component (Chrome/Edge only)
+    const LinkedFolderSync = ({ onSyncComplete }) => {
+      const [folderHandle, setFolderHandle] = useState(null);
+      const [isLinked, setIsLinked] = useState(false);
+      const [lastSync, setLastSync] = useState(null);
+      const [syncing, setSyncing] = useState(false);
+      const [error, setError] = useState(null);
+
+      // Check if File System Access API is supported
+      const isSupported = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
+
+      // On mount, try to restore saved folder handle
+      useEffect(() => {
+        restoreFolderHandle();
+      }, []);
+
+      async function restoreFolderHandle() {
+        try {
+          const db = await openSyncDB();
+          const handle = await db.get('settings', 'folderHandle');
+          if (handle) {
+            const permission = await handle.queryPermission({ mode: 'read' });
+            if (permission === 'granted') {
+              setFolderHandle(handle);
+              setIsLinked(true);
+              const syncTime = await db.get('settings', 'lastSyncTime');
+              if (syncTime) setLastSync(new Date(syncTime));
+            }
+          }
+        } catch (err) {
+          console.log('No saved folder handle or permission expired');
+        }
+      }
+
+      async function handleLinkFolder() {
+        try {
+          setError(null);
+
+          const handle = await window.showDirectoryPicker({
+            id: 'snap-nvprod',
+            mode: 'read',
+            startIn: 'desktop'
+          });
+
+          // Verify it looks like the right folder
+          const files = [];
+          for await (const entry of handle.values()) {
+            files.push(entry.name);
+          }
+
+          const expectedFiles = ['CollectionState.json', 'ProfileState.json'];
+          const hasExpectedFiles = expectedFiles.some(f => files.includes(f));
+
+          if (!hasExpectedFiles) {
+            setError("This doesn't look like the nvprod folder. Please select the folder containing CollectionState.json");
+            return;
+          }
+
+          const db = await openSyncDB();
+          await db.put('settings', handle, 'folderHandle');
+
+          setFolderHandle(handle);
+          setIsLinked(true);
+
+          await syncFromFolder(handle);
+        } catch (err) {
+          if (err.name === 'AbortError') return;
+          setError(`Failed to link folder: ${err.message}`);
+        }
+      }
+
+      async function handleUnlink() {
+        try {
+          const db = await openSyncDB();
+          await db.delete('settings', 'folderHandle');
+          await db.delete('settings', 'lastSyncTime');
+
+          setFolderHandle(null);
+          setIsLinked(false);
+          setLastSync(null);
+        } catch (err) {
+          console.error('Failed to unlink:', err);
+        }
+      }
+
+      async function syncFromFolder(handle = folderHandle) {
+        if (!handle) return;
+
+        setSyncing(true);
+        setError(null);
+
+        try {
+          const permission = await handle.requestPermission({ mode: 'read' });
+          if (permission !== 'granted') {
+            setError('Permission denied. Please re-link the folder.');
+            setIsLinked(false);
+            return;
+          }
+
+          const results = {
+            collection: null,
+            profile: null,
+            mastery: null,
+            battlePass: null
+          };
+
+          const fileMap = {
+            'CollectionState.json': 'collection',
+            'ProfileState.json': 'profile',
+            'CharacterMasteryState.json': 'mastery',
+            'BattlePassState.json': 'battlePass'
+          };
+
+          for (const [filename, key] of Object.entries(fileMap)) {
+            try {
+              const fileHandle = await handle.getFileHandle(filename);
+              const file = await fileHandle.getFile();
+              const content = await file.text();
+              const json = JSON.parse(content);
+
+              switch (key) {
+                case 'collection':
+                  results.collection = GameDataParser.parseCollection(json);
+                  break;
+                case 'profile':
+                  results.profile = GameDataParser.parseProfile(json);
+                  break;
+                case 'mastery':
+                  results.mastery = GameDataParser.parseMastery(json);
+                  break;
+                case 'battlePass':
+                  results.battlePass = GameDataParser.parseBattlePass(json);
+                  break;
+              }
+            } catch (err) {
+              console.log(`Could not read ${filename}:`, err.message);
+            }
+          }
+
+          const importResults = autoImportAll(results);
+
+          const now = new Date();
+          const db = await openSyncDB();
+          await db.put('settings', now.toISOString(), 'lastSyncTime');
+          setLastSync(now);
+
+          showToast(`Sync complete!\n${importResults.map(r => '✓ ' + r).join('\n')}`);
+
+          if (onSyncComplete) onSyncComplete();
+          window.dispatchEvent(new Event('snap-data-updated'));
+        } catch (err) {
+          setError(`Sync failed: ${err.message}`);
+        } finally {
+          setSyncing(false);
+        }
+      }
+
+      if (!isSupported) {
+        return (
+          <div className="linked-folder-section" style={{ opacity: 0.7 }}>
+            <h4>Link Game Folder</h4>
+            <div className="not-supported-msg">
+              Folder linking requires Chrome or Edge browser.
+              <br />
+              Use drag & drop below instead.
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="linked-folder-section">
+          <h4>Link Game Folder</h4>
+          <p className="description">
+            Link your game data folder once, then sync with one click anytime.
+          </p>
+
+          {!isLinked ? (
+            <div>
+              <button className="link-folder-btn" onClick={handleLinkFolder}>
+                Select nvprod Folder
+              </button>
+              <p style={{ fontSize: '0.75em', color: '#888', marginTop: '8px' }}>
+                Navigate to:<br />
+                <code style={{ background: '#1A1A1A', padding: '2px 6px', borderRadius: '4px', color: '#FFC107' }}>
+                  %AppData%\LocalLow\Second Dinner\SNAP\Standalone\States\nvprod
+                </code>
+              </p>
+            </div>
+          ) : (
+            <div className="linked-status">
+              <div className="status-row">
+                <span className="status-badge linked">Folder Linked</span>
+                <button className="unlink-btn" onClick={handleUnlink}>Unlink</button>
+              </div>
+
+              <button className="sync-btn" onClick={() => syncFromFolder()} disabled={syncing}>
+                {syncing ? 'Syncing...' : 'Sync Now'}
+              </button>
+
+              {lastSync && (
+                <p className="last-sync">
+                  Last synced: {lastSync.toLocaleString()}
+                </p>
+              )}
+            </div>
+          )}
+
+          {error && (
+            <div style={{ marginTop: '10px', padding: '10px', background: 'rgba(239,68,68,0.2)', borderRadius: '8px', color: '#ef4444', fontSize: '0.85em' }}>
+              {error}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // Phase 5: JSON Sync Preview Modal
+    const JSONSyncPreviewModal = ({ data, onConfirm, onCancel }) => {
+      const [selectedImports, setSelectedImports] = useState({
+        collection: !!data.collection,
+        stats: !!data.profile,
+        cardPerformance: !!data.profile?.cardPerformance,
+        mastery: !!data.mastery
+      });
+
+      return (
+        <div className="modal-overlay">
+          <div className="modal sync-preview-modal" style={{ padding: '20px' }}>
+            <h3 style={{ margin: '0 0 16px 0', color: '#FFC107', fontFamily: 'Impact, sans-serif' }}>
+              Game Data Found!
+            </h3>
+
+            {/* Collection Preview */}
+            {data.collection && (
+              <div className="preview-section">
+                <label className="import-toggle">
+                  <input
+                    type="checkbox"
+                    checked={selectedImports.collection}
+                    onChange={(e) => setSelectedImports(s => ({...s, collection: e.target.checked}))}
+                  />
+                  <span style={{ fontWeight: 'bold' }}>Collection</span>
+                </label>
+                <div className="preview-stats-grid" style={{ gridTemplateColumns: '1fr' }}>
+                  <div className="preview-stat">
+                    <span className="value">{data.collection.count}</span>
+                    <span className="label">cards found</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Profile Stats Preview */}
+            {data.profile && (
+              <div className="preview-section">
+                <label className="import-toggle">
+                  <input
+                    type="checkbox"
+                    checked={selectedImports.stats}
+                    onChange={(e) => setSelectedImports(s => ({...s, stats: e.target.checked}))}
+                  />
+                  <span style={{ fontWeight: 'bold' }}>Lifetime Stats</span>
+                </label>
+                <div className="preview-stats-grid">
+                  <div className="preview-stat">
+                    <span className="value">{data.profile.stats.totalGames.toLocaleString()}</span>
+                    <span className="label">Total Games</span>
+                  </div>
+                  <div className="preview-stat">
+                    <span className="value" style={{ color: '#22c55e' }}>{data.profile.stats.winRate}%</span>
+                    <span className="label">Win Rate</span>
+                  </div>
+                  <div className="preview-stat">
+                    <span className="value">{data.profile.stats.wins.toLocaleString()}</span>
+                    <span className="label">Wins</span>
+                  </div>
+                  <div className="preview-stat">
+                    <span className="value">{data.profile.stats.snaps.toLocaleString()}</span>
+                    <span className="label">Snaps</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Card Performance Preview */}
+            {data.profile?.cardPerformance && (
+              <div className="preview-section">
+                <label className="import-toggle">
+                  <input
+                    type="checkbox"
+                    checked={selectedImports.cardPerformance}
+                    onChange={(e) => setSelectedImports(s => ({...s, cardPerformance: e.target.checked}))}
+                  />
+                  <span style={{ fontWeight: 'bold' }}>Card Performance</span>
+                </label>
+                <div className="card-performance-preview">
+                  <div>
+                    <h5 style={{ margin: '0 0 6px 0', fontSize: '0.8em', color: '#22c55e' }}>Best</h5>
+                    {data.profile.cardPerformance.top10.slice(0, 3).map((c, i) => (
+                      <div key={i} className="card-stat positive">
+                        <span className="card-name">{c.card}</span>
+                        <span className="cubes">+{c.netCubes}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <h5 style={{ margin: '0 0 6px 0', fontSize: '0.8em', color: '#ef4444' }}>Worst</h5>
+                    {data.profile.cardPerformance.bottom10.slice(0, 3).map((c, i) => (
+                      <div key={i} className="card-stat negative">
+                        <span className="card-name">{c.card}</span>
+                        <span className="cubes">{c.netCubes}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Mastery Preview */}
+            {data.mastery && (
+              <div className="preview-section">
+                <label className="import-toggle">
+                  <input
+                    type="checkbox"
+                    checked={selectedImports.mastery}
+                    onChange={(e) => setSelectedImports(s => ({...s, mastery: e.target.checked}))}
+                  />
+                  <span style={{ fontWeight: 'bold' }}>Character Mastery</span>
+                </label>
+                <div className="preview-stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                  <div className="preview-stat">
+                    <span className="value">{data.mastery.totalCards}</span>
+                    <span className="label">Cards</span>
+                  </div>
+                  <div className="preview-stat">
+                    <span className="value">{data.mastery.avgLevel}</span>
+                    <span className="label">Avg Level</span>
+                  </div>
+                  <div className="preview-stat">
+                    <span className="value">{data.mastery.maxedCards}</span>
+                    <span className="label">Maxed</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+              <button
+                onClick={() => onConfirm(data, selectedImports)}
+                style={{ flex: 1, padding: '12px', background: '#006EC7', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                Import Selected
+              </button>
+              <button
+                onClick={onCancel}
+                style={{ flex: 1, padding: '12px', background: '#4B5563', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Phase 5: Drag & Drop JSON Sync Component
+    const DragDropJSONSync = ({ onDataParsed }) => {
+      const [dragOver, setDragOver] = useState(false);
+      const [processing, setProcessing] = useState(false);
+      const fileInputRef = useRef(null);
+
+      const handleFileDrop = async (e) => {
+        e.preventDefault();
+        setDragOver(false);
+        const files = Array.from(e.dataTransfer?.files || []);
+        if (files.length > 0) processFiles(files);
+      };
+
+      const handleFileSelect = (e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length > 0) processFiles(files);
+      };
+
+      const processFiles = async (files) => {
+        setProcessing(true);
+
+        const results = {
+          collection: null,
+          profile: null,
+          mastery: null,
+          battlePass: null
+        };
+
+        for (const file of files) {
+          try {
+            const content = await file.text();
+            const json = JSON.parse(content);
+
+            if (file.name === 'CollectionState.json' || file.name.includes('Collection')) {
+              results.collection = GameDataParser.parseCollection(json);
+            } else if (file.name === 'ProfileState.json' || file.name.includes('Profile')) {
+              results.profile = GameDataParser.parseProfile(json);
+            } else if (file.name === 'CharacterMasteryState.json' || file.name.includes('Mastery')) {
+              results.mastery = GameDataParser.parseMastery(json);
+            } else if (file.name === 'BattlePassState.json' || file.name.includes('BattlePass')) {
+              results.battlePass = GameDataParser.parseBattlePass(json);
+            } else {
+              // Try to detect file type from content
+              if (json?.ServerState?.CardInventory) {
+                results.collection = GameDataParser.parseCollection(json);
+              } else if (json?.ServerState?.Account) {
+                results.profile = GameDataParser.parseProfile(json);
+              } else if (json?.ServerState?.CharacterMasteryProgress) {
+                results.mastery = GameDataParser.parseMastery(json);
+              } else if (json?.ServerState?.BattlePass) {
+                results.battlePass = GameDataParser.parseBattlePass(json);
+              }
+            }
+          } catch (err) {
+            console.error(`Failed to parse ${file.name}:`, err);
+          }
+        }
+
+        setProcessing(false);
+
+        if (Object.values(results).some(v => v !== null)) {
+          onDataParsed(results);
+        } else {
+          showToast('No valid game data found in the selected files');
+        }
+      };
+
+      return (
+        <div className="drag-drop-section">
+          <h4>Drag & Drop Files</h4>
+          <p className="description">Works in all browsers</p>
+
+          <div
+            className={`drop-zone-json ${dragOver ? 'drag-over' : ''}`}
+            onDrop={handleFileDrop}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {processing ? (
+              <div>
+                <div className="spinner" style={{ margin: '0 auto 10px' }}></div>
+                <span>Processing files...</span>
+              </div>
+            ) : (
+              <>
+                <span style={{ fontSize: '2.5em', display: 'block', marginBottom: '8px' }}>📁</span>
+                <p style={{ margin: '0 0 8px 0', fontWeight: 'bold' }}>Drop JSON files here</p>
+                <p style={{ margin: 0, fontSize: '0.85em', color: '#888' }}>
+                  CollectionState.json, ProfileState.json, etc.
+                </p>
+                <code>%AppData%\LocalLow\Second Dinner\SNAP\Standalone\States\nvprod\</code>
+              </>
+            )}
+          </div>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileSelect}
+            accept=".json"
+            multiple
+            style={{ display: 'none' }}
+          />
+
+          <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
+            <p style={{ margin: '0 0 6px 0', fontSize: '0.85em', fontWeight: 'bold', color: '#FFC107' }}>Supported Files:</p>
+            <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.8em', color: '#aaa' }}>
+              <li><strong>CollectionState.json</strong> - Your card collection</li>
+              <li><strong>ProfileState.json</strong> - Lifetime stats & card performance</li>
+              <li><strong>CharacterMasteryState.json</strong> - Card mastery levels</li>
+              <li><strong>BattlePassState.json</strong> - Season pass progress</li>
+            </ul>
+            <p style={{ margin: '8px 0 0 0', fontSize: '0.8em', color: '#006EC7' }}>
+              Tip: Select all 4 files and drop them together!
+            </p>
+          </div>
+        </div>
+      );
+    };
+
+    // Phase 5: Card Performance View (Analytics Tab)
+    const CardPerformanceView = () => {
+      const [performanceData, setPerformanceData] = useState(null);
+      const [profileStats, setProfileStats] = useState(null);
+      const [sortBy, setSortBy] = useState('netCubes');
+      const [filterType, setFilterType] = useState('all');
+
+      useEffect(() => {
+        loadData();
+        window.addEventListener('snap-data-updated', loadData);
+        return () => window.removeEventListener('snap-data-updated', loadData);
+      }, []);
+
+      const loadData = () => {
+        const perfData = loadFromStorage('snap_card_performance', null);
+        const stats = loadFromStorage('snap_profile_stats', null);
+        setPerformanceData(perfData);
+        setProfileStats(stats);
+      };
+
+      if (!performanceData && !profileStats) {
+        return (
+          <div className="px-4 pb-20">
+            <Header title="ANALYTICS" />
+            <div className="import-prompt" style={{ padding: '40px 20px' }}>
+              <p style={{ fontSize: '1.1em', marginBottom: '12px' }}>No game data imported yet.</p>
+              <p style={{ fontSize: '0.9em' }}>
+                Import your game files from<br />
+                <a href="#" onClick={(e) => { e.preventDefault(); }}>Settings &rarr; PC Game Data Sync</a>
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      const cards = performanceData ? Object.entries(performanceData.cards)
+        .map(([card, data]) => ({ card, ...data }))
+        .filter(c => {
+          if (filterType === 'positive') return c.netCubes > 0;
+          if (filterType === 'negative') return c.netCubes < 0;
+          return true;
+        })
+        .sort((a, b) => {
+          if (sortBy === 'name') return a.card.localeCompare(b.card);
+          return b.netCubes - a.netCubes;
+        }) : [];
+
+      const totalPositive = cards.filter(c => c.netCubes > 0).reduce((sum, c) => sum + c.netCubes, 0);
+      const totalNegative = cards.filter(c => c.netCubes < 0).reduce((sum, c) => sum + c.netCubes, 0);
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="ANALYTICS" />
+
+          {/* Lifetime Stats */}
+          {profileStats && (
+            <div className="stats-section">
+              <h3>Lifetime Stats</h3>
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <span className="stat-value">{(profileStats.totalGames || profileStats.wins + profileStats.losses).toLocaleString()}</span>
+                  <span className="stat-label">Total Games</span>
+                </div>
+                <div className="stat-card highlight">
+                  <span className="stat-value">{profileStats.winRate}%</span>
+                  <span className="stat-label">Win Rate</span>
+                </div>
+                <div className="stat-card positive">
+                  <span className="stat-value">{(profileStats.wins || 0).toLocaleString()}</span>
+                  <span className="stat-label">Wins</span>
+                </div>
+                <div className="stat-card">
+                  <span className="stat-value">{(profileStats.snaps || 0).toLocaleString()}</span>
+                  <span className="stat-label">Snaps</span>
+                </div>
+              </div>
+              {profileStats.snapId && (
+                <p className="data-source">
+                  {profileStats.snapId} • Imported {new Date(profileStats.importedAt || Date.now()).toLocaleDateString()}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Currency Stats */}
+          {profileStats?.currencies && (
+            <div className="stats-section">
+              <h3>Currencies</h3>
+              <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                <div className="stat-card">
+                  <span className="stat-value" style={{ color: '#22c55e' }}>{(profileStats.currencies.credits || 0).toLocaleString()}</span>
+                  <span className="stat-label">Credits</span>
+                </div>
+                <div className="stat-card">
+                  <span className="stat-value" style={{ color: '#FFC107' }}>{(profileStats.currencies.gold || 0).toLocaleString()}</span>
+                  <span className="stat-label">Gold</span>
+                </div>
+                <div className="stat-card">
+                  <span className="stat-value" style={{ color: '#8B5CF6' }}>{(profileStats.currencies.tokens || 0).toLocaleString()}</span>
+                  <span className="stat-label">Tokens</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Card Performance */}
+          {performanceData && cards.length > 0 && (
+            <>
+              <div className="stats-section" style={{ padding: '12px 16px' }}>
+                <h3 style={{ marginBottom: '8px' }}>Card Performance</h3>
+                <p style={{ margin: 0, fontSize: '0.8em', color: '#888' }}>Net cubes earned/lost per card (lifetime)</p>
+
+                <div className="performance-summary" style={{ marginTop: '12px' }}>
+                  <div className="summary-stat positive">
+                    <span className="label">Gained</span>
+                    <span className="value">+{totalPositive.toLocaleString()}</span>
+                  </div>
+                  <div className="summary-stat negative">
+                    <span className="label">Lost</span>
+                    <span className="value">{totalNegative.toLocaleString()}</span>
+                  </div>
+                  <div className="summary-stat net">
+                    <span className="label">Net</span>
+                    <span className="value">{(totalPositive + totalNegative).toLocaleString()}</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+                  <select
+                    value={filterType}
+                    onChange={(e) => setFilterType(e.target.value)}
+                    style={{ flex: 1, background: '#374151', color: 'white', border: 'none', borderRadius: '6px', padding: '8px' }}
+                  >
+                    <option value="all">All Cards ({Object.keys(performanceData.cards).length})</option>
+                    <option value="positive">Winners Only</option>
+                    <option value="negative">Losers Only</option>
+                  </select>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    style={{ flex: 1, background: '#374151', color: 'white', border: 'none', borderRadius: '6px', padding: '8px' }}
+                  >
+                    <option value="netCubes">By Cubes</option>
+                    <option value="name">By Name</option>
+                  </select>
+                </div>
+
+                <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                  {cards.map((card, i) => (
+                    <div
+                      key={card.card}
+                      className={`performance-card ${card.netCubes >= 0 ? 'positive' : 'negative'}`}
+                    >
+                      <span className="rank">#{i + 1}</span>
+                      <span className="card-name">{card.card}</span>
+                      <span className="net-cubes">
+                        {card.netCubes >= 0 ? '+' : ''}{card.netCubes}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <p style={{ textAlign: 'center', fontSize: '0.75em', color: '#666' }}>
+                Data from: {new Date(performanceData.importedAt).toLocaleDateString()}
+              </p>
+            </>
+          )}
+        </div>
+      );
+    };
+
     // Settings Component
     const Settings = ({ settings, setSettings, collection, matches, setCollection, setMatches, aiConfig, setAiConfig }) => {
       const [showImport, setShowImport] = useState(false);
@@ -1436,6 +2727,10 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
       // Phase 4: QR Sync state
       const [qrDataUrl, setQrDataUrl] = useState(null);
       const [qrError, setQrError] = useState(null);
+
+      // Phase 5: JSON Sync state
+      const [showJSONSyncPreview, setShowJSONSyncPreview] = useState(false);
+      const [jsonSyncData, setJSONSyncData] = useState(null);
 
       // Google OAuth initialization
       useEffect(() => {
@@ -1643,6 +2938,82 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
         alert(`Successfully imported ${matchesToImport.length} matches!`);
       };
 
+      // Phase 5: JSON Sync Confirm Handler
+      const handleJSONSyncConfirm = (data, selectedImports) => {
+        const timestamp = new Date().toISOString();
+        const syncLog = [];
+
+        // Import Collection
+        if (selectedImports.collection && data.collection) {
+          const existingCollection = JSON.parse(localStorage.getItem('snap_collection') || '{"owned":[]}');
+          const mergedCards = [...new Set([...existingCollection.owned, ...data.collection.cards])];
+
+          const newCollection = {
+            owned: mergedCards,
+            lastUpdated: timestamp,
+            source: 'JSONImport'
+          };
+          localStorage.setItem('snap_collection', JSON.stringify(newCollection));
+          setCollection(newCollection);
+
+          syncLog.push(`Collection: ${mergedCards.length} cards`);
+        }
+
+        // Import Profile Stats
+        if (selectedImports.stats && data.profile) {
+          localStorage.setItem('snap_profile_stats', JSON.stringify({
+            ...data.profile.stats,
+            snapId: data.profile.player.snapId,
+            currencies: data.profile.currencies,
+            importedAt: timestamp,
+            source: 'ProfileState.json'
+          }));
+
+          syncLog.push(`Stats: ${data.profile.stats.totalGames.toLocaleString()} games`);
+        }
+
+        // Import Card Performance
+        if (selectedImports.cardPerformance && data.profile?.cardPerformance) {
+          const performanceMap = {};
+          data.profile.cardPerformance.all.forEach(({ card, netCubes }) => {
+            performanceMap[card] = { netCubes };
+          });
+
+          localStorage.setItem('snap_card_performance', JSON.stringify({
+            cards: performanceMap,
+            importedAt: timestamp,
+            source: 'ProfileState.json'
+          }));
+
+          syncLog.push(`Card Performance: ${data.profile.cardPerformance.all.length} cards tracked`);
+        }
+
+        // Import Mastery
+        if (selectedImports.mastery && data.mastery) {
+          localStorage.setItem('snap_mastery', JSON.stringify({
+            cards: data.mastery.cards,
+            importedAt: timestamp,
+            source: 'CharacterMasteryState.json'
+          }));
+
+          syncLog.push(`Mastery: ${data.mastery.totalCards} cards`);
+        }
+
+        // Update sync history
+        const syncHistory = JSON.parse(localStorage.getItem('snap_sync_history') || '[]');
+        syncHistory.unshift({
+          date: timestamp,
+          imported: syncLog
+        });
+        localStorage.setItem('snap_sync_history', JSON.stringify(syncHistory.slice(0, 10)));
+
+        setShowJSONSyncPreview(false);
+        setJSONSyncData(null);
+
+        showToast(`Sync Complete!\n${syncLog.map(r => '✓ ' + r).join('\n')}`);
+        window.dispatchEvent(new Event('snap-data-updated'));
+      };
+
       // Phase 4: QR Code generation
       const generateSyncQR = async () => {
         setQrError(null);
@@ -1753,16 +3124,39 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
               </div>
               <div>
                 <div className="text-white font-bold">Snapapoulous Prime</div>
-                <div className="text-gray-400 text-sm">v2.1.0 - Log Sync Edition</div>
+                <div className="text-gray-400 text-sm">v2.2.0 - Game Data Sync</div>
               </div>
             </div>
           </div>
 
-          {/* PC Data Sync - Phase 4 */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
-            <h3 className="text-lg font-comic text-marvel-gold mb-3">PC Data Sync</h3>
+          {/* PC Game Data Sync - Phase 5 */}
+          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4 pc-sync-section">
+            <h3 className="text-lg font-comic text-marvel-gold mb-3">PC Game Data Sync</h3>
             <p className="text-gray-400 text-sm mb-4">
-              Playing on PC/Steam? Drag your Player.log file here to automatically import your match history.
+              Import your collection, stats, and card performance directly from game files.
+            </p>
+
+            {/* Method 1: Linked Folder (Chrome/Edge) */}
+            <LinkedFolderSync onSyncComplete={() => {
+              setCollection(loadFromStorage('snap_collection', { owned: [], lastUpdated: new Date().toISOString() }));
+            }} />
+
+            <div className="sync-divider">
+              <span>or</span>
+            </div>
+
+            {/* Method 2: Drag & Drop JSON (All Browsers) */}
+            <DragDropJSONSync onDataParsed={(data) => {
+              setJSONSyncData(data);
+              setShowJSONSyncPreview(true);
+            }} />
+          </div>
+
+          {/* Legacy Log Sync (Player.log) */}
+          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+            <h3 className="text-lg font-comic text-marvel-gold mb-3">Match Log Import</h3>
+            <p className="text-gray-400 text-sm mb-4">
+              Import match history from Player.log (legacy method).
             </p>
 
             <div
@@ -1780,13 +3174,10 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
                 </div>
               ) : (
                 <>
-                  <span className="drop-icon">📂</span>
+                  <span className="drop-icon">📜</span>
                   <span className="text-gray-300">Drop Player.log here or click to browse</span>
                   <span className="file-path">
                     Windows: %AppData%\LocalLow\Second Dinner\SNAP\...\Player.log
-                  </span>
-                  <span className="file-path">
-                    Mac: ~/Library/Application Support/Second Dinner/SNAP/.../Player.log
                   </span>
                 </>
               )}
@@ -2027,6 +3418,15 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
               onCancel={() => { setShowLogPreview(false); setParsedMatches([]); }}
             />
           )}
+
+          {/* JSON Sync Preview Modal - Phase 5 */}
+          {showJSONSyncPreview && jsonSyncData && (
+            <JSONSyncPreviewModal
+              data={jsonSyncData}
+              onConfirm={handleJSONSyncConfirm}
+              onCancel={() => { setShowJSONSyncPreview(false); setJSONSyncData(null); }}
+            />
+          )}
         </div>
       );
     };
@@ -2116,6 +3516,7 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
           {activeTab === 'dashboard' && <Dashboard collection={collection} matches={matches} onQuickMatch={handleQuickMatch} />}
           {activeTab === 'ai' && <AIChat collection={collection} matches={matches} aiConfig={aiConfig} setActiveTab={setActiveTab} />}
           {activeTab === 'collection' && <Collection collection={collection} setCollection={setCollection} />}
+          {activeTab === 'analytics' && <CardPerformanceView />}
           {activeTab === 'calculator' && <Calculator />}
           {activeTab === 'settings' && <Settings settings={settings} setSettings={setSettings} collection={collection} matches={matches} setCollection={setCollection} setMatches={setMatches} aiConfig={aiConfig} setAiConfig={setAiConfig} />}
           <NavBar activeTab={activeTab} setActiveTab={setActiveTab} />
