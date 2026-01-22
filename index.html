@@ -210,6 +210,14 @@
       animation: spin 1s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    /* Install banner animation */
+    @keyframes slide-up {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .install-banner-enter {
+      animation: slide-up 0.3s ease-out;
+    }
     /* QR Code Container */
     .qr-container { background: white; padding: 1rem; border-radius: 8px; display: inline-block; }
 
@@ -290,6 +298,12 @@
       color: #9CA3AF;
       cursor: pointer;
       font-size: 0.85em;
+      min-width: 44px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
     }
     .unlink-btn:hover {
       color: #ef4444;
@@ -543,6 +557,35 @@
       white-space: pre-line;
       max-width: 90%;
       text-align: center;
+    }
+
+    /* Touch target utilities for accessibility */
+    .touch-target {
+      min-width: 44px;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .touch-target-sm {
+      min-width: 36px;
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Expand clickable area while keeping visual size small */
+    .touch-expand {
+      position: relative;
+    }
+    .touch-expand::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
     }
   </style>
 </head>
@@ -2234,7 +2277,7 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
               <div className="flex flex-wrap gap-2">
                 {quickPrompts.map(prompt => (
                   <button key={prompt} onClick={() => setInput(prompt)}
-                    className="bg-gray-700 text-gray-300 text-xs px-3 py-1.5 rounded-full hover:bg-gray-600">
+                    className="bg-gray-700 text-gray-300 text-xs px-4 py-2 rounded-full hover:bg-gray-600 touch-target-sm">
                     {prompt}
                   </button>
                 ))}
@@ -2344,10 +2387,10 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
               </select>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <button onClick={() => markAllSeries(1)} className="bg-series-1 text-white text-xs px-2 py-1 rounded hover:opacity-80">Own S1</button>
-              <button onClick={() => markAllSeries(2)} className="bg-series-2 text-white text-xs px-2 py-1 rounded hover:opacity-80">Own S2</button>
+              <button onClick={() => markAllSeries(1)} className="bg-series-1 text-white text-xs px-3 py-2 rounded hover:opacity-80 touch-target-sm">Own S1</button>
+              <button onClick={() => markAllSeries(2)} className="bg-series-2 text-white text-xs px-3 py-2 rounded hover:opacity-80 touch-target-sm">Own S2</button>
               <button onClick={handleClearAll}
-                className="bg-red-600 text-white text-xs px-2 py-1 rounded hover:opacity-80 ml-auto">Clear All</button>
+                className="bg-red-600 text-white text-xs px-3 py-2 rounded hover:opacity-80 ml-auto touch-target-sm">Clear All</button>
             </div>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -2358,17 +2401,17 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
                     isOwned ? 'bg-gray-700 border-opacity-100' : 'bg-gray-900 border-opacity-30 opacity-50'
                   }`} style={{ borderWidth: '3px' }}>
                   <button onClick={() => toggleCard(card.name)} className="w-full h-full">
-                    <div className="absolute top-1 left-1 w-5 h-5 bg-marvel-blue rounded-full flex items-center justify-center text-xs font-bold text-white">{card.cost}</div>
-                    <div className="absolute top-1 right-1 w-5 h-5 bg-marvel-red rounded-full flex items-center justify-center text-xs font-bold text-white">{card.power}</div>
+                    <div className="absolute top-1 left-1 w-6 h-6 bg-marvel-blue rounded-full flex items-center justify-center text-xs font-bold text-white">{card.cost}</div>
+                    <div className="absolute top-1 right-1 w-6 h-6 bg-marvel-red rounded-full flex items-center justify-center text-xs font-bold text-white">{card.power}</div>
                     <div className="mt-6 text-xs text-white text-center truncate">{card.name}</div>
                     {isOwned && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-xs">✓</span>
                       </div>
                     )}
                   </button>
                   <button onClick={(e) => { e.stopPropagation(); setSelectedCard(card); }}
-                    className="absolute bottom-1 right-1 w-5 h-5 bg-gray-600 hover:bg-marvel-gold rounded-full flex items-center justify-center text-xs text-white z-10"
+                    className="absolute bottom-1 right-1 w-7 h-7 bg-gray-600 hover:bg-marvel-gold rounded-full flex items-center justify-center text-xs text-white z-10 touch-expand"
                     title="View card details">i</button>
                 </div>
               );
@@ -2718,7 +2761,7 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
                     <div className="absolute top-0 right-0 w-4 h-4 bg-marvel-red rounded-bl flex items-center justify-center text-xs text-white">{card.power}</div>
                     <div className="mt-4 text-xs text-white text-center truncate">{card.name}</div>
                     {isSelected && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-xs">✓</span>
                       </div>
                     )}
@@ -4451,6 +4494,96 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
       );
     };
 
+    // ==================== PWA INSTALL BANNER ====================
+    const InstallBanner = () => {
+      const [deferredPrompt, setDeferredPrompt] = useState(null);
+      const [showBanner, setShowBanner] = useState(false);
+      const [dismissed, setDismissed] = useState(() => {
+        return localStorage.getItem('snap_install_dismissed') === 'true';
+      });
+
+      useEffect(() => {
+        // Check if already installed
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+          return;
+        }
+
+        const handler = (e) => {
+          e.preventDefault();
+          setDeferredPrompt(e);
+          if (!dismissed) {
+            setShowBanner(true);
+          }
+        };
+
+        window.addEventListener('beforeinstallprompt', handler);
+
+        // Track successful installs
+        window.addEventListener('appinstalled', () => {
+          setShowBanner(false);
+          setDeferredPrompt(null);
+          console.log('App installed successfully');
+        });
+
+        return () => {
+          window.removeEventListener('beforeinstallprompt', handler);
+        };
+      }, [dismissed]);
+
+      const handleInstall = async () => {
+        if (!deferredPrompt) return;
+
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+
+        if (outcome === 'accepted') {
+          console.log('User accepted install');
+        }
+        setDeferredPrompt(null);
+        setShowBanner(false);
+      };
+
+      const handleDismiss = () => {
+        setShowBanner(false);
+        setDismissed(true);
+        localStorage.setItem('snap_install_dismissed', 'true');
+      };
+
+      if (!showBanner || !deferredPrompt) return null;
+
+      return (
+        <div
+          className="fixed bottom-20 left-4 right-4 bg-marvel-blue rounded-lg p-4 shadow-lg z-40 panel-border install-banner-enter"
+          role="complementary"
+          aria-label="Install app prompt"
+          style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-marvel-red rounded-lg flex items-center justify-center flex-shrink-0">
+              <span className="text-2xl">⚡</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-bold text-white text-sm">Install SnapPrime</h4>
+              <p className="text-xs text-white/80 truncate">Add to home screen for quick access</p>
+            </div>
+            <button
+              onClick={handleInstall}
+              className="bg-marvel-gold text-black px-3 py-2 rounded font-bold text-sm hover:bg-yellow-400 flex-shrink-0"
+            >
+              Install
+            </button>
+            <button
+              onClick={handleDismiss}
+              className="text-white/60 p-2 hover:text-white flex-shrink-0"
+              aria-label="Dismiss install prompt"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      );
+    };
+
     // ==================== MAIN APP ====================
     const App = () => {
       const [activeTab, setActiveTab] = useState('dashboard');
@@ -4567,6 +4700,7 @@ Respond with practical, actionable Marvel Snap advice. Be concise but thorough. 
             Skip to main content
           </a>
           <OfflineIndicator />
+          <InstallBanner />
           <div id="main-content" tabIndex="-1">
             {activeTab === 'dashboard' && (
               <ErrorBoundary>
