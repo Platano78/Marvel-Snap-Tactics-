@@ -4598,7 +4598,7 @@ RESPONSE GUIDELINES:
               </div>
               <div>
                 <div className="text-white font-bold">Snapapoulous Prime</div>
-                <div className="text-gray-400 text-sm">v2.3.0 - AI Context Fix + Model Selector</div>
+                <div className="text-gray-400 text-sm">v2.3.1 - Auto-Update Fix</div>
               </div>
             </div>
           </div>
@@ -5338,8 +5338,38 @@ RESPONSE GUIDELINES:
       useEffect(() => {
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('SW registered:', reg.scope))
+            .then(reg => {
+              console.log('SW registered:', reg.scope);
+
+              // Check for updates immediately and periodically
+              reg.update();
+
+              // Listen for new service worker installing
+              reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                console.log('[SW] New version found, installing...');
+
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // New SW installed and there's an existing one - new version available
+                    console.log('[SW] New version installed, will reload...');
+                    // Tell the new SW to take over immediately
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  }
+                });
+              });
+            })
             .catch(err => console.error('SW error:', err));
+
+          // Reload page when new service worker takes control
+          let refreshing = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+              refreshing = true;
+              console.log('[SW] New version activated, reloading...');
+              window.location.reload();
+            }
+          });
         }
       }, []);
 
