@@ -13,6 +13,18 @@
 
   <title>Snapapoulous Prime - Marvel Snap Companion</title>
 
+  <!-- Service Worker Update Handler - runs early to catch SW updates -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'SW_UPDATED') {
+          console.log('[App] Service worker updated to:', event.data.version);
+          window.location.reload();
+        }
+      });
+    }
+  </script>
+
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
@@ -4598,7 +4610,7 @@ RESPONSE GUIDELINES:
               </div>
               <div>
                 <div className="text-white font-bold">Snapapoulous Prime</div>
-                <div className="text-gray-400 text-sm">v2.3.1 - Auto-Update Fix</div>
+                <div className="text-gray-400 text-sm">v2.3.2 - Network-First HTML + Auto-Update</div>
               </div>
             </div>
           </div>
