@@ -258,7 +258,7 @@ async function callGeminiWithOAuth(messages) {
   const token = localStorage.getItem('snap_google_token');
   
   const response = await fetch(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
     {
       method: 'POST',
       headers: {
@@ -333,7 +333,7 @@ async function callGeminiWithOAuth(messages) {
   name: 'Gemini',
   authType: 'api_key',
   endpoint: 'https://generativelanguage.googleapis.com/v1beta/models',
-  models: ['gemini-2.0-flash', 'gemini-2.0-flash-lite'],
+  models: ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-3-flash-preview', 'gemini-3-pro-preview', 'gemini-2.5-flash-lite'],
   // API key appended as ?key=KEY
   formatRequest: (messages, model) => ({
     contents: messages.map(m => ({
