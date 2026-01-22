@@ -1259,15 +1259,43 @@
       return [];
     };
 
-    const uniqueCards = (() => {
-      const cachedCards = getCachedCards();
-      const baseCards = cachedCards.length > CARD_DATA.length ? cachedCards : CARD_DATA;
+    // uniqueCards - mutable array that updates when card data loads
+    let uniqueCards = [...CARD_DATA_FALLBACK];
+    let uniqueCardsUpdateCallbacks = [];
+
+    // Function to update uniqueCards and notify listeners
+    const updateUniqueCards = (newCards) => {
       // Dedupe by name
-      return baseCards.reduce((acc, card) => {
+      uniqueCards = newCards.reduce((acc, card) => {
         if (!acc.find(c => c.name === card.name)) acc.push(card);
         return acc;
       }, []);
+      // Notify all listeners
+      uniqueCardsUpdateCallbacks.forEach(cb => cb(uniqueCards));
+      console.log(`[uniqueCards] Updated with ${uniqueCards.length} cards`);
+    };
+
+    // Subscribe to uniqueCards updates
+    const onUniqueCardsUpdate = (callback) => {
+      uniqueCardsUpdateCallbacks.push(callback);
+      return () => {
+        uniqueCardsUpdateCallbacks = uniqueCardsUpdateCallbacks.filter(cb => cb !== callback);
+      };
+    };
+
+    // Initialize uniqueCards with best available data
+    (() => {
+      const cachedCards = getCachedCards();
+      const baseCards = cachedCards.length > CARD_DATA.length ? cachedCards : CARD_DATA;
+      updateUniqueCards(baseCards);
     })();
+
+    // Update uniqueCards when CardDataLoader finishes
+    CardDataLoader.load().then(cards => {
+      if (cards && cards.length > uniqueCards.length) {
+        updateUniqueCards(cards);
+      }
+    }).catch(err => console.warn('[uniqueCards] Load error:', err));
 
     // ==================== DYNAMIC META CONTEXT ====================
     // Phase 3: Centralized meta information - update this with each patch/season
@@ -2800,6 +2828,9 @@ RESPONSE GUIDELINES:
             <div className="flex gap-2 flex-wrap">
               <button onClick={() => markAllSeries(1)} className="bg-series-1 text-white text-xs px-3 py-2 rounded hover:opacity-80 touch-target-sm">Own S1</button>
               <button onClick={() => markAllSeries(2)} className="bg-series-2 text-white text-xs px-3 py-2 rounded hover:opacity-80 touch-target-sm">Own S2</button>
+              <button onClick={() => markAllSeries(3)} className="bg-series-3 text-white text-xs px-3 py-2 rounded hover:opacity-80 touch-target-sm">Own S3</button>
+              <button onClick={() => markAllSeries(4)} className="bg-series-4 text-white text-xs px-3 py-2 rounded hover:opacity-80 touch-target-sm">Own S4</button>
+              <button onClick={() => markAllSeries(5)} className="bg-series-5 text-white text-xs px-3 py-2 rounded hover:opacity-80 touch-target-sm">Own S5</button>
               <button onClick={handleClearAll}
                 className="bg-red-600 text-white text-xs px-3 py-2 rounded hover:opacity-80 ml-auto touch-target-sm">Clear All</button>
             </div>
@@ -2897,6 +2928,7 @@ RESPONSE GUIDELINES:
       const [importUrl, setImportUrl] = useState('');
       const [importError, setImportError] = useState('');
       const [searchCard, setSearchCard] = useState('');
+      const [seriesFilter, setSeriesFilter] = useState('all');
       const [deckToDelete, setDeckToDelete] = useState(null);
 
       const startNewDeck = () => {
@@ -3014,9 +3046,12 @@ RESPONSE GUIDELINES:
       };
 
       const filteredCards = useMemo(() => {
-        if (!searchCard) return uniqueCards;
-        return uniqueCards.filter(c => c.name.toLowerCase().includes(searchCard.toLowerCase()));
-      }, [searchCard]);
+        return uniqueCards.filter(c => {
+          if (searchCard && !c.name.toLowerCase().includes(searchCard.toLowerCase())) return false;
+          if (seriesFilter !== 'all' && c.series !== parseInt(seriesFilter)) return false;
+          return true;
+        });
+      }, [searchCard, seriesFilter]);
 
       // List View
       if (view === 'list') {
@@ -3183,9 +3218,20 @@ RESPONSE GUIDELINES:
 
           {/* Card Picker */}
           <div className="bg-gray-800 rounded-lg p-4 panel-border">
-            <input type="text" placeholder="Search cards..."
-              value={searchCard} onChange={(e) => setSearchCard(e.target.value)}
-              className="w-full bg-gray-700 text-white rounded px-3 py-2 mb-3 border-2 border-gray-600 focus:border-marvel-red focus:outline-none" />
+            <div className="flex gap-2 mb-3">
+              <input type="text" placeholder="Search cards..."
+                value={searchCard} onChange={(e) => setSearchCard(e.target.value)}
+                className="flex-1 bg-gray-700 text-white rounded px-3 py-2 border-2 border-gray-600 focus:border-marvel-red focus:outline-none" />
+              <select value={seriesFilter} onChange={(e) => setSeriesFilter(e.target.value)}
+                className="bg-gray-700 text-white rounded px-2 py-2 border-2 border-gray-600 focus:border-marvel-red focus:outline-none">
+                <option value="all">All</option>
+                <option value="1">S1</option>
+                <option value="2">S2</option>
+                <option value="3">S3</option>
+                <option value="4">S4</option>
+                <option value="5">S5</option>
+              </select>
+            </div>
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-96 overflow-y-auto">
               {filteredCards.map(card => {
                 const isSelected = selectedCards.includes(card.name);
@@ -5266,6 +5312,18 @@ RESPONSE GUIDELINES:
         googleToken: null,
         localEndpoint: 'http://localhost:11434'
       }));
+
+      // Card data version - triggers re-render when uniqueCards updates
+      const [cardDataVersion, setCardDataVersion] = useState(0);
+
+      // Subscribe to uniqueCards updates to trigger re-renders
+      useEffect(() => {
+        const unsubscribe = onUniqueCardsUpdate((cards) => {
+          setCardDataVersion(v => v + 1);
+          console.log(`[App] Card data updated: ${cards.length} cards available`);
+        });
+        return unsubscribe;
+      }, []);
 
       // Phase 4: URL Sync state
       const [syncImportData, setSyncImportData] = useState(null);

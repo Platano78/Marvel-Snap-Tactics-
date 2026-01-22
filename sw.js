@@ -1,5 +1,5 @@
 // Snapapoulous Prime Service Worker
-const CACHE_NAME = 'snapapoulous-v9';
+const CACHE_NAME = 'snapapoulous-v10';
 // Dynamically build asset URLs based on service worker location
 const SW_SCOPE = self.registration ? self.registration.scope : self.location.href.replace(/sw\.js$/, '');
 const OFFLINE_ASSETS = [
