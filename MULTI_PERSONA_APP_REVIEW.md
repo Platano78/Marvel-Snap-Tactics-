@@ -875,7 +875,366 @@ assets/icons/
 
 ---
 
-### 3.2 iOS-Specific Improvements
+### 3.2 Android-Specific Improvements
+
+#### 3.2.1 Back Button Handling
+
+**Issue:** Android hardware/gesture back button can accidentally close the PWA instead of navigating within the app.
+
+**Current State:** No back button handling implemented.
+
+**Recommendation:**
+```javascript
+// Handle Android back button in PWA
+useEffect(() => {
+  const handlePopState = (event) => {
+    // Prevent closing app, navigate within app instead
+    if (activeTab !== 'dashboard') {
+      event.preventDefault();
+      setActiveTab('dashboard');
+      window.history.pushState({ tab: 'dashboard' }, '');
+    }
+  };
+
+  // Push initial state
+  window.history.pushState({ tab: activeTab }, '');
+
+  window.addEventListener('popstate', handlePopState);
+  return () => window.removeEventListener('popstate', handlePopState);
+}, [activeTab]);
+
+// Also handle modal closing with back button
+const ModalWithBackButton = ({ isOpen, onClose, children }) => {
+  useEffect(() => {
+    if (isOpen) {
+      window.history.pushState({ modal: true }, '');
+
+      const handleBack = (e) => {
+        onClose();
+      };
+
+      window.addEventListener('popstate', handleBack);
+      return () => window.removeEventListener('popstate', handleBack);
+    }
+  }, [isOpen, onClose]);
+
+  return isOpen ? children : null;
+};
+```
+
+**Priority:** HIGH
+**Impact:** Prevents accidental app closure on Android
+
+---
+
+#### 3.2.2 Install Prompt (beforeinstallprompt)
+
+**Issue:** No custom install banner or deferred install prompt handling for Android Chrome.
+
+**Current State:** Relies on browser's default mini-infobar.
+
+**Recommendation:**
+```javascript
+// Capture the install prompt event
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent Chrome's mini-infobar
+  e.preventDefault();
+  deferredPrompt = e;
+
+  // Show custom install UI
+  showInstallPromotion();
+});
+
+const InstallBanner = ({ onDismiss }) => {
+  const [canInstall, setCanInstall] = useState(false);
+
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      setCanInstall(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+
+    if (outcome === 'accepted') {
+      console.log('User accepted install');
+    }
+    deferredPrompt = null;
+    setCanInstall(false);
+  };
+
+  if (!canInstall) return null;
+
+  return (
+    <div className="fixed bottom-20 left-4 right-4 bg-marvel-blue rounded-lg p-4 shadow-lg z-40">
+      <div className="flex items-center gap-3">
+        <img src="assets/icons/icon-192.png" alt="" className="w-12 h-12 rounded" />
+        <div className="flex-1">
+          <h4 className="font-bold text-white">Install SnapPrime</h4>
+          <p className="text-sm text-white/80">Add to home screen for quick access</p>
+        </div>
+        <button onClick={handleInstall} className="bg-marvel-gold text-black px-4 py-2 rounded font-bold">
+          Install
+        </button>
+        <button onClick={onDismiss} className="text-white/60 p-2">✕</button>
+      </div>
+    </div>
+  );
+};
+
+// Track successful installs
+window.addEventListener('appinstalled', () => {
+  console.log('App installed successfully');
+  deferredPrompt = null;
+  // Could send analytics event here
+});
+```
+
+**Priority:** MEDIUM
+**Impact:** Better install conversion rate on Android
+
+---
+
+#### 3.2.3 Display Cutout / Notch Handling
+
+**Issue:** Android devices also have notches/punch holes - `viewport-fit=cover` is missing.
+
+**Current State (index.html:5):**
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+```
+
+**Recommendation:**
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+```
+
+```css
+/* Handle Android display cutouts */
+body {
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
+}
+
+/* For landscape mode on Android */
+@media (orientation: landscape) {
+  .app-container {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+```
+
+**Priority:** HIGH
+**Impact:** Proper display on modern Android devices with notches
+
+---
+
+#### 3.2.4 Theme Color Media Query
+
+**Issue:** Status bar color doesn't adapt to dark/light mode preference.
+
+**Current State:**
+```html
+<meta name="theme-color" content="#ED1D24">
+```
+
+**Recommendation:**
+```html
+<!-- Light mode theme color -->
+<meta name="theme-color" content="#ED1D24" media="(prefers-color-scheme: light)">
+<!-- Dark mode theme color -->
+<meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)">
+```
+
+**Priority:** LOW
+**Impact:** Better integration with system dark mode
+
+---
+
+#### 3.2.5 Share Target API
+
+**Issue:** App can't receive shared content from other apps (like deck codes shared from social media).
+
+**Recommendation:** Add to manifest.json:
+```json
+{
+  "share_target": {
+    "action": "./index.html",
+    "method": "GET",
+    "params": {
+      "text": "shared_text",
+      "url": "shared_url"
+    }
+  }
+}
+```
+
+```javascript
+// Handle incoming shared data
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const sharedText = params.get('shared_text');
+  const sharedUrl = params.get('shared_url');
+
+  if (sharedText || sharedUrl) {
+    // Try to parse as deck code
+    const content = sharedText || sharedUrl;
+    const deckCode = extractDeckCode(content);
+
+    if (deckCode) {
+      // Prompt to import deck
+      setDeckImportModal({ code: deckCode, show: true });
+    }
+
+    // Clean URL
+    window.history.replaceState({}, '', './index.html');
+  }
+}, []);
+```
+
+**Priority:** LOW
+**Impact:** Enhanced Android integration
+
+---
+
+#### 3.2.6 App Shortcuts (Long-press Actions)
+
+**Issue:** No quick actions when long-pressing app icon on Android.
+
+**Recommendation:** Already included in enhanced manifest, but ensure these are added:
+```json
+{
+  "shortcuts": [
+    {
+      "name": "Log Win",
+      "short_name": "Win",
+      "description": "Quickly log a win",
+      "url": "./index.html?action=quick-win",
+      "icons": [{ "src": "assets/icons/shortcut-win.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Log Loss",
+      "short_name": "Loss",
+      "description": "Quickly log a loss",
+      "url": "./index.html?action=quick-loss",
+      "icons": [{ "src": "assets/icons/shortcut-loss.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Ask AI",
+      "short_name": "AI",
+      "description": "Get tactical advice",
+      "url": "./index.html?tab=advisor",
+      "icons": [{ "src": "assets/icons/shortcut-ai.png", "sizes": "96x96" }]
+    }
+  ]
+}
+```
+
+```javascript
+// Handle shortcut URLs
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const action = params.get('action');
+  const tab = params.get('tab');
+
+  if (action === 'quick-win') {
+    logMatch({ result: 'WIN', cubes: 2 });
+    showToast('Win logged! +2 cubes');
+  } else if (action === 'quick-loss') {
+    logMatch({ result: 'LOSS', cubes: 1 });
+    showToast('Loss logged. -1 cube');
+  } else if (tab) {
+    setActiveTab(tab);
+  }
+
+  // Clean URL after handling
+  if (action || tab) {
+    window.history.replaceState({}, '', './index.html');
+  }
+}, []);
+```
+
+**Priority:** MEDIUM
+**Impact:** Faster access to common actions
+
+---
+
+#### 3.2.7 Low-End Android Device Support
+
+**Issue:** No performance optimizations for budget Android devices.
+
+**Recommendation:**
+```javascript
+// Detect low-end devices
+const isLowEndDevice = () => {
+  // Check device memory (if available)
+  if (navigator.deviceMemory && navigator.deviceMemory < 4) {
+    return true;
+  }
+
+  // Check hardware concurrency (CPU cores)
+  if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) {
+    return true;
+  }
+
+  // Check connection type
+  if (navigator.connection) {
+    const { effectiveType, saveData } = navigator.connection;
+    if (saveData || effectiveType === '2g' || effectiveType === 'slow-2g') {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+// Apply optimizations for low-end devices
+if (isLowEndDevice()) {
+  document.body.classList.add('low-end-mode');
+}
+```
+
+```css
+/* Reduced motion and simpler rendering for low-end devices */
+.low-end-mode * {
+  animation-duration: 0ms !important;
+  transition-duration: 0ms !important;
+}
+
+.low-end-mode .card-hover {
+  transform: none !important;
+}
+
+.low-end-mode .halftone {
+  background-image: none;
+}
+
+.low-end-mode .panel-border {
+  box-shadow: none;
+  border-width: 2px;
+}
+```
+
+**Priority:** MEDIUM
+**Impact:** Usable experience on budget Android devices
+
+---
+
+### 3.3 iOS-Specific Improvements
 
 #### 3.2.1 Safe Area Handling
 
@@ -1269,31 +1628,37 @@ window.addEventListener('online', () => {
 
 ## 4. Implementation Priority Matrix
 
-| Priority | Issue | Category | Effort | Impact |
-|----------|-------|----------|--------|--------|
+| Priority | Issue | Category | Platform | Effort | Impact |
+|----------|-------|----------|----------|--------|--------|
 | **P0 - Critical** |
-| | Color contrast fixes | A11y | Low | High |
-| | Form labels | A11y | Low | High |
-| | Focus indicators | A11y | Low | High |
-| | Safe area handling | Mobile | Low | High |
-| | Error boundaries | Web | Medium | High |
+| | Color contrast fixes | A11y | All | Low | High |
+| | Form labels | A11y | All | Low | High |
+| | Focus indicators | A11y | All | Low | High |
+| | Safe area handling (iOS + Android) | Mobile | Both | Low | High |
+| | Android back button handling | Mobile | Android | Medium | High |
+| | Error boundaries | Web | All | Medium | High |
+| | Display cutout / viewport-fit | Mobile | Android | Low | High |
 | **P1 - High** |
-| | React memoization | Web | Medium | High |
-| | ARIA live regions | A11y | Medium | High |
-| | Offline indicator | Mobile | Low | Medium |
-| | Touch target sizes | A11y | Low | Medium |
+| | React memoization | Web | All | Medium | High |
+| | ARIA live regions | A11y | All | Medium | High |
+| | Offline indicator | Mobile | All | Low | Medium |
+| | Touch target sizes | A11y | All | Low | Medium |
+| | Android install prompt | Mobile | Android | Medium | Medium |
 | **P2 - Medium** |
-| | Card data extraction | Web | Medium | Medium |
-| | Skip links | A11y | Low | Medium |
-| | Enhanced manifest | Mobile | Low | Medium |
-| | Virtual scrolling | Mobile | High | Medium |
-| | Confirmation dialogs | UX | Low | Medium |
+| | Card data extraction | Web | All | Medium | Medium |
+| | Skip links | A11y | All | Low | Medium |
+| | Enhanced manifest + shortcuts | Mobile | Both | Low | Medium |
+| | Virtual scrolling | Mobile | All | High | Medium |
+| | Confirmation dialogs | UX | All | Low | Medium |
+| | Low-end device support | Mobile | Android | Medium | Medium |
 | **P3 - Low** |
-| | CSS Grid fallbacks | Web | Low | Low |
-| | iOS splash screens | Mobile | Medium | Low |
-| | Swipe gestures | Mobile | High | Low |
-| | Pull-to-refresh | Mobile | Medium | Low |
-| | Battery optimization | Mobile | Low | Low |
+| | CSS Grid fallbacks | Web | All | Low | Low |
+| | iOS splash screens | Mobile | iOS | Medium | Low |
+| | Swipe gestures | Mobile | All | High | Low |
+| | Pull-to-refresh | Mobile | All | Medium | Low |
+| | Battery optimization | Mobile | All | Low | Low |
+| | Theme color media query | Mobile | Android | Low | Low |
+| | Share target API | Mobile | Android | Medium | Low |
 
 ---
 
@@ -1303,42 +1668,404 @@ window.addEventListener('online', () => {
 2. **Fix color contrast** (30 min)
 3. **Add form label associations** (30 min)
 4. **Add skip link** (15 min)
-5. **Add safe-area-inset padding** (15 min)
-6. **Add offline indicator** (30 min)
-7. **Add ARIA live region to toast** (15 min)
+5. **Add safe-area-inset padding (iOS + Android)** (15 min)
+6. **Add viewport-fit=cover for Android cutouts** (5 min)
+7. **Add offline indicator** (30 min)
+8. **Add ARIA live region to toast** (15 min)
+9. **Add theme-color media query** (5 min)
 
 ---
 
-## 6. Recommended Implementation Order
+## 6. Detailed Execution Plan
 
-### Phase 1: Accessibility Fixes (Week 1)
-- Color contrast improvements
-- Form label associations
-- Focus indicators
-- Skip links
-- ARIA live regions
-- Touch target sizes
+### Phase 1: P0 Critical Items (Accessibility & Core Mobile)
 
-### Phase 2: Mobile Polish (Week 2)
-- Safe area handling
-- Offline indicator
-- Enhanced manifest
-- Maskable icons
-- iOS splash screens
+#### Sprint 1.1: Accessibility Foundation
+**Files to modify:** `index.html`
 
-### Phase 3: Performance (Week 3)
-- React memoization
-- Error boundaries
-- Card data extraction
-- Service worker improvements
-- Virtual scrolling
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 1.1.1 | Update color variables for WCAG AA contrast | ~20 |
+| 1.1.2 | Add `htmlFor` to all label elements | ~30 |
+| 1.1.3 | Add `:focus-visible` styles to CSS | ~25 |
+| 1.1.4 | Add skip link component at app top | ~15 |
+| 1.1.5 | Add `id="main-content"` to main area | ~5 |
 
-### Phase 4: UX Enhancements (Week 4)
-- Empty states
-- Confirmation dialogs
-- Loading states
-- Swipe gestures
-- Pull-to-refresh
+**Checklist:**
+```
+[ ] Run Axe DevTools audit before changes
+[ ] Update --text-muted to #9CA3AF
+[ ] Update --text-placeholder to #9CA3AF
+[ ] Add htmlFor="input-id" to all labels
+[ ] Add id to all form inputs
+[ ] Add focus-visible CSS rules
+[ ] Add SkipLink component
+[ ] Run Axe DevTools audit after changes
+[ ] Test with keyboard-only navigation
+```
+
+#### Sprint 1.2: Mobile Safe Areas & Viewport
+**Files to modify:** `index.html`, `manifest.json`
+
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 1.2.1 | Add `viewport-fit=cover` to meta viewport | ~1 |
+| 1.2.2 | Add safe-area-inset CSS rules | ~15 |
+| 1.2.3 | Update bottom nav padding for safe area | ~5 |
+| 1.2.4 | Add header padding for notch devices | ~5 |
+
+**Checklist:**
+```
+[ ] Update viewport meta tag
+[ ] Add env(safe-area-inset-*) to body
+[ ] Update .bottom-nav padding
+[ ] Test on iPhone X+ simulator
+[ ] Test on Android device with notch
+```
+
+#### Sprint 1.3: Android Back Button & Error Boundaries
+**Files to modify:** `index.html`
+
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 1.3.1 | Add history state management | ~30 |
+| 1.3.2 | Add popstate event handler | ~25 |
+| 1.3.3 | Handle back button in modals | ~20 |
+| 1.3.4 | Create ErrorBoundary component | ~50 |
+| 1.3.5 | Wrap major sections with ErrorBoundary | ~10 |
+
+**Checklist:**
+```
+[ ] Implement useBackButton hook
+[ ] Add history.pushState on tab changes
+[ ] Handle popstate for tab navigation
+[ ] Handle popstate for modal closing
+[ ] Create ErrorBoundary class component
+[ ] Wrap Collection, History, Calculator, AI tabs
+[ ] Test back button on Android Chrome
+[ ] Test error recovery in each section
+```
+
+---
+
+### Phase 2: P1 High Priority Items
+
+#### Sprint 2.1: React Performance Optimization
+**Files to modify:** `index.html`
+
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 2.1.1 | Add useMemo for filtered cards | ~15 |
+| 2.1.2 | Add useCallback for event handlers | ~30 |
+| 2.1.3 | Wrap CardItem with React.memo | ~10 |
+| 2.1.4 | Wrap MatchItem with React.memo | ~10 |
+| 2.1.5 | Memoize stats calculations | ~20 |
+
+**Checklist:**
+```
+[ ] Profile app with React DevTools
+[ ] Identify unnecessary re-renders
+[ ] Add useMemo to filteredCards
+[ ] Add useCallback to toggleCardOwned
+[ ] Add useCallback to logMatch
+[ ] Wrap presentational components with memo
+[ ] Re-profile to verify improvements
+[ ] Document performance gains
+```
+
+#### Sprint 2.2: ARIA Live Regions
+**Files to modify:** `index.html`
+
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 2.2.1 | Add aria-live to Toast component | ~5 |
+| 2.2.2 | Add aria-live to AI chat container | ~10 |
+| 2.2.3 | Add aria-busy during AI loading | ~5 |
+| 2.2.4 | Add role="log" to chat history | ~5 |
+| 2.2.5 | Add article roles to messages | ~10 |
+
+**Checklist:**
+```
+[ ] Update showToast with role="alert"
+[ ] Add aria-live="polite" to chat container
+[ ] Add aria-busy={isLoading} to chat
+[ ] Test with VoiceOver (iOS)
+[ ] Test with TalkBack (Android)
+[ ] Verify announcements are clear
+```
+
+#### Sprint 2.3: Offline Indicator & Android Install Prompt
+**Files to modify:** `index.html`
+
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 2.3.1 | Create OfflineIndicator component | ~35 |
+| 2.3.2 | Add online/offline event listeners | ~15 |
+| 2.3.3 | Style offline banner | ~10 |
+| 2.3.4 | Create InstallBanner component | ~50 |
+| 2.3.5 | Handle beforeinstallprompt | ~25 |
+| 2.3.6 | Track install success | ~10 |
+
+**Checklist:**
+```
+[ ] Create OfflineIndicator component
+[ ] Add to App component
+[ ] Test by toggling airplane mode
+[ ] Create InstallBanner component
+[ ] Test on Android Chrome (clear site data first)
+[ ] Verify banner appears
+[ ] Test install flow
+[ ] Verify banner hides after install
+```
+
+#### Sprint 2.4: Touch Target Improvements
+**Files to modify:** `index.html`
+
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 2.4.1 | Add .touch-target utility class | ~10 |
+| 2.4.2 | Update series filter buttons | ~10 |
+| 2.4.3 | Update card checkmarks | ~10 |
+| 2.4.4 | Update small action buttons | ~15 |
+
+**Checklist:**
+```
+[ ] Audit all interactive elements < 44px
+[ ] Add min-width/min-height or padding
+[ ] Test touch accuracy on mobile
+[ ] Verify no layout shifts
+```
+
+---
+
+### Phase 3: P2 Medium Priority Items
+
+#### Sprint 3.1: Enhanced Manifest & App Shortcuts
+**Files to modify:** `manifest.json`, `index.html`
+
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 3.1.1 | Add screenshots array to manifest | ~20 |
+| 3.1.2 | Add shortcuts array | ~30 |
+| 3.1.3 | Create shortcut icon files | N/A |
+| 3.1.4 | Handle shortcut URL params | ~30 |
+| 3.1.5 | Add launch_handler | ~5 |
+
+**Checklist:**
+```
+[ ] Create screenshot images (1080x1920)
+[ ] Create shortcut icons (96x96)
+[ ] Update manifest.json
+[ ] Handle ?action= and ?tab= params
+[ ] Test shortcuts on Android (long-press icon)
+[ ] Verify launch behavior
+```
+
+#### Sprint 3.2: Card Data Extraction & Service Worker
+**Files to modify:** `index.html`, `sw.js`, new file `card-data.json`
+
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 3.2.1 | Extract CARD_DATA to separate file | ~5 |
+| 3.2.2 | Create card-data.json | ~875 |
+| 3.2.3 | Add lazy loading for card data | ~40 |
+| 3.2.4 | Update service worker cache | ~30 |
+| 3.2.5 | Add stale-while-revalidate strategy | ~25 |
+
+**Checklist:**
+```
+[ ] Extract card data to JSON file
+[ ] Create CardDataLoader module
+[ ] Update service worker OFFLINE_ASSETS
+[ ] Add stale-while-revalidate for card data
+[ ] Test offline card loading
+[ ] Measure initial load time improvement
+```
+
+#### Sprint 3.3: Skip Links & Confirmation Dialogs
+**Files to modify:** `index.html`
+
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 3.3.1 | Create ConfirmDialog component | ~45 |
+| 3.3.2 | Add confirmation to Clear Collection | ~10 |
+| 3.3.3 | Add confirmation to Delete Match | ~10 |
+| 3.3.4 | Add confirmation to Delete Deck | ~10 |
+
+**Checklist:**
+```
+[ ] Create ConfirmDialog component
+[ ] Add danger styling for destructive actions
+[ ] Integrate with collection clear
+[ ] Integrate with match deletion
+[ ] Integrate with deck deletion
+[ ] Test Cancel actually cancels
+[ ] Test confirmation completes action
+```
+
+#### Sprint 3.4: Low-End Device Support
+**Files to modify:** `index.html`
+
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 3.4.1 | Create isLowEndDevice utility | ~25 |
+| 3.4.2 | Add low-end-mode CSS class | ~30 |
+| 3.4.3 | Reduce animations conditionally | ~15 |
+| 3.4.4 | Simplify shadows conditionally | ~10 |
+
+**Checklist:**
+```
+[ ] Implement device detection
+[ ] Add .low-end-mode styles
+[ ] Test on budget Android device
+[ ] Verify smooth scrolling
+[ ] Measure frame rate improvements
+```
+
+#### Sprint 3.5: Virtual Scrolling (Optional - High Effort)
+**Files to modify:** `index.html`
+
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 3.5.1 | Create VirtualizedGrid component | ~100 |
+| 3.5.2 | Integrate with Collection view | ~30 |
+| 3.5.3 | Handle scroll restoration | ~20 |
+
+**Checklist:**
+```
+[ ] Implement virtualization logic
+[ ] Test scroll performance
+[ ] Test filter behavior
+[ ] Test card selection
+[ ] Ensure no visual glitches
+```
+
+---
+
+### Phase 4: P3 Low Priority Items (Polish)
+
+#### Sprint 4.1: iOS Splash Screens
+**Files to modify:** `index.html`, new splash images
+
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 4.1.1 | Create splash screen images | N/A |
+| 4.1.2 | Add apple-touch-startup-image links | ~30 |
+
+**Checklist:**
+```
+[ ] Create splash images for each device size
+[ ] Add link tags to head
+[ ] Test on various iOS devices
+```
+
+#### Sprint 4.2: Theme Color & Share Target
+**Files to modify:** `index.html`, `manifest.json`
+
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 4.2.1 | Add theme-color media queries | ~5 |
+| 4.2.2 | Add share_target to manifest | ~15 |
+| 4.2.3 | Handle shared content | ~40 |
+
+**Checklist:**
+```
+[ ] Add light/dark theme-color meta tags
+[ ] Add share_target to manifest
+[ ] Handle incoming shared text/URL
+[ ] Test sharing deck codes to app
+```
+
+#### Sprint 4.3: Swipe Gestures & Pull-to-Refresh
+**Files to modify:** `index.html`
+
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 4.3.1 | Create useSwipeToDelete hook | ~60 |
+| 4.3.2 | Create usePullToRefresh hook | ~50 |
+| 4.3.3 | Integrate with match history | ~20 |
+| 4.3.4 | Integrate with main views | ~20 |
+
+**Checklist:**
+```
+[ ] Implement swipe gesture detection
+[ ] Add swipe-to-delete on match items
+[ ] Implement pull-to-refresh
+[ ] Add refresh animation
+[ ] Test gesture conflicts
+```
+
+#### Sprint 4.4: Battery & CSS Fallbacks
+**Files to modify:** `index.html`
+
+| Task | Description | LOC Est. |
+|------|-------------|----------|
+| 4.4.1 | Add prefers-reduced-motion support | ~15 |
+| 4.4.2 | Add Battery API check | ~20 |
+| 4.4.3 | Add CSS Grid flexbox fallbacks | ~25 |
+
+**Checklist:**
+```
+[ ] Add @media (prefers-reduced-motion)
+[ ] Check battery.level for optimizations
+[ ] Add @supports fallbacks for grid
+[ ] Test in older Safari
+```
+
+---
+
+## 7. Testing Checklist by Phase
+
+### After Phase 1 (P0)
+```
+[ ] Axe DevTools shows 0 critical/serious issues
+[ ] Keyboard navigation works throughout app
+[ ] Skip link visible on focus
+[ ] App displays correctly on iPhone X+
+[ ] App displays correctly on Android with notch
+[ ] Back button navigates within app on Android
+[ ] Error boundary catches and displays errors gracefully
+```
+
+### After Phase 2 (P1)
+```
+[ ] React DevTools shows reduced re-renders
+[ ] Screen reader announces toast messages
+[ ] Screen reader announces AI responses
+[ ] Offline banner appears when disconnected
+[ ] Install banner appears on Android Chrome
+[ ] All touch targets >= 44x44px
+```
+
+### After Phase 3 (P2)
+```
+[ ] App shortcuts work on Android long-press
+[ ] Card data loads from separate file
+[ ] Confirmation dialogs prevent accidental deletion
+[ ] App performs smoothly on budget Android
+[ ] (If implemented) Virtual scroll works correctly
+```
+
+### After Phase 4 (P3)
+```
+[ ] iOS splash screens display correctly
+[ ] Sharing deck codes to app works
+[ ] Swipe-to-delete works in match history
+[ ] Pull-to-refresh syncs data
+[ ] Animations respect reduced-motion preference
+```
+
+---
+
+## 8. Estimated Total Effort
+
+| Phase | Priority | Sprints | Est. Hours | Complexity |
+|-------|----------|---------|------------|------------|
+| Phase 1 | P0 Critical | 3 | 8-12 | Medium |
+| Phase 2 | P1 High | 4 | 12-16 | Medium |
+| Phase 3 | P2 Medium | 5 | 16-24 | Medium-High |
+| Phase 4 | P3 Low | 4 | 12-20 | Medium |
+| **Total** | | **16** | **48-72** | |
 
 ---
 
@@ -1347,12 +2074,26 @@ window.addEventListener('online', () => {
 Snapapoulous Prime is a solid PWA with a strong foundation. The most critical improvements are:
 
 1. **Accessibility** - Multiple WCAG violations need immediate attention for compliance and usability
-2. **Mobile Experience** - Safe area handling and offline indicators are essential for modern device support
-3. **Performance** - React memoization and error boundaries will significantly improve reliability
+2. **iOS Experience** - Safe area handling for notch/Dynamic Island devices
+3. **Android Experience** - Back button handling, display cutouts, and install prompt optimization
+4. **Performance** - React memoization and error boundaries will significantly improve reliability
+
+### Platform-Specific Summary
+
+| Platform | Critical Issues | Key Improvements |
+|----------|----------------|------------------|
+| **iOS** | Safe area insets | Splash screens, status bar styling |
+| **Android** | Back button, display cutouts | Install prompt, app shortcuts, share target |
+| **Both** | Focus indicators, color contrast | Offline indicator, virtual scrolling |
 
 The app's Marvel comic aesthetic is well-executed and consistent. With these improvements, it will provide an excellent experience for all users across devices and ability levels.
+
+### Recommended Starting Point
+
+Begin with **Phase 1, Sprint 1.1** (Accessibility Foundation) as these are quick wins with high impact. Then proceed to **Sprint 1.2** (Mobile Safe Areas) which affects both iOS and Android. The Android back button handling in **Sprint 1.3** is critical for Android users and should not be skipped.
 
 ---
 
 *Review completed by Multi-Persona Analysis System*
 *January 22, 2026*
+*Updated with Android-specific issues and detailed execution plan*
