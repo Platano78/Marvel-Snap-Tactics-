@@ -1,5 +1,5 @@
 // Snapapoulous Prime Service Worker
-const CACHE_NAME = 'snapapoulous-v8';
+const CACHE_NAME = 'snapapoulous-v9';
 // Dynamically build asset URLs based on service worker location
 const SW_SCOPE = self.registration ? self.registration.scope : self.location.href.replace(/sw\.js$/, '');
 const OFFLINE_ASSETS = [
@@ -28,12 +28,15 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up old caches and notify clients
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activating service worker...');
   event.waitUntil(
     caches.keys()
       .then((cacheNames) => {
+        // Check if we're updating from an old cache
+        const hadOldCache = cacheNames.some(name => name !== CACHE_NAME && name.startsWith('snapapoulous-'));
+
         return Promise.all(
           cacheNames.map((cacheName) => {
             if (cacheName !== CACHE_NAME) {
@@ -41,16 +44,27 @@ self.addEventListener('activate', (event) => {
               return caches.delete(cacheName);
             }
           })
-        );
+        ).then(() => hadOldCache);
       })
-      .then(() => {
+      .then((hadOldCache) => {
         console.log('[SW] Claiming clients');
-        return self.clients.claim();
+        return self.clients.claim().then(() => hadOldCache);
+      })
+      .then((hadOldCache) => {
+        // If we upgraded from an old version, notify all clients to reload
+        if (hadOldCache) {
+          console.log('[SW] Upgrade detected, notifying clients to reload...');
+          return self.clients.matchAll({ type: 'window' }).then((clients) => {
+            clients.forEach((client) => {
+              client.postMessage({ type: 'SW_UPDATED', version: CACHE_NAME });
+            });
+          });
+        }
       })
   );
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - different strategies for different content types
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (event.request.method !== 'GET') {
@@ -60,6 +74,38 @@ self.addEventListener('fetch', (event) => {
   // Skip external requests (API calls, CDN resources)
   const url = new URL(event.request.url);
   if (url.origin !== location.origin) {
+    return;
+  }
+
+  // NETWORK-FIRST for HTML files - always get fresh content when online
+  // This ensures users get updates immediately
+  const isHTMLRequest = event.request.mode === 'navigate' ||
+                        event.request.headers.get('accept')?.includes('text/html') ||
+                        url.pathname.endsWith('.html') ||
+                        url.pathname === '/' ||
+                        url.pathname.endsWith('/');
+
+  if (isHTMLRequest) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          // Got fresh response, cache it
+          if (networkResponse.ok) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Network failed, fall back to cache
+          console.log('[SW] Network failed for HTML, serving from cache');
+          return caches.match(event.request).then((cachedResponse) => {
+            return cachedResponse || caches.match('./index.html');
+          });
+        })
+    );
     return;
   }
 
@@ -89,6 +135,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // CACHE-FIRST for other assets (images, JSON config, etc.)
   event.respondWith(
     caches.match(event.request)
       .then((cachedResponse) => {
@@ -116,10 +163,9 @@ self.addEventListener('fetch', (event) => {
             return networkResponse;
           })
           .catch(() => {
-            // Network failed, try to return offline page for HTML requests
-            if (event.request.headers.get('accept').includes('text/html')) {
-              return caches.match('./index.html');
-            }
+            // Network failed for non-HTML asset
+            console.log('[SW] Network failed for asset:', event.request.url);
+            return null;
           });
       })
   );
