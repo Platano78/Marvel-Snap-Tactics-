@@ -1497,6 +1497,9 @@
     const analyzeCollectionGaps = (collection, allCards) => {
       const owned = new Set(collection.owned || []);
       const missing = allCards.filter(c => !owned.has(c.name));
+      // Only count owned cards that actually exist in the database (fixes >100% bug)
+      const allCardNames = new Set(allCards.map(c => c.name));
+      const ownedInDatabase = [...owned].filter(name => allCardNames.has(name)).length;
 
       // Group missing by series
       const missingBySeries = {};
@@ -1531,12 +1534,14 @@
       }
 
       return {
-        totalOwned: owned.size,
+        totalOwned: ownedInDatabase,
         totalCards: allCards.length,
-        completionPercent: Math.round((owned.size / allCards.length) * 100),
+        completionPercent: Math.round((ownedInDatabase / allCards.length) * 100),
         missingBySeries,
         missingMetaCards,
-        archetypeAccess
+        archetypeAccess,
+        // Include count of cards owned but not in database (for debugging)
+        unrecognizedCards: owned.size - ownedInDatabase
       };
     };
 
@@ -1600,6 +1605,9 @@
       const matchAnalysis = analyzeRecentMatches(matches);
       const collectionAnalysis = analyzeCollectionGaps(collection, uniqueCards);
 
+      // Load imported profile stats from game files (takes priority over manual logging)
+      const importedStats = loadFromStorage('snap_profile_stats', null);
+
       // Build personality section from persona
       const personalitySection = `PERSONALITY:
 - Tone: ${persona.personality?.tone || 'Confident and encouraging'}
@@ -1621,8 +1629,38 @@ ${persona.personality?.quirks ? `- Quirks: ${persona.personality.quirks.join('; 
       // Collection info
       userContextSection += `\n- Collection: ${collectionAnalysis.totalOwned}/${collectionAnalysis.totalCards} cards (${collectionAnalysis.completionPercent}% complete)`;
 
-      // Match history section
-      if (matchAnalysis.hasData) {
+      // Match history section - use imported stats if available, otherwise use manual logging
+      if (importedStats) {
+        // Use imported game stats (more accurate lifetime data)
+        const totalGames = importedStats.totalGames || (importedStats.wins + importedStats.losses);
+        userContextSection += `\n\nLIFETIME STATS (from game):`;
+        userContextSection += `\n- Total Games: ${totalGames.toLocaleString()}`;
+        userContextSection += `\n- Wins: ${importedStats.wins.toLocaleString()} | Losses: ${importedStats.losses.toLocaleString()}`;
+        userContextSection += `\n- Win Rate: ${importedStats.winRate}%`;
+        if (importedStats.snapId) {
+          userContextSection += `\n- Snap ID: ${importedStats.snapId}`;
+        }
+
+        // Also include recent manual match data if available
+        if (matchAnalysis.hasData) {
+          userContextSection += `\n\nRECENT SESSIONS (manual tracking):`;
+          userContextSection += `\n- Recent (last ${matchAnalysis.recentMatchCount}): ${matchAnalysis.recent.winRate}% win rate, ${matchAnalysis.recent.netCubes >= 0 ? '+' : ''}${matchAnalysis.recent.netCubes} cubes`;
+          userContextSection += `\n- Trend: ${matchAnalysis.trend === 'improving' ? '📈 Improving' : matchAnalysis.trend === 'declining' ? '📉 Declining' : '➡️ Stable'}`;
+
+          if (matchAnalysis.streak.count > 1) {
+            userContextSection += `\n- Current streak: ${matchAnalysis.streak.count} ${matchAnalysis.streak.type === 'WIN' ? 'wins' : 'losses'}`;
+          }
+
+          // Deck performance if available
+          if (matchAnalysis.deckStats && matchAnalysis.deckStats.length > 0) {
+            userContextSection += `\n\nDECK PERFORMANCE:`;
+            for (const deck of matchAnalysis.deckStats.slice(0, 3)) {
+              userContextSection += `\n- ${deck.name}: ${deck.games} games, ${deck.winRate}% WR, ${deck.cubes >= 0 ? '+' : ''}${deck.cubes} cubes`;
+            }
+          }
+        }
+      } else if (matchAnalysis.hasData) {
+        // Fall back to manual match logging only
         userContextSection += `\n\nMATCH STATISTICS:`;
         userContextSection += `\n- All-Time: ${matchAnalysis.allTime.games} games, ${matchAnalysis.allTime.winRate}% win rate, ${matchAnalysis.allTime.netCubes >= 0 ? '+' : ''}${matchAnalysis.allTime.netCubes} cubes`;
         userContextSection += `\n- Recent (last ${matchAnalysis.recentMatchCount}): ${matchAnalysis.recent.winRate}% win rate, ${matchAnalysis.recent.netCubes >= 0 ? '+' : ''}${matchAnalysis.recent.netCubes} cubes`;
@@ -1640,7 +1678,7 @@ ${persona.personality?.quirks ? `- Quirks: ${persona.personality.quirks.join('; 
           }
         }
       } else {
-        userContextSection += `\n- No match history recorded yet`;
+        userContextSection += `\n- No match history recorded yet (import game files or log matches manually)`;
       }
 
       // Collection gaps - key missing meta cards
@@ -5380,6 +5418,8 @@ RESPONSE GUIDELINES:
 
       // Phase 4: QR Sync state
       const [qrDataUrl, setQrDataUrl] = useState(null);
+      const [qrCodeParts, setQrCodeParts] = useState([]);
+      const [qrPartIndex, setQrPartIndex] = useState(0);
 
       // Performance mode state
       const [performanceMode, setPerformanceMode] = useState(() => {
@@ -5691,20 +5731,36 @@ RESPONSE GUIDELINES:
         const timestamp = new Date().toISOString();
         const syncLog = [];
 
-        // Import Collection
+        // Import Collection with validation
         if (selectedImports.collection && data.collection) {
           const existingCollection = JSON.parse(localStorage.getItem('snap_collection') || '{"owned":[]}');
           const mergedCards = [...new Set([...existingCollection.owned, ...data.collection.cards])];
 
+          // Validate cards against database
+          const validCardNames = new Set(uniqueCards.map(c => c.name));
+          const recognizedCards = mergedCards.filter(name => validCardNames.has(name));
+          const unrecognizedCards = mergedCards.filter(name => !validCardNames.has(name));
+
           const newCollection = {
-            owned: mergedCards,
+            owned: mergedCards, // Keep all cards, even unrecognized ones
             lastUpdated: timestamp,
             source: 'JSONImport'
           };
           localStorage.setItem('snap_collection', JSON.stringify(newCollection));
           setCollection(newCollection);
 
-          syncLog.push(`Collection: ${mergedCards.length} cards`);
+          // Store unrecognized cards for debugging/display
+          if (unrecognizedCards.length > 0) {
+            localStorage.setItem('snap_unrecognized_cards', JSON.stringify({
+              cards: unrecognizedCards,
+              importedAt: timestamp
+            }));
+          }
+
+          syncLog.push(`Collection: ${recognizedCards.length} cards recognized`);
+          if (unrecognizedCards.length > 0) {
+            syncLog.push(`Unrecognized: ${unrecognizedCards.length} cards (may be new releases)`);
+          }
         }
 
         // Import Profile Stats
@@ -5762,13 +5818,28 @@ RESPONSE GUIDELINES:
         window.dispatchEvent(new Event('snap-data-updated'));
       };
 
-      // Phase 4: QR Code generation
+      // Phase 4: QR Code generation with optimized data and multi-QR fallback
       const generateSyncQR = async () => {
         setQrError(null);
         setQrDataUrl(null);
+        setQrCodeParts([]);
+        setQrPartIndex(0);
 
         try {
-          const syncData = VaultManager.generateSyncData(collection, matches);
+          // Optimize: Only sync cards that exist in our database
+          const validCardNames = new Set(uniqueCards.map(c => c.name));
+          const optimizedOwned = (collection.owned || []).filter(name => validCardNames.has(name));
+
+          const syncData = {
+            v: 1,
+            c: optimizedOwned,
+            s: {
+              wins: matches.filter(m => m.result === 'WIN').length,
+              losses: matches.filter(m => m.result === 'LOSS').length,
+              cubes: matches.reduce((sum, m) => sum + (m.result === 'WIN' ? m.cubes : -m.cubes), 0)
+            }
+          };
+
           const compressed = VaultManager.compressForQR(syncData);
 
           if (!compressed) {
@@ -5777,21 +5848,40 @@ RESPONSE GUIDELINES:
           }
 
           // QR codes have size limits (~2.5KB for reliable scanning)
-          if (compressed.length > 2500) {
-            setQrError('Collection too large for QR sync. Use file export instead.');
-            return;
+          if (compressed.length <= 2500) {
+            // Single QR code fits
+            const syncUrl = `https://platano78.github.io/Marvel-Snap-Tactics-/?sync=${compressed}`;
+            const dataUrl = await QRCode.toDataURL(syncUrl, {
+              width: 200,
+              margin: 2,
+              color: { dark: '#1A1A1A', light: '#FFFFFF' }
+            });
+            setQrDataUrl(dataUrl);
+          } else {
+            // Split into multiple QR codes
+            const chunkSize = 2000; // Leave room for URL and part metadata
+            const chunks = [];
+            for (let i = 0; i < compressed.length; i += chunkSize) {
+              chunks.push(compressed.slice(i, i + chunkSize));
+            }
+
+            const qrUrls = [];
+            for (let i = 0; i < chunks.length; i++) {
+              // Format: sync_part=<partNum>_<totalParts>_<data>
+              const partUrl = `https://platano78.github.io/Marvel-Snap-Tactics-/?sync_part=${i + 1}_${chunks.length}_${chunks[i]}`;
+              const dataUrl = await QRCode.toDataURL(partUrl, {
+                width: 200,
+                margin: 2,
+                color: { dark: '#1A1A1A', light: '#FFFFFF' }
+              });
+              qrUrls.push(dataUrl);
+            }
+
+            setQrCodeParts(qrUrls);
+            setQrPartIndex(0);
+            setQrDataUrl(qrUrls[0]);
+            setQrError(`Large collection: ${qrUrls.length} QR codes needed. Scan each in order.`);
           }
-
-          const syncUrl = `https://platano78.github.io/Marvel-Snap-Tactics-/?sync=${compressed}`;
-
-          // Generate QR code using the QRCode library
-          const dataUrl = await QRCode.toDataURL(syncUrl, {
-            width: 200,
-            margin: 2,
-            color: { dark: '#1A1A1A', light: '#FFFFFF' }
-          });
-
-          setQrDataUrl(dataUrl);
         } catch (err) {
           console.error('QR generation error:', err);
           setQrError('Failed to generate QR code');
@@ -5967,8 +6057,8 @@ RESPONSE GUIDELINES:
             </button>
 
             {qrError && (
-              <div className="bg-red-900/50 border border-red-500 rounded-lg p-3 mb-3">
-                <p className="text-red-300 text-sm">{qrError}</p>
+              <div className={`border rounded-lg p-3 mb-3 ${qrCodeParts.length > 0 ? 'bg-yellow-900/50 border-yellow-500' : 'bg-red-900/50 border-red-500'}`}>
+                <p className={`text-sm ${qrCodeParts.length > 0 ? 'text-yellow-300' : 'text-red-300'}`}>{qrError}</p>
               </div>
             )}
 
@@ -5977,6 +6067,35 @@ RESPONSE GUIDELINES:
                 <div className="qr-container inline-block mb-2">
                   <img src={qrDataUrl} alt="Sync QR Code" />
                 </div>
+                {qrCodeParts.length > 1 ? (
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <button
+                      onClick={() => {
+                        const newIndex = Math.max(0, qrPartIndex - 1);
+                        setQrPartIndex(newIndex);
+                        setQrDataUrl(qrCodeParts[newIndex]);
+                      }}
+                      disabled={qrPartIndex === 0}
+                      className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50"
+                    >
+                      ← Prev
+                    </button>
+                    <span className="text-gray-400 text-sm">
+                      QR {qrPartIndex + 1} of {qrCodeParts.length}
+                    </span>
+                    <button
+                      onClick={() => {
+                        const newIndex = Math.min(qrCodeParts.length - 1, qrPartIndex + 1);
+                        setQrPartIndex(newIndex);
+                        setQrDataUrl(qrCodeParts[newIndex]);
+                      }}
+                      disabled={qrPartIndex === qrCodeParts.length - 1}
+                      className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                ) : null}
                 <p className="text-gray-400 text-xs">Scan with your phone camera to sync collection</p>
               </div>
             )}

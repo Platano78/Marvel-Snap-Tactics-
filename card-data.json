@@ -2254,25 +2254,11 @@
     "ability": "On Reveal: Pull 4 cards from your opponent's hand to their side of this location."
   },
   {
-    "name": "Shuma-Gorath",
-    "cost": 4,
-    "power": 7,
-    "series": 5,
-    "ability": "On Reveal: If you have 3 other cards at this location, +7 Power."
-  },
-  {
     "name": "Gorr the God Butcher",
     "cost": 3,
     "power": 2,
     "series": 5,
     "ability": "When a card is destroyed, +1 Power. When 3 cards have been destroyed, +6 Power."
-  },
-  {
-    "name": "Doop",
-    "cost": 1,
-    "power": 1,
-    "series": 5,
-    "ability": "When another card is played here, add a copy of Doop to both players' hands."
   },
   {
     "name": "Yellowjacket",
@@ -2387,25 +2373,11 @@
     "ability": "On Reveal: Add +2 Power to all your other Eternals."
   },
   {
-    "name": "Druig",
-    "cost": 3,
-    "power": 4,
-    "series": 5,
-    "ability": "On Reveal: Move an enemy card here to another random location."
-  },
-  {
     "name": "Ajak",
     "cost": 2,
     "power": 2,
     "series": 5,
     "ability": "On Reveal: Give your cards in deck and hand +1 Power."
-  },
-  {
-    "name": "Kro",
-    "cost": 4,
-    "power": 6,
-    "series": 5,
-    "ability": "On Reveal: If one of your cards was destroyed this game, +6 Power."
   },
   {
     "name": "Eros",
