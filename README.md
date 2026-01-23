@@ -55,7 +55,26 @@ Track your collection, log matches, calculate snap decisions, and get tactical a
 - **Best/Worst Performers:** Know which cards win (and lose) you the most cubes
 - **Currency Tracking:** View your Credits, Gold, and Collector's Tokens
 
-### 🎲 Snap Calculator
+### 📋 Deck Builder
+- Create and save up to 20 custom decks
+- 12-card deck validation (Marvel Snap standard)
+- Search and filter cards while building
+- See card costs and power at a glance
+- Quick-add from your collection
+- Edit or delete saved decks anytime
+
+### 🎲 Deck Simulator (New!)
+- **Opening Hand Test:** See probability of each card in starting hand
+- **Draw by Turn:** Know your odds of drawing key cards by each turn
+- **Curve Analysis:** Check if your deck plays on curve or bricks
+- **Combo Finder:** Calculate odds of assembling multi-card combos
+- **Interactive Play-Through:** Step through draws turn by turn
+- **Advanced Rules:** Simulate thinning, extra draws, hand limits
+- Supports up to 200K simulation runs with Web Worker (no UI freeze)
+- Seeded RNG for reproducible results
+- [📖 Detailed Simulator Guide](docs/SIMULATOR.md)
+
+### 🎯 Snap Calculator
 - Select the turn and your win confidence
 - Get SNAP / HOLD / RETREAT recommendations
 - Calculate draw probabilities for specific cards
@@ -112,8 +131,9 @@ Your collection and match history are stored in your browser's local storage.
 1. **Install as PWA** - Works better than browser bookmark
 2. **PC Players:** Import your Player.log for accurate match history
 3. **Mobile Players:** Use quick-entry buttons right after each game
-4. **Use the calculator before snapping** - Know your odds
-5. **Export your vault regularly** - Keep backups of your data
+4. **Test decks in the Simulator** - Check curve and combo odds before playing
+5. **Use the calculator before snapping** - Know your odds
+6. **Export your vault regularly** - Keep backups of your data
 
 ---
 
@@ -135,11 +155,13 @@ python -m http.server 8000
 
 ### Project Structure
 ```
-├── index.html      # Main app (everything embedded)
-├── manifest.json   # PWA manifest
-├── sw.js          # Service worker
-├── persona.json   # AI persona configuration
-└── assets/icons/  # PWA icons
+├── index.html          # Main app (everything embedded)
+├── manifest.json       # PWA manifest
+├── sw.js               # Service worker
+├── persona.json        # AI persona configuration
+├── assets/icons/       # PWA icons
+└── docs/               # Detailed feature documentation
+    └── SIMULATOR.md    # Deck Simulator guide
 ```
 
 ---
@@ -176,6 +198,21 @@ python -m http.server 8000
 - **Selective Import:** Choose which data types to import (collection, stats, mastery)
 - **Currency Display:** Track Credits, Gold, and Collector's Tokens
 - **Character Mastery Import:** Track card mastery levels
+
+### v2.3 - Phase 6 (Deck Tools)
+- **Deck Builder:** Create, save, and manage up to 20 custom 12-card decks
+- **Deck Simulator:** Full probability simulation suite
+  - Opening hand probability analysis
+  - Draw-by-turn probability tables
+  - Curve and brick rate analysis
+  - Multi-card combo probability finder
+  - Interactive step-by-step play-through mode
+  - Advanced rules: thinning, extra draws, hand limits, junk inserts
+- **Dual Simulation Engines:**
+  - Exact hypergeometric math for baseline calculations
+  - Monte Carlo with Web Worker for 50K-200K runs without freezing
+  - Seeded RNG for reproducible results
+- **7-Tab Navigation:** Added Simulator alongside Calculator
 
 ---
 

@@ -2358,6 +2358,7 @@ RESPONSE GUIDELINES:
         { id: 'ai', label: 'AI', icon: '🤖' },
         { id: 'collection', label: 'Cards', icon: '🃏' },
         { id: 'decks', label: 'Decks', icon: '📋' },
+        { id: 'simulator', label: 'Sim', icon: '🎲' },
         { id: 'calculator', label: 'Calc', icon: '🎯' },
         { id: 'settings', label: 'More', icon: '☰' }
       ];
@@ -3336,6 +3337,1228 @@ RESPONSE GUIDELINES:
               </div>
             </div>
           </div>
+        </div>
+      );
+    };
+
+    // ==================== DECK SIMULATOR ====================
+    // Simulation Engine - Pure math functions
+    const SimulationEngine = {
+      // Factorial with memoization for performance
+      _factorialCache: [1, 1],
+      factorial(n) {
+        if (n < 0) return 0;
+        if (n < this._factorialCache.length) return this._factorialCache[n];
+        let result = this._factorialCache[this._factorialCache.length - 1];
+        for (let i = this._factorialCache.length; i <= n; i++) {
+          result *= i;
+          this._factorialCache[i] = result;
+        }
+        return result;
+      },
+
+      // Combination C(n, k) = n! / (k! * (n-k)!)
+      combination(n, k) {
+        if (k < 0 || k > n) return 0;
+        if (k === 0 || k === n) return 1;
+        // Optimize for large numbers
+        k = Math.min(k, n - k);
+        let result = 1;
+        for (let i = 0; i < k; i++) {
+          result = result * (n - i) / (i + 1);
+        }
+        return Math.round(result);
+      },
+
+      // Hypergeometric probability: P(X >= 1) = 1 - P(X = 0)
+      // N = population size (deck), K = success states (copies), n = draws
+      hypergeometricAtLeastOne(N, K, n) {
+        if (K <= 0 || n <= 0 || N <= 0) return 0;
+        if (K >= N || n >= N) return 1;
+        // P(X = 0) = C(K,0) * C(N-K, n) / C(N, n)
+        const pZero = this.combination(N - K, n) / this.combination(N, n);
+        return Math.max(0, Math.min(1, 1 - pZero));
+      },
+
+      // Probability of drawing ALL of k specific cards by drawing n cards
+      // Uses inclusion-exclusion principle
+      hypergeometricAllCards(N, targetCards, n) {
+        const k = targetCards.length;
+        if (k === 0) return 1;
+        if (k > n) return 0;
+        if (n >= N) return 1;
+
+        // P(have all k cards in n draws) = C(N-k, n-k) / C(N, n)
+        return this.combination(N - k, n - k) / this.combination(N, n);
+      },
+
+      // Opening hand probabilities for each card
+      openingHandProbabilities(deckSize, handSize) {
+        // P(specific card in hand) = 1 - C(deckSize-1, handSize) / C(deckSize, handSize)
+        // Simplifies to: handSize / deckSize
+        return handSize / deckSize;
+      },
+
+      // Probability of having specific card by turn T
+      cardByTurnProbability(deckSize, handSize, turn) {
+        const cardsSeen = Math.min(deckSize, handSize + turn);
+        return cardsSeen / deckSize;
+      }
+    };
+
+    // Seeded Random Number Generator (Mulberry32)
+    const createSeededRNG = (seed) => {
+      let state = seed;
+      return () => {
+        state |= 0;
+        state = state + 0x6D2B79F5 | 0;
+        let t = Math.imul(state ^ state >>> 15, 1 | state);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    };
+
+    // Monte Carlo Simulation Runner (runs in main thread for small counts, worker for large)
+    const MonteCarloEngine = {
+      // Shuffle array using Fisher-Yates with provided RNG
+      shuffle(array, rng) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(rng() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      },
+
+      // Simulate single game and return results
+      simulateGame(deck, options, rng) {
+        const {
+          handSize = 3,
+          turnsToSimulate = 6,
+          extraDrawsPerTurn = 0,
+          thinningPerTurn = 0,
+          junkInsertsPerTurn = 0,
+          handSizeLimit = Infinity
+        } = options;
+
+        let currentDeck = this.shuffle([...deck], rng);
+        let hand = currentDeck.splice(0, handSize);
+        const drawnCards = [...hand];
+        const handByTurn = [{ turn: 0, hand: [...hand], deckSize: currentDeck.length }];
+
+        for (let turn = 1; turn <= turnsToSimulate; turn++) {
+          // Apply thinning (remove cards from deck)
+          for (let i = 0; i < thinningPerTurn && currentDeck.length > 0; i++) {
+            const idx = Math.floor(rng() * currentDeck.length);
+            currentDeck.splice(idx, 1);
+          }
+
+          // Apply junk inserts
+          for (let i = 0; i < junkInsertsPerTurn; i++) {
+            currentDeck.push({ name: `Junk_${turn}_${i}`, cost: 99, power: 0, isJunk: true });
+          }
+
+          // Draw cards
+          const drawCount = 1 + extraDrawsPerTurn;
+          for (let i = 0; i < drawCount && currentDeck.length > 0; i++) {
+            const card = currentDeck.shift();
+            hand.push(card);
+            drawnCards.push(card);
+          }
+
+          // Apply hand size limit
+          while (hand.length > handSizeLimit && hand.length > 0) {
+            const idx = Math.floor(rng() * hand.length);
+            hand.splice(idx, 1);
+          }
+
+          handByTurn.push({ turn, hand: [...hand], deckSize: currentDeck.length });
+        }
+
+        return { hand, drawnCards, handByTurn };
+      },
+
+      // Run Monte Carlo simulation
+      runSimulation(deck, options, numRuns, onProgress, seed = null) {
+        const results = {
+          openingHands: {},
+          cardByTurn: {},
+          curveAnalysis: [],
+          comboResults: {},
+          sampleHands: []
+        };
+
+        const rng = seed !== null ? createSeededRNG(seed) : Math.random;
+        const comboCards = options.comboCards || [];
+        const deckCardNames = deck.map(c => c.name);
+
+        // Initialize tracking
+        deckCardNames.forEach(name => {
+          results.openingHands[name] = 0;
+          results.cardByTurn[name] = Array(7).fill(0);
+        });
+
+        for (let turn = 1; turn <= 6; turn++) {
+          results.curveAnalysis.push({
+            turn,
+            onCurvePlays: 0,
+            brickCount: 0,
+            totalPlayableEnergy: 0
+          });
+        }
+
+        if (comboCards.length > 0) {
+          for (let turn = 1; turn <= 6; turn++) {
+            results.comboResults[turn] = 0;
+          }
+        }
+
+        // Run simulations
+        for (let i = 0; i < numRuns; i++) {
+          const simRng = seed !== null ? createSeededRNG(seed + i) : () => Math.random();
+          const { handByTurn } = this.simulateGame(deck, options, simRng);
+
+          // Opening hand analysis
+          const openingHand = handByTurn[0].hand;
+          openingHand.forEach(card => {
+            if (results.openingHands[card.name] !== undefined) {
+              results.openingHands[card.name]++;
+            }
+          });
+
+          // Store sample hands (first 10 runs)
+          if (i < 10) {
+            results.sampleHands.push(openingHand.map(c => c.name));
+          }
+
+          // Card by turn analysis
+          const seenCards = new Set();
+          handByTurn.forEach(({ turn, hand }) => {
+            hand.forEach(card => {
+              if (!seenCards.has(card.name) && results.cardByTurn[card.name]) {
+                seenCards.add(card.name);
+                for (let t = turn; t <= 6; t++) {
+                  results.cardByTurn[card.name][t]++;
+                }
+              }
+            });
+          });
+
+          // Curve analysis
+          handByTurn.slice(1).forEach(({ turn, hand }) => {
+            const analysis = results.curveAnalysis[turn - 1];
+            const playableCosts = hand.filter(c => !c.isJunk && c.cost <= turn).map(c => c.cost);
+
+            if (playableCosts.length > 0) {
+              analysis.onCurvePlays++;
+              analysis.totalPlayableEnergy += Math.max(...playableCosts);
+            } else {
+              analysis.brickCount++;
+            }
+          });
+
+          // Combo analysis
+          if (comboCards.length > 0) {
+            handByTurn.slice(1).forEach(({ turn, hand }) => {
+              const handNames = new Set(hand.map(c => c.name));
+              if (comboCards.every(name => handNames.has(name))) {
+                results.comboResults[turn]++;
+              }
+            });
+          }
+
+          // Progress callback
+          if (onProgress && i % Math.max(1, Math.floor(numRuns / 100)) === 0) {
+            onProgress(i / numRuns);
+          }
+        }
+
+        // Convert counts to percentages
+        Object.keys(results.openingHands).forEach(name => {
+          results.openingHands[name] = (results.openingHands[name] / numRuns) * 100;
+        });
+
+        Object.keys(results.cardByTurn).forEach(name => {
+          results.cardByTurn[name] = results.cardByTurn[name].map(count => (count / numRuns) * 100);
+        });
+
+        results.curveAnalysis = results.curveAnalysis.map(a => ({
+          ...a,
+          onCurveRate: (a.onCurvePlays / numRuns) * 100,
+          brickRate: (a.brickCount / numRuns) * 100,
+          avgPlayableEnergy: a.totalPlayableEnergy / numRuns
+        }));
+
+        if (comboCards.length > 0) {
+          Object.keys(results.comboResults).forEach(turn => {
+            results.comboResults[turn] = (results.comboResults[turn] / numRuns) * 100;
+          });
+        }
+
+        return results;
+      }
+    };
+
+    // Web Worker code as string for inline Blob worker
+    const workerCode = `
+      // Seeded RNG (Mulberry32)
+      const createSeededRNG = (seed) => {
+        let state = seed;
+        return () => {
+          state |= 0;
+          state = state + 0x6D2B79F5 | 0;
+          let t = Math.imul(state ^ state >>> 15, 1 | state);
+          t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+          return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+      };
+
+      const shuffle = (array, rng) => {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(rng() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      };
+
+      const simulateGame = (deck, options, rng) => {
+        const { handSize = 3, turnsToSimulate = 6, extraDrawsPerTurn = 0, thinningPerTurn = 0, junkInsertsPerTurn = 0, handSizeLimit = Infinity } = options;
+        let currentDeck = shuffle([...deck], rng);
+        let hand = currentDeck.splice(0, handSize);
+        const handByTurn = [{ turn: 0, hand: [...hand], deckSize: currentDeck.length }];
+
+        for (let turn = 1; turn <= turnsToSimulate; turn++) {
+          for (let i = 0; i < thinningPerTurn && currentDeck.length > 0; i++) {
+            currentDeck.splice(Math.floor(rng() * currentDeck.length), 1);
+          }
+          for (let i = 0; i < junkInsertsPerTurn; i++) {
+            currentDeck.push({ name: 'Junk_' + turn + '_' + i, cost: 99, power: 0, isJunk: true });
+          }
+          const drawCount = 1 + extraDrawsPerTurn;
+          for (let i = 0; i < drawCount && currentDeck.length > 0; i++) {
+            hand.push(currentDeck.shift());
+          }
+          while (hand.length > handSizeLimit && hand.length > 0) {
+            hand.splice(Math.floor(rng() * hand.length), 1);
+          }
+          handByTurn.push({ turn, hand: [...hand], deckSize: currentDeck.length });
+        }
+        return { hand, handByTurn };
+      };
+
+      self.onmessage = function(e) {
+        const { deck, options, numRuns, seed, chunkSize = 1000 } = e.data;
+        const results = {
+          openingHands: {},
+          cardByTurn: {},
+          curveAnalysis: [],
+          comboResults: {},
+          sampleHands: []
+        };
+
+        const comboCards = options.comboCards || [];
+        const deckCardNames = deck.map(c => c.name);
+
+        deckCardNames.forEach(name => {
+          results.openingHands[name] = 0;
+          results.cardByTurn[name] = Array(7).fill(0);
+        });
+
+        for (let turn = 1; turn <= 6; turn++) {
+          results.curveAnalysis.push({ turn, onCurvePlays: 0, brickCount: 0, totalPlayableEnergy: 0 });
+        }
+
+        if (comboCards.length > 0) {
+          for (let turn = 1; turn <= 6; turn++) results.comboResults[turn] = 0;
+        }
+
+        let completed = 0;
+        const runChunk = () => {
+          const chunkEnd = Math.min(completed + chunkSize, numRuns);
+
+          for (let i = completed; i < chunkEnd; i++) {
+            const simRng = seed !== null ? createSeededRNG(seed + i) : () => Math.random();
+            const { handByTurn } = simulateGame(deck, options, simRng);
+
+            const openingHand = handByTurn[0].hand;
+            openingHand.forEach(card => {
+              if (results.openingHands[card.name] !== undefined) results.openingHands[card.name]++;
+            });
+
+            if (i < 10) results.sampleHands.push(openingHand.map(c => c.name));
+
+            const seenCards = new Set();
+            handByTurn.forEach(({ turn, hand }) => {
+              hand.forEach(card => {
+                if (!seenCards.has(card.name) && results.cardByTurn[card.name]) {
+                  seenCards.add(card.name);
+                  for (let t = turn; t <= 6; t++) results.cardByTurn[card.name][t]++;
+                }
+              });
+            });
+
+            handByTurn.slice(1).forEach(({ turn, hand }) => {
+              const analysis = results.curveAnalysis[turn - 1];
+              const playableCosts = hand.filter(c => !c.isJunk && c.cost <= turn).map(c => c.cost);
+              if (playableCosts.length > 0) {
+                analysis.onCurvePlays++;
+                analysis.totalPlayableEnergy += Math.max(...playableCosts);
+              } else {
+                analysis.brickCount++;
+              }
+            });
+
+            if (comboCards.length > 0) {
+              handByTurn.slice(1).forEach(({ turn, hand }) => {
+                const handNames = new Set(hand.map(c => c.name));
+                if (comboCards.every(name => handNames.has(name))) results.comboResults[turn]++;
+              });
+            }
+          }
+
+          completed = chunkEnd;
+          self.postMessage({ type: 'progress', progress: completed / numRuns });
+
+          if (completed < numRuns) {
+            setTimeout(runChunk, 0);
+          } else {
+            // Finalize results
+            Object.keys(results.openingHands).forEach(name => {
+              results.openingHands[name] = (results.openingHands[name] / numRuns) * 100;
+            });
+            Object.keys(results.cardByTurn).forEach(name => {
+              results.cardByTurn[name] = results.cardByTurn[name].map(count => (count / numRuns) * 100);
+            });
+            results.curveAnalysis = results.curveAnalysis.map(a => ({
+              ...a,
+              onCurveRate: (a.onCurvePlays / numRuns) * 100,
+              brickRate: (a.brickCount / numRuns) * 100,
+              avgPlayableEnergy: a.totalPlayableEnergy / numRuns
+            }));
+            if (comboCards.length > 0) {
+              Object.keys(results.comboResults).forEach(turn => {
+                results.comboResults[turn] = (results.comboResults[turn] / numRuns) * 100;
+              });
+            }
+            self.postMessage({ type: 'complete', results });
+          }
+        };
+
+        runChunk();
+      };
+    `;
+
+    // Create Web Worker from Blob
+    const createSimulationWorker = () => {
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      return new Worker(URL.createObjectURL(blob));
+    };
+
+    // Simulator Component
+    const Simulator = ({ decks, collection }) => {
+      const [selectedDeckId, setSelectedDeckId] = useState(() => {
+        const saved = localStorage.getItem('snap_simulator_deck');
+        return saved || (decks.length > 0 ? decks[0].id : '');
+      });
+      const [mode, setMode] = useState('opening');
+      const [numRuns, setNumRuns] = useState(10000);
+      const [isRunning, setIsRunning] = useState(false);
+      const [progress, setProgress] = useState(0);
+      const [results, setResults] = useState(null);
+      const [useSeed, setUseSeed] = useState(false);
+      const [seed, setSeed] = useState(12345);
+      const [comboCards, setComboCards] = useState([]);
+      const [showAdvanced, setShowAdvanced] = useState(false);
+      const [advancedOptions, setAdvancedOptions] = useState({
+        handSize: 3,
+        deckSizeOverride: 12,
+        extraDrawsPerTurn: 0,
+        thinningPerTurn: 0,
+        junkInsertsPerTurn: 0,
+        handSizeLimit: 0
+      });
+
+      // Interactive play-through state
+      const [playState, setPlayState] = useState(null);
+      const [playHistory, setPlayHistory] = useState([]);
+
+      const workerRef = useRef(null);
+
+      const selectedDeck = decks.find(d => d.id === selectedDeckId);
+      const deckCards = selectedDeck ? selectedDeck.cards.map(name => {
+        const card = uniqueCards.find(c => c.name === name);
+        return card || { name, cost: 0, power: 0, series: 0 };
+      }) : [];
+
+      const isAdvancedModified = advancedOptions.handSize !== 3 ||
+        advancedOptions.extraDrawsPerTurn !== 0 ||
+        advancedOptions.thinningPerTurn !== 0 ||
+        advancedOptions.junkInsertsPerTurn !== 0 ||
+        advancedOptions.handSizeLimit !== 0;
+
+      // Save deck selection to localStorage
+      useEffect(() => {
+        if (selectedDeckId) {
+          localStorage.setItem('snap_simulator_deck', selectedDeckId);
+        }
+      }, [selectedDeckId]);
+
+      // Save simulator settings
+      useEffect(() => {
+        localStorage.setItem('snap_simulator_settings', JSON.stringify({
+          numRuns, useSeed, seed, advancedOptions
+        }));
+      }, [numRuns, useSeed, seed, advancedOptions]);
+
+      // Load saved settings
+      useEffect(() => {
+        try {
+          const saved = JSON.parse(localStorage.getItem('snap_simulator_settings') || '{}');
+          if (saved.numRuns) setNumRuns(saved.numRuns);
+          if (saved.useSeed !== undefined) setUseSeed(saved.useSeed);
+          if (saved.seed) setSeed(saved.seed);
+          if (saved.advancedOptions) setAdvancedOptions(prev => ({ ...prev, ...saved.advancedOptions }));
+        } catch (e) {}
+      }, []);
+
+      // Cleanup worker on unmount
+      useEffect(() => {
+        return () => {
+          if (workerRef.current) {
+            workerRef.current.terminate();
+          }
+        };
+      }, []);
+
+      const runSimulation = useCallback(() => {
+        if (!selectedDeck || deckCards.length !== 12) {
+          alert('Please select a valid 12-card deck');
+          return;
+        }
+
+        setIsRunning(true);
+        setProgress(0);
+        setResults(null);
+
+        const options = {
+          handSize: advancedOptions.handSize,
+          turnsToSimulate: 6,
+          extraDrawsPerTurn: advancedOptions.extraDrawsPerTurn,
+          thinningPerTurn: advancedOptions.thinningPerTurn,
+          junkInsertsPerTurn: advancedOptions.junkInsertsPerTurn,
+          handSizeLimit: advancedOptions.handSizeLimit || Infinity,
+          comboCards
+        };
+
+        // Use worker for large simulations
+        if (numRuns >= 5000) {
+          if (workerRef.current) {
+            workerRef.current.terminate();
+          }
+
+          const worker = createSimulationWorker();
+          workerRef.current = worker;
+
+          worker.onmessage = (e) => {
+            if (e.data.type === 'progress') {
+              setProgress(e.data.progress);
+            } else if (e.data.type === 'complete') {
+              setResults(e.data.results);
+              setIsRunning(false);
+              setProgress(1);
+              worker.terminate();
+              workerRef.current = null;
+            }
+          };
+
+          worker.onerror = (err) => {
+            console.error('Worker error:', err);
+            setIsRunning(false);
+            worker.terminate();
+            workerRef.current = null;
+          };
+
+          worker.postMessage({
+            deck: deckCards,
+            options,
+            numRuns,
+            seed: useSeed ? seed : null,
+            chunkSize: Math.min(1000, Math.ceil(numRuns / 100))
+          });
+        } else {
+          // Small runs - use main thread with RAF chunking
+          requestAnimationFrame(() => {
+            const results = MonteCarloEngine.runSimulation(
+              deckCards,
+              options,
+              numRuns,
+              (p) => setProgress(p),
+              useSeed ? seed : null
+            );
+            setResults(results);
+            setIsRunning(false);
+            setProgress(1);
+          });
+        }
+      }, [selectedDeck, deckCards, numRuns, useSeed, seed, advancedOptions, comboCards]);
+
+      const cancelSimulation = () => {
+        if (workerRef.current) {
+          workerRef.current.terminate();
+          workerRef.current = null;
+        }
+        setIsRunning(false);
+        setProgress(0);
+      };
+
+      // Interactive play-through functions
+      const startNewGame = () => {
+        if (!selectedDeck || deckCards.length !== 12) return;
+
+        const rng = useSeed ? createSeededRNG(seed) : () => Math.random();
+        const shuffledDeck = MonteCarloEngine.shuffle([...deckCards], rng);
+        const hand = shuffledDeck.splice(0, advancedOptions.handSize);
+
+        const state = {
+          turn: 0,
+          hand,
+          deck: shuffledDeck,
+          drawnThisTurn: [...hand]
+        };
+
+        setPlayState(state);
+        setPlayHistory([{ ...state, action: 'start' }]);
+      };
+
+      const drawNext = () => {
+        if (!playState || playState.deck.length === 0 || playState.turn >= 6) return;
+
+        const newDeck = [...playState.deck];
+        const newHand = [...playState.hand];
+        const drawCount = 1 + advancedOptions.extraDrawsPerTurn;
+        const drawnCards = [];
+
+        for (let i = 0; i < drawCount && newDeck.length > 0; i++) {
+          const card = newDeck.shift();
+          newHand.push(card);
+          drawnCards.push(card);
+        }
+
+        const newState = {
+          turn: playState.turn + 1,
+          hand: newHand,
+          deck: newDeck,
+          drawnThisTurn: drawnCards
+        };
+
+        setPlayState(newState);
+        setPlayHistory(prev => [...prev, { ...newState, action: 'draw' }]);
+      };
+
+      const undoAction = () => {
+        if (playHistory.length <= 1) return;
+        const newHistory = playHistory.slice(0, -1);
+        setPlayHistory(newHistory);
+        setPlayState(newHistory[newHistory.length - 1]);
+      };
+
+      const autoPlay = async () => {
+        if (!playState) return;
+
+        let currentState = playState;
+        while (currentState.turn < 6 && currentState.deck.length > 0) {
+          await new Promise(r => setTimeout(r, 500));
+          drawNext();
+          currentState = { ...currentState, turn: currentState.turn + 1 };
+        }
+      };
+
+      const toggleComboCard = (cardName) => {
+        setComboCards(prev =>
+          prev.includes(cardName)
+            ? prev.filter(c => c !== cardName)
+            : [...prev, cardName]
+        );
+      };
+
+      // Exact math results for comparison
+      const exactResults = useMemo(() => {
+        if (!selectedDeck || deckCards.length !== 12) return null;
+
+        const deckSize = 12;
+        const handSize = advancedOptions.handSize;
+
+        const openingHandProb = SimulationEngine.openingHandProbabilities(deckSize, handSize) * 100;
+
+        const cardByTurn = {};
+        deckCards.forEach(card => {
+          cardByTurn[card.name] = [];
+          for (let turn = 0; turn <= 6; turn++) {
+            const cardsSeen = Math.min(deckSize, handSize + turn);
+            cardByTurn[card.name].push((cardsSeen / deckSize) * 100);
+          }
+        });
+
+        const comboByTurn = {};
+        if (comboCards.length >= 2) {
+          for (let turn = 1; turn <= 6; turn++) {
+            const cardsSeen = Math.min(deckSize, handSize + turn);
+            comboByTurn[turn] = SimulationEngine.hypergeometricAllCards(deckSize, comboCards, cardsSeen) * 100;
+          }
+        }
+
+        return { openingHandProb, cardByTurn, comboByTurn };
+      }, [selectedDeck, deckCards, advancedOptions.handSize, comboCards]);
+
+      // Progress bar component
+      const ProgressBar = ({ value }) => (
+        <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+          <div
+            className="bg-marvel-red h-full transition-all duration-200 ease-out"
+            style={{ width: `${value * 100}%` }}
+          />
+        </div>
+      );
+
+      // Percentage bar component
+      const PercentBar = ({ value, color = 'bg-marvel-blue', label }) => (
+        <div className="flex items-center gap-2">
+          <div className="flex-1 bg-gray-700 rounded h-4 overflow-hidden">
+            <div className={`${color} h-full`} style={{ width: `${Math.min(100, value)}%` }} />
+          </div>
+          <span className="text-white text-sm w-16 text-right">{value.toFixed(1)}%</span>
+          {label && <span className="text-gray-400 text-xs">{label}</span>}
+        </div>
+      );
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="DECK SIMULATOR" />
+
+          {/* Deck Selector */}
+          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+            <label className="block text-sm text-gray-400 mb-2">Select Deck</label>
+            {decks.length === 0 ? (
+              <div className="text-center text-gray-400 py-4">
+                <p className="mb-2">No decks created yet</p>
+                <p className="text-sm">Go to Decks tab to create a 12-card deck</p>
+              </div>
+            ) : (
+              <select
+                value={selectedDeckId}
+                onChange={(e) => setSelectedDeckId(e.target.value)}
+                className="w-full bg-gray-700 text-white rounded px-3 py-2 border-2 border-gray-600 focus:border-marvel-red focus:outline-none"
+              >
+                <option value="">Select a deck...</option>
+                {decks.map(deck => (
+                  <option key={deck.id} value={deck.id}>{deck.name} ({deck.cards.length} cards)</option>
+                ))}
+              </select>
+            )}
+
+            {selectedDeck && (
+              <div className="mt-3 flex flex-wrap gap-1">
+                {selectedDeck.cards.map(cardName => {
+                  const card = uniqueCards.find(c => c.name === cardName);
+                  const owned = collection.owned.includes(cardName);
+                  return (
+                    <span
+                      key={cardName}
+                      className={`text-xs px-2 py-1 rounded-full ${owned ? 'bg-gray-700 text-white' : 'bg-red-900 text-red-300'}`}
+                    >
+                      {card?.cost || '?'}/{cardName}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Mode Selector */}
+          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+            <label className="block text-sm text-gray-400 mb-2">Simulation Mode</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {[
+                { id: 'opening', label: 'Opening Hand', icon: '🃏' },
+                { id: 'draw', label: 'Draw by Turn', icon: '📊' },
+                { id: 'curve', label: 'Curve Analysis', icon: '📈' },
+                { id: 'combo', label: 'Combo Finder', icon: '🎯' },
+                { id: 'play', label: 'Play Through', icon: '🎮' },
+                { id: 'advanced', label: 'All Results', icon: '⚙️' }
+              ].map(m => (
+                <button
+                  key={m.id}
+                  onClick={() => setMode(m.id)}
+                  className={`p-3 rounded-lg text-sm font-medium transition-colors ${
+                    mode === m.id
+                      ? 'bg-marvel-red text-white'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  }`}
+                >
+                  <span className="block text-lg mb-1">{m.icon}</span>
+                  {m.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Run Controls (not for play-through mode) */}
+          {mode !== 'play' && (
+            <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+              <div className="flex gap-2 mb-3">
+                <button
+                  onClick={() => setNumRuns(1000)}
+                  className={`px-3 py-1 rounded text-sm ${numRuns === 1000 ? 'bg-marvel-blue text-white' : 'bg-gray-700 text-gray-300'}`}
+                >1K</button>
+                <button
+                  onClick={() => setNumRuns(10000)}
+                  className={`px-3 py-1 rounded text-sm ${numRuns === 10000 ? 'bg-marvel-blue text-white' : 'bg-gray-700 text-gray-300'}`}
+                >10K</button>
+                <button
+                  onClick={() => setNumRuns(50000)}
+                  className={`px-3 py-1 rounded text-sm ${numRuns === 50000 ? 'bg-marvel-blue text-white' : 'bg-gray-700 text-gray-300'}`}
+                >50K</button>
+                <input
+                  type="number"
+                  value={numRuns}
+                  onChange={(e) => setNumRuns(Math.max(100, Math.min(200000, parseInt(e.target.value) || 1000)))}
+                  className="flex-1 bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+                  placeholder="Custom"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 mb-3">
+                <label className="flex items-center gap-2 text-sm text-gray-300">
+                  <input
+                    type="checkbox"
+                    checked={useSeed}
+                    onChange={(e) => setUseSeed(e.target.checked)}
+                    className="w-4 h-4 accent-marvel-red"
+                  />
+                  Use seed for reproducibility
+                </label>
+                {useSeed && (
+                  <input
+                    type="number"
+                    value={seed}
+                    onChange={(e) => setSeed(parseInt(e.target.value) || 0)}
+                    className="w-24 bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+                  />
+                )}
+              </div>
+
+              {isRunning ? (
+                <div className="space-y-2">
+                  <ProgressBar value={progress} />
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-400">{Math.round(progress * 100)}% complete</span>
+                    <button
+                      onClick={cancelSimulation}
+                      className="px-4 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={runSimulation}
+                  disabled={!selectedDeck || deckCards.length !== 12}
+                  className="w-full bg-marvel-red text-white py-3 rounded-lg font-comic hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ▶ RUN SIMULATION ({numRuns.toLocaleString()} runs)
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Advanced Rules Panel */}
+          <div className="bg-gray-800 rounded-lg panel-border mb-4 overflow-hidden">
+            <button
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="w-full p-4 flex justify-between items-center text-left"
+            >
+              <span className="text-white font-medium">
+                Advanced Rules {isAdvancedModified && <span className="text-marvel-gold text-xs ml-2">(Modified)</span>}
+              </span>
+              <span className="text-gray-400">{showAdvanced ? '▲' : '▼'}</span>
+            </button>
+
+            {showAdvanced && (
+              <div className="px-4 pb-4 space-y-3 border-t border-gray-700 pt-3">
+                {isAdvancedModified && (
+                  <div className="bg-yellow-900/30 border border-yellow-600 rounded p-2 text-xs text-yellow-300">
+                    ⚠️ Advanced rules active - Exact math disabled, Monte Carlo only
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Starting Hand Size</label>
+                    <input
+                      type="number"
+                      value={advancedOptions.handSize}
+                      onChange={(e) => setAdvancedOptions(prev => ({ ...prev, handSize: Math.max(1, Math.min(12, parseInt(e.target.value) || 3)) }))}
+                      className="w-full bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Extra Draws/Turn</label>
+                    <input
+                      type="number"
+                      value={advancedOptions.extraDrawsPerTurn}
+                      onChange={(e) => setAdvancedOptions(prev => ({ ...prev, extraDrawsPerTurn: Math.max(0, Math.min(5, parseInt(e.target.value) || 0)) }))}
+                      className="w-full bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Thinning/Turn</label>
+                    <input
+                      type="number"
+                      value={advancedOptions.thinningPerTurn}
+                      onChange={(e) => setAdvancedOptions(prev => ({ ...prev, thinningPerTurn: Math.max(0, Math.min(5, parseInt(e.target.value) || 0)) }))}
+                      className="w-full bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Junk Inserts/Turn</label>
+                    <input
+                      type="number"
+                      value={advancedOptions.junkInsertsPerTurn}
+                      onChange={(e) => setAdvancedOptions(prev => ({ ...prev, junkInsertsPerTurn: Math.max(0, Math.min(5, parseInt(e.target.value) || 0)) }))}
+                      className="w-full bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs text-gray-400 mb-1">Hand Size Limit (0 = unlimited)</label>
+                    <input
+                      type="number"
+                      value={advancedOptions.handSizeLimit}
+                      onChange={(e) => setAdvancedOptions(prev => ({ ...prev, handSizeLimit: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
+                      className="w-full bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setAdvancedOptions({ handSize: 3, deckSizeOverride: 12, extraDrawsPerTurn: 0, thinningPerTurn: 0, junkInsertsPerTurn: 0, handSizeLimit: 0 })}
+                  className="text-sm text-marvel-blue hover:underline"
+                >
+                  Reset to defaults
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Combo Card Selector (for combo mode) */}
+          {mode === 'combo' && selectedDeck && (
+            <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+              <label className="block text-sm text-gray-400 mb-2">Select Combo Pieces (click cards)</label>
+              <div className="flex flex-wrap gap-1 mb-3">
+                {selectedDeck.cards.map(cardName => {
+                  const isSelected = comboCards.includes(cardName);
+                  const card = uniqueCards.find(c => c.name === cardName);
+                  return (
+                    <button
+                      key={cardName}
+                      onClick={() => toggleComboCard(cardName)}
+                      className={`text-xs px-2 py-1 rounded-full transition-colors ${
+                        isSelected
+                          ? 'bg-marvel-gold text-black font-medium'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      {card?.cost || '?'}/{cardName}
+                    </button>
+                  );
+                })}
+              </div>
+              {comboCards.length < 2 && (
+                <p className="text-sm text-gray-400">Select at least 2 cards to analyze combo probability</p>
+              )}
+              {comboCards.length >= 2 && (
+                <p className="text-sm text-marvel-gold">Combo: {comboCards.join(' + ')}</p>
+              )}
+            </div>
+          )}
+
+          {/* Results Display */}
+          {results && mode !== 'play' && (
+            <div className="space-y-4">
+              {/* Opening Hand Results */}
+              {(mode === 'opening' || mode === 'advanced') && (
+                <div className="bg-gray-800 rounded-lg p-4 panel-border">
+                  <h3 className="text-lg font-comic text-marvel-gold mb-3">Opening Hand Probability</h3>
+                  <p className="text-xs text-gray-400 mb-3">Chance of each card in starting hand ({advancedOptions.handSize} cards)</p>
+
+                  {!isAdvancedModified && exactResults && (
+                    <div className="mb-3 p-2 bg-gray-700 rounded text-xs text-gray-300">
+                      <span className="text-marvel-blue">Exact math:</span> {exactResults.openingHandProb.toFixed(1)}% per card
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    {Object.entries(results.openingHands)
+                      .sort((a, b) => b[1] - a[1])
+                      .map(([name, prob]) => (
+                        <div key={name}>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-white">{name}</span>
+                            <span className="text-gray-400">{prob.toFixed(1)}%</span>
+                          </div>
+                          <PercentBar value={prob} />
+                        </div>
+                      ))}
+                  </div>
+
+                  {results.sampleHands.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-gray-700">
+                      <h4 className="text-sm text-gray-400 mb-2">Sample Opening Hands</h4>
+                      <div className="space-y-1 max-h-40 overflow-y-auto">
+                        {results.sampleHands.slice(0, 5).map((hand, i) => (
+                          <div key={i} className="flex gap-1 flex-wrap">
+                            <span className="text-xs text-gray-500 w-6">#{i+1}</span>
+                            {hand.map((name, j) => (
+                              <span key={j} className="text-xs px-2 py-0.5 bg-gray-700 rounded text-white">{name}</span>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Draw by Turn Results */}
+              {(mode === 'draw' || mode === 'advanced') && (
+                <div className="bg-gray-800 rounded-lg p-4 panel-border">
+                  <h3 className="text-lg font-comic text-marvel-gold mb-3">Draw by Turn Probability</h3>
+                  <p className="text-xs text-gray-400 mb-3">Chance of having each card by end of turn</p>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-gray-400">
+                          <th className="text-left py-1">Card</th>
+                          {[1,2,3,4,5,6].map(t => (
+                            <th key={t} className="text-center py-1 w-12">T{t}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(results.cardByTurn).map(([name, turns]) => (
+                          <tr key={name} className="border-t border-gray-700">
+                            <td className="py-1 text-white text-xs">{name}</td>
+                            {turns.slice(1).map((prob, i) => (
+                              <td key={i} className={`text-center py-1 ${prob >= 70 ? 'text-green-400' : prob >= 40 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                {prob.toFixed(0)}%
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Curve Analysis Results */}
+              {(mode === 'curve' || mode === 'advanced') && (
+                <div className="bg-gray-800 rounded-lg p-4 panel-border">
+                  <h3 className="text-lg font-comic text-marvel-gold mb-3">Curve / Brick Analysis</h3>
+                  <p className="text-xs text-gray-400 mb-3">On-curve = have at least one playable card that turn</p>
+
+                  <div className="space-y-3">
+                    {results.curveAnalysis.map(({ turn, onCurveRate, brickRate, avgPlayableEnergy }) => (
+                      <div key={turn}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-white">Turn {turn}</span>
+                          <span className="text-gray-400">
+                            <span className={onCurveRate >= 90 ? 'text-green-400' : onCurveRate >= 70 ? 'text-yellow-400' : 'text-red-400'}>
+                              {onCurveRate.toFixed(1)}% playable
+                            </span>
+                            <span className="mx-2">|</span>
+                            <span className={brickRate <= 5 ? 'text-green-400' : brickRate <= 15 ? 'text-yellow-400' : 'text-red-400'}>
+                              {brickRate.toFixed(1)}% brick
+                            </span>
+                          </span>
+                        </div>
+                        <div className="flex gap-1 h-4">
+                          <div className="bg-green-600 h-full rounded-l" style={{ width: `${onCurveRate}%` }} />
+                          <div className="bg-red-600 h-full rounded-r" style={{ width: `${brickRate}%` }} />
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          Avg playable cost: {avgPlayableEnergy.toFixed(1)} energy
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-gray-700 grid grid-cols-2 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-400">
+                        {(results.curveAnalysis.reduce((sum, a) => sum + a.onCurveRate, 0) / 6).toFixed(1)}%
+                      </div>
+                      <div className="text-xs text-gray-400">Avg On-Curve Rate</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-red-400">
+                        {(results.curveAnalysis.reduce((sum, a) => sum + a.brickRate, 0) / 6).toFixed(1)}%
+                      </div>
+                      <div className="text-xs text-gray-400">Avg Brick Rate</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Combo Results */}
+              {(mode === 'combo' || mode === 'advanced') && comboCards.length >= 2 && (
+                <div className="bg-gray-800 rounded-lg p-4 panel-border">
+                  <h3 className="text-lg font-comic text-marvel-gold mb-3">Combo Finder Results</h3>
+                  <p className="text-xs text-gray-400 mb-3">Chance of having ALL pieces: {comboCards.join(' + ')}</p>
+
+                  <div className="space-y-2">
+                    {Object.entries(results.comboResults).map(([turn, prob]) => (
+                      <div key={turn}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-white">By Turn {turn}</span>
+                          <div className="text-right">
+                            <span className={prob >= 50 ? 'text-green-400' : prob >= 25 ? 'text-yellow-400' : 'text-red-400'}>
+                              {prob.toFixed(1)}%
+                            </span>
+                            {!isAdvancedModified && exactResults?.comboByTurn?.[turn] && (
+                              <span className="text-xs text-gray-500 ml-2">(exact: {exactResults.comboByTurn[turn].toFixed(1)}%)</span>
+                            )}
+                          </div>
+                        </div>
+                        <PercentBar
+                          value={prob}
+                          color={prob >= 50 ? 'bg-green-600' : prob >= 25 ? 'bg-yellow-600' : 'bg-red-600'}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Interactive Play-Through Mode */}
+          {mode === 'play' && (
+            <div className="space-y-4">
+              <div className="bg-gray-800 rounded-lg p-4 panel-border">
+                <div className="flex gap-2 mb-4">
+                  <button
+                    onClick={startNewGame}
+                    disabled={!selectedDeck}
+                    className="flex-1 bg-marvel-red text-white py-2 rounded font-medium hover:opacity-90 disabled:opacity-50"
+                  >
+                    New Game
+                  </button>
+                  <button
+                    onClick={drawNext}
+                    disabled={!playState || playState.turn >= 6 || playState.deck.length === 0}
+                    className="flex-1 bg-marvel-blue text-white py-2 rounded font-medium hover:opacity-90 disabled:opacity-50"
+                  >
+                    Draw Next
+                  </button>
+                  <button
+                    onClick={undoAction}
+                    disabled={playHistory.length <= 1}
+                    className="px-4 bg-gray-600 text-white py-2 rounded font-medium hover:opacity-90 disabled:opacity-50"
+                  >
+                    Undo
+                  </button>
+                </div>
+
+                {playState && (
+                  <>
+                    <div className="flex justify-between text-sm text-gray-400 mb-3">
+                      <span>Turn: <span className="text-white font-bold">{playState.turn}</span></span>
+                      <span>Deck: <span className="text-white">{playState.deck.length} cards</span></span>
+                    </div>
+
+                    <div className="mb-4">
+                      <h4 className="text-sm text-gray-400 mb-2">Your Hand ({playState.hand.length} cards)</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {playState.hand.map((card, i) => (
+                          <div
+                            key={i}
+                            className={`relative p-2 rounded-lg border-2 bg-gray-700 min-w-16 ${
+                              playState.drawnThisTurn.includes(card) && playState.turn > 0
+                                ? 'border-marvel-gold'
+                                : 'border-gray-600'
+                            }`}
+                          >
+                            <div className="absolute top-0 left-0 w-5 h-5 bg-marvel-blue rounded-br flex items-center justify-center text-xs text-white font-bold">
+                              {card.cost}
+                            </div>
+                            <div className="absolute top-0 right-0 w-5 h-5 bg-marvel-red rounded-bl flex items-center justify-center text-xs text-white font-bold">
+                              {card.power}
+                            </div>
+                            <div className="mt-5 text-xs text-white text-center">{card.name}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {playState.turn > 0 && playState.drawnThisTurn.length > 0 && (
+                      <div className="text-sm text-marvel-gold">
+                        Drew this turn: {playState.drawnThisTurn.map(c => c.name).join(', ')}
+                      </div>
+                    )}
+
+                    <div className="mt-4 pt-4 border-t border-gray-700">
+                      <h4 className="text-sm text-gray-400 mb-2">Remaining Deck</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {playState.deck.map((card, i) => (
+                          <span key={i} className="text-xs px-2 py-0.5 bg-gray-700 text-gray-400 rounded">
+                            ?
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {!playState && selectedDeck && (
+                  <div className="text-center text-gray-400 py-8">
+                    <p className="mb-2">Click "New Game" to start a simulation</p>
+                    <p className="text-sm">Deck: {selectedDeck.name}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Info Panel */}
+          {!results && mode !== 'play' && selectedDeck && (
+            <div className="bg-gray-800 rounded-lg p-4 panel-border">
+              <h3 className="text-lg font-comic text-marvel-gold mb-2">Simulation Info</h3>
+              <p className="text-sm text-gray-400 mb-3">
+                Marvel Snap draws 3 cards initially, then 1 per turn. By turn 6, you've seen 9 of 12 cards.
+              </p>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="bg-gray-700 rounded p-2 text-center">
+                  <div className="text-marvel-blue font-bold">12</div>
+                  <div className="text-gray-400 text-xs">Deck Size</div>
+                </div>
+                <div className="bg-gray-700 rounded p-2 text-center">
+                  <div className="text-marvel-blue font-bold">3</div>
+                  <div className="text-gray-400 text-xs">Starting Hand</div>
+                </div>
+                <div className="bg-gray-700 rounded p-2 text-center">
+                  <div className="text-marvel-blue font-bold">1</div>
+                  <div className="text-gray-400 text-xs">Draw/Turn</div>
+                </div>
+                <div className="bg-gray-700 rounded p-2 text-center">
+                  <div className="text-marvel-blue font-bold">9</div>
+                  <div className="text-gray-400 text-xs">Cards by T6</div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     };
@@ -5363,7 +6586,7 @@ RESPONSE GUIDELINES:
         const tab = params.get('tab');
         const action = params.get('action');
 
-        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'calculator', 'settings'].includes(tab)) {
+        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'simulator', 'calculator', 'settings'].includes(tab)) {
           setActiveTab(tab);
         }
 
@@ -5543,6 +6766,11 @@ RESPONSE GUIDELINES:
             {activeTab === 'decks' && (
               <ErrorBoundary>
                 <Decks decks={decks} setDecks={setDecks} collection={collection} />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'simulator' && (
+              <ErrorBoundary>
+                <Simulator decks={decks} collection={collection} />
               </ErrorBoundary>
             )}
             {activeTab === 'calculator' && (
