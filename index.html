@@ -2229,6 +2229,334 @@ RESPONSE GUIDELINES:
           claimedLevels: battlePass.LevelsClaimed || [],
           parseDate: new Date().toISOString()
         };
+      },
+
+      /**
+       * Parse RewardState.json for pity counters (Spotlight Oracle)
+       * Critical for predicting S4/S5 drops and spotlight key efficiency
+       */
+      parseRewardState(json) {
+        try {
+          if (!json?.ServerState) return null;
+
+          const collectorCache = json.ServerState?.CollectorsCacheAsset || {};
+          const spotlightCache = json.ServerState?.SpotlightCacheState || {};
+
+          // Extract pity counters - these track pulls since last S4/S5/Spotlight
+          const pityCounters = {
+            s4: collectorCache?.Series4Counter || collectorCache?.Counters?.Series4 || 0,
+            s5: collectorCache?.Series5Counter || collectorCache?.Counters?.Series5 || 0,
+            spotlight: spotlightCache?.Counter || spotlightCache?.PityCounter || 0,
+            spotlightKey: spotlightCache?.KeyCounter || 0
+          };
+
+          // Extract cache opening history for analysis
+          const cacheHistory = collectorCache?.History || spotlightCache?.History || [];
+
+          // Pity thresholds (guaranteed drop rates)
+          const pityThresholds = {
+            s4: 20,   // Guaranteed S4 after 20 pulls
+            s5: 60,   // Guaranteed S5 after 60 pulls
+            spotlightKey: 4  // Guaranteed spotlight card every 4 keys
+          };
+
+          return {
+            type: 'rewards',
+            pityCounters,
+            pityThresholds,
+            cacheHistory: Array.isArray(cacheHistory) ? cacheHistory : [],
+            isCloseToS4: pityCounters.s4 >= 15,
+            isCloseToS5: pityCounters.s5 >= 50,
+            isCloseToSpotlight: pityCounters.spotlightKey >= 3,
+            parseDate: new Date().toISOString()
+          };
+        } catch (error) {
+          console.error('Error parsing reward state:', error);
+          return null;
+        }
+      },
+
+      /**
+       * Parse TokenShopState.json for token shop planning
+       * Used for economy intelligence and purchase recommendations
+       */
+      parseTokenShopState(json) {
+        try {
+          if (!json?.ServerState) return null;
+
+          const tokenShop = json.ServerState?.TokenShop || json.ServerState?.CollectorsTokenShop || {};
+          const items = tokenShop?.Items || tokenShop?.AvailableItems || [];
+          const refreshTime = tokenShop?.NextRefresh || tokenShop?.RefreshTime || null;
+
+          // Parse items with costs
+          const parsedItems = (Array.isArray(items) ? items : []).map(item => ({
+            cardDefId: item?.CardDefId || item?.ItemId || 'Unknown',
+            cost: item?.Cost || item?.TokenCost || 0,
+            series: item?.Series || 'Unknown',
+            purchased: item?.Purchased || false
+          }));
+
+          return {
+            type: 'tokenShop',
+            items: parsedItems,
+            totalItems: parsedItems.length,
+            availableItems: parsedItems.filter(i => !i.purchased).length,
+            nextRefresh: refreshTime,
+            parseDate: new Date().toISOString()
+          };
+        } catch (error) {
+          console.error('Error parsing token shop state:', error);
+          return null;
+        }
+      },
+
+      /**
+       * Parse MissionState.json for mission tracking
+       * Used for mission tracker with deck suggestions
+       */
+      parseMissionState(json) {
+        try {
+          if (!json?.ServerState) return null;
+
+          const missions = json.ServerState?.Missions || json.ServerState?.MissionProgress || {};
+
+          // Parse daily missions
+          const dailyMissions = (missions?.Daily || missions?.DailyMissions || []).map(m => ({
+            id: m?.MissionDefId || m?.Id || 'Unknown',
+            description: m?.Description || '',
+            progress: m?.Progress || 0,
+            target: m?.Target || m?.RequiredCount || 1,
+            completed: m?.Completed || (m?.Progress >= (m?.Target || 1)),
+            reward: m?.Reward || {}
+          }));
+
+          // Parse weekly missions
+          const weeklyMissions = (missions?.Weekly || missions?.WeeklyMissions || []).map(m => ({
+            id: m?.MissionDefId || m?.Id || 'Unknown',
+            description: m?.Description || '',
+            progress: m?.Progress || 0,
+            target: m?.Target || m?.RequiredCount || 1,
+            completed: m?.Completed || (m?.Progress >= (m?.Target || 1)),
+            reward: m?.Reward || {}
+          }));
+
+          // Parse seasonal/featured missions
+          const seasonalMissions = missions?.Seasonal || missions?.Featured || [];
+
+          return {
+            type: 'missions',
+            daily: dailyMissions,
+            weekly: weeklyMissions,
+            seasonal: seasonalMissions,
+            dailyCompleted: dailyMissions.filter(m => m.completed).length,
+            weeklyCompleted: weeklyMissions.filter(m => m.completed).length,
+            parseDate: new Date().toISOString()
+          };
+        } catch (error) {
+          console.error('Error parsing mission state:', error);
+          return null;
+        }
+      },
+
+      /**
+       * Parse TimeModelState.json for accurate server time
+       * Used for reset countdowns (daily/weekly/season)
+       */
+      parseTimeModelState(json) {
+        try {
+          if (!json?.ServerState) return null;
+
+          const timeModel = json.ServerState?.TimeModel || json.ServerState?.Time || {};
+
+          // Server timestamp (Unix epoch or ISO string)
+          const serverTimeRaw = timeModel?.ServerTime || timeModel?.CurrentTime || Date.now();
+          const serverTime = typeof serverTimeRaw === 'string' ? new Date(serverTimeRaw) : new Date(serverTimeRaw);
+
+          // Reset times
+          const dailyResetRaw = timeModel?.DailyReset || timeModel?.NextDailyReset || null;
+          const weeklyResetRaw = timeModel?.WeeklyReset || timeModel?.NextWeeklyReset || null;
+          const seasonResetRaw = timeModel?.SeasonReset || timeModel?.SeasonEnd || null;
+
+          return {
+            type: 'timeModel',
+            serverTime,
+            serverTimeMs: serverTime.getTime(),
+            dailyReset: dailyResetRaw ? new Date(dailyResetRaw) : null,
+            weeklyReset: weeklyResetRaw ? new Date(weeklyResetRaw) : null,
+            seasonReset: seasonResetRaw ? new Date(seasonResetRaw) : null,
+            timezoneOffset: timeModel?.TimezoneOffset || 0,
+            parseDate: new Date().toISOString()
+          };
+        } catch (error) {
+          console.error('Error parsing time model state:', error);
+          return null;
+        }
+      },
+
+      /**
+       * Parse RankState.json for rank information
+       * Used for dashboard rank display
+       */
+      parseRankState(json) {
+        try {
+          if (!json?.ServerState) return null;
+
+          const rank = json.ServerState?.Rank || json.ServerState?.CompetitiveRank || {};
+
+          // Rank tiers: Bronze(0-29), Silver(30-39), Gold(40-49), Platinum(50-59),
+          // Diamond(60-69), Vibranium(70-79), Omega(80-89), Galactic(90-100), Infinite(100+)
+          const currentRank = rank?.CurrentRank || rank?.Rank || 0;
+          const getTierName = (r) => {
+            if (r >= 100) return 'Infinite';
+            if (r >= 90) return 'Galactic';
+            if (r >= 80) return 'Omega';
+            if (r >= 70) return 'Vibranium';
+            if (r >= 60) return 'Diamond';
+            if (r >= 50) return 'Platinum';
+            if (r >= 40) return 'Gold';
+            if (r >= 30) return 'Silver';
+            return 'Bronze';
+          };
+
+          return {
+            type: 'rank',
+            currentRank,
+            tier: getTierName(currentRank),
+            cubes: rank?.Cubes || 0,
+            seasonBest: rank?.SeasonBest || rank?.HighestRank || currentRank,
+            seasonBestTier: getTierName(rank?.SeasonBest || currentRank),
+            parseDate: new Date().toISOString()
+          };
+        } catch (error) {
+          console.error('Error parsing rank state:', error);
+          return null;
+        }
+      },
+
+      /**
+       * Parse DeckState.json for saved decks
+       * Used for deck management and mission suggestions
+       */
+      parseDeckState(json) {
+        try {
+          if (!json?.ServerState) return null;
+
+          const decks = json.ServerState?.Decks || json.ServerState?.DeckList || [];
+
+          const parsedDecks = (Array.isArray(decks) ? decks : []).map(deck => ({
+            id: deck?.DeckId || deck?.Id || '',
+            name: deck?.Name || 'Unnamed Deck',
+            cards: (deck?.Cards || deck?.CardList || []).map(c =>
+              typeof c === 'string' ? c : (c?.CardDefId || c?.Name || '')
+            ).filter(Boolean),
+            isFavorite: deck?.IsFavorite || false,
+            lastUsed: deck?.LastUsed || null
+          }));
+
+          return {
+            type: 'decks',
+            decks: parsedDecks,
+            totalDecks: parsedDecks.length,
+            parseDate: new Date().toISOString()
+          };
+        } catch (error) {
+          console.error('Error parsing deck state:', error);
+          return null;
+        }
+      },
+
+      /**
+       * Enhanced parseCollection for Hall of Armor (variants, splits, boosters)
+       * Extracts variant art IDs, surface effects, and booster counts
+       */
+      parseCollectionEnhanced(json) {
+        try {
+          const cards = new Map(); // cardDefId -> detailed card data
+          const variants = [];
+          const splits = [];
+
+          const findCardDetails = (obj, path = '') => {
+            if (!obj || typeof obj !== 'object') return;
+
+            // Found a card entry with detailed info
+            if (obj.CardDefId && typeof obj.CardDefId === 'string') {
+              const cardId = obj.CardDefId;
+
+              // Skip tokens and system cards
+              if (cardId.includes('Token') || cardId.includes('Stone') ||
+                  cardId.includes('Shard') || cardId.startsWith('_')) {
+                return;
+              }
+
+              // Get or create card entry
+              if (!cards.has(cardId)) {
+                cards.set(cardId, {
+                  cardDefId: cardId,
+                  variants: [],
+                  boosters: 0,
+                  splitLevel: 0,
+                  owned: true
+                });
+              }
+
+              const cardData = cards.get(cardId);
+
+              // Extract variant info
+              if (obj.ArtVariantDefId || obj.SurfaceEffectDefId) {
+                const variant = {
+                  artVariantDefId: obj.ArtVariantDefId || null,
+                  surfaceEffectDefId: obj.SurfaceEffectDefId || null,
+                  isGodSplit: (obj.SurfaceEffectDefId || '').toLowerCase().includes('ink') ||
+                              (obj.SurfaceEffectDefId || '').toLowerCase().includes('gold') ||
+                              (obj.SurfaceEffectDefId || '').toLowerCase().includes('krackle'),
+                  isInfinity: (obj.RarityDefId || '').toLowerCase().includes('infinity')
+                };
+                cardData.variants.push(variant);
+                variants.push({ cardDefId: cardId, ...variant });
+
+                if (variant.isGodSplit) {
+                  splits.push({ cardDefId: cardId, effect: obj.SurfaceEffectDefId });
+                }
+              }
+
+              // Extract boosters
+              if (obj.Boosters !== undefined) {
+                cardData.boosters = Math.max(cardData.boosters, obj.Boosters || 0);
+              }
+
+              // Extract split level
+              if (obj.SplitLevel !== undefined || obj.RarityLevel !== undefined) {
+                cardData.splitLevel = Math.max(cardData.splitLevel, obj.SplitLevel || obj.RarityLevel || 0);
+              }
+            }
+
+            // Recurse
+            if (Array.isArray(obj)) {
+              obj.forEach(item => findCardDetails(item, path));
+            } else {
+              Object.entries(obj).forEach(([key, val]) => findCardDetails(val, `${path}.${key}`));
+            }
+          };
+
+          findCardDetails(json);
+
+          const cardList = Array.from(cards.values());
+
+          return {
+            type: 'collectionEnhanced',
+            cards: cardList.sort((a, b) => a.cardDefId.localeCompare(b.cardDefId)),
+            cardCount: cardList.length,
+            variants: variants,
+            variantCount: variants.length,
+            godSplits: splits,
+            godSplitCount: splits.length,
+            totalBoosters: cardList.reduce((sum, c) => sum + c.boosters, 0),
+            parseDate: new Date().toISOString()
+          };
+        } catch (error) {
+          console.error('Error parsing enhanced collection:', error);
+          return null;
+        }
       }
     };
 
@@ -2272,10 +2600,12 @@ RESPONSE GUIDELINES:
     };
 
     // Auto-import all data without preview (for linked folder sync)
+    // Player OS: Stores data for all features
     const autoImportAll = (data) => {
       const timestamp = new Date().toISOString();
       const results = [];
 
+      // Collection (basic card list)
       if (data.collection) {
         const existing = JSON.parse(localStorage.getItem('snap_collection') || '{"owned":[]}');
         const merged = [...new Set([...existing.owned, ...data.collection.cards])];
@@ -2287,6 +2617,16 @@ RESPONSE GUIDELINES:
         results.push(`Collection: ${merged.length} cards`);
       }
 
+      // Enhanced Collection (Hall of Armor - variants, splits, boosters)
+      if (data.collectionEnhanced) {
+        localStorage.setItem('snap_collection_enhanced', JSON.stringify({
+          ...data.collectionEnhanced,
+          importedAt: timestamp
+        }));
+        results.push(`Hall of Armor: ${data.collectionEnhanced.godSplitCount} God Splits`);
+      }
+
+      // Profile & Wallet
       if (data.profile) {
         localStorage.setItem('snap_profile_stats', JSON.stringify({
           ...data.profile.stats,
@@ -2295,6 +2635,12 @@ RESPONSE GUIDELINES:
           importedAt: timestamp
         }));
         results.push(`Stats: ${data.profile.stats.winRate}% win rate`);
+
+        // Store wallet separately for easy access
+        localStorage.setItem('snap_wallet', JSON.stringify({
+          ...data.profile.currencies,
+          importedAt: timestamp
+        }));
 
         // Card performance
         if (data.profile.cardPerformance) {
@@ -2310,6 +2656,7 @@ RESPONSE GUIDELINES:
         }
       }
 
+      // Mastery
       if (data.mastery) {
         localStorage.setItem('snap_mastery', JSON.stringify({
           cards: data.mastery.cards,
@@ -2317,6 +2664,90 @@ RESPONSE GUIDELINES:
         }));
         results.push(`Mastery: ${data.mastery.totalCards} cards`);
       }
+
+      // Battle Pass
+      if (data.battlePass) {
+        localStorage.setItem('snap_battlepass', JSON.stringify({
+          ...data.battlePass,
+          importedAt: timestamp
+        }));
+        results.push(`Battle Pass: Level ${data.battlePass.level}`);
+      }
+
+      // Rewards / Pity Counters (Spotlight Oracle)
+      if (data.rewards) {
+        localStorage.setItem('snap_rewards', JSON.stringify({
+          ...data.rewards,
+          importedAt: timestamp
+        }));
+        const pity = data.rewards.pityCounters;
+        results.push(`Pity: S4=${pity.s4}/20, S5=${pity.s5}/60`);
+      }
+
+      // Token Shop (Economy Intelligence)
+      if (data.tokenShop) {
+        localStorage.setItem('snap_tokenshop', JSON.stringify({
+          ...data.tokenShop,
+          importedAt: timestamp
+        }));
+        results.push(`Token Shop: ${data.tokenShop.availableItems} items`);
+      }
+
+      // Missions (Mission Tracker)
+      if (data.missions) {
+        localStorage.setItem('snap_missions', JSON.stringify({
+          ...data.missions,
+          importedAt: timestamp
+        }));
+        results.push(`Missions: ${data.missions.dailyCompleted}/? daily`);
+      }
+
+      // Time Model (Server Time for Countdowns)
+      if (data.timeModel) {
+        localStorage.setItem('snap_timemodel', JSON.stringify({
+          serverTime: data.timeModel.serverTime?.toISOString?.() || data.timeModel.serverTime,
+          dailyReset: data.timeModel.dailyReset?.toISOString?.() || data.timeModel.dailyReset,
+          weeklyReset: data.timeModel.weeklyReset?.toISOString?.() || data.timeModel.weeklyReset,
+          seasonReset: data.timeModel.seasonReset?.toISOString?.() || data.timeModel.seasonReset,
+          importedAt: timestamp
+        }));
+        results.push(`Server Time: synced`);
+      }
+
+      // Rank
+      if (data.rank) {
+        localStorage.setItem('snap_rank', JSON.stringify({
+          ...data.rank,
+          importedAt: timestamp
+        }));
+        results.push(`Rank: ${data.rank.tier} (${data.rank.currentRank})`);
+      }
+
+      // Saved Decks
+      if (data.decks) {
+        localStorage.setItem('snap_saved_decks', JSON.stringify({
+          ...data.decks,
+          importedAt: timestamp
+        }));
+        results.push(`Decks: ${data.decks.totalDecks} saved`);
+      }
+
+      // Store unified player state for easy access by components
+      const playerState = {
+        collection: data.collection,
+        collectionEnhanced: data.collectionEnhanced,
+        profile: data.profile,
+        mastery: data.mastery,
+        battlePass: data.battlePass,
+        rewards: data.rewards,
+        tokenShop: data.tokenShop,
+        missions: data.missions,
+        timeModel: data.timeModel,
+        rank: data.rank,
+        decks: data.decks,
+        lastSync: timestamp
+      };
+      localStorage.setItem('snap_player_state', JSON.stringify(playerState));
 
       return results;
     };
@@ -2447,15 +2878,20 @@ RESPONSE GUIDELINES:
 
     // Navigation Bar
     const NavBar = ({ activeTab, setActiveTab }) => {
-      const tabs = [
+      // Primary tabs shown in main navigation
+      const primaryTabs = [
         { id: 'dashboard', label: 'Home', icon: '⚡' },
-        { id: 'ai', label: 'AI', icon: '🤖' },
+        { id: 'oracle', label: 'Oracle', icon: '🔮' },
         { id: 'collection', label: 'Cards', icon: '🃏' },
-        { id: 'decks', label: 'Decks', icon: '📋' },
-        { id: 'simulator', label: 'Sim', icon: '🎲' },
-        { id: 'calculator', label: 'Calc', icon: '🎯' },
+        { id: 'planner', label: 'Plan', icon: '📈' },
+        { id: 'ai', label: 'AI', icon: '🤖' },
         { id: 'settings', label: 'More', icon: '☰' }
       ];
+
+      // Determine which tabs to show based on screen width
+      // On mobile: show primary tabs only
+      // Settings menu provides access to: missions, battlepass, armor
+      const tabs = primaryTabs;
       return (
         <nav className="fixed bottom-0 left-0 right-0 bg-marvel-black border-t-4 border-marvel-red z-50" role="navigation" aria-label="Main navigation">
           <div className="flex justify-around items-center h-16 max-w-lg mx-auto" role="tablist" aria-label="App sections">
@@ -2484,20 +2920,40 @@ RESPONSE GUIDELINES:
       </header>
     );
 
-    // Dashboard Component
+    // Dashboard Component - Player OS Home
     const Dashboard = ({ collection, matches, onQuickMatch }) => {
       const [importedStats, setImportedStats] = useState(null);
+      const [wallet, setWallet] = useState(null);
+      const [rewards, setRewards] = useState(null);
+      const [rank, setRank] = useState(null);
+      const [timeModel, setTimeModel] = useState(null);
 
-      // Load imported stats on mount and when data updates
+      // Load all Player OS data on mount and when data updates
       useEffect(() => {
-        const loadImportedStats = () => {
-          const stats = loadFromStorage('snap_profile_stats', null);
-          setImportedStats(stats);
+        const loadPlayerData = () => {
+          setImportedStats(loadFromStorage('snap_profile_stats', null));
+          setWallet(loadFromStorage('snap_wallet', null));
+          setRewards(loadFromStorage('snap_rewards', null));
+          setRank(loadFromStorage('snap_rank', null));
+          setTimeModel(loadFromStorage('snap_timemodel', null));
         };
-        loadImportedStats();
-        window.addEventListener('snap-data-updated', loadImportedStats);
-        return () => window.removeEventListener('snap-data-updated', loadImportedStats);
+        loadPlayerData();
+        window.addEventListener('snap-data-updated', loadPlayerData);
+        return () => window.removeEventListener('snap-data-updated', loadPlayerData);
       }, []);
+
+      // Reset timer calculation
+      const getTimeUntil = (resetTime) => {
+        if (!resetTime) return null;
+        const now = new Date();
+        const reset = new Date(resetTime);
+        const diff = reset.getTime() - now.getTime();
+        if (diff <= 0) return 'Now!';
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        if (hours > 24) return `${Math.floor(hours / 24)}d ${hours % 24}h`;
+        return `${hours}h ${minutes}m`;
+      };
 
       const totalCards = uniqueCards.length;
       // Only count cards that exist in our database
@@ -2544,6 +3000,111 @@ RESPONSE GUIDELINES:
       return (
         <div className="px-4 pb-20">
           <Header title="SNAPAPOULOUS PRIME" />
+
+          {/* Player OS: Wallet Widget */}
+          {wallet && (
+            <div className="bg-gray-800 rounded-lg p-3 mb-4 panel-border border-l-4 border-marvel-gold">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs uppercase text-gray-400">Wallet</span>
+                <span className="text-xs px-2 py-0.5 bg-marvel-gold/30 text-marvel-gold rounded">Synced</span>
+              </div>
+              <div className="grid grid-cols-4 gap-2 text-center">
+                <div>
+                  <div className="text-lg font-bold text-blue-400">{(wallet.credits || 0).toLocaleString()}</div>
+                  <div className="text-xs text-gray-500">Credits</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-yellow-400">{(wallet.gold || 0).toLocaleString()}</div>
+                  <div className="text-xs text-gray-500">Gold</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-purple-400">{(wallet.tokens || 0).toLocaleString()}</div>
+                  <div className="text-xs text-gray-500">Tokens</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-orange-400">{(wallet.keys || wallet.spotlightKeys || 0).toLocaleString()}</div>
+                  <div className="text-xs text-gray-500">Keys</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Player OS: Rank & Reset Timers */}
+          {(rank || timeModel) && (
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              {rank && (
+                <div className="bg-gray-800 rounded-lg p-3 panel-border border-l-4 border-purple-500">
+                  <div className="text-gray-400 text-xs uppercase">Rank</div>
+                  <div className="text-2xl font-comic text-white">{rank.tier}</div>
+                  <div className="text-sm text-gray-400">Level {rank.currentRank}</div>
+                </div>
+              )}
+              {timeModel && (
+                <div className="bg-gray-800 rounded-lg p-3 panel-border border-l-4 border-cyan-500">
+                  <div className="text-gray-400 text-xs uppercase">Resets</div>
+                  <div className="text-sm text-cyan-400">Daily: {getTimeUntil(timeModel.dailyReset) || '—'}</div>
+                  <div className="text-sm text-cyan-300">Weekly: {getTimeUntil(timeModel.weeklyReset) || '—'}</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Player OS: Pity Counters (Spotlight Oracle Preview) */}
+          {rewards && (
+            <div className="bg-gray-800 rounded-lg p-3 mb-4 panel-border border-l-4 border-marvel-red">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs uppercase text-gray-400">Pity Counters</span>
+                {(rewards.isCloseToS4 || rewards.isCloseToS5 || rewards.isCloseToSpotlight) && (
+                  <span className="text-xs px-2 py-0.5 bg-marvel-red/30 text-marvel-red rounded animate-pulse">Close!</span>
+                )}
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="text-center">
+                  <div className="relative pt-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-gray-400">S4</span>
+                      <span className="text-xs font-bold text-green-400">{rewards.pityCounters?.s4 || 0}/20</span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${rewards.isCloseToS4 ? 'bg-green-400' : 'bg-green-600'}`}
+                        style={{ width: `${Math.min(100, ((rewards.pityCounters?.s4 || 0) / 20) * 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="relative pt-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-gray-400">S5</span>
+                      <span className="text-xs font-bold text-purple-400">{rewards.pityCounters?.s5 || 0}/60</span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${rewards.isCloseToS5 ? 'bg-purple-400' : 'bg-purple-600'}`}
+                        style={{ width: `${Math.min(100, ((rewards.pityCounters?.s5 || 0) / 60) * 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="relative pt-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs text-gray-400">Key</span>
+                      <span className="text-xs font-bold text-orange-400">{rewards.pityCounters?.spotlightKey || 0}/4</span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${rewards.isCloseToSpotlight ? 'bg-orange-400' : 'bg-orange-600'}`}
+                        style={{ width: `${Math.min(100, ((rewards.pityCounters?.spotlightKey || 0) / 4) * 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Lifetime Stats (from imported data) */}
           {displayStats.hasImported && (
             <div className="bg-gray-800 rounded-lg p-3 mb-4 panel-border border-l-4 border-marvel-blue">
@@ -3358,6 +3919,654 @@ RESPONSE GUIDELINES:
                   </button>
                 );
               })}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Spotlight Oracle Component - Predictive Economy Engine
+    const SpotlightOracle = ({ collection }) => {
+      const [schedule, setSchedule] = useState(null);
+      const [rewards, setRewards] = useState(null);
+      const [loading, setLoading] = useState(true);
+
+      useEffect(() => {
+        const loadData = async () => {
+          try {
+            const response = await fetch('data/spotlight-schedule.json');
+            const data = await response.json();
+            setSchedule(data);
+          } catch (err) { console.error('Could not load spotlight schedule:', err); }
+          setRewards(loadFromStorage('snap_rewards', null));
+          setLoading(false);
+        };
+        loadData();
+      }, []);
+
+      if (loading) return <div className="px-4 pb-20"><Header title="SPOTLIGHT ORACLE" /><div className="text-center py-8 text-gray-400">Loading...</div></div>;
+      if (!schedule) return <div className="px-4 pb-20"><Header title="SPOTLIGHT ORACLE" /><div className="bg-gray-800 rounded-lg p-6 panel-border text-center"><div className="text-4xl mb-4">🔮</div><p className="text-gray-400">Schedule unavailable</p></div></div>;
+
+      const ownedCards = new Set((collection?.owned || []).map(c => c.toLowerCase()));
+      const pity = rewards?.pityCounters || { s4: 0, s5: 0, spotlightKey: 0 };
+
+      const analyzedWeeks = schedule.weeks.map(week => {
+        const allCards = [week.spotlight.mainCard, ...week.cacheCards.map(c => c.name)];
+        const missingCards = allCards.filter(c => !ownedCards.has(c.toLowerCase()));
+        const ev = missingCards.length > 0 ? (4 / missingCards.length).toFixed(1) : Infinity;
+        const evRating = missingCards.length >= 3 ? 'excellent' : missingCards.length === 2 ? 'good' : missingCards.length === 1 ? 'fair' : 'skip';
+        return { ...week, missingCards, totalCards: allCards.length, ev: parseFloat(ev), evRating };
+      });
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="SPOTLIGHT ORACLE" />
+          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4 border-l-4 border-marvel-gold">
+            <h2 className="text-lg font-comic text-marvel-gold mb-3">🔮 Pity Status</h2>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div><div className="text-2xl font-bold text-green-400">{pity.s4}/20</div><div className="text-xs text-gray-400">S4</div></div>
+              <div><div className="text-2xl font-bold text-purple-400">{pity.s5}/60</div><div className="text-xs text-gray-400">S5</div></div>
+              <div><div className="text-2xl font-bold text-orange-400">{pity.spotlightKey}/4</div><div className="text-xs text-gray-400">Key</div></div>
+            </div>
+          </div>
+          <div className="space-y-4">
+            {analyzedWeeks.map((week, idx) => (
+              <div key={idx} className={`bg-gray-800 rounded-lg p-4 panel-border border-l-4 ${week.evRating === 'excellent' ? 'border-green-500' : week.evRating === 'good' ? 'border-blue-500' : 'border-gray-600'}`}>
+                <div className="flex justify-between items-start mb-2">
+                  <div className="text-xs text-gray-400">Week {week.weekNumber} • {new Date(week.startDate).toLocaleDateString()}</div>
+                  <div className={`text-xs px-2 py-1 rounded ${week.evRating === 'excellent' ? 'bg-green-500/30 text-green-400' : 'bg-gray-700 text-gray-400'}`}>{week.evRating === 'excellent' ? 'PRIME' : week.evRating.toUpperCase()}</div>
+                </div>
+                <div className="mb-2"><span className={`font-bold ${ownedCards.has(week.spotlight.mainCard.toLowerCase()) ? 'text-gray-400 line-through' : 'text-white'}`}>⭐ {week.spotlight.mainCard}</span></div>
+                <div className="flex flex-wrap gap-1 mb-2">{week.cacheCards.map((c, i) => <span key={i} className={`text-xs px-2 py-0.5 rounded ${ownedCards.has(c.name.toLowerCase()) ? 'bg-gray-700 text-gray-400 line-through' : 'bg-gray-700 text-white'}`}>{c.name}</span>)}</div>
+                <div className="flex justify-between text-xs pt-2 border-t border-gray-700"><span>Missing: {week.missingCards.length}/{week.totalCards}</span><span className={week.evRating === 'excellent' ? 'text-green-400' : ''}>EV: {week.ev === Infinity ? '∞' : week.ev}</span></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // Hall of Armor Component - Variant Gallery & Achievement Showcase
+    const HallOfArmor = () => {
+      const [collectionEnhanced, setCollectionEnhanced] = useState(null);
+      const [filter, setFilter] = useState('all');
+      const [sortBy, setSortBy] = useState('name');
+
+      useEffect(() => {
+        const loadData = () => {
+          const data = loadFromStorage('snap_collection_enhanced', null);
+          setCollectionEnhanced(data);
+        };
+        loadData();
+        window.addEventListener('snap-data-updated', loadData);
+        return () => window.removeEventListener('snap-data-updated', loadData);
+      }, []);
+
+      if (!collectionEnhanced) {
+        return (
+          <div className="px-4 pb-20">
+            <Header title="HALL OF ARMOR" />
+            <div className="bg-gray-800 rounded-lg p-6 panel-border text-center">
+              <div className="text-4xl mb-4">🏆</div>
+              <h2 className="text-xl font-comic text-marvel-gold mb-2">Sync Your Collection</h2>
+              <p className="text-gray-400 mb-4">
+                Link your game folder to display your God Splits, variants, and collection achievements.
+              </p>
+              <p className="text-sm text-gray-500">
+                Settings → Link Game Folder
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      const { cards, godSplits, variants, godSplitCount, variantCount, totalBoosters } = collectionEnhanced;
+
+      // Filter cards based on selection
+      const filteredCards = cards.filter(card => {
+        switch (filter) {
+          case 'godSplits':
+            return card.variants?.some(v => v.isGodSplit);
+          case 'infinity':
+            return card.variants?.some(v => v.isInfinity);
+          case 'highMastery':
+            return card.splitLevel >= 4;
+          default:
+            return card.variants?.length > 0 || card.boosters > 100;
+        }
+      });
+
+      // Sort cards
+      const sortedCards = [...filteredCards].sort((a, b) => {
+        switch (sortBy) {
+          case 'boosters':
+            return b.boosters - a.boosters;
+          case 'variants':
+            return (b.variants?.length || 0) - (a.variants?.length || 0);
+          default:
+            return a.cardDefId.localeCompare(b.cardDefId);
+        }
+      });
+
+      // Identify God Split types
+      const getGodSplitType = (effect) => {
+        if (!effect) return null;
+        const lower = effect.toLowerCase();
+        if (lower.includes('ink')) return { name: 'Inked', color: 'text-blue-400', bg: 'bg-blue-900/30' };
+        if (lower.includes('gold')) return { name: 'Gold', color: 'text-yellow-400', bg: 'bg-yellow-900/30' };
+        if (lower.includes('krackle')) return { name: 'Krackle', color: 'text-pink-400', bg: 'bg-pink-900/30' };
+        if (lower.includes('prism')) return { name: 'Prism', color: 'text-purple-400', bg: 'bg-purple-900/30' };
+        return { name: 'Special', color: 'text-gray-400', bg: 'bg-gray-900/30' };
+      };
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="HALL OF ARMOR" />
+
+          {/* Stats Overview */}
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div className="bg-gray-800 rounded-lg p-3 panel-border border-l-4 border-yellow-500 text-center">
+              <div className="text-2xl font-comic text-yellow-400">{godSplitCount}</div>
+              <div className="text-xs text-gray-400">God Splits</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-3 panel-border border-l-4 border-purple-500 text-center">
+              <div className="text-2xl font-comic text-purple-400">{variantCount}</div>
+              <div className="text-xs text-gray-400">Variants</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-3 panel-border border-l-4 border-blue-500 text-center">
+              <div className="text-2xl font-comic text-blue-400">{totalBoosters.toLocaleString()}</div>
+              <div className="text-xs text-gray-400">Boosters</div>
+            </div>
+          </div>
+
+          {/* God Splits Showcase */}
+          {godSplitCount > 0 && (
+            <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+              <h2 className="text-lg font-comic text-marvel-gold mb-3 flex items-center gap-2">
+                <span>✨</span> God Splits
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {godSplits.slice(0, 12).map((split, idx) => {
+                  const type = getGodSplitType(split.effect);
+                  return (
+                    <div key={idx} className={`px-3 py-2 rounded-lg ${type?.bg || 'bg-gray-700'} border border-gray-600`}>
+                      <div className={`font-bold text-sm ${type?.color || 'text-white'}`}>
+                        {split.cardDefId.replace(/_/g, ' ')}
+                      </div>
+                      <div className="text-xs text-gray-400">{type?.name || 'Special'}</div>
+                    </div>
+                  );
+                })}
+                {godSplitCount > 12 && (
+                  <div className="px-3 py-2 rounded-lg bg-gray-700 flex items-center">
+                    <span className="text-gray-400 text-sm">+{godSplitCount - 12} more</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Filters */}
+          <div className="flex gap-2 mb-4 flex-wrap">
+            {[
+              { id: 'all', label: 'All Notable' },
+              { id: 'godSplits', label: 'God Splits' },
+              { id: 'infinity', label: 'Infinity' },
+              { id: 'highMastery', label: 'High Mastery' }
+            ].map(f => (
+              <button
+                key={f.id}
+                onClick={() => setFilter(f.id)}
+                className={`px-3 py-1 rounded text-sm transition-colors ${
+                  filter === f.id
+                    ? 'bg-marvel-gold text-black font-bold'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Card Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {sortedCards.slice(0, 20).map((card, idx) => {
+              const hasGodSplit = card.variants?.some(v => v.isGodSplit);
+              const hasInfinity = card.variants?.some(v => v.isInfinity);
+
+              return (
+                <div
+                  key={idx}
+                  className={`bg-gray-800 rounded-lg p-3 panel-border relative ${
+                    hasGodSplit ? 'border-l-4 border-yellow-500' :
+                    hasInfinity ? 'border-l-4 border-purple-500' :
+                    'border-l-4 border-gray-600'
+                  }`}
+                >
+                  {/* Badges */}
+                  <div className="absolute -top-1 -right-1 flex gap-1">
+                    {hasGodSplit && (
+                      <span className="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center text-xs">✨</span>
+                    )}
+                    {hasInfinity && (
+                      <span className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center text-xs">∞</span>
+                    )}
+                  </div>
+
+                  <div className="font-bold text-white text-sm truncate mb-1">
+                    {card.cardDefId.replace(/_/g, ' ')}
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400">
+                    <span>{card.variants?.length || 0} variants</span>
+                    <span>{card.boosters} boosters</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {sortedCards.length === 0 && (
+            <div className="bg-gray-800 rounded-lg p-6 panel-border text-center">
+              <p className="text-gray-400">No cards match this filter.</p>
+            </div>
+          )}
+
+          {sortedCards.length > 20 && (
+            <div className="text-center mt-4 text-gray-400 text-sm">
+              Showing 20 of {sortedCards.length} cards
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // Economy Intelligence Component
+    const EconomyIntelligence = () => {
+      const [wallet, setWallet] = useState(() => loadFromStorage('snap_wallet', { credits: 0, gold: 0, tokens: 0, keys: 0 }));
+      const [tokenshop, setTokenshop] = useState(() => loadFromStorage('snap_tokenshop', { items: [] }));
+      const [rewards, setRewards] = useState(() => loadFromStorage('snap_rewards', {}));
+
+      // Listen for data updates
+      useEffect(() => {
+        const handleUpdate = () => {
+          setWallet(loadFromStorage('snap_wallet', { credits: 0, gold: 0, tokens: 0, keys: 0 }));
+          setTokenshop(loadFromStorage('snap_tokenshop', { items: [] }));
+          setRewards(loadFromStorage('snap_rewards', {}));
+        };
+        window.addEventListener('snap-data-updated', handleUpdate);
+        return () => window.removeEventListener('snap-data-updated', handleUpdate);
+      }, []);
+
+      // Calculate affordable token shop items
+      const affordableItems = (tokenshop.items || []).filter(item => item.cost <= wallet.tokens);
+
+      // Calculate pity progress percentages
+      const s4Progress = rewards.series4 ? (rewards.series4.current / rewards.series4.max) * 100 : 0;
+      const s5Progress = rewards.series5 ? (rewards.series5.current / rewards.series5.max) * 100 : 0;
+      const keyProgress = rewards.spotlightKey ? (rewards.spotlightKey.current / rewards.spotlightKey.max) * 100 : 0;
+
+      // Smart key allocation recommendation
+      const getKeyRecommendation = () => {
+        if (!rewards.spotlightKey || !rewards.series4) return { action: 'COLLECT_MORE', reason: 'Import game data to get recommendations' };
+
+        const keysPity = rewards.spotlightKey.max - rewards.spotlightKey.current;
+        const s4Pity = rewards.series4.max - rewards.series4.current;
+        const s5Pity = rewards.series5 ? rewards.series5.max - rewards.series5.current : 50;
+
+        // If close to spotlight key pity, open spotlights
+        if (keysPity <= 1) {
+          return { action: 'SPOTLIGHT', reason: `Only ${keysPity} cache away from guaranteed key!`, urgent: true };
+        }
+        // If close to S5 pity, open collector reserves
+        if (s5Pity <= 10) {
+          return { action: 'COLLECTOR', reason: `${s5Pity} caches from guaranteed S5 card`, urgent: s5Pity <= 5 };
+        }
+        // If close to S4 pity, open collector reserves
+        if (s4Pity <= 5) {
+          return { action: 'COLLECTOR', reason: `${s4Pity} reserves from guaranteed S4 card`, urgent: true };
+        }
+        // Default: save for spotlights if have cards you want
+        return { action: 'SAVE', reason: 'Check Oracle tab for upcoming spotlight targets' };
+      };
+
+      const recommendation = getKeyRecommendation();
+
+      // Credit burn optimizer - estimate upgrade availability
+      const UPGRADE_COSTS = {
+        common_uncommon: { credits: 5, boosters: 5, cl: 1 },
+        uncommon_rare: { credits: 25, boosters: 10, cl: 2 },
+        rare_epic: { credits: 100, boosters: 20, cl: 4 },
+        epic_legendary: { credits: 200, boosters: 30, cl: 8 },
+        legendary_ultra: { credits: 300, boosters: 40, cl: 16 },
+        ultra_infinity: { credits: 400, boosters: 50, cl: 32 }
+      };
+
+      // Calculate how many upgrades can be done
+      const cheapestUpgrade = UPGRADE_COSTS.common_uncommon;
+      const maxCheapUpgrades = Math.floor(wallet.credits / cheapestUpgrade.credits);
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="ECONOMY HQ" />
+
+          {/* Resource Overview */}
+          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+            <h3 className="text-lg font-comic text-marvel-gold mb-3">Current Resources</h3>
+            <div className="grid grid-cols-4 gap-2">
+              <div className="bg-gray-700 rounded-lg p-2 text-center">
+                <div className="text-2xl">💰</div>
+                <div className="text-white font-bold">{(wallet.credits || 0).toLocaleString()}</div>
+                <div className="text-gray-400 text-xs">Credits</div>
+              </div>
+              <div className="bg-gray-700 rounded-lg p-2 text-center">
+                <div className="text-2xl">🪙</div>
+                <div className="text-yellow-400 font-bold">{(wallet.gold || 0).toLocaleString()}</div>
+                <div className="text-gray-400 text-xs">Gold</div>
+              </div>
+              <div className="bg-gray-700 rounded-lg p-2 text-center">
+                <div className="text-2xl">🎟️</div>
+                <div className="text-purple-400 font-bold">{(wallet.tokens || 0).toLocaleString()}</div>
+                <div className="text-gray-400 text-xs">Tokens</div>
+              </div>
+              <div className="bg-gray-700 rounded-lg p-2 text-center">
+                <div className="text-2xl">🔑</div>
+                <div className="text-marvel-red font-bold">{wallet.keys || 0}</div>
+                <div className="text-gray-400 text-xs">Keys</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Key Allocation Advisor */}
+          <div className={`bg-gray-800 rounded-lg p-4 panel-border mb-4 border-l-4 ${
+            recommendation.urgent ? 'border-marvel-red' : 'border-marvel-gold'
+          }`}>
+            <h3 className="text-lg font-comic text-marvel-gold mb-2">Key Allocation Advisor</h3>
+            <div className={`text-lg font-bold mb-1 ${
+              recommendation.action === 'SPOTLIGHT' ? 'text-yellow-400' :
+              recommendation.action === 'COLLECTOR' ? 'text-purple-400' :
+              'text-gray-300'
+            }`}>
+              {recommendation.action === 'SPOTLIGHT' && '🔦 Open Spotlight Caches'}
+              {recommendation.action === 'COLLECTOR' && '📦 Open Collector Reserves'}
+              {recommendation.action === 'SAVE' && '💾 Save Your Keys'}
+              {recommendation.action === 'COLLECT_MORE' && '📊 Need More Data'}
+            </div>
+            <p className="text-gray-300 text-sm">{recommendation.reason}</p>
+
+            {/* Pity Progress Bars */}
+            {rewards.series4 && (
+              <div className="mt-3 space-y-2">
+                <div>
+                  <div className="flex justify-between text-xs text-gray-400 mb-1">
+                    <span>Spotlight Key Pity</span>
+                    <span>{rewards.spotlightKey?.current || 0}/{rewards.spotlightKey?.max || 4}</span>
+                  </div>
+                  <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-yellow-500 transition-all" style={{ width: `${keyProgress}%` }}></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs text-gray-400 mb-1">
+                    <span>S4 Pity</span>
+                    <span>{rewards.series4?.current || 0}/{rewards.series4?.max || 40}</span>
+                  </div>
+                  <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-green-500 transition-all" style={{ width: `${s4Progress}%` }}></div>
+                  </div>
+                </div>
+                {rewards.series5 && (
+                  <div>
+                    <div className="flex justify-between text-xs text-gray-400 mb-1">
+                      <span>S5 Pity</span>
+                      <span>{rewards.series5?.current || 0}/{rewards.series5?.max || 50}</span>
+                    </div>
+                    <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                      <div className="h-full bg-red-500 transition-all" style={{ width: `${s5Progress}%` }}></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Token Shop Planner */}
+          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+            <h3 className="text-lg font-comic text-marvel-gold mb-3">Token Shop</h3>
+            {affordableItems.length > 0 ? (
+              <div className="space-y-2">
+                <p className="text-green-400 text-sm mb-2">You can afford {affordableItems.length} item(s)!</p>
+                {affordableItems.slice(0, 5).map((item, i) => (
+                  <div key={i} className="flex justify-between items-center bg-gray-700 rounded p-2">
+                    <span className="text-white">{item.name}</span>
+                    <span className="text-purple-400">{item.cost} tokens</span>
+                  </div>
+                ))}
+              </div>
+            ) : tokenshop.items?.length > 0 ? (
+              <div>
+                <p className="text-gray-400 text-sm mb-2">Saving up for:</p>
+                {tokenshop.items.slice(0, 3).map((item, i) => (
+                  <div key={i} className="flex justify-between items-center text-sm mb-1">
+                    <span className="text-gray-300">{item.name}</span>
+                    <span className="text-gray-500">{item.cost - wallet.tokens} more needed</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-400">Import game data to see token shop items.</p>
+            )}
+          </div>
+
+          {/* Credit Burn Optimizer */}
+          <div className="bg-gray-800 rounded-lg p-4 panel-border">
+            <h3 className="text-lg font-comic text-marvel-gold mb-3">Credit Optimizer</h3>
+            <div className="text-white mb-2">
+              With <span className="text-green-400 font-bold">{wallet.credits?.toLocaleString()}</span> credits, you can do:
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="bg-gray-700 rounded p-2">
+                <div className="text-gray-400">Common → Uncommon</div>
+                <div className="text-white font-bold">{maxCheapUpgrades}x</div>
+                <div className="text-green-400 text-xs">+{maxCheapUpgrades} CL</div>
+              </div>
+              <div className="bg-gray-700 rounded p-2">
+                <div className="text-gray-400">Rare → Epic</div>
+                <div className="text-white font-bold">{Math.floor(wallet.credits / 100)}x</div>
+                <div className="text-green-400 text-xs">+{Math.floor(wallet.credits / 100) * 4} CL</div>
+              </div>
+            </div>
+            <p className="text-gray-400 text-xs mt-2">
+              Check the Plan tab for booster-optimized upgrade suggestions.
+            </p>
+          </div>
+        </div>
+      );
+    };
+
+    // Board Snapshot Tool (Danger Room Lite)
+    const BoardSnapshot = () => {
+      const [lanes, setLanes] = useState([[], [], []]);
+      const [searchQuery, setSearchQuery] = useState('');
+      const [opponentPower, setOpponentPower] = useState([0, 0, 0]);
+      const collection = loadFromStorage('snap_collection', { owned: [] });
+
+      // Get card list
+      const allCards = [...(typeof uniqueCards !== 'undefined' ? uniqueCards : [])];
+      const filteredCards = searchQuery
+        ? allCards.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 12)
+        : allCards.slice(0, 12);
+
+      const addCardToLane = (laneIndex, card) => {
+        if (lanes[laneIndex].length >= 4) return; // Max 4 cards per lane
+        setLanes(prev => {
+          const newLanes = [...prev];
+          newLanes[laneIndex] = [...newLanes[laneIndex], { name: card.name, power: card.power }];
+          return newLanes;
+        });
+      };
+
+      const removeCardFromLane = (laneIndex, cardIndex) => {
+        setLanes(prev => {
+          const newLanes = [...prev];
+          newLanes[laneIndex] = newLanes[laneIndex].filter((_, i) => i !== cardIndex);
+          return newLanes;
+        });
+      };
+
+      const clearBoard = () => {
+        setLanes([[], [], []]);
+        setOpponentPower([0, 0, 0]);
+      };
+
+      // Calculate lane powers
+      const lanePowers = lanes.map(lane => lane.reduce((sum, card) => sum + (card.power || 0), 0));
+      const totalPower = lanePowers.reduce((a, b) => a + b, 0);
+      const totalOpponentPower = opponentPower.reduce((a, b) => a + b, 0);
+
+      // Generate text description for AI
+      const generateDescription = () => {
+        const laneDescriptions = lanes.map((lane, i) => {
+          const cards = lane.map(c => c.name).join(', ') || 'empty';
+          const myPower = lanePowers[i];
+          const oppPower = opponentPower[i];
+          return `Lane ${i + 1}: [${cards}] (My: ${myPower}, Opp: ${oppPower})`;
+        });
+        return `Board State:\n${laneDescriptions.join('\n')}\nTotal Power - Me: ${totalPower}, Opponent: ${totalOpponentPower}`;
+      };
+
+      const copyToClipboard = async () => {
+        const description = generateDescription();
+        try {
+          await navigator.clipboard.writeText(description);
+          showToast('Board copied to clipboard!');
+        } catch {
+          // Fallback for older browsers
+          const textarea = document.createElement('textarea');
+          textarea.value = description;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+          showToast('Board copied!');
+        }
+      };
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="BOARD SNAPSHOT" />
+
+          {/* Instructions */}
+          <div className="bg-gray-800 rounded-lg p-3 panel-border mb-4 text-sm">
+            <p className="text-gray-300">
+              <span className="text-marvel-gold font-bold">How to use:</span> Tap cards below to add them to lanes.
+              Set opponent power, then copy to share with AI advisor.
+            </p>
+          </div>
+
+          {/* Board - 3 Lanes */}
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            {lanes.map((lane, laneIndex) => (
+              <div key={laneIndex} className="bg-gray-800 rounded-lg p-2 panel-border min-h-32">
+                <div className="text-center text-gray-400 text-xs mb-2">Lane {laneIndex + 1}</div>
+
+                {/* Cards in lane */}
+                <div className="space-y-1 mb-2">
+                  {lane.map((card, cardIndex) => (
+                    <div
+                      key={cardIndex}
+                      onClick={() => removeCardFromLane(laneIndex, cardIndex)}
+                      className="bg-gray-700 rounded px-2 py-1 text-xs text-white cursor-pointer hover:bg-red-900 flex justify-between"
+                    >
+                      <span className="truncate">{card.name}</span>
+                      <span className="text-marvel-gold ml-1">{card.power}</span>
+                    </div>
+                  ))}
+                  {lane.length < 4 && (
+                    <div className="border-2 border-dashed border-gray-600 rounded h-6 flex items-center justify-center text-gray-500 text-xs">
+                      +
+                    </div>
+                  )}
+                </div>
+
+                {/* Lane totals */}
+                <div className="text-center border-t border-gray-700 pt-2">
+                  <div className="text-marvel-blue font-bold">{lanePowers[laneIndex]}</div>
+                  <div className="flex items-center justify-center gap-1 mt-1">
+                    <span className="text-xs text-gray-400">vs</span>
+                    <input
+                      type="number"
+                      value={opponentPower[laneIndex]}
+                      onChange={(e) => {
+                        const newOpp = [...opponentPower];
+                        newOpp[laneIndex] = parseInt(e.target.value) || 0;
+                        setOpponentPower(newOpp);
+                      }}
+                      className="w-12 bg-gray-700 rounded text-center text-red-400 text-sm p-1"
+                      min="0"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Power Summary */}
+          <div className="flex justify-between items-center bg-gray-800 rounded-lg p-3 panel-border mb-4">
+            <div className="text-center">
+              <div className="text-marvel-blue text-xl font-bold">{totalPower}</div>
+              <div className="text-gray-400 text-xs">Your Power</div>
+            </div>
+            <div className="text-gray-400 text-lg">vs</div>
+            <div className="text-center">
+              <div className="text-red-400 text-xl font-bold">{totalOpponentPower}</div>
+              <div className="text-gray-400 text-xs">Opponent</div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={copyToClipboard}
+              className="flex-1 bg-marvel-blue text-white py-3 rounded-lg font-medium hover:bg-blue-600"
+            >
+              📋 Copy for AI
+            </button>
+            <button
+              onClick={clearBoard}
+              className="bg-gray-700 text-white px-4 py-3 rounded-lg font-medium hover:bg-gray-600"
+            >
+              🗑️ Clear
+            </button>
+          </div>
+
+          {/* Card Search & Selection */}
+          <div className="bg-gray-800 rounded-lg p-4 panel-border">
+            <input
+              type="text"
+              placeholder="Search cards..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-400 mb-3"
+            />
+
+            <div className="grid grid-cols-3 gap-2">
+              {filteredCards.map((card, i) => (
+                <div key={i} className="flex gap-1">
+                  {[0, 1, 2].map(laneIdx => (
+                    <button
+                      key={laneIdx}
+                      onClick={() => addCardToLane(laneIdx, card)}
+                      disabled={lanes[laneIdx].length >= 4}
+                      className={`flex-1 bg-gray-700 rounded px-1 py-2 text-xs text-center transition-colors ${
+                        lanes[laneIdx].length >= 4 ? 'opacity-50' : 'hover:bg-marvel-blue'
+                      }`}
+                    >
+                      <div className="text-white truncate">{card.name}</div>
+                      <div className="text-marvel-gold">{card.power}</div>
+                    </button>
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -4902,20 +6111,39 @@ RESPONSE GUIDELINES:
             return;
           }
 
+          // Player OS: Parse all 10 core state files
           const results = {
             collection: null,
+            collectionEnhanced: null,  // For Hall of Armor (variants, splits)
             profile: null,
             mastery: null,
-            battlePass: null
+            battlePass: null,
+            rewards: null,       // Pity counters for Spotlight Oracle
+            tokenShop: null,     // Token shop for Economy Intelligence
+            missions: null,      // Mission tracking
+            timeModel: null,     // Server time for accurate countdowns
+            rank: null,          // Rank info
+            decks: null          // Saved decks
           };
 
+          // Map state files to parser methods
           const fileMap = {
             'CollectionState.json': 'collection',
             'ProfileState.json': 'profile',
             'CharacterMasteryState.json': 'mastery',
-            'BattlePassState.json': 'battlePass'
+            'BattlePassState.json': 'battlePass',
+            'SeasonPassState.json': 'battlePass',  // Alternative filename
+            'RewardState.json': 'rewards',
+            'TokenShopState.json': 'tokenShop',
+            'CollectorsTokenShopState.json': 'tokenShop',  // Alternative
+            'MissionState.json': 'missions',
+            'TimeModelState.json': 'timeModel',
+            'RankState.json': 'rank',
+            'CompetitiveRankState.json': 'rank',  // Alternative
+            'DeckState.json': 'decks'
           };
 
+          // Parse each available file
           for (const [filename, key] of Object.entries(fileMap)) {
             try {
               const fileHandle = await handle.getFileHandle(filename);
@@ -4926,6 +6154,8 @@ RESPONSE GUIDELINES:
               switch (key) {
                 case 'collection':
                   results.collection = GameDataParser.parseCollection(json);
+                  // Also parse enhanced collection for Hall of Armor
+                  results.collectionEnhanced = GameDataParser.parseCollectionEnhanced(json);
                   break;
                 case 'profile':
                   results.profile = GameDataParser.parseProfile(json);
@@ -4936,8 +6166,27 @@ RESPONSE GUIDELINES:
                 case 'battlePass':
                   results.battlePass = GameDataParser.parseBattlePass(json);
                   break;
+                case 'rewards':
+                  results.rewards = GameDataParser.parseRewardState(json);
+                  break;
+                case 'tokenShop':
+                  results.tokenShop = GameDataParser.parseTokenShopState(json);
+                  break;
+                case 'missions':
+                  results.missions = GameDataParser.parseMissionState(json);
+                  break;
+                case 'timeModel':
+                  results.timeModel = GameDataParser.parseTimeModelState(json);
+                  break;
+                case 'rank':
+                  results.rank = GameDataParser.parseRankState(json);
+                  break;
+                case 'decks':
+                  results.decks = GameDataParser.parseDeckState(json);
+                  break;
               }
             } catch (err) {
+              // File may not exist - that's OK, continue with others
               console.log(`Could not read ${filename}:`, err.message);
             }
           }
@@ -5458,6 +6707,319 @@ RESPONSE GUIDELINES:
               </p>
             </>
           )}
+        </div>
+      );
+    };
+
+    // Upgrade Planner Component - Recommends optimal card upgrades
+    const UpgradePlanner = () => {
+      const [enhancedCollection, setEnhancedCollection] = useState(null);
+      const [mastery, setMastery] = useState(null);
+      const [sortBy, setSortBy] = useState('efficiency');
+      const [filterType, setFilterType] = useState('upgradeable');
+
+      // Upgrade tiers with costs and CL rewards
+      const UPGRADE_TIERS = [
+        { from: 'Common', to: 'Uncommon', credits: 5, boosters: 5, cl: 1 },
+        { from: 'Uncommon', to: 'Rare', credits: 25, boosters: 10, cl: 2 },
+        { from: 'Rare', to: 'Epic', credits: 100, boosters: 20, cl: 4 },
+        { from: 'Epic', to: 'Legendary', credits: 200, boosters: 30, cl: 8 },
+        { from: 'Legendary', to: 'Ultra', credits: 300, boosters: 40, cl: 16 },
+        { from: 'Ultra', to: 'Infinity', credits: 400, boosters: 50, cl: 32 }
+      ];
+
+      const TIER_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary', 'Ultra', 'Infinity'];
+
+      useEffect(() => {
+        loadData();
+        window.addEventListener('snap-data-updated', loadData);
+        return () => window.removeEventListener('snap-data-updated', loadData);
+      }, []);
+
+      const loadData = () => {
+        const enhanced = loadFromStorage('snap_collection_enhanced', null);
+        const masteryData = loadFromStorage('snap_mastery', null);
+        setEnhancedCollection(enhanced);
+        setMastery(masteryData);
+      };
+
+      // Get current tier from split level or mastery
+      const getCurrentTier = (cardDefId, splitLevel) => {
+        // Split levels roughly correspond to tiers: 0=Common, 1=Uncommon, 2=Rare, etc.
+        const tierIndex = Math.min(splitLevel || 0, TIER_ORDER.length - 1);
+        return TIER_ORDER[tierIndex];
+      };
+
+      // Calculate upgrade info for a card
+      const getUpgradeInfo = (card) => {
+        const currentTierIndex = Math.min(card.splitLevel || 0, TIER_ORDER.length - 2);
+        const nextTier = UPGRADE_TIERS[currentTierIndex];
+
+        if (!nextTier) return null; // Already at Infinity
+
+        const boosters = card.boosters || 0;
+        const canUpgrade = boosters >= nextTier.boosters;
+        const boosterProgress = Math.min(boosters / nextTier.boosters, 1);
+        const efficiency = nextTier.cl / nextTier.boosters; // CL per booster spent
+
+        return {
+          ...card,
+          currentTier: TIER_ORDER[currentTierIndex],
+          nextTier: nextTier.to,
+          boostersNeeded: nextTier.boosters,
+          creditsNeeded: nextTier.credits,
+          clGain: nextTier.cl,
+          canUpgrade,
+          boosterProgress,
+          efficiency,
+          boostersAvailable: boosters,
+          boostersShort: Math.max(0, nextTier.boosters - boosters)
+        };
+      };
+
+      if (!enhancedCollection) {
+        return (
+          <div className="px-4 pb-20">
+            <Header title="UPGRADE PLANNER" />
+            <div className="import-prompt" style={{ padding: '40px 20px', textAlign: 'center' }}>
+              <p style={{ fontSize: '3em', marginBottom: '16px' }}>&#x2B06;</p>
+              <p style={{ fontSize: '1.1em', marginBottom: '12px' }}>No collection data found.</p>
+              <p style={{ fontSize: '0.9em', color: '#9CA3AF' }}>
+                Import your CollectionState.json from<br />
+                <strong>Settings &rarr; PC Game Data Sync</strong>
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      // Process cards with upgrade info
+      const cards = (enhancedCollection.cards || [])
+        .map(card => getUpgradeInfo(card))
+        .filter(card => card !== null);
+
+      // Apply filters
+      const filteredCards = cards.filter(card => {
+        if (filterType === 'upgradeable') return card.canUpgrade;
+        if (filterType === 'close') return !card.canUpgrade && card.boosterProgress >= 0.5;
+        return true;
+      });
+
+      // Apply sorting
+      const sortedCards = [...filteredCards].sort((a, b) => {
+        if (sortBy === 'efficiency') return b.efficiency - a.efficiency;
+        if (sortBy === 'cl') return b.clGain - a.clGain;
+        if (sortBy === 'boosters') return b.boostersAvailable - a.boostersAvailable;
+        if (sortBy === 'progress') return b.boosterProgress - a.boosterProgress;
+        return a.cardDefId.localeCompare(b.cardDefId);
+      });
+
+      // Calculate totals
+      const upgradeableCards = cards.filter(c => c.canUpgrade);
+      const totalPotentialCL = upgradeableCards.reduce((sum, c) => sum + c.clGain, 0);
+      const totalBoosters = enhancedCollection.totalBoosters ||
+        cards.reduce((sum, c) => sum + (c.boostersAvailable || 0), 0);
+      const totalCreditsNeeded = upgradeableCards.reduce((sum, c) => sum + c.creditsNeeded, 0);
+
+      // Get tier color
+      const getTierColor = (tier) => {
+        const colors = {
+          'Common': '#6B7280',
+          'Uncommon': '#22C55E',
+          'Rare': '#3B82F6',
+          'Epic': '#8B5CF6',
+          'Legendary': '#F59E0B',
+          'Ultra': '#EC4899',
+          'Infinity': '#06B6D4'
+        };
+        return colors[tier] || '#6B7280';
+      };
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="UPGRADE PLANNER" />
+
+          {/* Summary Stats */}
+          <div className="stats-section" style={{ marginBottom: '16px' }}>
+            <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+              <div className="stat-card highlight">
+                <span className="stat-value" style={{ color: '#22C55E' }}>+{totalPotentialCL}</span>
+                <span className="stat-label">Potential CL</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-value">{upgradeableCards.length}</span>
+                <span className="stat-label">Ready to Upgrade</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-value" style={{ color: '#8B5CF6' }}>{totalBoosters.toLocaleString()}</span>
+                <span className="stat-label">Total Boosters</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-value" style={{ color: '#FFC107' }}>{totalCreditsNeeded.toLocaleString()}</span>
+                <span className="stat-label">Credits Needed</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Top Recommendations */}
+          {upgradeableCards.length > 0 && (
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.05))',
+              border: '2px solid #22C55E',
+              borderRadius: '12px',
+              padding: '16px',
+              marginBottom: '16px'
+            }}>
+              <h3 style={{ margin: '0 0 12px 0', color: '#22C55E', fontSize: '0.95em' }}>
+                &#x1F31F; TOP RECOMMENDATIONS
+              </h3>
+              {sortedCards.filter(c => c.canUpgrade).slice(0, 3).map((card, i) => (
+                <div key={card.cardDefId} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: '8px 0',
+                  borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.1)' : 'none'
+                }}>
+                  <div>
+                    <span style={{ fontWeight: 'bold' }}>{card.cardDefId}</span>
+                    <span style={{
+                      marginLeft: '8px',
+                      fontSize: '0.8em',
+                      color: getTierColor(card.currentTier)
+                    }}>
+                      {card.currentTier} &rarr; {card.nextTier}
+                    </span>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ color: '#22C55E', fontWeight: 'bold' }}>+{card.clGain} CL</span>
+                    <span style={{
+                      display: 'block',
+                      fontSize: '0.75em',
+                      color: '#9CA3AF'
+                    }}>
+                      {card.creditsNeeded} credits
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Filters and Sort */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              style={{ flex: 1, background: '#374151', color: 'white', border: 'none', borderRadius: '6px', padding: '8px' }}
+            >
+              <option value="all">All Cards ({cards.length})</option>
+              <option value="upgradeable">Ready ({upgradeableCards.length})</option>
+              <option value="close">Close (50%+)</option>
+            </select>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              style={{ flex: 1, background: '#374151', color: 'white', border: 'none', borderRadius: '6px', padding: '8px' }}
+            >
+              <option value="efficiency">By Efficiency</option>
+              <option value="cl">By CL Gain</option>
+              <option value="boosters">By Boosters</option>
+              <option value="progress">By Progress</option>
+              <option value="name">By Name</option>
+            </select>
+          </div>
+
+          {/* Card List */}
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            {sortedCards.map((card) => (
+              <div
+                key={card.cardDefId}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '12px',
+                  marginBottom: '8px',
+                  background: card.canUpgrade ? 'rgba(34,197,94,0.1)' : 'rgba(55,65,81,0.5)',
+                  borderRadius: '8px',
+                  border: card.canUpgrade ? '1px solid rgba(34,197,94,0.3)' : '1px solid transparent'
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{card.cardDefId}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85em' }}>
+                    <span style={{ color: getTierColor(card.currentTier) }}>{card.currentTier}</span>
+                    <span style={{ color: '#6B7280' }}>&rarr;</span>
+                    <span style={{ color: getTierColor(card.nextTier) }}>{card.nextTier}</span>
+                  </div>
+                  {/* Booster progress bar */}
+                  <div style={{
+                    marginTop: '6px',
+                    background: '#1F2937',
+                    borderRadius: '4px',
+                    height: '6px',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{
+                      width: `${card.boosterProgress * 100}%`,
+                      height: '100%',
+                      background: card.canUpgrade ? '#22C55E' : '#8B5CF6',
+                      transition: 'width 0.3s'
+                    }} />
+                  </div>
+                  <div style={{ fontSize: '0.75em', color: '#9CA3AF', marginTop: '2px' }}>
+                    {card.boostersAvailable}/{card.boostersNeeded} boosters
+                    {!card.canUpgrade && card.boostersShort > 0 && (
+                      <span style={{ color: '#EF4444' }}> (need {card.boostersShort} more)</span>
+                    )}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', marginLeft: '12px' }}>
+                  <div style={{
+                    color: '#22C55E',
+                    fontWeight: 'bold',
+                    fontSize: '1.1em'
+                  }}>+{card.clGain} CL</div>
+                  <div style={{ fontSize: '0.75em', color: '#FFC107' }}>{card.creditsNeeded} credits</div>
+                  <div style={{
+                    fontSize: '0.7em',
+                    color: '#9CA3AF',
+                    marginTop: '2px'
+                  }}>
+                    {(card.efficiency).toFixed(2)} CL/booster
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {sortedCards.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '40px 20px', color: '#9CA3AF' }}>
+                <p>No cards match the current filter.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Efficiency Guide */}
+          <div style={{
+            marginTop: '16px',
+            padding: '12px',
+            background: 'rgba(55,65,81,0.3)',
+            borderRadius: '8px',
+            fontSize: '0.8em'
+          }}>
+            <h4 style={{ margin: '0 0 8px 0', color: '#FFC107' }}>Upgrade Efficiency Guide</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px', color: '#9CA3AF' }}>
+              {UPGRADE_TIERS.map(tier => (
+                <div key={tier.from} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{tier.from} &rarr; {tier.to}</span>
+                  <span style={{ color: '#22C55E' }}>{(tier.cl / tier.boosters).toFixed(2)} CL/b</span>
+                </div>
+              ))}
+            </div>
+            <p style={{ margin: '8px 0 0 0', fontSize: '0.9em', color: '#6B7280' }}>
+              Tip: Lower tier upgrades are more efficient. Prioritize them for faster CL gains!
+            </p>
+          </div>
         </div>
       );
     };
@@ -6040,6 +7602,69 @@ RESPONSE GUIDELINES:
             </div>
           </div>
 
+          {/* Quick Navigation - More Features */}
+          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+            <h3 className="text-lg font-comic text-marvel-gold mb-3">More Features</h3>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'missions' }))}
+                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+              >
+                <span className="text-2xl mb-1">📋</span>
+                <span className="text-white text-sm">Missions</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'battlepass' }))}
+                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+              >
+                <span className="text-2xl mb-1">🎫</span>
+                <span className="text-white text-sm">Battle Pass</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'armor' }))}
+                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+              >
+                <span className="text-2xl mb-1">🏆</span>
+                <span className="text-white text-sm">Hall of Armor</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'calculator' }))}
+                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+              >
+                <span className="text-2xl mb-1">🎲</span>
+                <span className="text-white text-sm">Calculator</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'decks' }))}
+                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+              >
+                <span className="text-2xl mb-1">📚</span>
+                <span className="text-white text-sm">Decks</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'simulator' }))}
+                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+              >
+                <span className="text-2xl mb-1">🎮</span>
+                <span className="text-white text-sm">Simulator</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'economy' }))}
+                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+              >
+                <span className="text-2xl mb-1">💹</span>
+                <span className="text-white text-sm">Economy HQ</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'board' }))}
+                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+              >
+                <span className="text-2xl mb-1">🎯</span>
+                <span className="text-white text-sm">Board Snap</span>
+              </button>
+            </div>
+          </div>
+
           {/* PC Game Data Sync - Phase 5 */}
           <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4 pc-sync-section">
             <h3 className="text-lg font-comic text-marvel-gold mb-3">PC Game Data Sync</h3>
@@ -6484,6 +8109,140 @@ RESPONSE GUIDELINES:
       );
     };
 
+    // ==================== MISSION TRACKER ====================
+    const MissionTracker = () => {
+      const [missions, setMissions] = useState(() =>
+        loadFromStorage('snap_missions', {
+          daily: [],
+          weekly: [],
+          dailyCompleted: 0,
+          weeklyCompleted: 0
+        })
+      );
+
+      // Calculate completion percentages
+      const dailyProgress = missions.daily.length > 0
+        ? Math.round((missions.dailyCompleted / missions.daily.length) * 100)
+        : 0;
+      const weeklyProgress = missions.weekly.length > 0
+        ? Math.round((missions.weeklyCompleted / missions.weekly.length) * 100)
+        : 0;
+
+      // Mission progress bar component
+      const MissionProgressBar = ({ progress, target, completed }) => {
+        const percentage = target > 0 ? Math.min((progress / target) * 100, 100) : 0;
+        const barColor = completed ? 'bg-series-2' : 'bg-marvel-blue';
+
+        return (
+          <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-300 ${barColor}`}
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+        );
+      };
+
+      // Single mission item component
+      const MissionItem = ({ mission }) => {
+        const borderColor = mission.completed ? 'border-series-2' : 'border-marvel-blue';
+        const textColor = mission.completed ? 'text-series-2' : 'text-white';
+
+        return (
+          <div className={`bg-gray-800 rounded-lg p-4 panel-border border-l-4 ${borderColor} mb-3 ${mission.completed ? 'opacity-75' : ''}`}>
+            <div className="flex justify-between items-start mb-2">
+              <p className={`font-medium ${textColor} flex-1`}>
+                {mission.description}
+                {mission.completed && <span className="ml-2 text-series-2">&#10003;</span>}
+              </p>
+              <span className="text-marvel-gold text-sm font-bold ml-2 whitespace-nowrap">
+                {mission.reward}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <MissionProgressBar
+                progress={mission.progress}
+                target={mission.target}
+                completed={mission.completed}
+              />
+              <span className={`text-sm ${mission.completed ? 'text-series-2' : 'text-gray-400'} whitespace-nowrap min-w-[60px] text-right`}>
+                {mission.progress}/{mission.target}
+              </span>
+            </div>
+          </div>
+        );
+      };
+
+      // Empty state message
+      const EmptyMissions = ({ type }) => (
+        <div className="bg-gray-800 rounded-lg p-6 panel-border text-center">
+          <p className="text-gray-400">No {type} missions tracked yet.</p>
+          <p className="text-gray-500 text-sm mt-2">
+            Import your game data to see missions here.
+          </p>
+        </div>
+      );
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="MISSIONS" />
+
+          {/* Overall Progress Summary */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="bg-gray-800 rounded-lg p-4 panel-border text-center">
+              <div className="text-3xl font-comic text-marvel-gold">{dailyProgress}%</div>
+              <div className="text-gray-400 text-sm">Daily Progress</div>
+            </div>
+            <div className="bg-gray-800 rounded-lg p-4 panel-border text-center">
+              <div className="text-3xl font-comic text-marvel-gold">{weeklyProgress}%</div>
+              <div className="text-gray-400 text-sm">Weekly Progress</div>
+            </div>
+          </div>
+
+          {/* Daily Missions Section */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xl font-comic text-marvel-gold">Daily Missions</h2>
+              <span className="text-gray-400 text-sm">
+                {missions.dailyCompleted}/{missions.daily.length} Complete
+              </span>
+            </div>
+            {missions.daily.length > 0 ? (
+              missions.daily.map((mission) => (
+                <MissionItem key={mission.id} mission={mission} />
+              ))
+            ) : (
+              <EmptyMissions type="daily" />
+            )}
+          </div>
+
+          {/* Weekly Missions Section */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xl font-comic text-marvel-gold">Weekly Missions</h2>
+              <span className="text-gray-400 text-sm">
+                {missions.weeklyCompleted}/{missions.weekly.length} Complete
+              </span>
+            </div>
+            {missions.weekly.length > 0 ? (
+              missions.weekly.map((mission) => (
+                <MissionItem key={mission.id} mission={mission} />
+              ))
+            ) : (
+              <EmptyMissions type="weekly" />
+            )}
+          </div>
+
+          {/* Info Note */}
+          <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+            <p className="text-gray-400 text-sm">
+              <span className="text-marvel-gold font-medium">Tip:</span> Mission progress is tracked automatically when you import your game data from Settings.
+            </p>
+          </div>
+        </div>
+      );
+    };
+
     // ==================== ERROR BOUNDARY ====================
     class ErrorBoundary extends React.Component {
       constructor(props) {
@@ -6581,6 +8340,207 @@ RESPONSE GUIDELINES:
               </button>
             </div>
           </div>
+        </div>
+      );
+    };
+
+    // ==================== BATTLE PASS TRACKER ====================
+    const BattlePassTracker = () => {
+      const [battlePass, setBattlePass] = useState(() => loadFromStorage('snap_battlepass', null));
+      const [timeModel, setTimeModel] = useState(() => loadFromStorage('snap_timemodel', null));
+
+      // Reload data when snap-data-updated event fires
+      useEffect(() => {
+        const loadData = () => {
+          setBattlePass(loadFromStorage('snap_battlepass', null));
+          setTimeModel(loadFromStorage('snap_timemodel', null));
+        };
+        window.addEventListener('snap-data-updated', loadData);
+        return () => window.removeEventListener('snap-data-updated', loadData);
+      }, []);
+
+      // XP required per level (simplified - actual game uses variable amounts)
+      const XP_PER_LEVEL = 200;
+      const MAX_LEVEL = 50;
+      const TOTAL_SEASON_DAYS = 28;
+
+      // Calculate XP progress
+      const currentLevel = battlePass?.level || 0;
+      const currentXp = battlePass?.xp || 0;
+      const xpToNextLevel = XP_PER_LEVEL;
+      const xpProgress = Math.min(100, (currentXp / xpToNextLevel) * 100);
+
+      // Calculate days remaining in season
+      const calculateDaysRemaining = () => {
+        if (!timeModel?.seasonReset) return null;
+        const now = new Date();
+        const seasonEnd = new Date(timeModel.seasonReset);
+        const diffMs = seasonEnd - now;
+        if (diffMs <= 0) return 0;
+        return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+      };
+
+      const daysRemaining = calculateDaysRemaining();
+
+      // Calculate pacing status
+      const calculatePacing = () => {
+        if (daysRemaining === null || daysRemaining === 0) return { status: 'unknown', message: 'Season data unavailable', color: 'text-gray-400' };
+
+        const daysPassed = TOTAL_SEASON_DAYS - daysRemaining;
+        const expectedLevel = Math.floor((daysPassed / TOTAL_SEASON_DAYS) * MAX_LEVEL);
+        const levelDiff = currentLevel - expectedLevel;
+
+        if (levelDiff >= 5) return { status: 'ahead', message: `${levelDiff} levels ahead`, color: 'text-green-400' };
+        if (levelDiff >= 0) return { status: 'ontrack', message: 'On track', color: 'text-marvel-gold' };
+        if (levelDiff >= -5) return { status: 'behind', message: `${Math.abs(levelDiff)} levels behind`, color: 'text-yellow-400' };
+        return { status: 'critical', message: `${Math.abs(levelDiff)} levels behind!`, color: 'text-red-400' };
+      };
+
+      const pacing = calculatePacing();
+
+      // Placeholder tier rewards (actual rewards vary by season)
+      const tierRewards = [
+        { level: currentLevel, reward: 'Credits', amount: '200', claimed: true },
+        { level: currentLevel + 1, reward: 'Boosters', amount: '50', claimed: false },
+        { level: currentLevel + 2, reward: 'Gold', amount: '50', claimed: false },
+        { level: currentLevel + 3, reward: 'Avatar', amount: '1', claimed: false },
+        { level: currentLevel + 4, reward: 'Variant', amount: '1', claimed: false },
+      ].filter(t => t.level <= MAX_LEVEL);
+
+      // Format countdown
+      const formatCountdown = () => {
+        if (daysRemaining === null) return 'Unknown';
+        if (daysRemaining === 0) return 'Season ending!';
+        if (daysRemaining === 1) return '1 day left';
+        return `${daysRemaining} days left`;
+      };
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="BATTLE PASS" />
+
+          {/* Season Info Card */}
+          <div className="bg-gradient-to-r from-marvel-red to-purple-700 rounded-lg p-4 panel-border mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-lg font-comic text-white">
+                {battlePass?.season || 'Current Season'}
+              </h2>
+              <span className="text-sm bg-black/30 px-2 py-1 rounded text-white">
+                {formatCountdown()}
+              </span>
+            </div>
+            {battlePass?.importedAt && (
+              <div className="text-xs text-white/60">
+                Last synced: {new Date(battlePass.importedAt).toLocaleDateString()}
+              </div>
+            )}
+          </div>
+
+          {/* Large Level Display */}
+          <div className="bg-gray-800 rounded-lg p-6 panel-border mb-4 text-center">
+            <div className="text-gray-400 text-sm mb-1">Current Level</div>
+            <div className="text-6xl font-comic text-marvel-gold mb-2">
+              {currentLevel}
+            </div>
+            <div className="text-gray-400 text-sm">of {MAX_LEVEL}</div>
+
+            {/* XP Progress Bar */}
+            <div className="mt-4">
+              <div className="flex justify-between text-sm text-gray-400 mb-1">
+                <span>XP Progress</span>
+                <span>{currentXp} / {xpToNextLevel}</span>
+              </div>
+              <div className="h-4 bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-marvel-blue to-marvel-red transition-all duration-500"
+                  style={{ width: `${xpProgress}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Pacing Status */}
+            <div className={`mt-4 text-lg font-medium ${pacing.color}`}>
+              {pacing.message}
+            </div>
+          </div>
+
+          {/* Tier Rewards Preview */}
+          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+            <h3 className="text-lg font-comic text-marvel-gold mb-3">Upcoming Rewards</h3>
+            <div className="space-y-2">
+              {tierRewards.map((tier, index) => (
+                <div
+                  key={tier.level}
+                  className={`flex items-center justify-between p-3 rounded-lg ${
+                    tier.claimed
+                      ? 'bg-green-900/30 border border-green-600/50'
+                      : index === 1
+                        ? 'bg-marvel-blue/20 border border-marvel-blue/50'
+                        : 'bg-gray-700/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold ${
+                      tier.claimed ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300'
+                    }`}>
+                      {tier.level}
+                    </div>
+                    <div>
+                      <div className="text-white font-medium">{tier.reward}</div>
+                      <div className="text-xs text-gray-400">x{tier.amount}</div>
+                    </div>
+                  </div>
+                  {tier.claimed ? (
+                    <span className="text-green-400 text-sm">Claimed</span>
+                  ) : index === 1 ? (
+                    <span className="text-marvel-blue text-sm font-medium">Next</span>
+                  ) : (
+                    <span className="text-gray-500 text-sm">Locked</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Season Progress Stats */}
+          <div className="bg-gray-800 rounded-lg p-4 panel-border">
+            <h3 className="text-lg font-comic text-marvel-gold mb-3">Season Stats</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-white">{currentLevel}</div>
+                <div className="text-xs text-gray-400">Levels Earned</div>
+              </div>
+              <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-white">
+                  {battlePass?.claimedLevels?.length || 0}
+                </div>
+                <div className="text-xs text-gray-400">Rewards Claimed</div>
+              </div>
+              <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-white">
+                  {MAX_LEVEL - currentLevel}
+                </div>
+                <div className="text-xs text-gray-400">Levels Remaining</div>
+              </div>
+              <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+                <div className="text-2xl font-bold text-white">
+                  {daysRemaining !== null ? Math.ceil((MAX_LEVEL - currentLevel) / Math.max(1, daysRemaining)) : '?'}
+                </div>
+                <div className="text-xs text-gray-400">Levels/Day Needed</div>
+              </div>
+            </div>
+          </div>
+
+          {/* No Data State */}
+          {!battlePass && (
+            <div className="bg-gray-800 rounded-lg p-6 panel-border text-center mt-4">
+              <div className="text-4xl mb-3">📊</div>
+              <h3 className="text-lg font-comic text-gray-300 mb-2">No Battle Pass Data</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Link your Marvel Snap folder in Settings to import your Battle Pass progress.
+              </p>
+            </div>
+          )}
         </div>
       );
     };
@@ -6923,6 +8883,12 @@ RESPONSE GUIDELINES:
         }
       }, [activeTab]);
 
+      // Listen for custom tab navigation events (from Settings quick links)
+      useEffect(() => {
+        const handleSetTab = (e) => setActiveTab(e.detail);
+        window.addEventListener('setActiveTab', handleSetTab);
+        return () => window.removeEventListener('setActiveTab', handleSetTab);
+      }, []);
 
       return (
         <div className="min-h-screen bg-marvel-black">
@@ -6938,6 +8904,11 @@ RESPONSE GUIDELINES:
                 <Dashboard collection={collection} matches={matches} onQuickMatch={handleQuickMatch} />
               </ErrorBoundary>
             )}
+            {activeTab === 'oracle' && (
+              <ErrorBoundary>
+                <SpotlightOracle collection={collection} />
+              </ErrorBoundary>
+            )}
             {activeTab === 'ai' && (
               <ErrorBoundary>
                 <AIChat collection={collection} matches={matches} aiConfig={aiConfig} setActiveTab={setActiveTab} />
@@ -6946,6 +8917,36 @@ RESPONSE GUIDELINES:
             {activeTab === 'collection' && (
               <ErrorBoundary>
                 <Collection collection={collection} setCollection={setCollection} />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'armor' && (
+              <ErrorBoundary>
+                <HallOfArmor />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'planner' && (
+              <ErrorBoundary>
+                <UpgradePlanner />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'missions' && (
+              <ErrorBoundary>
+                <MissionTracker />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'battlepass' && (
+              <ErrorBoundary>
+                <BattlePassTracker />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'economy' && (
+              <ErrorBoundary>
+                <EconomyIntelligence />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'board' && (
+              <ErrorBoundary>
+                <BoardSnapshot />
               </ErrorBoundary>
             )}
             {activeTab === 'decks' && (

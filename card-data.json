@@ -4,490 +4,700 @@
     "cost": 5,
     "power": 9,
     "series": 1,
-    "ability": "No ability."
+    "ability": "No ability.",
+    "releaseStatus": "released",
+    "tags": ["Vanilla"],
+    "cardDefId": "Abomination"
   },
   {
     "name": "Ant-Man",
     "cost": 1,
     "power": 1,
     "series": 1,
-    "ability": "Ongoing: If your side of this location is full, +3 Power."
+    "ability": "Ongoing: If your side of this location is full, +3 Power.",
+    "releaseStatus": "released",
+    "tags": ["Ongoing", "Power"],
+    "cardDefId": "Ant-Man"
   },
   {
     "name": "America Chavez",
     "cost": 6,
     "power": 9,
     "series": 1,
-    "ability": "On Reveal: This always starts in your deck, and is drawn on turn 6."
+    "ability": "On Reveal: This always starts in your deck, and is drawn on turn 6.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Draw"],
+    "cardDefId": "America_Chavez"
   },
   {
     "name": "Angela",
     "cost": 2,
     "power": 0,
     "series": 1,
-    "ability": "When you play a card here, +2 Power."
+    "ability": "When you play a card here, +2 Power.",
+    "releaseStatus": "released",
+    "tags": ["Power"],
+    "cardDefId": "Angela"
   },
   {
     "name": "Armor",
     "cost": 2,
     "power": 3,
     "series": 1,
-    "ability": "Ongoing: Cards at this location can't be destroyed."
+    "ability": "Ongoing: Cards at this location can't be destroyed.",
+    "releaseStatus": "released",
+    "tags": ["Ongoing", "Control"],
+    "cardDefId": "Armor"
   },
   {
     "name": "Bishop",
     "cost": 3,
     "power": 1,
     "series": 1,
-    "ability": "When you play a card, +1 Power."
+    "ability": "When you play a card, +1 Power.",
+    "releaseStatus": "released",
+    "tags": ["Power"],
+    "cardDefId": "Bishop"
   },
   {
     "name": "Blue Marvel",
     "cost": 5,
     "power": 3,
     "series": 1,
-    "ability": "Ongoing: Your other cards have +1 Power."
+    "ability": "Ongoing: Your other cards have +1 Power.",
+    "releaseStatus": "released",
+    "tags": ["Ongoing", "Power"],
+    "cardDefId": "Blue_Marvel"
   },
   {
     "name": "Cable",
     "cost": 2,
     "power": 2,
     "series": 1,
-    "ability": "On Reveal: Draw a card from your opponent's deck."
+    "ability": "On Reveal: Draw a card from your opponent's deck.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Draw"],
+    "cardDefId": "Cable"
   },
   {
     "name": "Captain America",
     "cost": 3,
     "power": 3,
     "series": 1,
-    "ability": "Ongoing: Your other cards at this location have +1 Power."
+    "ability": "Ongoing: Your other cards at this location have +1 Power.",
+    "releaseStatus": "released",
+    "tags": ["Ongoing", "Power"],
+    "cardDefId": "Captain_America"
   },
   {
     "name": "Carnage",
     "cost": 2,
     "power": 2,
     "series": 1,
-    "ability": "On Reveal: Destroy your other cards here. +2 Power for each destroyed."
+    "ability": "On Reveal: Destroy your other cards here. +2 Power for each destroyed.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Destroy", "Power"],
+    "cardDefId": "Carnage"
   },
   {
     "name": "Colossus",
     "cost": 2,
     "power": 3,
     "series": 1,
-    "ability": "Ongoing: Can't be destroyed, moved, or have its Power reduced."
+    "ability": "Ongoing: Can't be destroyed, moved, or have its Power reduced.",
+    "releaseStatus": "released",
+    "tags": ["Ongoing", "Control"],
+    "cardDefId": "Colossus"
   },
   {
     "name": "Cosmo",
     "cost": 3,
     "power": 3,
     "series": 1,
-    "ability": "Ongoing: On Reveal abilities won't happen at this location."
+    "ability": "Ongoing: On Reveal abilities won't happen at this location.",
+    "releaseStatus": "released",
+    "tags": ["Ongoing", "Control"],
+    "cardDefId": "Cosmo"
   },
   {
     "name": "Cyclops",
     "cost": 3,
     "power": 4,
     "series": 1,
-    "ability": "No ability."
+    "ability": "No ability.",
+    "releaseStatus": "released",
+    "tags": ["Vanilla"],
+    "cardDefId": "Cyclops"
   },
   {
     "name": "Deathlok",
     "cost": 3,
     "power": 5,
     "series": 1,
-    "ability": "On Reveal: Destroy your other cards at this location."
+    "ability": "On Reveal: Destroy your other cards at this location.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Destroy"],
+    "cardDefId": "Deathlok"
   },
   {
     "name": "Elektra",
     "cost": 1,
     "power": 2,
     "series": 1,
-    "ability": "On Reveal: Destroy a random enemy 1-Cost card at this location."
+    "ability": "On Reveal: Destroy a random enemy 1-Cost card at this location.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Destroy"],
+    "cardDefId": "Elektra"
   },
   {
     "name": "Enchantress",
     "cost": 4,
     "power": 5,
     "series": 1,
-    "ability": "On Reveal: Remove the abilities from all Ongoing cards at this location."
+    "ability": "On Reveal: Remove the abilities from all Ongoing cards at this location.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Control"],
+    "cardDefId": "Enchantress"
   },
   {
     "name": "Forge",
     "cost": 2,
     "power": 1,
     "series": 1,
-    "ability": "On Reveal: Give the next card you play +2 Power."
+    "ability": "On Reveal: Give the next card you play +2 Power.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "Forge"
   },
   {
     "name": "Gamora",
     "cost": 5,
     "power": 7,
     "series": 1,
-    "ability": "On Reveal: If your opponent played a card here this turn, +5 Power."
+    "ability": "On Reveal: If your opponent played a card here this turn, +5 Power.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "Gamora"
   },
   {
     "name": "Groot",
     "cost": 3,
     "power": 3,
     "series": 1,
-    "ability": "On Reveal: If your opponent played a card here this turn, +3 Power."
+    "ability": "On Reveal: If your opponent played a card here this turn, +3 Power.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "Groot"
   },
   {
     "name": "Hawkeye",
     "cost": 1,
     "power": 1,
     "series": 1,
-    "ability": "On Reveal: If you play a card here next turn, +3 Power."
+    "ability": "On Reveal: If you play a card here next turn, +3 Power.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "Hawkeye"
   },
   {
     "name": "Hulk",
     "cost": 6,
     "power": 12,
     "series": 1,
-    "ability": "No ability."
+    "ability": "No ability.",
+    "releaseStatus": "released",
+    "tags": ["Vanilla"],
+    "cardDefId": "Hulk"
   },
   {
     "name": "Human Torch",
     "cost": 1,
     "power": 2,
     "series": 1,
-    "ability": "When this moves to a location, double its Power."
+    "ability": "When this moves to a location, double its Power.",
+    "releaseStatus": "released",
+    "tags": ["Move", "Power"],
+    "cardDefId": "Human_Torch"
   },
   {
     "name": "Iron Fist",
     "cost": 1,
     "power": 2,
     "series": 1,
-    "ability": "On Reveal: After you play your next card, move it one location to the left."
+    "ability": "On Reveal: After you play your next card, move it one location to the left.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Move"],
+    "cardDefId": "Iron_Fist"
   },
   {
     "name": "Iron Man",
     "cost": 5,
     "power": 0,
     "series": 1,
-    "ability": "Ongoing: Your total Power is doubled at this location."
+    "ability": "Ongoing: Your total Power is doubled at this location.",
+    "releaseStatus": "released",
+    "tags": ["Ongoing", "Power"],
+    "cardDefId": "Iron_Man"
   },
   {
     "name": "Jessica Jones",
     "cost": 4,
     "power": 4,
     "series": 1,
-    "ability": "On Reveal: If you don't play a card here next turn, +4 Power."
+    "ability": "On Reveal: If you don't play a card here next turn, +4 Power.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "Jessica_Jones"
   },
   {
     "name": "Klaw",
     "cost": 5,
     "power": 4,
     "series": 1,
-    "ability": "Ongoing: The location to the right has +6 Power."
+    "ability": "Ongoing: The location to the right has +6 Power.",
+    "releaseStatus": "released",
+    "tags": ["Ongoing", "Power"],
+    "cardDefId": "Klaw"
   },
   {
     "name": "Korg",
     "cost": 1,
     "power": 1,
     "series": 1,
-    "ability": "On Reveal: Shuffle a Rock into your opponent's deck."
+    "ability": "On Reveal: Shuffle a Rock into your opponent's deck.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Control"],
+    "cardDefId": "Korg"
   },
   {
     "name": "Lady Sif",
     "cost": 3,
     "power": 4,
     "series": 1,
-    "ability": "On Reveal: Discard the highest-cost card from your hand."
+    "ability": "On Reveal: Discard the highest-cost card from your hand.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Discard"],
+    "cardDefId": "Lady_Sif"
   },
   {
     "name": "Lizard",
     "cost": 2,
     "power": 5,
     "series": 1,
-    "ability": "Ongoing: -3 Power if your opponent has 4 cards here."
+    "ability": "Ongoing: -3 Power if your opponent has 4 cards here.",
+    "releaseStatus": "released",
+    "tags": ["Ongoing", "Power"],
+    "cardDefId": "Lizard"
   },
   {
     "name": "Mantis",
     "cost": 1,
     "power": 2,
     "series": 1,
-    "ability": "On Reveal: If your opponent played a card here this turn, draw a card from their deck."
+    "ability": "On Reveal: If your opponent played a card here this turn, draw a card from their deck.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Draw"],
+    "cardDefId": "Mantis"
   },
   {
     "name": "Medusa",
     "cost": 2,
     "power": 2,
     "series": 1,
-    "ability": "On Reveal: If this is at the middle location, +3 Power."
+    "ability": "On Reveal: If this is at the middle location, +3 Power.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "Medusa"
   },
   {
     "name": "Mister Fantastic",
     "cost": 3,
     "power": 2,
     "series": 1,
-    "ability": "Ongoing: Adjacent locations have +2 Power."
+    "ability": "Ongoing: Adjacent locations have +2 Power.",
+    "releaseStatus": "released",
+    "tags": ["Ongoing", "Power"],
+    "cardDefId": "Mister_Fantastic"
   },
   {
     "name": "Mister Sinister",
     "cost": 2,
     "power": 2,
     "series": 1,
-    "ability": "On Reveal: Add a Sinister Clone to this location with the same Power."
+    "ability": "On Reveal: Add a Sinister Clone to this location with the same Power.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "Mister_Sinister"
   },
   {
     "name": "Moon Girl",
     "cost": 4,
     "power": 4,
     "series": 1,
-    "ability": "On Reveal: Duplicate your hand."
+    "ability": "On Reveal: Duplicate your hand.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal"],
+    "cardDefId": "Moon_Girl"
   },
   {
     "name": "Morph",
     "cost": 3,
     "power": 0,
     "series": 1,
-    "ability": "On Reveal: Become a copy of a random card in your opponent's hand."
+    "ability": "On Reveal: Become a copy of a random card in your opponent's hand.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal"],
+    "cardDefId": "Morph"
   },
   {
     "name": "Multiple Man",
     "cost": 2,
     "power": 3,
     "series": 1,
-    "ability": "When this moves, add a copy to the old location."
+    "ability": "When this moves, add a copy to the old location.",
+    "releaseStatus": "released",
+    "tags": ["Move"],
+    "cardDefId": "Multiple_Man"
   },
   {
     "name": "Namor",
     "cost": 4,
     "power": 5,
     "series": 1,
-    "ability": "Ongoing: +5 Power if this is your only card here."
+    "ability": "Ongoing: +5 Power if this is your only card here.",
+    "releaseStatus": "released",
+    "tags": ["Ongoing", "Power"],
+    "cardDefId": "Namor"
   },
   {
     "name": "Nightcrawler",
     "cost": 1,
     "power": 2,
     "series": 1,
-    "ability": "You can move this once."
+    "ability": "You can move this once.",
+    "releaseStatus": "released",
+    "tags": ["Move"],
+    "cardDefId": "Nightcrawler"
   },
   {
     "name": "Nova",
     "cost": 1,
     "power": 1,
     "series": 1,
-    "ability": "When this is destroyed, give your cards +1 Power."
+    "ability": "When this is destroyed, give your cards +1 Power.",
+    "releaseStatus": "released",
+    "tags": ["Destroy", "Power"],
+    "cardDefId": "Nova"
   },
   {
     "name": "Odin",
     "cost": 6,
     "power": 8,
     "series": 1,
-    "ability": "On Reveal: Activate the On Reveal abilities of your other cards at this location."
+    "ability": "On Reveal: Activate the On Reveal abilities of your other cards at this location.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal"],
+    "cardDefId": "Odin"
   },
   {
     "name": "Onslaught",
     "cost": 6,
     "power": 7,
     "series": 1,
-    "ability": "Ongoing: Double your other Ongoing effects at this location."
+    "ability": "Ongoing: Double your other Ongoing effects at this location.",
+    "releaseStatus": "released",
+    "tags": ["Ongoing"],
+    "cardDefId": "Onslaught"
   },
   {
     "name": "Punisher",
     "cost": 3,
     "power": 2,
     "series": 1,
-    "ability": "Ongoing: +1 Power for each enemy card at this location."
+    "ability": "Ongoing: +1 Power for each enemy card at this location.",
+    "releaseStatus": "released",
+    "tags": ["Ongoing", "Power"],
+    "cardDefId": "Punisher"
   },
   {
     "name": "Rocket Raccoon",
     "cost": 1,
     "power": 2,
     "series": 1,
-    "ability": "On Reveal: If your opponent played a card here this turn, +2 Power."
+    "ability": "On Reveal: If your opponent played a card here this turn, +2 Power.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "Rocket_Raccoon"
   },
   {
     "name": "Scarlet Witch",
     "cost": 2,
     "power": 3,
     "series": 1,
-    "ability": "On Reveal: Replace this location with a random location."
+    "ability": "On Reveal: Replace this location with a random location.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Control"],
+    "cardDefId": "Scarlet_Witch"
   },
   {
     "name": "Sentinel",
     "cost": 2,
     "power": 3,
     "series": 1,
-    "ability": "On Reveal: Add another Sentinel to your hand."
+    "ability": "On Reveal: Add another Sentinel to your hand.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal"],
+    "cardDefId": "Sentinel"
   },
   {
     "name": "Spectrum",
     "cost": 6,
     "power": 5,
     "series": 1,
-    "ability": "On Reveal: Give your Ongoing cards +2 Power."
+    "ability": "On Reveal: Give your Ongoing cards +2 Power.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "Spectrum"
   },
   {
     "name": "Spider-Woman",
     "cost": 5,
     "power": 7,
     "series": 1,
-    "ability": "On Reveal: Afflict all enemy cards here with -1 Power."
+    "ability": "On Reveal: Afflict all enemy cards here with -1 Power.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "Spider-Woman"
   },
   {
     "name": "Squirrel Girl",
     "cost": 1,
     "power": 1,
     "series": 1,
-    "ability": "On Reveal: Add a 1-Power Squirrel to each other location."
+    "ability": "On Reveal: Add a 1-Power Squirrel to each other location.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "Squirrel_Girl"
   },
   {
     "name": "Star-Lord",
     "cost": 2,
     "power": 2,
     "series": 1,
-    "ability": "On Reveal: If your opponent played a card here this turn, +3 Power."
+    "ability": "On Reveal: If your opponent played a card here this turn, +3 Power.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "Star-Lord"
   },
   {
     "name": "Strong Guy",
     "cost": 4,
     "power": 4,
     "series": 1,
-    "ability": "Ongoing: If your hand is empty, +6 Power."
+    "ability": "Ongoing: If your hand is empty, +6 Power.",
+    "releaseStatus": "released",
+    "tags": ["Ongoing", "Power"],
+    "cardDefId": "Strong_Guy"
   },
   {
     "name": "Sword Master",
     "cost": 3,
     "power": 6,
     "series": 1,
-    "ability": "On Reveal: Discard a card from your hand."
+    "ability": "On Reveal: Discard a card from your hand.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Discard"],
+    "cardDefId": "Sword_Master"
   },
   {
     "name": "The Thing",
     "cost": 4,
     "power": 6,
     "series": 1,
-    "ability": "No ability."
+    "ability": "No ability.",
+    "releaseStatus": "released",
+    "tags": ["Vanilla"],
+    "cardDefId": "The_Thing"
   },
   {
     "name": "White Queen",
     "cost": 4,
     "power": 6,
     "series": 1,
-    "ability": "On Reveal: Draw a copy of the highest-Cost card in your opponent's hand."
+    "ability": "On Reveal: Draw a copy of the highest-Cost card in your opponent's hand.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Draw"],
+    "cardDefId": "White_Queen"
   },
   {
     "name": "White Tiger",
     "cost": 5,
     "power": 1,
     "series": 1,
-    "ability": "On Reveal: Add a 7-Power Tiger to another location."
+    "ability": "On Reveal: Add a 7-Power Tiger to another location.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "White_Tiger"
   },
   {
     "name": "Wolfsbane",
     "cost": 3,
     "power": 1,
     "series": 1,
-    "ability": "On Reveal: +2 Power for each other card you have here."
+    "ability": "On Reveal: +2 Power for each other card you have here.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "Wolfsbane"
   },
   {
     "name": "Wolverine",
     "cost": 2,
     "power": 2,
     "series": 1,
-    "ability": "When this is discarded or destroyed, regenerate it at a random location."
+    "ability": "When this is discarded or destroyed, regenerate it at a random location.",
+    "releaseStatus": "released",
+    "tags": ["Discard", "Destroy"],
+    "cardDefId": "Wolverine"
   },
   {
     "name": "Yondu",
     "cost": 1,
     "power": 2,
     "series": 1,
-    "ability": "On Reveal: Remove the top card of your opponent's deck."
+    "ability": "On Reveal: Remove the top card of your opponent's deck.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Control"],
+    "cardDefId": "Yondu"
   },
   {
     "name": "Agent 13",
     "cost": 1,
     "power": 2,
     "series": 2,
-    "ability": "On Reveal: Add a random card to your hand."
+    "ability": "On Reveal: Add a random card to your hand.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal"],
+    "cardDefId": "Agent_13"
   },
   {
     "name": "Bucky Barnes",
     "cost": 2,
     "power": 1,
     "series": 2,
-    "ability": "When this is destroyed, create the Winter Soldier in its place."
+    "ability": "When this is destroyed, create the Winter Soldier in its place.",
+    "releaseStatus": "released",
+    "tags": ["Destroy"],
+    "cardDefId": "Bucky_Barnes"
   },
   {
     "name": "Cloak",
     "cost": 2,
     "power": 4,
     "series": 2,
-    "ability": "On Reveal: Next turn, both players can move cards to this location."
+    "ability": "On Reveal: Next turn, both players can move cards to this location.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Move"],
+    "cardDefId": "Cloak"
   },
   {
     "name": "Ebony Maw",
     "cost": 1,
     "power": 7,
     "series": 2,
-    "ability": "You can't play cards here after turn 3."
+    "ability": "You can't play cards here after turn 3.",
+    "releaseStatus": "released",
+    "tags": ["Control"],
+    "cardDefId": "Ebony_Maw"
   },
   {
     "name": "Hobgoblin",
     "cost": 5,
     "power": -8,
     "series": 2,
-    "ability": "On Reveal: Switch sides."
+    "ability": "On Reveal: Switch sides.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Control"],
+    "cardDefId": "Hobgoblin"
   },
   {
     "name": "Iceman",
     "cost": 1,
     "power": 2,
     "series": 2,
-    "ability": "On Reveal: Give a random card in your opponent's hand +1 Cost."
+    "ability": "On Reveal: Give a random card in your opponent's hand +1 Cost.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Control"],
+    "cardDefId": "Iceman"
   },
   {
     "name": "Killmonger",
     "cost": 3,
     "power": 3,
     "series": 2,
-    "ability": "On Reveal: Destroy ALL 1-Cost cards."
+    "ability": "On Reveal: Destroy ALL 1-Cost cards.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Destroy"],
+    "cardDefId": "Killmonger"
   },
   {
     "name": "Leech",
     "cost": 5,
     "power": 3,
     "series": 2,
-    "ability": "On Reveal: Remove the abilities from all cards in your opponent's hand."
+    "ability": "On Reveal: Remove the abilities from all cards in your opponent's hand.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Control"],
+    "cardDefId": "Leech"
   },
   {
     "name": "Morbius",
     "cost": 2,
     "power": 0,
     "series": 2,
-    "ability": "Ongoing: +2 Power for each card you've discarded this game."
+    "ability": "Ongoing: +2 Power for each card you've discarded this game.",
+    "releaseStatus": "released",
+    "tags": ["Ongoing", "Discard", "Power"],
+    "cardDefId": "Morbius"
   },
   {
     "name": "Nakia",
     "cost": 3,
     "power": 3,
     "series": 2,
-    "ability": "On Reveal: Give the 2 leftmost cards in your hand +2 Power."
+    "ability": "On Reveal: Give the 2 leftmost cards in your hand +2 Power.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "Nakia"
   },
   {
     "name": "Okoye",
     "cost": 2,
     "power": 2,
     "series": 2,
-    "ability": "On Reveal: Give every card in your deck +1 Power."
+    "ability": "On Reveal: Give every card in your deck +1 Power.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Power"],
+    "cardDefId": "Okoye"
   },
   {
     "name": "Rhino",
     "cost": 3,
     "power": 3,
     "series": 2,
-    "ability": "On Reveal: Remove the ability from this location."
+    "ability": "On Reveal: Remove the ability from this location.",
+    "releaseStatus": "released",
+    "tags": ["OnReveal", "Control"],
+    "cardDefId": "Rhino"
   },
   {
     "name": "Sabretooth",
     "cost": 3,
     "power": 4,
     "series": 2,
-    "ability": "When this is destroyed, return it to your hand. It costs 0."
+    "ability": "When this is destroyed, return it to your hand. It costs 0.",
+    "releaseStatus": "released",
+    "tags": ["Destroy", "Ramp"],
+    "cardDefId": "Sabretooth"
   },
   {
     "name": "Sandman",
