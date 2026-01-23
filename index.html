@@ -4297,11 +4297,17 @@ RESPONSE GUIDELINES:
 
       // Decode deck code (base64 encoded card list)
       // Game uses abbreviated defIds like "Fntmx8" for Fantomex
-      const decodeDeckCode = (code) => {
+      // Accepts full deck paste (with # comments) or just the base64 string
+      const decodeDeckCode = (input) => {
         try {
-          const decoded = atob(code.trim());
+          // Extract base64 line from full deck paste (line with 20+ alphanumeric chars, no spaces or #)
+          const lines = input.trim().split('\n');
+          const base64Line = lines.find(line => /^[A-Za-z0-9+/=]{20,}$/.test(line.trim()));
+          const code = base64Line ? base64Line.trim() : input.trim();
+
+          const decoded = atob(code);
           const cardCodes = decoded.split(',').map(s => s.trim()).filter(Boolean);
-          if (cardCodes.length !== 12) throw new Error('Deck must have 12 cards');
+          if (cardCodes.length !== 12) throw new Error(`Deck must have 12 cards (found ${cardCodes.length})`);
 
           // Helper to match abbreviated code to card defId
           const matchCard = (abbrev) => {
