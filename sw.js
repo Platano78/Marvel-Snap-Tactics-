@@ -1,5 +1,5 @@
 // Snapapoulous Prime Service Worker
-const CACHE_NAME = 'snapapoulous-v10';
+const CACHE_NAME = 'snapapoulous-v12';
 // Dynamically build asset URLs based on service worker location
 const SW_SCOPE = self.registration ? self.registration.scope : self.location.href.replace(/sw\.js$/, '');
 const OFFLINE_ASSETS = [
@@ -12,7 +12,7 @@ const OFFLINE_ASSETS = [
   './assets/icons/icon-512.png'
 ];
 
-// Install event - cache offline assets
+// Install event - cache offline assets with error handling
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing service worker...');
   event.waitUntil(
@@ -23,6 +23,11 @@ self.addEventListener('install', (event) => {
       })
       .then(() => {
         console.log('[SW] Install complete');
+        return self.skipWaiting();
+      })
+      .catch((error) => {
+        console.error('[SW] Cache install failed:', error);
+        // Still skip waiting so new SW activates even if some assets fail to cache
         return self.skipWaiting();
       })
   );
@@ -64,6 +69,31 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// Helper function for stale-while-revalidate strategy
+const staleWhileRevalidate = (event, cache, cachedResponse) => {
+  const networkFetch = fetch(event.request)
+    .then((networkResponse) => {
+      if (networkResponse.ok) {
+        // Update cache with fresh response
+        cache.put(event.request, networkResponse.clone());
+        console.log('[SW] Updated cache for:', event.request.url);
+      }
+      return networkResponse;
+    })
+    .catch((error) => {
+      console.log('[SW] Network fetch failed:', error);
+      // Return cached response on network failure (if available)
+      if (cachedResponse) {
+        return cachedResponse.clone();
+      }
+      // No cached version available
+      throw error;
+    });
+
+  // Return cached response immediately if available, otherwise wait for network
+  return cachedResponse ? cachedResponse.clone() : networkFetch;
+};
+
 // Fetch event - different strategies for different content types
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
@@ -80,7 +110,7 @@ self.addEventListener('fetch', (event) => {
   // NETWORK-FIRST for HTML files - always get fresh content when online
   // This ensures users get updates immediately
   const isHTMLRequest = event.request.mode === 'navigate' ||
-                        event.request.headers.get('accept')?.includes('text/html') ||
+                        (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) ||
                         url.pathname.endsWith('.html') ||
                         url.pathname === '/' ||
                         url.pathname.endsWith('/');
@@ -109,33 +139,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stale-while-revalidate for card data (ensures fresh data while serving cached)
-  if (event.request.url.includes('card-data.json')) {
+  // Stale-while-revalidate for card data and persona (ensures fresh data while serving cached)
+  if (event.request.url.includes('card-data.json') || event.request.url.includes('persona.json')) {
     event.respondWith(
-      caches.open(CACHE_NAME).then(cache => {
-        return cache.match(event.request).then(cachedResponse => {
-          // Start network fetch in background
-          const networkFetch = fetch(event.request).then(networkResponse => {
-            if (networkResponse.ok) {
-              // Update cache with fresh response
-              cache.put(event.request, networkResponse.clone());
-              console.log('[SW] Updated card-data.json cache');
-            }
-            return networkResponse;
-          }).catch(error => {
-            console.log('[SW] Network fetch failed for card-data.json:', error);
-            return cachedResponse;
-          });
-
-          // Return cached response immediately if available, otherwise wait for network
-          return cachedResponse || networkFetch;
+      caches.open(CACHE_NAME).then((cache) => {
+        return cache.match(event.request).then((cachedResponse) => {
+          return staleWhileRevalidate(event, cache, cachedResponse);
         });
       })
     );
     return;
   }
 
-  // CACHE-FIRST for other assets (images, JSON config, etc.)
+  // CACHE-FIRST for other assets (images, manifest, etc.)
   event.respondWith(
     caches.match(event.request)
       .then((cachedResponse) => {

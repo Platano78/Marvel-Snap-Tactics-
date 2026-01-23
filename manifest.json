@@ -46,9 +46,23 @@
       "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
+      "name": "Log Win",
+      "short_name": "Win",
+      "description": "Quickly log a win",
+      "url": "./index.html?action=quick-win",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Log Loss",
+      "short_name": "Loss",
+      "description": "Quickly log a loss",
+      "url": "./index.html?action=quick-loss",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
       "name": "Ask Snapapoulous",
       "short_name": "Ask AI",
-      "description": "Get tactical advice",
+      "description": "Get tactical advice from Snapapoulous",
       "url": "./index.html?tab=ai",
       "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
     },
@@ -71,28 +85,5 @@
       "text": "shared_text",
       "url": "shared_url"
     }
-  },
-  "shortcuts": [
-    {
-      "name": "Log Win",
-      "short_name": "Win",
-      "description": "Quickly log a win",
-      "url": "./index.html?action=quick-win",
-      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Log Loss",
-      "short_name": "Loss",
-      "description": "Quickly log a loss",
-      "url": "./index.html?action=quick-loss",
-      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Ask AI",
-      "short_name": "AI",
-      "description": "Get tactical advice from Snapapoulous",
-      "url": "./index.html?tab=advisor",
-      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
-    }
-  ]
+  }
 }

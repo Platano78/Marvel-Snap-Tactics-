@@ -13,6 +13,13 @@
 
   <title>Snapapoulous Prime - Marvel Snap Companion</title>
 
+  <!-- Preconnect to CDN origins for faster resource loading -->
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+  <link rel="preconnect" href="https://accounts.google.com" crossorigin>
+  <link rel="dns-prefetch" href="https://unpkg.com">
+  <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+
   <!-- Service Worker Update Handler - runs early to catch SW updates -->
   <script>
     if ('serviceWorker' in navigator) {
@@ -83,11 +90,11 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- QR Code Generation -->
-  <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <!-- QR Code Generation - deferred as non-critical for initial render -->
+  <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js" defer></script>
 
-  <!-- LZ-String for compression (QR sync) -->
-  <script src="https://unpkg.com/lz-string@1.5.0/libs/lz-string.min.js"></script>
+  <!-- LZ-String for compression (QR sync) - deferred as non-critical for initial render -->
+  <script src="https://unpkg.com/lz-string@1.5.0/libs/lz-string.min.js" defer></script>
 
   <!-- Tailwind Config -->
   <script>
@@ -769,9 +776,36 @@
       background: #2D2D2D;
       transition: transform 0.2s ease-out;
     }
+
+    /* CSS Gap Fallbacks for older Safari (pre-14.1) */
+    .linked-status {
+      gap: 12px;
+    }
+    @supports not (gap: 12px) {
+      .linked-status > * + * {
+        margin-top: 12px;
+      }
+    }
+    /* Grid gap fallback - use grid-gap as older property */
+    .grid {
+      grid-gap: 0.5rem; /* fallback */
+      gap: 0.5rem;
+    }
+    /* Flexbox gap fallback using margin for older browsers */
+    @supports not (gap: 8px) {
+      .flex > * + * {
+        margin-left: 8px;
+      }
+      .flex-col > * + * {
+        margin-left: 0;
+        margin-top: 8px;
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- Skip Navigation Link for Accessibility -->
+  <a href="#main-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;" onfocus="this.style.cssText='position:fixed;left:16px;top:16px;z-index:9999;background:#ED1D24;color:white;padding:12px 24px;border-radius:8px;font-weight:bold;text-decoration:none;width:auto;height:auto;overflow:visible;';" onblur="this.style.cssText='position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;';">Skip to main content</a>
   <div id="root"></div>
 
   <script type="text/babel">
@@ -907,6 +941,25 @@
       );
     };
 
+    // ==================== BROWSER COMPATIBILITY HELPERS ====================
+    // Safe property access for browsers without optional chaining (Safari iOS < 13.4, Firefox < 72)
+    const safeGet = (obj, path, defaultValue) => {
+      if (obj == null) return defaultValue;
+      const keys = path.split('.');
+      let result = obj;
+      for (const key of keys) {
+        // Handle array index access like "candidates.0.content"
+        if (result == null) return defaultValue;
+        result = result[key];
+      }
+      return result !== undefined ? result : defaultValue;
+    };
+
+    // Check if Google OAuth is available
+    const isGoogleOAuthAvailable = () => {
+      return !!(window.google && window.google.accounts && window.google.accounts.oauth2);
+    };
+
     // ==================== CONSTANTS ====================
     const GOOGLE_CLIENT_ID = '770573636629-tddodsck0vtmtqpdh7uj7dtevr07orn2.apps.googleusercontent.com';
     const GEMINI_SCOPES = 'https://www.googleapis.com/auth/generative-language.retriever';
@@ -918,7 +971,7 @@
 
     // Initialize Google OAuth 2.0 Token Client
     const initGoogleOAuth = (callback) => {
-      if (!window.google?.accounts?.oauth2) {
+      if (!isGoogleOAuthAvailable()) {
         console.log('Google OAuth2 library not loaded yet');
         return false;
       }
@@ -1013,7 +1066,7 @@
     // Sign out from Google
     const signOutGoogle = () => {
       const token = localStorage.getItem('snap_google_access_token');
-      if (token && window.google?.accounts?.oauth2) {
+      if (token && isGoogleOAuthAvailable()) {
         google.accounts.oauth2.revoke(token, () => {
           console.log('Google token revoked');
         });
@@ -1251,7 +1304,7 @@
         if (cached) {
           const { data, timestamp } = JSON.parse(cached);
           // Use cache if less than 7 days old
-          if (Date.now() - timestamp < 7 * 24 * 60 * 60 * 1000 && data?.length > 0) {
+          if (Date.now() - timestamp < 7 * 24 * 60 * 60 * 1000 && data && data.length > 0) {
             return data;
           }
         }
@@ -1609,11 +1662,12 @@
       const importedStats = loadFromStorage('snap_profile_stats', null);
 
       // Build personality section from persona
+      const personality = persona.personality || {};
       const personalitySection = `PERSONALITY:
-- Tone: ${persona.personality?.tone || 'Confident and encouraging'}
-- Style: ${persona.personality?.style || 'Direct tactical guidance'}
-- Voice: ${persona.personality?.voice || 'Like a seasoned hero mentoring a new Avenger'}
-${persona.personality?.quirks ? `- Quirks: ${persona.personality.quirks.join('; ')}` : ''}`;
+- Tone: ${personality.tone || 'Confident and encouraging'}
+- Style: ${personality.style || 'Direct tactical guidance'}
+- Voice: ${personality.voice || 'Like a seasoned hero mentoring a new Avenger'}
+${personality.quirks ? `- Quirks: ${personality.quirks.join('; ')}` : ''}`;
 
       // Build expertise section
       const expertiseSection = persona.expertise ?
@@ -1717,8 +1771,9 @@ Tech Options: ${META_CONTEXT.techCards.join(', ')}`;
       }
 
       // Assemble the complete system prompt
-      return `You are ${persona.name}, a ${persona.role || persona.identity?.role}.
-${persona.identity?.philosophy ? `\nPHILOSOPHY: "${persona.identity.philosophy}"` : ''}
+      const identity = persona.identity || {};
+      return `You are ${persona.name}, a ${persona.role || identity.role}.
+${identity.philosophy ? `\nPHILOSOPHY: "${identity.philosophy}"` : ''}
 
 ${personalitySection}
 
@@ -1803,12 +1858,12 @@ RESPONSE GUIDELINES:
           throw new Error('Google session expired. Please sign in again.');
         }
 
-        throw new Error(`Gemini API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+        throw new Error(`Gemini API error: ${response.status} - ${(errorData.error && errorData.error.message) || 'Unknown error'}`);
       }
 
       const data = await response.json();
 
-      if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+      if (!(data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text)) {
         throw new Error('Invalid response from Gemini API');
       }
 
@@ -1848,7 +1903,7 @@ RESPONSE GUIDELINES:
       );
       if (!response.ok) throw new Error(`Gemini API error: ${response.status}`);
       const data = await response.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
+      return safeGet(data, 'candidates.0.content.parts.0.text', 'No response');
     };
 
     const callGroq = async (messages, model, apiKey) => {
@@ -1862,7 +1917,7 @@ RESPONSE GUIDELINES:
       });
       if (!response.ok) throw new Error(`Groq error: ${response.status}`);
       const data = await response.json();
-      return data.choices?.[0]?.message?.content || 'No response';
+      return safeGet(data, 'choices.0.message.content', 'No response');
     };
 
     const callClaude = async (messages, model, apiKey) => {
@@ -1880,13 +1935,13 @@ RESPONSE GUIDELINES:
         body: JSON.stringify({
           model,
           max_tokens: 8192,
-          system: systemMsg?.content || '',
+          system: (systemMsg && systemMsg.content) || '',
           messages: otherMsgs
         })
       });
       if (!response.ok) throw new Error(`Claude error: ${response.status}`);
       const data = await response.json();
-      return data.content?.[0]?.text || 'No response';
+      return safeGet(data, 'content.0.text', 'No response');
     };
 
     const callOpenAI = async (messages, model, apiKey) => {
@@ -1900,7 +1955,7 @@ RESPONSE GUIDELINES:
       });
       if (!response.ok) throw new Error(`OpenAI error: ${response.status}`);
       const data = await response.json();
-      return data.choices?.[0]?.message?.content || 'No response';
+      return safeGet(data, 'choices.0.message.content', 'No response');
     };
 
     const callLocal = async (messages, model, endpoint) => {
@@ -1911,7 +1966,7 @@ RESPONSE GUIDELINES:
       });
       if (!response.ok) throw new Error(`Local error: ${response.status}`);
       const data = await response.json();
-      return data.message?.content || 'No response';
+      return safeGet(data, 'message.content', 'No response');
     };
 
     // ==================== LOG PARSER ====================
@@ -2084,7 +2139,8 @@ RESPONSE GUIDELINES:
        * Parse ProfileState.json for stats and card performance
        */
       parseProfile(json) {
-        const account = json?.ServerState?.Account;
+        const serverState = (json && json.ServerState) || {};
+        const account = serverState.Account;
         if (!account) return null;
 
         // Parse card stats (net cubes per card)
@@ -2094,7 +2150,7 @@ RESPONSE GUIDELINES:
           .sort((a, b) => b.netCubes - a.netCubes);
 
         // Parse wallet
-        const wallet = json?.ServerState?.Wallet || {};
+        const wallet = serverState.Wallet || {};
         const currencies = wallet.Currencies || {};
 
         const wins = account.Wins || 0;
@@ -2123,9 +2179,9 @@ RESPONSE GUIDELINES:
             all: cardPerformance
           },
           currencies: {
-            credits: currencies.Credits?.TotalAmount || 0,
-            gold: currencies.Gold?.TotalAmount || 0,
-            tokens: currencies.CollectorsToken?.TotalAmount || 0
+            credits: (currencies.Credits && currencies.Credits.TotalAmount) || 0,
+            gold: (currencies.Gold && currencies.Gold.TotalAmount) || 0,
+            tokens: (currencies.CollectorsToken && currencies.CollectorsToken.TotalAmount) || 0
           },
           lastLogin: account.LastLogin,
           parseDate: new Date().toISOString()
@@ -2136,7 +2192,7 @@ RESPONSE GUIDELINES:
        * Parse CharacterMasteryState.json for mastery levels
        */
       parseMastery(json) {
-        const progress = json?.ServerState?.CharacterMasteryProgress?.CharacterProgressData;
+        const progress = safeGet(json, 'ServerState.CharacterMasteryProgress.CharacterProgressData', null);
         if (!progress) return null;
 
         const masteryData = Object.entries(progress)
@@ -2162,7 +2218,7 @@ RESPONSE GUIDELINES:
        * Parse BattlePassState.json for season pass progress
        */
       parseBattlePass(json) {
-        const battlePass = json?.ServerState?.BattlePass;
+        const battlePass = safeGet(json, 'ServerState.BattlePass', null);
         if (!battlePass) return null;
 
         return {
@@ -2401,14 +2457,18 @@ RESPONSE GUIDELINES:
         { id: 'settings', label: 'More', icon: '☰' }
       ];
       return (
-        <nav className="fixed bottom-0 left-0 right-0 bg-marvel-black border-t-4 border-marvel-red z-50">
-          <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
+        <nav className="fixed bottom-0 left-0 right-0 bg-marvel-black border-t-4 border-marvel-red z-50" role="navigation" aria-label="Main navigation">
+          <div className="flex justify-around items-center h-16 max-w-lg mx-auto" role="tablist" aria-label="App sections">
             {tabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-controls={`panel-${tab.id}`}
+                id={`tab-${tab.id}`}
                 className={`flex flex-col items-center justify-center w-full h-full transition-colors ${
                   activeTab === tab.id ? 'text-marvel-red tab-active' : 'text-gray-400 hover:text-white'
                 }`}>
-                <span className="text-xl">{tab.icon}</span>
+                <span className="text-xl" aria-hidden="true">{tab.icon}</span>
                 <span className="text-xs mt-1 font-medium">{tab.label}</span>
               </button>
             ))}
@@ -2545,22 +2605,24 @@ RESPONSE GUIDELINES:
           </div>
           <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
             <h2 className="text-lg font-comic text-marvel-gold mb-3">Quick Match</h2>
-            <div className="mb-3">
-              <div className="text-sm text-green-400 mb-2">WIN</div>
-              <div className="flex gap-2">
+            <div className="mb-3" role="group" aria-label="Record win">
+              <div className="text-sm text-green-400 mb-2" id="win-label">WIN</div>
+              <div className="flex gap-2" role="group" aria-labelledby="win-label">
                 {[1, 2, 4, 8].map(cubes => (
                   <button key={`win-${cubes}`} onClick={() => onQuickMatch('WIN', cubes)}
+                    aria-label={`Record win of ${cubes} cube${cubes > 1 ? 's' : ''}`}
                     className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded shadow-comic-sm active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all">
                     +{cubes}
                   </button>
                 ))}
               </div>
             </div>
-            <div>
-              <div className="text-sm text-red-400 mb-2">LOSS</div>
-              <div className="flex gap-2">
+            <div role="group" aria-label="Record loss">
+              <div className="text-sm text-red-400 mb-2" id="loss-label">LOSS</div>
+              <div className="flex gap-2" role="group" aria-labelledby="loss-label">
                 {[1, 2, 4, 8].map(cubes => (
                   <button key={`loss-${cubes}`} onClick={() => onQuickMatch('LOSS', cubes)}
+                    aria-label={`Record loss of ${cubes} cube${cubes > 1 ? 's' : ''}`}
                     className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded shadow-comic-sm active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all">
                     -{cubes}
                   </button>
@@ -2600,7 +2662,7 @@ RESPONSE GUIDELINES:
       const messagesEndRef = useRef(null);
 
       const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (messagesEndRef.current) messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
       };
 
       useEffect(() => {
@@ -2621,7 +2683,7 @@ RESPONSE GUIDELINES:
         if (!aiConfig.provider) return false;
         if (aiConfig.provider === 'gemini-oauth') return isGoogleTokenValid();
         if (aiConfig.provider === 'local') return !!aiConfig.localEndpoint;
-        return !!aiConfig.apiKeys?.[aiConfig.provider];
+        return !!(aiConfig.apiKeys && aiConfig.apiKeys[aiConfig.provider]);
       };
 
       const sendMessage = async () => {
@@ -2648,7 +2710,7 @@ RESPONSE GUIDELINES:
           ];
 
           let response;
-          const model = aiConfig.model || AIProviders[aiConfig.provider]?.defaultModel;
+          const model = aiConfig.model || (AIProviders[aiConfig.provider] && AIProviders[aiConfig.provider].defaultModel);
 
           switch (aiConfig.provider) {
             case 'gemini-oauth':
@@ -2657,16 +2719,16 @@ RESPONSE GUIDELINES:
               break;
             case 'gemini':
               // Pass full messages - callGeminiAPIKey handles system instruction extraction
-              response = await callGeminiAPIKey(apiMessages, model, aiConfig.apiKeys?.gemini);
+              response = await callGeminiAPIKey(apiMessages, model, aiConfig.apiKeys && aiConfig.apiKeys.gemini);
               break;
             case 'groq':
-              response = await callGroq(apiMessages, model, aiConfig.apiKeys?.groq);
+              response = await callGroq(apiMessages, model, aiConfig.apiKeys && aiConfig.apiKeys.groq);
               break;
             case 'claude':
-              response = await callClaude(apiMessages, model, aiConfig.apiKeys?.claude);
+              response = await callClaude(apiMessages, model, aiConfig.apiKeys && aiConfig.apiKeys.claude);
               break;
             case 'openai':
-              response = await callOpenAI(apiMessages, model, aiConfig.apiKeys?.openai);
+              response = await callOpenAI(apiMessages, model, aiConfig.apiKeys && aiConfig.apiKeys.openai);
               break;
             case 'local':
               response = await callLocal(apiMessages, model, aiConfig.localEndpoint);
@@ -2881,7 +2943,9 @@ RESPONSE GUIDELINES:
                 <div key={card.name} className={`relative p-2 rounded-lg border-3 transition-all card-hover ${getSeriesBorderClass(card.series)} ${
                     isOwned ? 'bg-gray-700 border-opacity-100' : 'bg-gray-900 border-opacity-30 opacity-50'
                   }`} style={{ borderWidth: '3px' }}>
-                  <button onClick={() => toggleCard(card.name)} className="w-full h-full">
+                  <button onClick={() => toggleCard(card.name)} className="w-full h-full"
+                    aria-pressed={isOwned}
+                    aria-label={`${card.name}, ${card.cost} cost, ${card.power} power, ${isOwned ? 'owned' : 'not owned'}`}>
                     <div className="absolute top-1 left-1 w-6 h-6 bg-marvel-blue rounded-full flex items-center justify-center text-xs font-bold text-white">{card.cost}</div>
                     <div className="absolute top-1 right-1 w-6 h-6 bg-marvel-red rounded-full flex items-center justify-center text-xs font-bold text-white">{card.power}</div>
                     <div className="mt-6 text-xs text-white text-center truncate">{card.name}</div>
@@ -5439,7 +5503,7 @@ RESPONSE GUIDELINES:
       useEffect(() => {
         // Initialize OAuth 2.0 token client
         const initOAuth = () => {
-          if (window.google?.accounts?.oauth2) {
+          if (isGoogleOAuthAvailable()) {
             initGoogleOAuth((accessToken) => {
               // Token received callback
               setGoogleSignedIn(true);
@@ -5455,11 +5519,11 @@ RESPONSE GUIDELINES:
         };
 
         // Try to init now, or wait for script to load
-        if (window.google?.accounts?.oauth2) {
+        if (isGoogleOAuthAvailable()) {
           initOAuth();
         } else {
           const checkGoogle = setInterval(() => {
-            if (window.google?.accounts?.oauth2) {
+            if (isGoogleOAuthAvailable()) {
               clearInterval(checkGoogle);
               initOAuth();
             }
@@ -5519,7 +5583,9 @@ RESPONSE GUIDELINES:
         setTestStatus(prev => ({ ...prev, [providerId]: 'testing' }));
         try {
           const testMessages = [{ role: 'user', content: 'Say "Connection successful!" in 5 words or less.' }];
-          const model = aiConfig.model || AIProviders[providerId]?.defaultModel;
+          const providerConfig = AIProviders[providerId] || {};
+          const model = aiConfig.model || providerConfig.defaultModel;
+          const apiKeys = aiConfig.apiKeys || {};
 
           switch (providerId) {
             case 'gemini-oauth':
@@ -5529,16 +5595,16 @@ RESPONSE GUIDELINES:
               await callGeminiOAuth(testMessages, model);
               break;
             case 'gemini':
-              await callGeminiAPIKey(testMessages, model, aiConfig.apiKeys?.gemini);
+              await callGeminiAPIKey(testMessages, model, apiKeys.gemini);
               break;
             case 'groq':
-              await callGroq(testMessages, model, aiConfig.apiKeys?.groq);
+              await callGroq(testMessages, model, apiKeys.groq);
               break;
             case 'claude':
-              await callClaude(testMessages, model, aiConfig.apiKeys?.claude);
+              await callClaude(testMessages, model, apiKeys.claude);
               break;
             case 'openai':
-              await callOpenAI(testMessages, model, aiConfig.apiKeys?.openai);
+              await callOpenAI(testMessages, model, apiKeys.openai);
               break;
             case 'local':
               await callLocal(testMessages, model, aiConfig.localEndpoint);
@@ -6065,7 +6131,7 @@ RESPONSE GUIDELINES:
             {qrDataUrl && (
               <div className="text-center">
                 <div className="qr-container inline-block mb-2">
-                  <img src={qrDataUrl} alt="Sync QR Code" />
+                  <img src={qrDataUrl} alt="Sync QR Code" width="200" height="200" loading="lazy" />
                 </div>
                 {qrCodeParts.length > 1 ? (
                   <div className="flex items-center justify-center gap-2 mb-2">
@@ -6866,7 +6932,7 @@ RESPONSE GUIDELINES:
           </a>
           <OfflineIndicator />
           <InstallBanner />
-          <div id="main-content" tabIndex="-1">
+          <main id="main-content" tabIndex="-1" role="main" aria-label="App content">
             {activeTab === 'dashboard' && (
               <ErrorBoundary>
                 <Dashboard collection={collection} matches={matches} onQuickMatch={handleQuickMatch} />
@@ -6902,7 +6968,7 @@ RESPONSE GUIDELINES:
                 <Settings settings={settings} setSettings={setSettings} collection={collection} matches={matches} setCollection={setCollection} setMatches={setMatches} aiConfig={aiConfig} setAiConfig={setAiConfig} decks={decks} setDecks={setDecks} />
               </ErrorBoundary>
             )}
-          </div>
+          </main>
           <NavBar activeTab={activeTab} setActiveTab={setActiveTab} />
 
           {/* Phase 4: Sync Confirm Modal */}
