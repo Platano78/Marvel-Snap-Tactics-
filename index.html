@@ -1652,6 +1652,76 @@
       }
     };
 
+    // Build economy context for AI advisor (boosters, wallet, pity status)
+    const buildEconomyContext = () => {
+      const sections = [];
+
+      // Load economy data from localStorage
+      const wallet = loadFromStorage('snap_wallet', null);
+      const rewards = loadFromStorage('snap_rewards', null);
+      const enhancedCollection = loadFromStorage('snap_collection_enhanced', null);
+
+      // Wallet info (credits, gold, tokens, keys)
+      if (wallet) {
+        const walletParts = [];
+        if (wallet.credits !== undefined) walletParts.push(`${wallet.credits.toLocaleString()} credits`);
+        if (wallet.gold !== undefined) walletParts.push(`${wallet.gold.toLocaleString()} gold`);
+        if (wallet.tokens !== undefined) walletParts.push(`${wallet.tokens.toLocaleString()} tokens`);
+        if (wallet.keys !== undefined) walletParts.push(`${wallet.keys} keys`);
+        if (walletParts.length > 0) {
+          sections.push(`Currency: ${walletParts.join(', ')}`);
+        }
+      }
+
+      // Pity counter status
+      if (rewards && rewards.pityCounters) {
+        const pity = rewards.pityCounters;
+        const s4Pity = pity.s4 || 0;
+        const s5Pity = pity.s5 || 0;
+        const s4ToGuarantee = 20 - s4Pity;
+        const s5ToGuarantee = 60 - s5Pity;
+
+        let pityText = `Pity Progress: S4=${s4Pity}/20 (${s4ToGuarantee} caches to guarantee), S5=${s5Pity}/60 (${s5ToGuarantee} caches to guarantee)`;
+
+        // Add urgency hints
+        if (s4Pity >= 15) pityText += ' [S4 CLOSE - consider saving for pity]';
+        if (s5Pity >= 50) pityText += ' [S5 CLOSE - consider saving for pity]';
+
+        sections.push(pityText);
+      }
+
+      // Booster reminders - find cards with high boosters ready for upgrades
+      if (enhancedCollection && enhancedCollection.cards) {
+        const upgradeReady = enhancedCollection.cards
+          .filter(card => card.boosters >= 150 && card.splitLevel < 4)
+          .sort((a, b) => b.boosters - a.boosters)
+          .slice(0, 5);
+
+        if (upgradeReady.length > 0) {
+          const boosterList = upgradeReady.map(c =>
+            `${c.cardDefId} (${c.boosters} boosters, split ${c.splitLevel || 0})`
+          ).join(', ');
+          sections.push(`Upgrade Ready (150+ boosters): ${boosterList}`);
+        }
+
+        // Total boosters info
+        if (enhancedCollection.totalBoosters) {
+          sections.push(`Total Boosters: ${enhancedCollection.totalBoosters.toLocaleString()}`);
+        }
+
+        // God splits progress
+        if (enhancedCollection.godSplitCount) {
+          sections.push(`God Splits: ${enhancedCollection.godSplitCount}`);
+        }
+      }
+
+      if (sections.length === 0) {
+        return null; // No economy data available
+      }
+
+      return `ECONOMY STATUS:\n${sections.map(s => `- ${s}`).join('\n')}`;
+    };
+
     // Build system prompt with user context (Phase 2: Enhanced context injection)
     const buildSystemPrompt = (collection, matches) => {
       const persona = getActivePersona();
@@ -1770,6 +1840,10 @@ Tech Options: ${META_CONTEXT.techCards.join(', ')}`;
 - Key Concepts: ${(kb.keyConcepts || kb.key_concepts || []).join(', ')}`;
       }
 
+      // Build economy context (wallet, pity, boosters)
+      const economyContext = buildEconomyContext();
+      const economySection = economyContext ? `\n${economyContext}` : '';
+
       // Assemble the complete system prompt
       const identity = persona.identity || {};
       return `You are ${persona.name}, a ${persona.role || identity.role}.
@@ -1782,6 +1856,7 @@ ${expertiseSection}
 ${principlesSection}
 
 ${userContextSection}
+${economySection}
 
 ${metaSection}
 ${knowledgeSection}
@@ -1792,7 +1867,8 @@ RESPONSE GUIDELINES:
 - Reference Marvel lore when it adds flavor or helps explain strategy
 - Use card game terminology naturally (cube equity, snap decision, tech card, etc.)
 - Consider the user's collection and recent performance when making recommendations
-- If discussing decks, mention which cards the user owns vs. needs to acquire`;
+- If discussing decks, mention which cards the user owns vs. needs to acquire
+- When economy data is available, factor pity progress into acquisition advice and remind about cards ready for upgrades`;
     };
 
     // Helper to split system messages from chat messages for Gemini
@@ -2838,6 +2914,122 @@ RESPONSE GUIDELINES:
           console.error('Decompression failed:', e);
           return null;
         }
+      },
+
+      // Enhanced compression using card indices instead of names (v2 format)
+      compressForQRv2(ownedCardNames, stats, cardIndex) {
+        try {
+          // Convert card names to indices (much smaller than full names)
+          const indices = ownedCardNames
+            .map(name => cardIndex[name])
+            .filter(idx => idx !== undefined)
+            .sort((a, b) => a - b);
+
+          // Use delta encoding for sorted indices (even smaller)
+          const deltas = indices.map((val, i) => i === 0 ? val : val - indices[i - 1]);
+
+          const payload = {
+            v: 2, // Version 2 format
+            d: deltas, // Delta-encoded indices
+            s: stats ? { w: stats.wins || 0, l: stats.losses || 0, c: stats.cubes || 0 } : null
+          };
+
+          return LZString.compressToEncodedURIComponent(JSON.stringify(payload));
+        } catch (e) {
+          console.error('V2 compression failed:', e);
+          return null;
+        }
+      },
+
+      decompressFromQRv2(compressed, cardList) {
+        try {
+          const decompressed = LZString.decompressFromEncodedURIComponent(compressed);
+          const payload = JSON.parse(decompressed);
+
+          if (payload.v !== 2) {
+            // Fallback to v1 format
+            return payload;
+          }
+
+          // Reconstruct indices from deltas
+          const indices = [];
+          let currentIndex = 0;
+          for (const delta of payload.d) {
+            currentIndex += delta;
+            indices.push(currentIndex);
+          }
+
+          // Convert indices back to card names
+          const cardNames = indices
+            .map(idx => cardList[idx]?.name)
+            .filter(name => name);
+
+          return {
+            v: 1, // Convert to v1 format for downstream compatibility
+            c: cardNames,
+            s: payload.s ? {
+              wins: payload.s.w || 0,
+              losses: payload.s.l || 0,
+              cubes: payload.s.c || 0
+            } : null
+          };
+        } catch (e) {
+          console.error('V2 decompression failed:', e);
+          return null;
+        }
+      },
+
+      // Calculate CRC16 checksum for integrity verification
+      calculateChecksum(data) {
+        let crc = 0xFFFF;
+        for (let i = 0; i < data.length; i++) {
+          crc ^= data.charCodeAt(i);
+          for (let j = 0; j < 8; j++) {
+            crc = (crc & 1) ? (crc >> 1) ^ 0xA001 : crc >> 1;
+          }
+        }
+        return crc.toString(16).padStart(4, '0');
+      },
+
+      // Create multi-part QR payload with checksums
+      createMultiPartPayload(compressed, partNum, totalParts) {
+        const checksum = this.calculateChecksum(compressed);
+        return {
+          p: partNum,
+          t: totalParts,
+          k: checksum,
+          d: compressed
+        };
+      },
+
+      // Validate and merge multi-part payloads
+      mergeMultiPartPayloads(parts) {
+        const totalParts = parts[0]?.t;
+        if (!totalParts || parts.length !== totalParts) {
+          return { error: 'Missing parts', missing: this.findMissingParts(parts, totalParts) };
+        }
+
+        // Sort by part number and validate checksums
+        const sorted = [...parts].sort((a, b) => a.p - b.p);
+        for (const part of sorted) {
+          const expectedChecksum = this.calculateChecksum(part.d);
+          if (part.k !== expectedChecksum) {
+            return { error: 'Checksum mismatch', part: part.p };
+          }
+        }
+
+        // Merge data
+        const merged = sorted.map(p => p.d).join('');
+        return { data: merged };
+      },
+
+      findMissingParts(parts, totalParts) {
+        const present = new Set(parts.map(p => p.p));
+        const missing = [];
+        for (let i = 1; i <= totalParts; i++) {
+          if (!present.has(i)) missing.push(i);
+        }
+        return missing;
       }
     };
 
@@ -3214,6 +3406,88 @@ RESPONSE GUIDELINES:
       );
     };
 
+    // Card Substitution Utilities
+    const findSubstitutes = (cardName, ownedCards, allCards) => {
+      // Find the target card
+      const targetCard = allCards.find(c => c.name.toLowerCase() === cardName.toLowerCase());
+      if (!targetCard || !targetCard.tags || targetCard.tags.length === 0) {
+        return [];
+      }
+
+      const targetTags = new Set(targetCard.tags);
+      const ownedSet = new Set(ownedCards.map(c => c.toLowerCase()));
+
+      // Find owned cards that share tags (excluding the target itself)
+      const candidates = allCards
+        .filter(c => {
+          if (c.name.toLowerCase() === cardName.toLowerCase()) return false;
+          if (!ownedSet.has(c.name.toLowerCase())) return false;
+          if (!c.tags || c.tags.length === 0) return false;
+          return c.tags.some(tag => targetTags.has(tag));
+        })
+        .map(c => {
+          const matchingTags = c.tags.filter(tag => targetTags.has(tag));
+          const costDiff = Math.abs(c.cost - targetCard.cost);
+          return {
+            name: c.name,
+            cost: c.cost,
+            power: c.power,
+            matchingTags,
+            matchCount: matchingTags.length,
+            costDiff,
+            // Score: prioritize tag matches, then similar cost
+            score: matchingTags.length * 10 - costDiff
+          };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5);
+
+      return candidates.map(c => ({
+        name: c.name,
+        cost: c.cost,
+        power: c.power,
+        reason: `Shares ${c.matchingTags.join(', ')} tag${c.matchingTags.length > 1 ? 's' : ''}${c.costDiff === 0 ? ' (same cost)' : ''}`
+      }));
+    };
+
+    const getSubstitutionContext = (userMessage, collection, allCards) => {
+      if (!collection || !collection.owned || !allCards || allCards.length === 0) {
+        return '';
+      }
+
+      const ownedSet = new Set(collection.owned.map(c => c.toLowerCase()));
+      const messageLower = userMessage.toLowerCase();
+
+      // Find card names mentioned in the message that user doesn't own
+      const mentionedMissing = allCards
+        .filter(c => {
+          const nameLower = c.name.toLowerCase();
+          return messageLower.includes(nameLower) && !ownedSet.has(nameLower);
+        })
+        .slice(0, 3); // Limit to 3 cards to avoid huge context
+
+      if (mentionedMissing.length === 0) {
+        return '';
+      }
+
+      let context = '\n\nSUBSTITUTION SUGGESTIONS (user is missing these cards):';
+
+      for (const card of mentionedMissing) {
+        const subs = findSubstitutes(card.name, collection.owned, allCards);
+        context += `\n\n${card.name} (${card.cost}-cost, ${card.power} power):`;
+        if (subs.length > 0) {
+          context += '\nOwned alternatives:';
+          for (const sub of subs) {
+            context += `\n- ${sub.name} (${sub.cost}/${sub.power}): ${sub.reason}`;
+          }
+        } else {
+          context += '\nNo direct substitutes found in collection.';
+        }
+      }
+
+      return context;
+    };
+
     // AI Chat Component
     const AIChat = ({ collection, matches, aiConfig, setActiveTab }) => {
       const [messages, setMessages] = useState([]);
@@ -3262,8 +3536,11 @@ RESPONSE GUIDELINES:
 
         try {
           const systemPrompt = buildSystemPrompt(collection, matches);
+          // Add substitution context if user mentions cards they don't own
+          const substitutionContext = getSubstitutionContext(userMessage.content, collection, uniqueCards);
+          const enhancedSystemPrompt = systemPrompt + substitutionContext;
           const apiMessages = [
-            { role: 'system', content: systemPrompt },
+            { role: 'system', content: enhancedSystemPrompt },
             ...messages.filter(m => m.role !== 'assistant' || messages.indexOf(m) > 0).map(m => ({
               role: m.role, content: m.content
             })),
@@ -3402,8 +3679,21 @@ RESPONSE GUIDELINES:
       const [search, setSearch] = useState('');
       const [seriesFilter, setSeriesFilter] = useState('all');
       const [ownedFilter, setOwnedFilter] = useState('all');
+      const [releaseFilter, setReleaseFilter] = useState('all');
+      const [tagFilter, setTagFilter] = useState('all');
       const [selectedCard, setSelectedCard] = useState(null);
       const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, action: null });
+
+      // Available tags for filtering (extracted from card data)
+      const availableTags = useMemo(() => {
+        const tagSet = new Set();
+        uniqueCards.forEach(card => {
+          if (card.tags && Array.isArray(card.tags)) {
+            card.tags.forEach(tag => tagSet.add(tag));
+          }
+        });
+        return Array.from(tagSet).sort();
+      }, []);
 
       const handleClearAll = useCallback(() => {
         setConfirmDialog({
@@ -3424,9 +3714,20 @@ RESPONSE GUIDELINES:
           const isOwned = collection.owned.includes(card.name);
           if (ownedFilter === 'owned' && !isOwned) return false;
           if (ownedFilter === 'missing' && isOwned) return false;
+          // Release status filter
+          if (releaseFilter !== 'all') {
+            const cardStatus = card.releaseStatus || 'released';
+            if (releaseFilter === 'released' && cardStatus !== 'released') return false;
+            if (releaseFilter === 'unreleased' && cardStatus !== 'unreleased') return false;
+          }
+          // Tag filter
+          if (tagFilter !== 'all') {
+            const cardTags = card.tags || [];
+            if (!cardTags.includes(tagFilter)) return false;
+          }
           return true;
         });
-      }, [search, seriesFilter, ownedFilter, collection.owned]);
+      }, [search, seriesFilter, ownedFilter, releaseFilter, tagFilter, collection.owned]);
 
       const toggleCard = (cardName) => {
         setCollection(prev => {
@@ -7042,10 +7343,14 @@ RESPONSE GUIDELINES:
       const [skippedCount, setSkippedCount] = useState(0);
       const fileInputRef = useRef(null);
 
-      // Phase 4: QR Sync state
+      // Phase 4: QR Sync state (generation)
       const [qrDataUrl, setQrDataUrl] = useState(null);
       const [qrCodeParts, setQrCodeParts] = useState([]);
       const [qrPartIndex, setQrPartIndex] = useState(0);
+
+      // Phase 4: QR Sync state (receiving multi-part)
+      const [qrScanProgress, setQrScanProgress] = useState(null); // { scanned: [], total: number, missing: [] }
+      const [showMultiPartProgress, setShowMultiPartProgress] = useState(false);
 
       // Performance mode state
       const [performanceMode, setPerformanceMode] = useState(() => {
@@ -7446,7 +7751,7 @@ RESPONSE GUIDELINES:
         window.dispatchEvent(new Event('snap-data-updated'));
       };
 
-      // Phase 4: QR Code generation with optimized data and multi-QR fallback
+      // Phase 4: QR Code generation with optimized v2 compression and multi-QR fallback
       const generateSyncQR = async () => {
         setQrError(null);
         setQrDataUrl(null);
@@ -7458,36 +7763,58 @@ RESPONSE GUIDELINES:
           const validCardNames = new Set(uniqueCards.map(c => c.name));
           const optimizedOwned = (collection.owned || []).filter(name => validCardNames.has(name));
 
-          const syncData = {
-            v: 1,
-            c: optimizedOwned,
-            s: {
-              wins: matches.filter(m => m.result === 'WIN').length,
-              losses: matches.filter(m => m.result === 'LOSS').length,
-              cubes: matches.reduce((sum, m) => sum + (m.result === 'WIN' ? m.cubes : -m.cubes), 0)
-            }
+          // Build card name to index mapping for v2 compression
+          const cardIndex = {};
+          uniqueCards.forEach((card, idx) => {
+            cardIndex[card.name] = idx;
+          });
+
+          const stats = {
+            wins: matches.filter(m => m.result === 'WIN').length,
+            losses: matches.filter(m => m.result === 'LOSS').length,
+            cubes: matches.reduce((sum, m) => sum + (m.result === 'WIN' ? m.cubes : -m.cubes), 0)
           };
 
-          const compressed = VaultManager.compressForQR(syncData);
+          // Try v2 compression first (index-based, much smaller)
+          let compressed = VaultManager.compressForQRv2(optimizedOwned, stats, cardIndex);
+          let useV2 = true;
+
+          // Fallback to v1 if v2 fails
+          if (!compressed) {
+            useV2 = false;
+            const syncData = { v: 1, c: optimizedOwned, s: stats };
+            compressed = VaultManager.compressForQR(syncData);
+          }
 
           if (!compressed) {
             setQrError('Failed to compress data');
             return;
           }
 
-          // QR codes have size limits (~2.5KB for reliable scanning)
-          if (compressed.length <= 2500) {
+          // QR capacity: ~2953 chars for version 40 with L error correction
+          // Use conservative limit for reliable mobile scanning
+          const QR_CAPACITY = 2200;
+          const BASE_URL = 'https://platano78.github.io/Marvel-Snap-Tactics-/';
+          const SINGLE_URL_OVERHEAD = BASE_URL.length + (useV2 ? '?sync2='.length : '?sync='.length);
+          const MULTI_URL_OVERHEAD = BASE_URL.length + '?sync_part2='.length + 20;
+
+          if (compressed.length + SINGLE_URL_OVERHEAD <= QR_CAPACITY) {
             // Single QR code fits
-            const syncUrl = `https://platano78.github.io/Marvel-Snap-Tactics-/?sync=${compressed}`;
+            const syncParam = useV2 ? 'sync2' : 'sync';
+            const syncUrl = `${BASE_URL}?${syncParam}=${compressed}`;
             const dataUrl = await QRCode.toDataURL(syncUrl, {
               width: 200,
               margin: 2,
+              errorCorrectionLevel: 'M',
               color: { dark: '#1A1A1A', light: '#FFFFFF' }
             });
             setQrDataUrl(dataUrl);
           } else {
-            // Split into multiple QR codes
-            const chunkSize = 2000; // Leave room for URL and part metadata
+            // Calculate optimal chunk size based on QR capacity
+            const availablePerChunk = QR_CAPACITY - MULTI_URL_OVERHEAD;
+            const numChunks = Math.ceil(compressed.length / availablePerChunk);
+            const chunkSize = Math.ceil(compressed.length / numChunks);
+
             const chunks = [];
             for (let i = 0; i < compressed.length; i += chunkSize) {
               chunks.push(compressed.slice(i, i + chunkSize));
@@ -7495,11 +7822,15 @@ RESPONSE GUIDELINES:
 
             const qrUrls = [];
             for (let i = 0; i < chunks.length; i++) {
-              // Format: sync_part=<partNum>_<totalParts>_<data>
-              const partUrl = `https://platano78.github.io/Marvel-Snap-Tactics-/?sync_part=${i + 1}_${chunks.length}_${chunks[i]}`;
+              // Create payload with checksum for integrity
+              const partPayload = VaultManager.createMultiPartPayload(chunks[i], i + 1, chunks.length);
+              const encodedPayload = LZString.compressToEncodedURIComponent(JSON.stringify(partPayload));
+
+              const partUrl = `${BASE_URL}?sync_part2=${encodedPayload}`;
               const dataUrl = await QRCode.toDataURL(partUrl, {
                 width: 200,
                 margin: 2,
+                errorCorrectionLevel: 'M',
                 color: { dark: '#1A1A1A', light: '#FFFFFF' }
               });
               qrUrls.push(dataUrl);
@@ -7788,6 +8119,66 @@ RESPONSE GUIDELINES:
                   </div>
                 ) : null}
                 <p className="text-gray-400 text-xs">Scan with your phone camera to sync collection</p>
+              </div>
+            )}
+
+            {/* Multi-part QR scanning progress (shown on receiving device) */}
+            {showMultiPartProgress && qrScanProgress && (
+              <div className="mt-4 bg-blue-900/30 border border-blue-500 rounded-lg p-4">
+                <h4 className="text-blue-300 font-medium mb-2">Multi-Part Sync Progress</h4>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="flex-1 bg-gray-700 rounded-full h-3">
+                    <div
+                      className="bg-marvel-blue h-3 rounded-full transition-all"
+                      style={{ width: `${(qrScanProgress.scanned.length / qrScanProgress.total) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-sm text-gray-300">
+                    {qrScanProgress.scanned.length}/{qrScanProgress.total}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {Array.from({ length: qrScanProgress.total }, (_, i) => i + 1).map(partNum => (
+                    <span
+                      key={partNum}
+                      className={`px-2 py-1 text-xs rounded ${
+                        qrScanProgress.scanned.includes(partNum)
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-600 text-gray-300'
+                      }`}
+                    >
+                      {partNum}
+                    </span>
+                  ))}
+                </div>
+
+                {qrScanProgress.missing.length > 0 && (
+                  <p className="text-sm text-yellow-300 mb-2">
+                    Missing: QR {qrScanProgress.missing.join(', ')}
+                  </p>
+                )}
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('snap_qr_scan_progress');
+                      setQrScanProgress(null);
+                      setShowMultiPartProgress(false);
+                    }}
+                    className="flex-1 px-3 py-2 bg-red-700 text-white rounded text-sm hover:bg-red-600"
+                  >
+                    Cancel Sync
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMultiPartProgress(false);
+                    }}
+                    className="flex-1 px-3 py-2 bg-gray-600 text-white rounded text-sm hover:bg-gray-500"
+                  >
+                    Hide Progress
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -8703,24 +9094,102 @@ RESPONSE GUIDELINES:
       useEffect(() => { saveToStorage('snap_settings', settings); }, [settings]);
       useEffect(() => { saveToStorage('snap_ai_config', aiConfig); }, [aiConfig]);
 
-      // Phase 4: Check for sync parameter in URL on load
+      // Phase 4: Check for sync parameter in URL on load (supports v1, v2, and multi-part)
       useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        const syncData = params.get('sync');
+        const syncV1 = params.get('sync');
+        const syncV2 = params.get('sync2');
+        const syncPart2 = params.get('sync_part2');
 
-        if (syncData) {
+        // Handle single-QR v1 format (backward compatible)
+        if (syncV1) {
           try {
-            const data = VaultManager.decompressFromQR(syncData);
-
+            const data = VaultManager.decompressFromQR(syncV1);
             if (data && data.v === 1 && data.c) {
               setSyncImportData(data);
               setShowSyncConfirm(true);
-
-              // Clean URL
               window.history.replaceState({}, '', window.location.pathname);
             }
           } catch (e) {
-            console.error('Invalid sync data:', e);
+            console.error('Invalid v1 sync data:', e);
+          }
+        }
+
+        // Handle single-QR v2 format (index-based compression)
+        if (syncV2) {
+          try {
+            const data = VaultManager.decompressFromQRv2(syncV2, uniqueCards);
+            if (data && data.c) {
+              setSyncImportData(data);
+              setShowSyncConfirm(true);
+              window.history.replaceState({}, '', window.location.pathname);
+            }
+          } catch (e) {
+            console.error('Invalid v2 sync data:', e);
+          }
+        }
+
+        // Handle multi-part v2 format with checksum validation
+        if (syncPart2) {
+          try {
+            const decompressed = LZString.decompressFromEncodedURIComponent(syncPart2);
+            const partPayload = JSON.parse(decompressed);
+
+            if (partPayload && partPayload.p && partPayload.t && partPayload.d) {
+              // Get existing progress from localStorage (persists across page loads)
+              const progressKey = 'snap_qr_scan_progress';
+              let progress = JSON.parse(localStorage.getItem(progressKey) || 'null');
+
+              // Initialize or validate progress
+              if (!progress || progress.total !== partPayload.t) {
+                progress = {
+                  scanned: [],
+                  total: partPayload.t,
+                  parts: {}
+                };
+              }
+
+              // Add this part (avoid duplicates)
+              if (!progress.parts[partPayload.p]) {
+                progress.parts[partPayload.p] = partPayload;
+                progress.scanned = Object.keys(progress.parts).map(Number).sort((a, b) => a - b);
+              }
+
+              // Calculate missing parts
+              const missing = VaultManager.findMissingParts(Object.values(progress.parts), progress.total);
+
+              // Save progress
+              localStorage.setItem(progressKey, JSON.stringify(progress));
+
+              if (missing.length === 0) {
+                // All parts received - merge and validate
+                const mergeResult = VaultManager.mergeMultiPartPayloads(Object.values(progress.parts));
+
+                if (mergeResult.error) {
+                  setQrError(`Sync error: ${mergeResult.error}${mergeResult.part ? ` (part ${mergeResult.part})` : ''}`);
+                } else {
+                  // Decompress merged data
+                  const data = VaultManager.decompressFromQRv2(mergeResult.data, uniqueCards);
+                  if (data && data.c) {
+                    setSyncImportData(data);
+                    setShowSyncConfirm(true);
+                    localStorage.removeItem(progressKey); // Clear progress
+                  }
+                }
+              } else {
+                // Show progress UI
+                setQrScanProgress({
+                  scanned: progress.scanned,
+                  total: progress.total,
+                  missing: missing
+                });
+                setShowMultiPartProgress(true);
+              }
+
+              window.history.replaceState({}, '', window.location.pathname);
+            }
+          } catch (e) {
+            console.error('Invalid multi-part sync data:', e);
           }
         }
       }, []);
