@@ -1,0 +1,67 @@
+{
+  "lastUpdated": "2026-01-23",
+  "scheduleVersion": "1.0",
+  "weeks": [
+    {
+      "weekNumber": 1,
+      "startDate": "2026-01-20",
+      "endDate": "2026-01-27",
+      "spotlight": {
+        "mainCard": "Gorr the God Butcher",
+        "series": 5,
+        "previouslyAvailable": false
+      },
+      "cacheCards": [
+        { "name": "Caiera", "series": 4 },
+        { "name": "Ajax", "series": 4 },
+        { "name": "Scarlet Spider", "series": 5 }
+      ]
+    },
+    {
+      "weekNumber": 2,
+      "startDate": "2026-01-27",
+      "endDate": "2026-02-03",
+      "spotlight": {
+        "mainCard": "Hercules",
+        "series": 5,
+        "previouslyAvailable": true
+      },
+      "cacheCards": [
+        { "name": "Wiccan", "series": 4 },
+        { "name": "Kate Bishop", "series": 4 },
+        { "name": "Living Tribunal", "series": 5 }
+      ]
+    },
+    {
+      "weekNumber": 3,
+      "startDate": "2026-02-03",
+      "endDate": "2026-02-10",
+      "spotlight": {
+        "mainCard": "Emperor Hulkling",
+        "series": 5,
+        "previouslyAvailable": false
+      },
+      "cacheCards": [
+        { "name": "Patriot", "series": 4 },
+        { "name": "Silver Samurai", "series": 4 },
+        { "name": "Alioth", "series": 5 }
+      ]
+    },
+    {
+      "weekNumber": 4,
+      "startDate": "2026-02-10",
+      "endDate": "2026-02-17",
+      "spotlight": {
+        "mainCard": "Sage",
+        "series": 5,
+        "previouslyAvailable": true
+      },
+      "cacheCards": [
+        { "name": "Copycat", "series": 4 },
+        { "name": "Valentina", "series": 4 },
+        { "name": "Thanos", "series": 5 }
+      ]
+    }
+  ],
+  "notes": "Schedule is subject to change. Data from official Marvel Snap announcements."
+}

@@ -1,0 +1,299 @@
+{
+  "toolMetrics": {
+    "nvidia_deepseek": {
+      "confidence": 0.5488000000000001,
+      "totalCalls": 3,
+      "successfulCalls": 0,
+      "avgLatency": 0,
+      "byComplexity": {
+        "low": {
+          "calls": 0,
+          "success": 0
+        },
+        "medium": {
+          "calls": 3,
+          "success": 0
+        },
+        "high": {
+          "calls": 0,
+          "success": 0
+        }
+      },
+      "byTaskType": {
+        "council": {
+          "calls": 3,
+          "success": 0
+        }
+      },
+      "trend": "stable",
+      "lastUpdated": 1769189800924
+    },
+    "nvidia_qwen": {
+      "confidence": 0.5590400000000001,
+      "totalCalls": 4,
+      "successfulCalls": 0,
+      "avgLatency": 0,
+      "byComplexity": {
+        "low": {
+          "calls": 0,
+          "success": 0
+        },
+        "medium": {
+          "calls": 3,
+          "success": 0
+        },
+        "high": {
+          "calls": 0,
+          "success": 0
+        }
+      },
+      "byTaskType": {
+        "council": {
+          "calls": 3,
+          "success": 0
+        },
+        "coding": {
+          "calls": 1,
+          "success": 0
+        }
+      },
+      "trend": "stable",
+      "lastUpdated": 1769190712155
+    },
+    "gemini": {
+      "confidence": 0.5488000000000001,
+      "totalCalls": 3,
+      "successfulCalls": 0,
+      "avgLatency": 0,
+      "byComplexity": {
+        "low": {
+          "calls": 0,
+          "success": 0
+        },
+        "medium": {
+          "calls": 3,
+          "success": 0
+        },
+        "high": {
+          "calls": 0,
+          "success": 0
+        }
+      },
+      "byTaskType": {
+        "council": {
+          "calls": 3,
+          "success": 0
+        }
+      },
+      "trend": "stable",
+      "lastUpdated": 1769189800924
+    }
+  },
+  "modelMetrics": {
+    "stg/qwen/qwen3-coder-480b-a35b-instruct": {
+      "confidence": 0.52,
+      "totalCalls": 1,
+      "successfulCalls": 0,
+      "byTaskType": {
+        "coding": {
+          "calls": 1,
+          "successSum": 0.6000000000000001
+        }
+      },
+      "byTool": {
+        "nvidia_qwen": {
+          "calls": 1,
+          "successSum": 0.6000000000000001
+        }
+      },
+      "trend": "stable",
+      "lastUsed": 1769190712156
+    }
+  },
+  "taskPatterns": {
+    "medium:council:single": {
+      "toolPerformance": {
+        "nvidia_deepseek": {
+          "calls": 3,
+          "successSum": 1.8000000000000003
+        },
+        "nvidia_qwen": {
+          "calls": 3,
+          "successSum": 1.8000000000000003
+        },
+        "gemini": {
+          "calls": 3,
+          "successSum": 1.8000000000000003
+        }
+      },
+      "totalSamples": 9
+    },
+    "0.5:coding:single": {
+      "toolPerformance": {
+        "nvidia_qwen": {
+          "calls": 1,
+          "successSum": 0.6000000000000001
+        }
+      },
+      "totalSamples": 1
+    }
+  },
+  "modelPatterns": {
+    "coding:stg/qwen/qwen3-coder-480b-a35b-instruct": {
+      "calls": 1,
+      "successSum": 0.6000000000000001,
+      "avgTime": 0,
+      "lastUsed": 1769190712155
+    }
+  },
+  "sourceMetrics": {
+    "council": {
+      "calls": 9,
+      "successSum": 5.4,
+      "confidence": 0.6000000000000001
+    },
+    "forced": {
+      "calls": 1,
+      "successSum": 0.6000000000000001,
+      "confidence": 0.6000000000000001
+    }
+  },
+  "perceptionHits": {
+    "triggered": 0,
+    "skipped": 10,
+    "beneficial": 0
+  },
+  "routingHistory": [
+    {
+      "timestamp": 1769178755015,
+      "task": "council operation",
+      "tool": "nvidia_deepseek",
+      "source": "council",
+      "modelId": null,
+      "success": 0.6000000000000001,
+      "context": {
+        "complexity": "medium",
+        "taskType": "council",
+        "fileCount": 0
+      }
+    },
+    {
+      "timestamp": 1769178755016,
+      "task": "council operation",
+      "tool": "nvidia_qwen",
+      "source": "council",
+      "modelId": null,
+      "success": 0.6000000000000001,
+      "context": {
+        "complexity": "medium",
+        "taskType": "council",
+        "fileCount": 0
+      }
+    },
+    {
+      "timestamp": 1769178755016,
+      "task": "council operation",
+      "tool": "gemini",
+      "source": "council",
+      "modelId": null,
+      "success": 0.6000000000000001,
+      "context": {
+        "complexity": "medium",
+        "taskType": "council",
+        "fileCount": 0
+      }
+    },
+    {
+      "timestamp": 1769188877362,
+      "task": "council operation",
+      "tool": "nvidia_deepseek",
+      "source": "council",
+      "modelId": null,
+      "success": 0.6000000000000001,
+      "context": {
+        "complexity": "medium",
+        "taskType": "council",
+        "fileCount": 0
+      }
+    },
+    {
+      "timestamp": 1769188877363,
+      "task": "council operation",
+      "tool": "nvidia_qwen",
+      "source": "council",
+      "modelId": null,
+      "success": 0.6000000000000001,
+      "context": {
+        "complexity": "medium",
+        "taskType": "council",
+        "fileCount": 0
+      }
+    },
+    {
+      "timestamp": 1769188877363,
+      "task": "council operation",
+      "tool": "gemini",
+      "source": "council",
+      "modelId": null,
+      "success": 0.6000000000000001,
+      "context": {
+        "complexity": "medium",
+        "taskType": "council",
+        "fileCount": 0
+      }
+    },
+    {
+      "timestamp": 1769189800924,
+      "task": "council operation",
+      "tool": "nvidia_deepseek",
+      "source": "council",
+      "modelId": null,
+      "success": 0.6000000000000001,
+      "context": {
+        "complexity": "medium",
+        "taskType": "council",
+        "fileCount": 0
+      }
+    },
+    {
+      "timestamp": 1769189800924,
+      "task": "council operation",
+      "tool": "nvidia_qwen",
+      "source": "council",
+      "modelId": null,
+      "success": 0.6000000000000001,
+      "context": {
+        "complexity": "medium",
+        "taskType": "council",
+        "fileCount": 0
+      }
+    },
+    {
+      "timestamp": 1769189800924,
+      "task": "council operation",
+      "tool": "gemini",
+      "source": "council",
+      "modelId": null,
+      "success": 0.6000000000000001,
+      "context": {
+        "complexity": "medium",
+        "taskType": "council",
+        "fileCount": 0
+      }
+    },
+    {
+      "timestamp": 1769190712155,
+      "task": "Generate JavaScript code for a GameDataParser object that parses Marvel SNAP game state files. Inclu",
+      "tool": "nvidia_qwen",
+      "source": "forced",
+      "modelId": "stg/qwen/qwen3-coder-480b-a35b-instruct",
+      "success": 0.6000000000000001,
+      "context": {
+        "complexity": 0.5,
+        "taskType": "coding",
+        "fileCount": 0
+      }
+    }
+  ],
+  "savedAt": 1769190712156
+}
