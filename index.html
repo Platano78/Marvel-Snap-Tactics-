@@ -8745,6 +8745,41 @@ RESPONSE GUIDELINES:
             )}
           </div>
 
+          {/* Reduced Motion */}
+          <div className="mcu-glass p-5 mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-display font-semibold text-mcu-blue-light">Reduce Motion</h3>
+                <p className="text-gray-400 text-sm mt-1">
+                  Disable animations for accessibility or to reduce visual distractions.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  const newValue = !settings.reducedMotion;
+                  setSettings(s => ({ ...s, reducedMotion: newValue }));
+                  setReducedMotion(newValue);
+                  showToast(newValue ? 'Motion reduced' : 'Motion enabled');
+                }}
+                className={`relative w-14 h-8 rounded-full transition-colors ${
+                  settings.reducedMotion ? 'bg-mcu-blue' : 'bg-gray-600'
+                }`}
+                aria-label={settings.reducedMotion ? 'Disable reduced motion' : 'Enable reduced motion'}
+                role="switch"
+                aria-checked={settings.reducedMotion}
+              >
+                <span className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white shadow-md transform transition-transform ${
+                  settings.reducedMotion ? 'translate-x-6' : 'translate-x-0'
+                }`} />
+              </button>
+            </div>
+            {window.matchMedia('(prefers-reduced-motion: reduce)').matches && !settings.reducedMotion && (
+              <p className="text-mcu-gold text-xs mt-3 flex items-center gap-1">
+                <span>Your system prefers reduced motion. Consider enabling this setting.</span>
+              </p>
+            )}
+          </div>
+
           {/* Export/Import */}
           <div className="mcu-glass p-5 mb-4">
             <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Export Data</h3>
@@ -9506,6 +9541,15 @@ RESPONSE GUIDELINES:
       useEffect(() => { saveToStorage('snap_decks', decks); }, [decks]);
       useEffect(() => { saveToStorage('snap_settings', settings); }, [settings]);
       useEffect(() => { saveToStorage('snap_ai_config', aiConfig); }, [aiConfig]);
+
+      // Sync reduced motion setting on load and when settings change
+      useEffect(() => {
+        if (settings.reducedMotion) {
+          document.documentElement.setAttribute('data-motion', 'reduced');
+        } else {
+          document.documentElement.removeAttribute('data-motion');
+        }
+      }, [settings.reducedMotion]);
 
       // Phase 4: Check for sync parameter in URL on load (supports v1, v2, and multi-part)
       useEffect(() => {
