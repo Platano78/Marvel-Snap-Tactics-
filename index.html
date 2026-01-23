@@ -125,6 +125,11 @@
             'series-3': '#8B5CF6',
             'series-4': '#EAB308',
             'series-5': '#EF4444',
+            'series-6': '#F97316',
+            'series-7': '#EC4899',
+            'series-8': '#06B6D4',
+            'series-9': '#84CC16',
+            'series-10': '#A855F7',
             'spotlight': '#F97316',
             // Legacy (for gradual migration)
             'marvel-red': '#ED1D24',
@@ -183,6 +188,11 @@
       --series-3: #8B5CF6;
       --series-4: #EAB308;
       --series-5: #EF4444;
+      --series-6: #F97316;
+      --series-7: #EC4899;
+      --series-8: #06B6D4;
+      --series-9: #84CC16;
+      --series-10: #A855F7;
       --spotlight: #F97316;
 
       /* ============================================
@@ -3328,6 +3338,22 @@ RESPONSE GUIDELINES:
       month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
     });
 
+    // Get Tailwind class for series color (supports series 1-10+)
+    const getSeriesColorClass = (series, type = 'bg') => {
+      const colors = {
+        1: 'series-1', 2: 'series-2', 3: 'series-3', 4: 'series-4', 5: 'series-5',
+        6: 'series-6', 7: 'series-7', 8: 'series-8', 9: 'series-9', 10: 'series-10'
+      };
+      const color = colors[series] || 'series-6'; // Default to series-6 (orange/spotlight) for unknown
+      return `${type}-${color}`;
+    };
+
+    // Get all unique series from the card database
+    const getAvailableSeries = () => {
+      const series = new Set(uniqueCards.map(c => c.series).filter(s => s > 0));
+      return Array.from(series).sort((a, b) => a - b);
+    };
+
     // ==================== COMPONENTS ====================
 
     // Navigation Bar
@@ -3964,14 +3990,19 @@ RESPONSE GUIDELINES:
         return uniqueCards.filter(card => ownedSet.has(card.name));
       }, [collection.owned]);
 
-      // Calculate series stats based on YOUR owned cards
+      // Calculate series stats based on YOUR owned cards (supports all series)
       const seriesStats = useMemo(() => {
-        const stats = { 1: { owned: 0, total: 0 }, 2: { owned: 0, total: 0 }, 3: { owned: 0, total: 0 }, 4: { owned: 0, total: 0 }, 5: { owned: 0, total: 0 } };
+        const stats = {};
         const ownedSet = new Set(collection.owned || []);
+
+        // Initialize stats for all available series
+        getAvailableSeries().forEach(s => {
+          stats[s] = { owned: 0, total: 0, percent: 0 };
+        });
 
         uniqueCards.forEach(card => {
           const series = card.series;
-          if (series >= 1 && series <= 5) {
+          if (series > 0 && stats[series]) {
             stats[series].total++;
             if (ownedSet.has(card.name)) {
               stats[series].owned++;
@@ -3980,9 +4011,9 @@ RESPONSE GUIDELINES:
         });
 
         // Calculate percentages
-        for (const s of [1, 2, 3, 4, 5]) {
+        Object.keys(stats).forEach(s => {
           stats[s].percent = stats[s].total > 0 ? Math.round((stats[s].owned / stats[s].total) * 100) : 0;
-        }
+        });
 
         return stats;
       }, [collection.owned]);
@@ -4025,11 +4056,11 @@ RESPONSE GUIDELINES:
       // Series dropdown options - in 'owned' mode, only show series you have cards in
       const availableSeries = useMemo(() => {
         if (viewMode === 'browse') {
-          return [1, 2, 3, 4, 5]; // All series when browsing
+          return getAvailableSeries(); // All series when browsing
         }
         // In owned mode, only show series where you own at least 1 card
-        const series = new Set(ownedCards.map(c => c.series));
-        return [1, 2, 3, 4, 5].filter(s => series.has(s));
+        const ownedSeries = new Set(ownedCards.map(c => c.series));
+        return getAvailableSeries().filter(s => ownedSeries.has(s));
       }, [viewMode, ownedCards]);
 
       return (
@@ -4040,17 +4071,13 @@ RESPONSE GUIDELINES:
           <div className="mcu-glass p-5 mb-4">
             <div className="text-white font-medium mb-3 text-center">Series Completion</div>
             <div className="space-y-2">
-              {[1, 2, 3, 4, 5].map(series => (
+              {getAvailableSeries().map(series => (
                 <div key={series} className="flex items-center gap-2">
-                  <span className={`w-8 h-6 rounded text-xs font-bold flex items-center justify-center text-white ${
-                    series === 1 ? 'bg-series-1' : series === 2 ? 'bg-series-2' : series === 3 ? 'bg-series-3' : series === 4 ? 'bg-series-4' : 'bg-series-5'
-                  }`}>S{series}</span>
+                  <span className={`w-8 h-6 rounded text-xs font-bold flex items-center justify-center text-white ${getSeriesColorClass(series)}`}>S{series}</span>
                   <div className="flex-1 bg-gray-700 rounded-full h-3 overflow-hidden">
-                    <div className={`h-full transition-all duration-300 ${
-                      series === 1 ? 'bg-series-1' : series === 2 ? 'bg-series-2' : series === 3 ? 'bg-series-3' : series === 4 ? 'bg-series-4' : 'bg-series-5'
-                    }`} style={{ width: `${seriesStats[series].percent}%` }} />
+                    <div className={`h-full transition-all duration-300 ${getSeriesColorClass(series)}`} style={{ width: `${seriesStats[series]?.percent || 0}%` }} />
                   </div>
-                  <span className="text-gray-300 text-xs w-20 text-right">{seriesStats[series].owned}/{seriesStats[series].total} ({seriesStats[series].percent}%)</span>
+                  <span className="text-gray-300 text-xs w-20 text-right">{seriesStats[series]?.owned || 0}/{seriesStats[series]?.total || 0} ({seriesStats[series]?.percent || 0}%)</span>
                 </div>
               ))}
             </div>
@@ -4269,18 +4296,44 @@ RESPONSE GUIDELINES:
       }, [deckToDelete, setDecks]);
 
       // Decode deck code (base64 encoded card list)
+      // Game uses abbreviated defIds like "Fntmx8" for Fantomex
       const decodeDeckCode = (code) => {
         try {
           const decoded = atob(code.trim());
-          const cardNames = decoded.split(',').map(s => s.trim()).filter(Boolean);
-          if (cardNames.length !== 12) throw new Error('Deck must have 12 cards');
-          // Verify cards exist
-          cardNames.forEach(name => {
-            if (!uniqueCards.find(c => c.name.toLowerCase() === name.toLowerCase())) {
-              throw new Error(`Unknown card: ${name}`);
-            }
-          });
-          return cardNames.map(name => uniqueCards.find(c => c.name.toLowerCase() === name.toLowerCase()).name);
+          const cardCodes = decoded.split(',').map(s => s.trim()).filter(Boolean);
+          if (cardCodes.length !== 12) throw new Error('Deck must have 12 cards');
+
+          // Helper to match abbreviated code to card defId
+          const matchCard = (abbrev) => {
+            // Strip trailing numbers/letters (variant suffixes)
+            const base = abbrev.replace(/[0-9A-Z]$/, '').toLowerCase();
+
+            // Try exact defId match first (for simple names like "Blade")
+            let match = uniqueCards.find(c => c.defId?.toLowerCase() === abbrev.toLowerCase());
+            if (match) return match.name;
+
+            // Try matching by consonant pattern
+            const toConsonants = (s) => s.toLowerCase().replace(/[aeiou\s\-\'\.]/g, '');
+            const abbrConsonants = toConsonants(base);
+
+            // Find best match by comparing consonant patterns
+            match = uniqueCards.find(c => {
+              const defConsonants = toConsonants(c.defId || c.name);
+              return defConsonants.startsWith(abbrConsonants) || abbrConsonants.startsWith(defConsonants);
+            });
+
+            if (match) return match.name;
+
+            // Fallback: try partial name match
+            match = uniqueCards.find(c =>
+              c.name.toLowerCase().replace(/[^a-z]/g, '').startsWith(base.replace(/[^a-z]/g, ''))
+            );
+
+            if (match) return match.name;
+            throw new Error(`Unknown card code: ${abbrev}`);
+          };
+
+          return cardCodes.map(matchCard);
         } catch (e) {
           throw new Error('Invalid deck code: ' + e.message);
         }
