@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#ED1D24" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#0a0c0e" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0a0c0e" media="(prefers-color-scheme: dark)">
   <meta name="description" content="Marvel Snap AI Companion & Tracker - Track your collection, log matches, and get tactical advice">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -17,8 +17,13 @@
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
   <link rel="preconnect" href="https://accounts.google.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="dns-prefetch" href="https://unpkg.com">
   <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+
+  <!-- Google Fonts - Inter (UI) + Permanent Marker (Hero/Spider-Verse) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
 
   <!-- Service Worker Update Handler - runs early to catch SW updates -->
   <script>
@@ -102,24 +107,52 @@
       theme: {
         extend: {
           colors: {
-            'marvel-red': '#ED1D24',
-            'marvel-blue': '#006EC7',
-            'marvel-gold': '#FFC107',
-            'marvel-black': '#1A1A1A',
-            'marvel-white': '#FFFFFF',
+            // MCU Foundation
+            'mcu-blue': '#00aaff',
+            'mcu-blue-light': '#33bbff',
+            'mcu-red': '#ff4444',
+            'mcu-gold': '#C9A227',
+            'stark-dark': '#0a0c0e',
+            'stark-surface': '#121216',
+            'stark-surface-2': '#1a1a20',
+            // Spider-Verse Accents
+            'spider-pink': '#ff00ff',
+            'spider-cyan': '#00ffff',
+            'spider-yellow': '#fef08a',
+            // Series colors (unchanged)
             'series-1': '#6B7280',
             'series-2': '#22C55E',
             'series-3': '#8B5CF6',
             'series-4': '#EAB308',
             'series-5': '#EF4444',
             'spotlight': '#F97316',
+            // Legacy (for gradual migration)
+            'marvel-red': '#ED1D24',
+            'marvel-blue': '#006EC7',
+            'marvel-gold': '#FFC107',
+            'marvel-black': '#1A1A1A',
+            'marvel-white': '#FFFFFF',
           },
           fontFamily: {
+            'display': ['Inter', 'system-ui', 'sans-serif'],
+            'hero': ['Permanent Marker', 'cursive'],
+            'mono': ['SF Mono', 'Menlo', 'Monaco', 'monospace'],
+            // Legacy
             'comic': ['Impact', 'Arial Black', 'sans-serif'],
           },
           boxShadow: {
+            'glass': '0 0 20px rgba(0, 170, 255, 0.1)',
+            'glow-blue': '0 0 15px rgba(0, 170, 255, 0.4), inset 0 0 5px rgba(0, 170, 255, 0.2)',
+            'glow-red': '0 0 15px rgba(255, 68, 68, 0.4), inset 0 0 5px rgba(255, 68, 68, 0.2)',
+            'glow-gold': '0 0 15px rgba(201, 162, 39, 0.4), inset 0 0 5px rgba(201, 162, 39, 0.2)',
+            'sketch': '6px 6px 0 #111',
+            // Legacy
             'comic': '4px 4px 0px #1A1A1A',
             'comic-sm': '2px 2px 0px #1A1A1A',
+          },
+          backdropBlur: {
+            'glass': '12px',
+            'glass-mobile': '6px',
           }
         }
       }
@@ -127,18 +160,155 @@
   </script>
 
   <style>
-    /* CSS Custom Properties for Accessibility */
+    /* ============================================
+       LAYER 1: BRAND TOKENS (Raw palette values)
+       ============================================ */
     :root {
-      --text-muted: #9CA3AF;      /* WCAG AA compliant - 5.4:1 contrast on #1A1A1A */
-      --text-placeholder: #9CA3AF; /* WCAG AA compliant - 5.4:1 contrast */
-      --text-disabled: #D1D5DB;    /* Higher contrast for disabled states */
+      /* MCU Foundation */
+      --mcu-blue: #00aaff;
+      --mcu-blue-light: #33bbff;
+      --mcu-blue-glow: rgba(0, 170, 255, 0.4);
+      --mcu-red: #ff4444;
+      --mcu-red-glow: rgba(255, 68, 68, 0.4);
+      --mcu-gold: #C9A227;
+
+      /* Spider-Verse Accents */
+      --spider-pink: #ff00ff;
+      --spider-cyan: #00ffff;
+      --spider-yellow: #fef08a;
+
+      /* Series Colors (unchanged) */
+      --series-1: #6B7280;
+      --series-2: #22C55E;
+      --series-3: #8B5CF6;
+      --series-4: #EAB308;
+      --series-5: #EF4444;
+      --spotlight: #F97316;
+
+      /* ============================================
+         LAYER 2: SEMANTIC TOKENS
+         Role-based mappings to reduce decision fatigue
+         ============================================ */
+
+      /* Surfaces */
+      --ui-surface-base: #0a0c0e;
+      --ui-surface-1: #121216;
+      --ui-surface-2: #1a1a20;
+      --ui-surface-glass: rgba(18, 18, 22, 0.7);
+      --ui-surface-glass-solid: rgba(18, 18, 22, 0.92);
+
+      /* Borders */
+      --ui-border: rgba(255, 255, 255, 0.08);
+      --ui-border-accent: rgba(0, 170, 255, 0.3);
+
+      /* Text */
+      --ui-text-primary: #eaeaf0;
+      --ui-text-secondary: #8888a0;
+      --ui-text-muted: #5c5c6e;
+      --ui-text-accent: var(--mcu-blue-light);
+
+      /* Legacy text tokens (WCAG AA compliant) */
+      --text-muted: #9CA3AF;
+      --text-placeholder: #9CA3AF;
+      --text-disabled: #D1D5DB;
+
+      /* Accent (maps to MCU blue by default) */
+      --ui-accent: var(--mcu-blue);
+      --ui-accent-glow: var(--mcu-blue-glow);
+      --ui-accent-light: var(--mcu-blue-light);
+
+      /* Semantic States */
+      --ui-success: #22C55E;
+      --ui-warning: #EAB308;
+      --ui-danger: var(--mcu-red);
+      --ui-info: var(--mcu-blue);
+
+      /* Focus Ring (accessibility) */
+      --ui-focus-ring: var(--mcu-gold);
+      --ui-focus-ring-glow: rgba(201, 162, 39, 0.4);
+
+      /* Shadows */
+      --ui-shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.3);
+      --ui-shadow-glow: 0 0 20px var(--ui-accent-glow);
+      --ui-shadow-strong: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+      /* Spider-Verse Highlight (overlays only) */
+      --ui-highlight: var(--spider-yellow);
+      --ui-highlight-glitch: var(--spider-pink);
+
+      /* ============================================
+         LAYER 3: EFFECT TOKENS
+         ============================================ */
+
+      /* Glass Effects */
+      --glass-blur: blur(12px);
+      --glass-blur-mobile: blur(6px);
+      --glass-blur-none: blur(0px);
+
+      /* Chromatic Effects */
+      --chromatic-offset: 2px;
+      --sketch-shadow: 6px 6px 0 #111;
+
+      /* Neon Outer Glow for accessibility */
+      --text-glow-accent: 0 0 8px var(--mcu-blue-glow), 0 0 16px var(--mcu-blue-glow);
+
+      /* ============================================
+         LAYER 4: TYPOGRAPHY TOKENS
+         ============================================ */
+
+      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+      --font-hero: 'Permanent Marker', cursive;
+    }
+
+    /* ============================================
+       PERFORMANCE MODE TOGGLE
+       Detect low-power devices and disable heavy effects
+       ============================================ */
+
+    html[data-perf="low"] {
+      --glass-blur: var(--glass-blur-none);
+      --glass-blur-mobile: var(--glass-blur-none);
+      --ui-surface-glass: var(--ui-surface-glass-solid);
+      --ui-shadow-glow: none;
+      --text-glow-accent: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      :root {
+        --glass-blur: var(--glass-blur-none);
+        --ui-shadow-glow: none;
+      }
+    }
+
+    /* ============================================
+       REDUCED MOTION - COMPLETE HANDLING
+       Kill ALL animations, not just specific ones
+       ============================================ */
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    html[data-motion="reduced"] *,
+    html[data-motion="reduced"] *::before,
+    html[data-motion="reduced"] *::after {
+      animation: none !important;
+      transition: none !important;
     }
 
     * { -webkit-tap-highlight-color: transparent; }
 
     /* Custom focus ring for all interactive elements */
     :focus-visible {
-      outline: 3px solid #FFC107;
+      outline: 3px solid var(--ui-focus-ring);
       outline-offset: 2px;
     }
     :focus:not(:focus-visible) {
@@ -148,9 +318,9 @@
     a:focus-visible,
     input:focus-visible,
     select:focus-visible {
-      outline: 3px solid #FFC107;
+      outline: 3px solid var(--ui-focus-ring);
       outline-offset: 2px;
-      box-shadow: 0 0 0 6px rgba(255, 193, 7, 0.25);
+      box-shadow: 0 0 0 6px var(--ui-focus-ring-glow);
     }
 
     /* Screen reader only utility class */
@@ -166,10 +336,102 @@
       border: 0;
     }
 
+    /* ============================================
+       MCU GLASS PANEL (replaces .panel-border)
+       ============================================ */
+    .mcu-glass {
+      background: var(--ui-surface-glass);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--ui-border-accent);
+      box-shadow: var(--ui-shadow-glow);
+      border-radius: 12px;
+      will-change: transform;
+    }
+
+    @media (max-width: 768px) {
+      .mcu-glass {
+        backdrop-filter: var(--glass-blur-mobile);
+        -webkit-backdrop-filter: var(--glass-blur-mobile);
+      }
+    }
+
+    /* ============================================
+       MCU GLOW EFFECTS
+       ============================================ */
+    .mcu-glow-blue {
+      box-shadow: 0 0 15px var(--mcu-blue-glow), inset 0 0 5px var(--mcu-blue-glow);
+    }
+
+    .mcu-glow-red {
+      box-shadow: 0 0 15px var(--mcu-red-glow), inset 0 0 5px var(--mcu-red-glow);
+    }
+
+    .mcu-glow-gold {
+      box-shadow: 0 0 15px rgba(201, 162, 39, 0.4), inset 0 0 5px rgba(201, 162, 39, 0.2);
+    }
+
+    .mcu-text-glow {
+      text-shadow: var(--text-glow-accent);
+    }
+
+    /* Spider-Verse Chromatic Text (Victory/High-Energy only) */
+    .glitch-text {
+      text-shadow:
+        var(--chromatic-offset) 0 var(--spider-pink),
+        calc(-1 * var(--chromatic-offset)) 0 var(--spider-cyan);
+    }
+
+    /* Spider-Verse Sketch Border (Hover states) */
+    .sketch-border {
+      border: 3px solid #111;
+      box-shadow: var(--sketch-shadow);
+    }
+
+    /* HUD Grid Background */
+    .mcu-hud-grid {
+      background-image:
+        linear-gradient(rgba(0, 170, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 170, 255, 0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* Arc Reactor Pulse Animation */
+    @keyframes arc-pulse {
+      0%, 100% { box-shadow: 0 0 20px var(--mcu-blue-glow); }
+      50% { box-shadow: 0 0 30px var(--mcu-blue-glow), 0 0 40px var(--mcu-blue-glow); }
+    }
+
+    .arc-pulse {
+      animation: arc-pulse 2s ease-in-out infinite;
+    }
+
+    /* Spider-Verse Glitch Animation (Victory only) */
+    @keyframes chromatic-glitch {
+      0%, 100% { text-shadow: 2px 0 var(--spider-pink), -2px 0 var(--spider-cyan); }
+      25% { text-shadow: -2px 0 var(--spider-pink), 2px 0 var(--spider-cyan); }
+      50% { text-shadow: 1px 1px var(--spider-pink), -1px -1px var(--spider-cyan); }
+      75% { text-shadow: -1px 1px var(--spider-pink), 1px -1px var(--spider-cyan); }
+    }
+
+    .chromatic-glitch {
+      animation: chromatic-glitch 0.3s ease-in-out infinite;
+    }
+
+    /* Reduced Motion Support for animations */
+    @media (prefers-reduced-motion: reduce) {
+      .arc-pulse,
+      .glitch-text,
+      .chromatic-glitch {
+        animation: none;
+        text-shadow: none;
+      }
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background-color: #1A1A1A;
-      color: #FFFFFF;
+      font-family: var(--font-ui);
+      background-color: var(--ui-surface-base);
+      color: var(--ui-text-primary);
       min-height: 100vh;
       overflow-x: hidden;
       padding-top: env(safe-area-inset-top);
@@ -672,7 +934,7 @@
     }
 
     .low-end-mode .shadow-comic,
-    .low-end-mode .shadow-comic-sm {
+    .low-end-mode .shadow-glass {
       box-shadow: none;
     }
 
@@ -934,7 +1196,7 @@
           }}
         >
           <div
-            className={`w-8 h-8 border-4 border-marvel-red border-t-transparent rounded-full ${refreshing ? 'animate-spin' : ''}`}
+            className={`w-8 h-8 border-4 border-mcu-blue border-t-transparent rounded-full ${refreshing ? 'animate-spin' : ''}`}
             style={{ transform: refreshing ? 'none' : `rotate(${rotation}deg)` }}
           />
         </div>
@@ -3085,7 +3347,7 @@ RESPONSE GUIDELINES:
       // Settings menu provides access to: missions, battlepass, armor
       const tabs = primaryTabs;
       return (
-        <nav className="fixed bottom-0 left-0 right-0 bg-marvel-black border-t-4 border-marvel-red z-50" role="navigation" aria-label="Main navigation">
+        <nav className="fixed bottom-0 left-0 right-0 bg-stark-dark/95 backdrop-blur-md border-t border-mcu-blue/20 z-50" role="navigation" aria-label="Main navigation">
           <div className="flex justify-around items-center h-16 max-w-lg mx-auto" role="tablist" aria-label="App sections">
             {tabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
@@ -3093,11 +3355,13 @@ RESPONSE GUIDELINES:
                 aria-selected={activeTab === tab.id}
                 aria-controls={`panel-${tab.id}`}
                 id={`tab-${tab.id}`}
-                className={`flex flex-col items-center justify-center w-full h-full transition-colors ${
-                  activeTab === tab.id ? 'text-marvel-red tab-active' : 'text-gray-400 hover:text-white'
+                className={`flex flex-col items-center justify-center w-full h-full min-w-[44px] min-h-[44px] transition-all duration-200 ${
+                  activeTab === tab.id
+                    ? 'text-mcu-blue shadow-glow-blue'
+                    : 'text-gray-400 hover:text-mcu-blue-light'
                 }`}>
                 <span className="text-xl" aria-hidden="true">{tab.icon}</span>
-                <span className="text-xs mt-1 font-medium">{tab.label}</span>
+                <span className="text-xs mt-1 font-medium font-display tracking-wide">{tab.label}</span>
               </button>
             ))}
           </div>
@@ -3105,10 +3369,10 @@ RESPONSE GUIDELINES:
       );
     };
 
-    // Header
+    // Header - MCU Glass Panel Style
     const Header = ({ title }) => (
-      <header className="bg-marvel-red halftone py-4 px-4 shadow-comic mb-4">
-        <h1 className="text-2xl font-comic text-white text-center tracking-wider">{title}</h1>
+      <header className="mcu-glass py-4 px-6 mb-4 border-b border-mcu-blue/30">
+        <h1 className="text-2xl font-display font-bold text-white text-center tracking-wider mcu-text-glow">{title}</h1>
       </header>
     );
 
@@ -3195,10 +3459,10 @@ RESPONSE GUIDELINES:
 
           {/* Player OS: Wallet Widget */}
           {wallet && (
-            <div className="bg-gray-800 rounded-lg p-3 mb-4 panel-border border-l-4 border-marvel-gold">
+            <div className="mcu-glass p-4 mb-4 border-l-4 border-mcu-gold">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs uppercase text-gray-400">Wallet</span>
-                <span className="text-xs px-2 py-0.5 bg-marvel-gold/30 text-marvel-gold rounded">Synced</span>
+                <span className="text-xs px-2 py-0.5 bg-mcu-gold/30 text-mcu-gold rounded">Synced</span>
               </div>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div>
@@ -3225,14 +3489,14 @@ RESPONSE GUIDELINES:
           {(rank || timeModel) && (
             <div className="grid grid-cols-2 gap-3 mb-4">
               {rank && (
-                <div className="bg-gray-800 rounded-lg p-3 panel-border border-l-4 border-purple-500">
+                <div className="mcu-glass p-4 border-l-4 border-series-3">
                   <div className="text-gray-400 text-xs uppercase">Rank</div>
-                  <div className="text-2xl font-comic text-white">{rank.tier}</div>
+                  <div className="text-2xl font-display font-bold text-white">{rank.tier}</div>
                   <div className="text-sm text-gray-400">Level {rank.currentRank}</div>
                 </div>
               )}
               {timeModel && (
-                <div className="bg-gray-800 rounded-lg p-3 panel-border border-l-4 border-cyan-500">
+                <div className="mcu-glass p-4 border-l-4 border-mcu-blue">
                   <div className="text-gray-400 text-xs uppercase">Resets</div>
                   <div className="text-sm text-cyan-400">Daily: {getTimeUntil(timeModel.dailyReset) || '—'}</div>
                   <div className="text-sm text-cyan-300">Weekly: {getTimeUntil(timeModel.weeklyReset) || '—'}</div>
@@ -3243,11 +3507,11 @@ RESPONSE GUIDELINES:
 
           {/* Player OS: Pity Counters (Spotlight Oracle Preview) */}
           {rewards && (
-            <div className="bg-gray-800 rounded-lg p-3 mb-4 panel-border border-l-4 border-marvel-red">
+            <div className="mcu-glass p-4 mb-4 border-l-4 border-mcu-red">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs uppercase text-gray-400">Pity Counters</span>
                 {(rewards.isCloseToS4 || rewards.isCloseToS5 || rewards.isCloseToSpotlight) && (
-                  <span className="text-xs px-2 py-0.5 bg-marvel-red/30 text-marvel-red rounded animate-pulse">Close!</span>
+                  <span className="text-xs px-2 py-0.5 bg-mcu-red/30 text-mcu-red rounded animate-pulse">Close!</span>
                 )}
               </div>
               <div className="grid grid-cols-3 gap-2">
@@ -3299,10 +3563,10 @@ RESPONSE GUIDELINES:
 
           {/* Lifetime Stats (from imported data) */}
           {displayStats.hasImported && (
-            <div className="bg-gray-800 rounded-lg p-3 mb-4 panel-border border-l-4 border-marvel-blue">
+            <div className="mcu-glass p-4 mb-4 border-l-4 border-mcu-blue">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs uppercase text-gray-400">Lifetime Stats</span>
-                <span className="text-xs px-2 py-0.5 bg-marvel-blue/30 text-marvel-blue rounded">From Game</span>
+                <span className="text-xs px-2 py-0.5 bg-mcu-blue/30 text-mcu-blue rounded">From Game</span>
               </div>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div>
@@ -3318,7 +3582,7 @@ RESPONSE GUIDELINES:
                   <div className="text-xs text-gray-500">Losses</div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-marvel-gold">{displayStats.winRate}%</div>
+                  <div className="text-lg font-bold text-mcu-gold">{displayStats.winRate}%</div>
                   <div className="text-xs text-gray-500">Win Rate</div>
                 </div>
               </div>
@@ -3329,42 +3593,42 @@ RESPONSE GUIDELINES:
           )}
 
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-gray-800 rounded-lg p-3 border-l-4 border-marvel-red panel-border">
+            <div className="mcu-glass p-4 border-l-4 border-mcu-red">
               <div className="text-gray-400 text-xs uppercase">Collection</div>
-              <div className="text-2xl font-comic text-white">{completionPercent}%</div>
+              <div className="text-2xl font-display font-bold text-white">{completionPercent}%</div>
               <div className="text-sm text-gray-400">{ownedInDatabase}/{totalCards} cards</div>
             </div>
-            <div className="bg-gray-800 rounded-lg p-3 border-l-4 border-marvel-gold panel-border">
+            <div className="mcu-glass p-4 border-l-4 border-mcu-gold">
               <div className="text-gray-400 text-xs uppercase">{displayStats.hasImported ? 'Session' : 'Win Rate'}</div>
-              <div className="text-2xl font-comic text-white">{winRate}%</div>
+              <div className="text-2xl font-display font-bold text-white">{winRate}%</div>
               <div className="text-sm text-gray-400">{totalWins}/{totalGames} {displayStats.hasImported ? 'tracked' : 'games'}</div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-gray-800 rounded-lg p-3 border-l-4 border-marvel-blue panel-border">
+            <div className="mcu-glass p-4 border-l-4 border-mcu-blue">
               <div className="text-gray-400 text-xs uppercase">Net Cubes</div>
-              <div className={`text-2xl font-comic ${netCubes >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              <div className={`text-2xl font-display font-bold ${netCubes >= 0 ? 'text-green-400' : 'text-mcu-red'}`}>
                 {netCubes >= 0 ? '+' : ''}{netCubes}
               </div>
               <div className="text-sm text-gray-400">Today: {todayCubes >= 0 ? '+' : ''}{todayCubes}</div>
             </div>
-            <div className="bg-gray-800 rounded-lg p-3 border-l-4 border-series-3 panel-border">
+            <div className="mcu-glass p-4 border-l-4 border-series-3">
               <div className="text-gray-400 text-xs uppercase">Streak</div>
-              <div className={`text-2xl font-comic ${streak.type === 'WIN' ? 'text-green-400' : streak.type === 'LOSS' ? 'text-red-400' : 'text-gray-400'}`}>
+              <div className={`text-2xl font-display font-bold ${streak.type === 'WIN' ? 'text-green-400' : streak.type === 'LOSS' ? 'text-mcu-red' : 'text-gray-400'}`}>
                 {streak.count} {streak.type === 'WIN' ? 'W' : streak.type === 'LOSS' ? 'L' : '-'}
               </div>
               <div className="text-sm text-gray-400">Current</div>
             </div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
-            <h2 className="text-lg font-comic text-marvel-gold mb-3">Quick Match</h2>
+          <div className="mcu-glass p-5 mb-4">
+            <h2 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Quick Match</h2>
             <div className="mb-3" role="group" aria-label="Record win">
               <div className="text-sm text-green-400 mb-2" id="win-label">WIN</div>
               <div className="flex gap-2" role="group" aria-labelledby="win-label">
                 {[1, 2, 4, 8].map(cubes => (
                   <button key={`win-${cubes}`} onClick={() => onQuickMatch('WIN', cubes)}
                     aria-label={`Record win of ${cubes} cube${cubes > 1 ? 's' : ''}`}
-                    className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded shadow-comic-sm active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all">
+                    className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded shadow-glow-blue active:shadow-none hover:shadow-glow-blue transition-all">
                     +{cubes}
                   </button>
                 ))}
@@ -3376,15 +3640,15 @@ RESPONSE GUIDELINES:
                 {[1, 2, 4, 8].map(cubes => (
                   <button key={`loss-${cubes}`} onClick={() => onQuickMatch('LOSS', cubes)}
                     aria-label={`Record loss of ${cubes} cube${cubes > 1 ? 's' : ''}`}
-                    className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded shadow-comic-sm active:shadow-none active:translate-x-0.5 active:translate-y-0.5 transition-all">
+                    className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded shadow-glow-blue active:shadow-none hover:shadow-glow-blue transition-all">
                     -{cubes}
                   </button>
                 ))}
               </div>
             </div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-4 panel-border">
-            <h2 className="text-lg font-comic text-marvel-gold mb-3">Recent Matches</h2>
+          <div className="mcu-glass p-5">
+            <h2 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Recent Matches</h2>
             {matches.length === 0 ? (
               <p className="text-gray-400 text-center py-4">No matches recorded yet</p>
             ) : (
@@ -3603,7 +3867,7 @@ RESPONSE GUIDELINES:
             <div className="mx-4 mb-4 bg-yellow-900/50 border border-yellow-600 rounded-lg p-4">
               <p className="text-yellow-200 text-sm mb-2">AI not configured yet!</p>
               <button onClick={() => setActiveTab('settings')}
-                className="bg-marvel-gold text-black px-4 py-2 rounded font-medium hover:bg-yellow-400">
+                className="bg-mcu-gold text-black px-4 py-2 rounded font-medium hover:bg-yellow-400">
                 Configure AI Provider
               </button>
             </div>
@@ -3614,7 +3878,7 @@ RESPONSE GUIDELINES:
               <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] p-3 chat-bubble ${
                   msg.role === 'user'
-                    ? 'bg-marvel-blue text-white chat-bubble-user'
+                    ? 'bg-mcu-blue text-white chat-bubble-user'
                     : 'bg-gray-700 text-white chat-bubble-ai'
                 }`}>
                   <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
@@ -3626,9 +3890,9 @@ RESPONSE GUIDELINES:
               <div className="flex justify-start">
                 <div className="bg-gray-700 p-4 rounded-lg chat-bubble chat-bubble-ai">
                   <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-marvel-red rounded-full typing-dot"></span>
-                    <span className="w-2 h-2 bg-marvel-red rounded-full typing-dot"></span>
-                    <span className="w-2 h-2 bg-marvel-red rounded-full typing-dot"></span>
+                    <span className="w-2 h-2 bg-mcu-red rounded-full typing-dot"></span>
+                    <span className="w-2 h-2 bg-mcu-red rounded-full typing-dot"></span>
+                    <span className="w-2 h-2 bg-mcu-red rounded-full typing-dot"></span>
                   </div>
                 </div>
               </div>
@@ -3662,10 +3926,10 @@ RESPONSE GUIDELINES:
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                 placeholder="Ask Snapapoulous..."
                 disabled={isLoading}
-                className="flex-1 bg-gray-800 text-white rounded-lg px-4 py-3 border-2 border-gray-700 focus:border-marvel-red focus:outline-none disabled:opacity-50"
+                className="flex-1 bg-gray-800 text-white rounded-lg px-4 py-3 border-2 border-gray-700 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 disabled:opacity-50"
               />
               <button onClick={sendMessage} disabled={isLoading || !input.trim()}
-                className="bg-marvel-red text-white px-6 py-3 rounded-lg font-medium hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-comic-sm">
+                className="bg-mcu-blue text-white px-6 py-3 rounded-lg font-display font-medium hover:shadow-glow-blue transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-glass">
                 Send
               </button>
             </div>
@@ -3773,7 +4037,7 @@ RESPONSE GUIDELINES:
           <Header title="MY COLLECTION" />
 
           {/* Series Completion Bars - YOUR progress per series */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+          <div className="mcu-glass p-5 mb-4">
             <div className="text-white font-medium mb-3 text-center">Series Completion</div>
             <div className="space-y-2">
               {[1, 2, 3, 4, 5].map(series => (
@@ -3790,20 +4054,20 @@ RESPONSE GUIDELINES:
                 </div>
               ))}
             </div>
-            <div className="text-center text-marvel-gold font-bold mt-3">
+            <div className="text-center text-mcu-gold font-bold mt-3">
               Total: {ownedCards.length} cards owned
             </div>
           </div>
 
           {/* View Mode Toggle & Filters */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+          <div className="mcu-glass p-5 mb-4">
             {/* View Mode Toggle */}
             <div className="flex gap-2 mb-3">
               <button
                 onClick={() => setViewMode('owned')}
                 className={`flex-1 py-2 rounded font-medium text-sm transition-all ${
                   viewMode === 'owned'
-                    ? 'bg-marvel-gold text-black'
+                    ? 'bg-mcu-gold text-black'
                     : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}>
                 My Cards ({ownedCards.length})
@@ -3812,7 +4076,7 @@ RESPONSE GUIDELINES:
                 onClick={() => setViewMode('browse')}
                 className={`flex-1 py-2 rounded font-medium text-sm transition-all ${
                   viewMode === 'browse'
-                    ? 'bg-marvel-blue text-white'
+                    ? 'bg-mcu-blue text-white'
                     : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}>
                 + Add Cards
@@ -3821,11 +4085,11 @@ RESPONSE GUIDELINES:
 
             <input type="text" placeholder={viewMode === 'owned' ? "Search your cards..." : "Search cards to add..."} value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-gray-700 text-white rounded px-3 py-2 mb-3 border-2 border-gray-600 focus:border-marvel-red focus:outline-none" />
+              className="w-full bg-gray-700 text-white rounded px-3 py-2 mb-3 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
 
             <div className="flex gap-2">
               <select value={seriesFilter} onChange={(e) => setSeriesFilter(e.target.value)}
-                className="flex-1 bg-gray-700 text-white rounded px-2 py-2 border-2 border-gray-600 focus:border-marvel-red focus:outline-none">
+                className="flex-1 bg-gray-700 text-white rounded px-2 py-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20">
                 <option value="all">{viewMode === 'owned' ? 'All My Series' : 'All Series'}</option>
                 {availableSeries.map(s => (
                   <option key={s} value={s}>Series {s} {viewMode === 'owned' ? `(${seriesStats[s].owned})` : ''}</option>
@@ -3849,8 +4113,8 @@ RESPONSE GUIDELINES:
                   <button onClick={() => toggleCard(card.name)} className="w-full h-full"
                     aria-pressed={isOwned}
                     aria-label={`${card.name}, ${card.cost} cost, ${card.power} power, ${isOwned ? 'owned' : 'not owned'}`}>
-                    <div className="absolute top-1 left-1 w-6 h-6 bg-marvel-blue rounded-full flex items-center justify-center text-xs font-bold text-white">{card.cost}</div>
-                    <div className="absolute top-1 right-1 w-6 h-6 bg-marvel-red rounded-full flex items-center justify-center text-xs font-bold text-white">{card.power}</div>
+                    <div className="absolute top-1 left-1 w-6 h-6 bg-mcu-blue rounded-full flex items-center justify-center text-xs font-bold text-white">{card.cost}</div>
+                    <div className="absolute top-1 right-1 w-6 h-6 bg-mcu-red rounded-full flex items-center justify-center text-xs font-bold text-white">{card.power}</div>
                     <div className="mt-6 text-xs text-white text-center truncate">{card.name}</div>
                     {isOwned && (
                       <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
@@ -3858,13 +4122,13 @@ RESPONSE GUIDELINES:
                       </div>
                     )}
                     {!isOwned && viewMode === 'browse' && (
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-marvel-blue rounded-full flex items-center justify-center">
+                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-mcu-blue rounded-full flex items-center justify-center">
                         <span className="text-white text-xs">+</span>
                       </div>
                     )}
                   </button>
                   <button onClick={(e) => { e.stopPropagation(); setSelectedCard(card); }}
-                    className="absolute bottom-1 right-1 w-7 h-7 bg-gray-600 hover:bg-marvel-gold rounded-full flex items-center justify-center text-xs text-white z-10 touch-expand"
+                    className="absolute bottom-1 right-1 w-7 h-7 bg-gray-600 hover:bg-mcu-gold rounded-full flex items-center justify-center text-xs text-white z-10 touch-expand"
                     title="View card details">i</button>
                 </div>
               );
@@ -3883,18 +4147,18 @@ RESPONSE GUIDELINES:
           {/* Card Detail Modal */}
           {selectedCard && (
             <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4" onClick={() => setSelectedCard(null)}>
-              <div className="bg-gray-800 rounded-lg panel-border max-w-sm w-full p-6" onClick={e => e.stopPropagation()}>
+              <div className="mcu-glass max-w-sm w-full p-6" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-comic text-white">{selectedCard.name}</h3>
+                  <h3 className="text-xl font-display font-semibold text-white">{selectedCard.name}</h3>
                   <button onClick={() => setSelectedCard(null)} className="text-gray-400 hover:text-white text-xl">&times;</button>
                 </div>
                 <div className="flex gap-4 mb-4">
                   <div className="flex items-center gap-2">
-                    <span className="w-8 h-8 bg-marvel-blue rounded-full flex items-center justify-center font-bold text-white">{selectedCard.cost}</span>
+                    <span className="w-8 h-8 bg-mcu-blue rounded-full flex items-center justify-center font-bold text-white">{selectedCard.cost}</span>
                     <span className="text-gray-400 text-sm">Cost</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-8 h-8 bg-marvel-red rounded-full flex items-center justify-center font-bold text-white">{selectedCard.power}</span>
+                    <span className="w-8 h-8 bg-mcu-red rounded-full flex items-center justify-center font-bold text-white">{selectedCard.power}</span>
                     <span className="text-gray-400 text-sm">Power</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -4079,11 +4343,11 @@ RESPONSE GUIDELINES:
             <Header title="MY DECKS" />
             <div className="flex gap-2 mb-4">
               <button onClick={startNewDeck}
-                className="flex-1 bg-marvel-red text-white py-3 rounded-lg font-comic hover:opacity-80 panel-border">
+                className="flex-1 bg-mcu-red text-white py-3 rounded-lg font-display font-semibold hover:shadow-glow-red transition-all duration-200">
                 + Create Deck
               </button>
               <button onClick={() => setView('import')}
-                className="flex-1 bg-series-3 text-white py-3 rounded-lg font-comic hover:opacity-80 panel-border">
+                className="flex-1 bg-series-3 text-white py-3 rounded-lg font-display font-semibold hover:shadow-glow-blue transition-all duration-200">
                 Import Deck
               </button>
             </div>
@@ -4097,24 +4361,24 @@ RESPONSE GUIDELINES:
                 {decks.map(deck => {
                   const stats = getDeckStats(deck.cards);
                   return (
-                    <div key={deck.id} className="bg-gray-800 rounded-lg p-4 panel-border">
+                    <div key={deck.id} className="mcu-glass p-5">
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-lg font-comic text-white">{deck.name}</h3>
+                        <h3 className="text-lg font-display font-semibold text-white">{deck.name}</h3>
                         <div className="flex gap-2">
-                          <button onClick={() => editDeck(deck)} className="text-marvel-blue hover:text-white text-sm">Edit</button>
+                          <button onClick={() => editDeck(deck)} className="text-mcu-blue hover:text-white text-sm">Edit</button>
                           <button onClick={() => deleteDeck(deck.id)} className="text-red-500 hover:text-red-400 text-sm">Delete</button>
                         </div>
                       </div>
                       <div className="flex gap-4 text-sm text-gray-400 mb-3">
-                        <span>Avg Cost: <span className="text-marvel-blue">{stats.avgCost}</span></span>
-                        <span>Total Power: <span className="text-marvel-red">{stats.totalPower}</span></span>
+                        <span>Avg Cost: <span className="text-mcu-blue">{stats.avgCost}</span></span>
+                        <span>Total Power: <span className="text-mcu-red">{stats.totalPower}</span></span>
                         <span>Owned: <span className={stats.ownedCount === 12 ? 'text-green-500' : 'text-yellow-500'}>{stats.ownedCount}/12</span></span>
                       </div>
                       {/* Mana Curve */}
                       <div className="flex gap-1 items-end h-8 mb-3">
                         {stats.curve.map((count, cost) => (
                           <div key={cost} className="flex-1 flex flex-col items-center">
-                            <div className="bg-marvel-blue w-full rounded-t" style={{ height: count * 8 + 'px' }}></div>
+                            <div className="bg-mcu-blue w-full rounded-t" style={{ height: count * 8 + 'px' }}></div>
                             <span className="text-xs text-gray-500">{cost}{cost === 6 ? '+' : ''}</span>
                           </div>
                         ))}
@@ -4157,26 +4421,26 @@ RESPONSE GUIDELINES:
         return (
           <div className="px-4 pb-20">
             <Header title="IMPORT DECK" />
-            <button onClick={() => setView('list')} className="text-marvel-blue mb-4">&larr; Back to Decks</button>
+            <button onClick={() => setView('list')} className="text-mcu-blue mb-4">&larr; Back to Decks</button>
 
-            <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
-              <h3 className="text-lg font-comic text-marvel-gold mb-3">Import from Deck Code</h3>
+            <div className="mcu-glass p-5 mb-4">
+              <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Import from Deck Code</h3>
               <p className="text-gray-400 text-sm mb-2">Paste a base64 encoded deck code</p>
               <input type="text" placeholder="Paste deck code here..."
                 value={importCode} onChange={(e) => setImportCode(e.target.value)}
-                className="w-full bg-gray-700 text-white rounded px-3 py-2 mb-2 border-2 border-gray-600 focus:border-marvel-red focus:outline-none" />
+                className="w-full bg-gray-700 text-white rounded px-3 py-2 mb-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
               <button onClick={importFromCode}
-                className="w-full bg-marvel-red text-white py-2 rounded hover:opacity-80">
+                className="w-full bg-mcu-blue text-white py-2 rounded-lg hover:shadow-glow-blue transition-all duration-200">
                 Import from Code
               </button>
             </div>
 
-            <div className="bg-gray-800 rounded-lg p-4 panel-border">
-              <h3 className="text-lg font-comic text-marvel-gold mb-3">Import from URL</h3>
+            <div className="mcu-glass p-5">
+              <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Import from URL</h3>
               <p className="text-gray-400 text-sm mb-2">Paste a MarvelSnapZone or Untapped.gg deck URL</p>
               <input type="text" placeholder="https://marvelsnapzone.com/decks/..."
                 value={importUrl} onChange={(e) => setImportUrl(e.target.value)}
-                className="w-full bg-gray-700 text-white rounded px-3 py-2 mb-2 border-2 border-gray-600 focus:border-marvel-red focus:outline-none" />
+                className="w-full bg-gray-700 text-white rounded px-3 py-2 mb-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
               <button onClick={importFromUrl}
                 className="w-full bg-series-3 text-white py-2 rounded hover:opacity-80">
                 Import from URL
@@ -4194,16 +4458,16 @@ RESPONSE GUIDELINES:
       return (
         <div className="px-4 pb-20">
           <Header title={editingDeck ? 'EDIT DECK' : 'CREATE DECK'} />
-          <button onClick={() => setView('list')} className="text-marvel-blue mb-4">&larr; Back to Decks</button>
+          <button onClick={() => setView('list')} className="text-mcu-blue mb-4">&larr; Back to Decks</button>
 
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+          <div className="mcu-glass p-5 mb-4">
             <input type="text" placeholder="Deck name..."
               value={deckName} onChange={(e) => setDeckName(e.target.value)}
-              className="w-full bg-gray-700 text-white rounded px-3 py-2 mb-3 border-2 border-gray-600 focus:border-marvel-red focus:outline-none text-lg font-comic" />
+              className="w-full bg-stark-surface text-white rounded-lg px-4 py-3 mb-3 border border-mcu-blue/30 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 text-lg font-display" />
             <div className="flex justify-between items-center">
               <span className="text-gray-400">Cards: <span className={selectedCards.length === 12 ? 'text-green-500' : 'text-yellow-500'}>{selectedCards.length}/12</span></span>
               <button onClick={saveDeck} disabled={selectedCards.length !== 12 || !deckName.trim()}
-                className="bg-marvel-red text-white px-4 py-2 rounded hover:opacity-80 disabled:opacity-50">
+                className="bg-mcu-blue text-white px-4 py-2 rounded-lg hover:shadow-glow-blue transition-all duration-200 disabled:opacity-50">
                 Save Deck
               </button>
             </div>
@@ -4211,14 +4475,14 @@ RESPONSE GUIDELINES:
 
           {/* Selected Cards */}
           {selectedCards.length > 0 && (
-            <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+            <div className="mcu-glass p-5 mb-4">
               <h3 className="text-sm text-gray-400 mb-2">Selected Cards</h3>
               <div className="flex flex-wrap gap-1">
                 {selectedCards.map(cardName => {
                   const card = uniqueCards.find(c => c.name === cardName);
                   return (
                     <button key={cardName} onClick={() => toggleCardInDeck(cardName)}
-                      className="text-xs px-2 py-1 rounded-full bg-marvel-red text-white hover:bg-red-700">
+                      className="text-xs px-2 py-1 rounded-full bg-mcu-red text-white hover:shadow-glow-red transition-all">
                       {card?.cost || '?'}/{cardName} &times;
                     </button>
                   );
@@ -4227,8 +4491,8 @@ RESPONSE GUIDELINES:
               {selectedCards.length === 12 && (
                 <div className="mt-3 pt-3 border-t border-gray-700">
                   <div className="flex gap-4 text-sm text-gray-400">
-                    <span>Avg Cost: <span className="text-marvel-blue">{getDeckStats(selectedCards).avgCost}</span></span>
-                    <span>Total Power: <span className="text-marvel-red">{getDeckStats(selectedCards).totalPower}</span></span>
+                    <span>Avg Cost: <span className="text-mcu-blue">{getDeckStats(selectedCards).avgCost}</span></span>
+                    <span>Total Power: <span className="text-mcu-red">{getDeckStats(selectedCards).totalPower}</span></span>
                   </div>
                 </div>
               )}
@@ -4236,13 +4500,13 @@ RESPONSE GUIDELINES:
           )}
 
           {/* Card Picker */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border">
+          <div className="mcu-glass p-5">
             <div className="flex gap-2 mb-3">
               <input type="text" placeholder="Search cards..."
                 value={searchCard} onChange={(e) => setSearchCard(e.target.value)}
-                className="flex-1 bg-gray-700 text-white rounded px-3 py-2 border-2 border-gray-600 focus:border-marvel-red focus:outline-none" />
+                className="flex-1 bg-gray-700 text-white rounded px-3 py-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
               <select value={seriesFilter} onChange={(e) => setSeriesFilter(e.target.value)}
-                className="bg-gray-700 text-white rounded px-2 py-2 border-2 border-gray-600 focus:border-marvel-red focus:outline-none">
+                className="bg-gray-700 text-white rounded px-2 py-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20">
                 <option value="all">All</option>
                 <option value="1">S1</option>
                 <option value="2">S2</option>
@@ -4259,12 +4523,12 @@ RESPONSE GUIDELINES:
                   <button key={card.name} onClick={() => toggleCardInDeck(card.name)}
                     disabled={!isSelected && selectedCards.length >= 12}
                     className={`relative p-2 rounded-lg border-2 transition-all ${
-                      isSelected ? 'border-marvel-red bg-gray-600' :
-                      isOwned ? 'border-gray-600 bg-gray-700 hover:border-marvel-blue' :
+                      isSelected ? 'border-mcu-blue bg-gray-600' :
+                      isOwned ? 'border-gray-600 bg-gray-700 hover:border-mcu-blue' :
                       'border-gray-700 bg-gray-800 opacity-60'
                     } disabled:opacity-30`}>
-                    <div className="absolute top-0 left-0 w-4 h-4 bg-marvel-blue rounded-br flex items-center justify-center text-xs text-white">{card.cost}</div>
-                    <div className="absolute top-0 right-0 w-4 h-4 bg-marvel-red rounded-bl flex items-center justify-center text-xs text-white">{card.power}</div>
+                    <div className="absolute top-0 left-0 w-4 h-4 bg-mcu-blue rounded-br flex items-center justify-center text-xs text-white">{card.cost}</div>
+                    <div className="absolute top-0 right-0 w-4 h-4 bg-mcu-red rounded-bl flex items-center justify-center text-xs text-white">{card.power}</div>
                     <div className="mt-4 text-xs text-white text-center truncate">{card.name}</div>
                     {isSelected && (
                       <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
@@ -4300,7 +4564,7 @@ RESPONSE GUIDELINES:
       }, []);
 
       if (loading) return <div className="px-4 pb-20"><Header title="SPOTLIGHT ORACLE" /><div className="text-center py-8 text-gray-400">Loading...</div></div>;
-      if (!schedule) return <div className="px-4 pb-20"><Header title="SPOTLIGHT ORACLE" /><div className="bg-gray-800 rounded-lg p-6 panel-border text-center"><div className="text-4xl mb-4">🔮</div><p className="text-gray-400">Schedule unavailable</p></div></div>;
+      if (!schedule) return <div className="px-4 pb-20"><Header title="SPOTLIGHT ORACLE" /><div className="mcu-glass p-6 text-center"><div className="text-4xl mb-4">🔮</div><p className="text-gray-400">Schedule unavailable</p></div></div>;
 
       const ownedCards = new Set((collection?.owned || []).map(c => c.toLowerCase()));
       const pity = rewards?.pityCounters || { s4: 0, s5: 0, spotlightKey: 0 };
@@ -4316,8 +4580,8 @@ RESPONSE GUIDELINES:
       return (
         <div className="px-4 pb-20">
           <Header title="SPOTLIGHT ORACLE" />
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4 border-l-4 border-marvel-gold">
-            <h2 className="text-lg font-comic text-marvel-gold mb-3">🔮 Pity Status</h2>
+          <div className="mcu-glass p-5 mb-4 border-l-4 border-mcu-gold">
+            <h2 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">🔮 Pity Status</h2>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div><div className="text-2xl font-bold text-green-400">{pity.s4}/20</div><div className="text-xs text-gray-400">S4</div></div>
               <div><div className="text-2xl font-bold text-purple-400">{pity.s5}/60</div><div className="text-xs text-gray-400">S5</div></div>
@@ -4326,7 +4590,7 @@ RESPONSE GUIDELINES:
           </div>
           <div className="space-y-4">
             {analyzedWeeks.map((week, idx) => (
-              <div key={idx} className={`bg-gray-800 rounded-lg p-4 panel-border border-l-4 ${week.evRating === 'excellent' ? 'border-green-500' : week.evRating === 'good' ? 'border-blue-500' : 'border-gray-600'}`}>
+              <div key={idx} className={`mcu-glass p-5 border-l-4 ${week.evRating === 'excellent' ? 'border-green-500' : week.evRating === 'good' ? 'border-blue-500' : 'border-gray-600'}`}>
                 <div className="flex justify-between items-start mb-2">
                   <div className="text-xs text-gray-400">Week {week.weekNumber} • {new Date(week.startDate).toLocaleDateString()}</div>
                   <div className={`text-xs px-2 py-1 rounded ${week.evRating === 'excellent' ? 'bg-green-500/30 text-green-400' : 'bg-gray-700 text-gray-400'}`}>{week.evRating === 'excellent' ? 'PRIME' : week.evRating.toUpperCase()}</div>
@@ -4361,9 +4625,9 @@ RESPONSE GUIDELINES:
         return (
           <div className="px-4 pb-20">
             <Header title="HALL OF ARMOR" />
-            <div className="bg-gray-800 rounded-lg p-6 panel-border text-center">
+            <div className="mcu-glass p-6 text-center">
               <div className="text-4xl mb-4">🏆</div>
-              <h2 className="text-xl font-comic text-marvel-gold mb-2">Sync Your Collection</h2>
+              <h2 className="text-xl font-display font-semibold text-mcu-blue-light mb-2">Sync Your Collection</h2>
               <p className="text-gray-400 mb-4">
                 Link your game folder to display your God Splits, variants, and collection achievements.
               </p>
@@ -4420,24 +4684,24 @@ RESPONSE GUIDELINES:
 
           {/* Stats Overview */}
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="bg-gray-800 rounded-lg p-3 panel-border border-l-4 border-yellow-500 text-center">
-              <div className="text-2xl font-comic text-yellow-400">{godSplitCount}</div>
+            <div className="mcu-glass p-4 border-l-4 border-mcu-gold text-center">
+              <div className="text-2xl font-display font-bold text-mcu-gold">{godSplitCount}</div>
               <div className="text-xs text-gray-400">God Splits</div>
             </div>
-            <div className="bg-gray-800 rounded-lg p-3 panel-border border-l-4 border-purple-500 text-center">
-              <div className="text-2xl font-comic text-purple-400">{variantCount}</div>
+            <div className="mcu-glass p-4 border-l-4 border-series-3 text-center">
+              <div className="text-2xl font-display font-bold text-series-3">{variantCount}</div>
               <div className="text-xs text-gray-400">Variants</div>
             </div>
-            <div className="bg-gray-800 rounded-lg p-3 panel-border border-l-4 border-blue-500 text-center">
-              <div className="text-2xl font-comic text-blue-400">{totalBoosters.toLocaleString()}</div>
+            <div className="mcu-glass p-4 border-l-4 border-mcu-blue text-center">
+              <div className="text-2xl font-display font-bold text-mcu-blue">{totalBoosters.toLocaleString()}</div>
               <div className="text-xs text-gray-400">Boosters</div>
             </div>
           </div>
 
           {/* God Splits Showcase */}
           {godSplitCount > 0 && (
-            <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
-              <h2 className="text-lg font-comic text-marvel-gold mb-3 flex items-center gap-2">
+            <div className="mcu-glass p-5 mb-4">
+              <h2 className="text-lg font-display font-semibold text-mcu-blue-light mb-3 flex items-center gap-2">
                 <span>✨</span> God Splits
               </h2>
               <div className="flex flex-wrap gap-2">
@@ -4474,7 +4738,7 @@ RESPONSE GUIDELINES:
                 onClick={() => setFilter(f.id)}
                 className={`px-3 py-1 rounded text-sm transition-colors ${
                   filter === f.id
-                    ? 'bg-marvel-gold text-black font-bold'
+                    ? 'bg-mcu-gold text-black font-bold'
                     : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
               >
@@ -4492,9 +4756,9 @@ RESPONSE GUIDELINES:
               return (
                 <div
                   key={idx}
-                  className={`bg-gray-800 rounded-lg p-3 panel-border relative ${
-                    hasGodSplit ? 'border-l-4 border-yellow-500' :
-                    hasInfinity ? 'border-l-4 border-purple-500' :
+                  className={`mcu-glass p-4 relative ${
+                    hasGodSplit ? 'border-l-4 border-mcu-gold mcu-glow-gold' :
+                    hasInfinity ? 'border-l-4 border-series-3' :
                     'border-l-4 border-gray-600'
                   }`}
                 >
@@ -4521,7 +4785,7 @@ RESPONSE GUIDELINES:
           </div>
 
           {sortedCards.length === 0 && (
-            <div className="bg-gray-800 rounded-lg p-6 panel-border text-center">
+            <div className="mcu-glass p-6 text-center">
               <p className="text-gray-400">No cards match this filter.</p>
             </div>
           )}
@@ -4605,8 +4869,8 @@ RESPONSE GUIDELINES:
           <Header title="ECONOMY HQ" />
 
           {/* Resource Overview */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
-            <h3 className="text-lg font-comic text-marvel-gold mb-3">Current Resources</h3>
+          <div className="mcu-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Current Resources</h3>
             <div className="grid grid-cols-4 gap-2">
               <div className="bg-gray-700 rounded-lg p-2 text-center">
                 <div className="text-2xl">💰</div>
@@ -4625,17 +4889,17 @@ RESPONSE GUIDELINES:
               </div>
               <div className="bg-gray-700 rounded-lg p-2 text-center">
                 <div className="text-2xl">🔑</div>
-                <div className="text-marvel-red font-bold">{wallet.keys || 0}</div>
+                <div className="text-mcu-red font-bold">{wallet.keys || 0}</div>
                 <div className="text-gray-400 text-xs">Keys</div>
               </div>
             </div>
           </div>
 
           {/* Key Allocation Advisor */}
-          <div className={`bg-gray-800 rounded-lg p-4 panel-border mb-4 border-l-4 ${
-            recommendation.urgent ? 'border-marvel-red' : 'border-marvel-gold'
+          <div className={`mcu-glass p-5 mb-4 border-l-4 ${
+            recommendation.urgent ? 'border-mcu-blue' : 'border-mcu-gold'
           }`}>
-            <h3 className="text-lg font-comic text-marvel-gold mb-2">Key Allocation Advisor</h3>
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-2">Key Allocation Advisor</h3>
             <div className={`text-lg font-bold mb-1 ${
               recommendation.action === 'SPOTLIGHT' ? 'text-yellow-400' :
               recommendation.action === 'COLLECTOR' ? 'text-purple-400' :
@@ -4685,8 +4949,8 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Token Shop Planner */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
-            <h3 className="text-lg font-comic text-marvel-gold mb-3">Token Shop</h3>
+          <div className="mcu-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Token Shop</h3>
             {affordableItems.length > 0 ? (
               <div className="space-y-2">
                 <p className="text-green-400 text-sm mb-2">You can afford {affordableItems.length} item(s)!</p>
@@ -4713,8 +4977,8 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Credit Burn Optimizer */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border">
-            <h3 className="text-lg font-comic text-marvel-gold mb-3">Credit Optimizer</h3>
+          <div className="mcu-glass p-5">
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Credit Optimizer</h3>
             <div className="text-white mb-2">
               With <span className="text-green-400 font-bold">{wallet.credits?.toLocaleString()}</span> credits, you can do:
             </div>
@@ -4821,9 +5085,9 @@ RESPONSE GUIDELINES:
           <Header title="BOARD SNAPSHOT" />
 
           {/* Instructions */}
-          <div className="bg-gray-800 rounded-lg p-3 panel-border mb-4 text-sm">
+          <div className="mcu-glass p-4 mb-4 text-sm">
             <p className="text-gray-300">
-              <span className="text-marvel-gold font-bold">How to use:</span> Tap cards below to add them to lanes.
+              <span className="text-mcu-gold font-bold">How to use:</span> Tap cards below to add them to lanes.
               Set opponent power, then copy to share with AI advisor.
             </p>
           </div>
@@ -4831,7 +5095,7 @@ RESPONSE GUIDELINES:
           {/* Board - 3 Lanes */}
           <div className="grid grid-cols-3 gap-2 mb-4">
             {lanes.map((lane, laneIndex) => (
-              <div key={laneIndex} className="bg-gray-800 rounded-lg p-2 panel-border min-h-32">
+              <div key={laneIndex} className="mcu-glass p-3 min-h-32">
                 <div className="text-center text-gray-400 text-xs mb-2">Lane {laneIndex + 1}</div>
 
                 {/* Cards in lane */}
@@ -4843,7 +5107,7 @@ RESPONSE GUIDELINES:
                       className="bg-gray-700 rounded px-2 py-1 text-xs text-white cursor-pointer hover:bg-red-900 flex justify-between"
                     >
                       <span className="truncate">{card.name}</span>
-                      <span className="text-marvel-gold ml-1">{card.power}</span>
+                      <span className="text-mcu-gold ml-1">{card.power}</span>
                     </div>
                   ))}
                   {lane.length < 4 && (
@@ -4855,7 +5119,7 @@ RESPONSE GUIDELINES:
 
                 {/* Lane totals */}
                 <div className="text-center border-t border-gray-700 pt-2">
-                  <div className="text-marvel-blue font-bold">{lanePowers[laneIndex]}</div>
+                  <div className="text-mcu-blue font-bold">{lanePowers[laneIndex]}</div>
                   <div className="flex items-center justify-center gap-1 mt-1">
                     <span className="text-xs text-gray-400">vs</span>
                     <input
@@ -4876,9 +5140,9 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Power Summary */}
-          <div className="flex justify-between items-center bg-gray-800 rounded-lg p-3 panel-border mb-4">
+          <div className="flex justify-between items-center mcu-glass p-4 mb-4">
             <div className="text-center">
-              <div className="text-marvel-blue text-xl font-bold">{totalPower}</div>
+              <div className="text-mcu-blue text-xl font-bold">{totalPower}</div>
               <div className="text-gray-400 text-xs">Your Power</div>
             </div>
             <div className="text-gray-400 text-lg">vs</div>
@@ -4892,7 +5156,7 @@ RESPONSE GUIDELINES:
           <div className="flex gap-2 mb-4">
             <button
               onClick={copyToClipboard}
-              className="flex-1 bg-marvel-blue text-white py-3 rounded-lg font-medium hover:bg-blue-600"
+              className="flex-1 bg-mcu-blue text-white py-3 rounded-lg font-medium hover:bg-blue-600"
             >
               📋 Copy for AI
             </button>
@@ -4906,10 +5170,10 @@ RESPONSE GUIDELINES:
 
           {/* Lane Selector (shows when card is selected) */}
           {selectedCard && (
-            <div className="bg-marvel-blue/20 border-2 border-marvel-blue rounded-lg p-4 mb-4">
+            <div className="bg-mcu-blue/20 border-2 border-mcu-blue rounded-lg p-4 mb-4">
               <div className="text-center mb-3">
                 <span className="text-white">Place </span>
-                <span className="text-marvel-gold font-bold">{selectedCard.name}</span>
+                <span className="text-mcu-gold font-bold">{selectedCard.name}</span>
                 <span className="text-gray-400"> ({selectedCard.power} power)</span>
               </div>
               <div className="grid grid-cols-3 gap-2 mb-2">
@@ -4921,7 +5185,7 @@ RESPONSE GUIDELINES:
                     className={`py-3 rounded-lg font-bold transition-colors ${
                       lanes[laneIdx].length >= 4
                         ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                        : 'bg-marvel-blue text-white hover:bg-blue-500'
+                        : 'bg-mcu-blue text-white hover:bg-blue-500'
                     }`}
                   >
                     Lane {laneIdx + 1}
@@ -4939,7 +5203,7 @@ RESPONSE GUIDELINES:
           )}
 
           {/* Card Search & Selection */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border">
+          <div className="mcu-glass p-5">
             <input
               type="text"
               placeholder="Search cards..."
@@ -4954,11 +5218,11 @@ RESPONSE GUIDELINES:
                   key={i}
                   onClick={() => selectCard(card)}
                   className={`bg-gray-700 rounded-lg p-2 text-center transition-colors hover:bg-gray-600 ${
-                    selectedCard?.name === card.name ? 'ring-2 ring-marvel-gold' : ''
+                    selectedCard?.name === card.name ? 'ring-2 ring-mcu-gold' : ''
                   }`}
                 >
                   <div className="text-white text-sm truncate">{card.name}</div>
-                  <div className="text-marvel-gold text-xs">{card.power}</div>
+                  <div className="text-mcu-gold text-xs">{card.power}</div>
                 </button>
               ))}
             </div>
@@ -4999,48 +5263,48 @@ RESPONSE GUIDELINES:
       return (
         <div className="px-4 pb-20">
           <Header title="SNAP CALCULATOR" />
-          <div className={`${rec.bgColor} rounded-lg p-6 panel-border mb-4 text-center ${rec.animate ? 'pulse-snap' : ''}`}>
-            <div className="text-4xl font-comic text-white mb-2">{rec.action}</div>
+          <div className={`mcu-glass ${rec.bgColor} p-6 mb-4 text-center ${rec.animate ? 'arc-pulse' : ''}`}>
+            <div className="text-4xl font-hero text-white mb-2 mcu-text-glow">{rec.action}</div>
             <div className="text-white/80">
               {rec.action === 'SNAP' && 'The odds favor you. Make your move!'}
               {rec.action === 'HOLD' && 'Wait for more information.'}
               {rec.action === 'RETREAT' && 'Live to fight another match.'}
             </div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+          <div className="mcu-glass p-5 mb-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-white font-medium">Current Turn</span>
-              <span className="text-marvel-gold font-bold text-xl">{turn}</span>
+              <span className="text-mcu-gold font-bold text-xl">{turn}</span>
             </div>
             <input type="range" min="1" max="7" value={turn} onChange={(e) => setTurn(parseInt(e.target.value))} className="w-full" />
             <div className="text-center text-sm text-gray-400 mt-2">Cards seen: {cardsSeen}/12</div>
           </div>
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+          <div className="mcu-glass p-5 mb-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-white font-medium">Win Confidence</span>
               <span className={`font-bold text-xl ${confidence >= 70 ? 'text-green-400' : confidence >= 45 ? 'text-yellow-400' : 'text-red-400'}`}>{confidence}%</span>
             </div>
             <input type="range" min="0" max="100" value={confidence} onChange={(e) => setConfidence(parseInt(e.target.value))} className="w-full" />
           </div>
-          <div className="bg-gray-800 rounded-lg p-4 panel-border">
-            <h3 className="text-lg font-comic text-marvel-gold mb-3">Draw Probability</h3>
+          <div className="mcu-glass p-5">
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Draw Probability</h3>
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div>
                 <label htmlFor="cards-to-draw" className="text-sm text-gray-400">Cards to Draw</label>
                 <input id="cards-to-draw" type="number" min="1" max="12" value={cardsToDraw}
                   onChange={(e) => setCardsToDraw(Math.max(1, Math.min(12, parseInt(e.target.value) || 1)))}
-                  className="w-full bg-gray-700 text-white rounded px-3 py-2 mt-1 border-2 border-gray-600 focus:border-marvel-red focus:outline-none" />
+                  className="w-full bg-gray-700 text-white rounded px-3 py-2 mt-1 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
               </div>
               <div>
                 <label htmlFor="copies-in-deck" className="text-sm text-gray-400">Copies in Deck</label>
                 <input id="copies-in-deck" type="number" min="1" max="4" value={copiesInDeck}
                   onChange={(e) => setCopiesInDeck(Math.max(1, Math.min(4, parseInt(e.target.value) || 1)))}
-                  className="w-full bg-gray-700 text-white rounded px-3 py-2 mt-1 border-2 border-gray-600 focus:border-marvel-red focus:outline-none" />
+                  className="w-full bg-gray-700 text-white rounded px-3 py-2 mt-1 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
               </div>
             </div>
             <div className="bg-gray-700 rounded-lg p-4 text-center">
               <div className="text-gray-400 text-sm mb-1">Probability of drawing at least 1:</div>
-              <div className={`text-3xl font-comic ${drawProbability >= 70 ? 'text-green-400' : drawProbability >= 40 ? 'text-yellow-400' : 'text-red-400'}`}>
+              <div className={`text-3xl font-display font-bold ${drawProbability >= 70 ? 'text-green-400' : drawProbability >= 40 ? 'text-mcu-gold' : 'text-mcu-red'}`}>
                 {drawProbability.toFixed(1)}%
               </div>
             </div>
@@ -5723,14 +5987,14 @@ RESPONSE GUIDELINES:
       const ProgressBar = ({ value }) => (
         <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
           <div
-            className="bg-marvel-red h-full transition-all duration-200 ease-out"
+            className="bg-mcu-blue h-full transition-all duration-200 ease-out"
             style={{ width: `${value * 100}%` }}
           />
         </div>
       );
 
       // Percentage bar component
-      const PercentBar = ({ value, color = 'bg-marvel-blue', label }) => (
+      const PercentBar = ({ value, color = 'bg-mcu-blue', label }) => (
         <div className="flex items-center gap-2">
           <div className="flex-1 bg-gray-700 rounded h-4 overflow-hidden">
             <div className={`${color} h-full`} style={{ width: `${Math.min(100, value)}%` }} />
@@ -5745,7 +6009,7 @@ RESPONSE GUIDELINES:
           <Header title="DECK SIMULATOR" />
 
           {/* Deck Selector */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+          <div className="mcu-glass p-5 mb-4">
             <label className="block text-sm text-gray-400 mb-2">Select Deck</label>
             {decks.length === 0 ? (
               <div className="text-center text-gray-400 py-4">
@@ -5756,7 +6020,7 @@ RESPONSE GUIDELINES:
               <select
                 value={selectedDeckId}
                 onChange={(e) => setSelectedDeckId(e.target.value)}
-                className="w-full bg-gray-700 text-white rounded px-3 py-2 border-2 border-gray-600 focus:border-marvel-red focus:outline-none"
+                className="w-full bg-gray-700 text-white rounded px-3 py-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20"
               >
                 <option value="">Select a deck...</option>
                 {decks.map(deck => (
@@ -5784,7 +6048,7 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Mode Selector */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+          <div className="mcu-glass p-5 mb-4">
             <label className="block text-sm text-gray-400 mb-2">Simulation Mode</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {[
@@ -5800,7 +6064,7 @@ RESPONSE GUIDELINES:
                   onClick={() => setMode(m.id)}
                   className={`p-3 rounded-lg text-sm font-medium transition-colors ${
                     mode === m.id
-                      ? 'bg-marvel-red text-white'
+                      ? 'bg-mcu-blue text-white'
                       : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                   }`}
                 >
@@ -5813,19 +6077,19 @@ RESPONSE GUIDELINES:
 
           {/* Run Controls (not for play-through mode) */}
           {mode !== 'play' && (
-            <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+            <div className="mcu-glass p-5 mb-4">
               <div className="flex gap-2 mb-3">
                 <button
                   onClick={() => setNumRuns(1000)}
-                  className={`px-3 py-1 rounded text-sm ${numRuns === 1000 ? 'bg-marvel-blue text-white' : 'bg-gray-700 text-gray-300'}`}
+                  className={`px-3 py-1 rounded text-sm ${numRuns === 1000 ? 'bg-mcu-blue text-white' : 'bg-gray-700 text-gray-300'}`}
                 >1K</button>
                 <button
                   onClick={() => setNumRuns(10000)}
-                  className={`px-3 py-1 rounded text-sm ${numRuns === 10000 ? 'bg-marvel-blue text-white' : 'bg-gray-700 text-gray-300'}`}
+                  className={`px-3 py-1 rounded text-sm ${numRuns === 10000 ? 'bg-mcu-blue text-white' : 'bg-gray-700 text-gray-300'}`}
                 >10K</button>
                 <button
                   onClick={() => setNumRuns(50000)}
-                  className={`px-3 py-1 rounded text-sm ${numRuns === 50000 ? 'bg-marvel-blue text-white' : 'bg-gray-700 text-gray-300'}`}
+                  className={`px-3 py-1 rounded text-sm ${numRuns === 50000 ? 'bg-mcu-blue text-white' : 'bg-gray-700 text-gray-300'}`}
                 >50K</button>
                 <input
                   type="number"
@@ -5842,7 +6106,7 @@ RESPONSE GUIDELINES:
                     type="checkbox"
                     checked={useSeed}
                     onChange={(e) => setUseSeed(e.target.checked)}
-                    className="w-4 h-4 accent-marvel-red"
+                    className="w-4 h-4 accent-mcu-blue"
                   />
                   Use seed for reproducibility
                 </label>
@@ -5873,7 +6137,7 @@ RESPONSE GUIDELINES:
                 <button
                   onClick={runSimulation}
                   disabled={!selectedDeck || deckCards.length !== 12}
-                  className="w-full bg-marvel-red text-white py-3 rounded-lg font-comic hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-mcu-red text-white py-3 rounded-lg font-display font-semibold hover:shadow-glow-red transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   ▶ RUN SIMULATION ({numRuns.toLocaleString()} runs)
                 </button>
@@ -5882,13 +6146,13 @@ RESPONSE GUIDELINES:
           )}
 
           {/* Advanced Rules Panel */}
-          <div className="bg-gray-800 rounded-lg panel-border mb-4 overflow-hidden">
+          <div className="mcu-glass mb-4 overflow-hidden">
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}
               className="w-full p-4 flex justify-between items-center text-left"
             >
               <span className="text-white font-medium">
-                Advanced Rules {isAdvancedModified && <span className="text-marvel-gold text-xs ml-2">(Modified)</span>}
+                Advanced Rules {isAdvancedModified && <span className="text-mcu-gold text-xs ml-2">(Modified)</span>}
               </span>
               <span className="text-gray-400">{showAdvanced ? '▲' : '▼'}</span>
             </button>
@@ -5951,7 +6215,7 @@ RESPONSE GUIDELINES:
 
                 <button
                   onClick={() => setAdvancedOptions({ handSize: 3, deckSizeOverride: 12, extraDrawsPerTurn: 0, thinningPerTurn: 0, junkInsertsPerTurn: 0, handSizeLimit: 0 })}
-                  className="text-sm text-marvel-blue hover:underline"
+                  className="text-sm text-mcu-blue hover:underline"
                 >
                   Reset to defaults
                 </button>
@@ -5961,7 +6225,7 @@ RESPONSE GUIDELINES:
 
           {/* Combo Card Selector (for combo mode) */}
           {mode === 'combo' && selectedDeck && (
-            <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+            <div className="mcu-glass p-5 mb-4">
               <label className="block text-sm text-gray-400 mb-2">Select Combo Pieces (click cards)</label>
               <div className="flex flex-wrap gap-1 mb-3">
                 {selectedDeck.cards.map(cardName => {
@@ -5973,7 +6237,7 @@ RESPONSE GUIDELINES:
                       onClick={() => toggleComboCard(cardName)}
                       className={`text-xs px-2 py-1 rounded-full transition-colors ${
                         isSelected
-                          ? 'bg-marvel-gold text-black font-medium'
+                          ? 'bg-mcu-gold text-black font-medium'
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
@@ -5986,7 +6250,7 @@ RESPONSE GUIDELINES:
                 <p className="text-sm text-gray-400">Select at least 2 cards to analyze combo probability</p>
               )}
               {comboCards.length >= 2 && (
-                <p className="text-sm text-marvel-gold">Combo: {comboCards.join(' + ')}</p>
+                <p className="text-sm text-mcu-gold">Combo: {comboCards.join(' + ')}</p>
               )}
             </div>
           )}
@@ -5996,13 +6260,13 @@ RESPONSE GUIDELINES:
             <div className="space-y-4">
               {/* Opening Hand Results */}
               {(mode === 'opening' || mode === 'advanced') && (
-                <div className="bg-gray-800 rounded-lg p-4 panel-border">
-                  <h3 className="text-lg font-comic text-marvel-gold mb-3">Opening Hand Probability</h3>
+                <div className="mcu-glass p-5">
+                  <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Opening Hand Probability</h3>
                   <p className="text-xs text-gray-400 mb-3">Chance of each card in starting hand ({advancedOptions.handSize} cards)</p>
 
                   {!isAdvancedModified && exactResults && (
                     <div className="mb-3 p-2 bg-gray-700 rounded text-xs text-gray-300">
-                      <span className="text-marvel-blue">Exact math:</span> {exactResults.openingHandProb.toFixed(1)}% per card
+                      <span className="text-mcu-blue">Exact math:</span> {exactResults.openingHandProb.toFixed(1)}% per card
                     </div>
                   )}
 
@@ -6040,8 +6304,8 @@ RESPONSE GUIDELINES:
 
               {/* Draw by Turn Results */}
               {(mode === 'draw' || mode === 'advanced') && (
-                <div className="bg-gray-800 rounded-lg p-4 panel-border">
-                  <h3 className="text-lg font-comic text-marvel-gold mb-3">Draw by Turn Probability</h3>
+                <div className="mcu-glass p-5">
+                  <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Draw by Turn Probability</h3>
                   <p className="text-xs text-gray-400 mb-3">Chance of having each card by end of turn</p>
 
                   <div className="overflow-x-auto">
@@ -6073,8 +6337,8 @@ RESPONSE GUIDELINES:
 
               {/* Curve Analysis Results */}
               {(mode === 'curve' || mode === 'advanced') && (
-                <div className="bg-gray-800 rounded-lg p-4 panel-border">
-                  <h3 className="text-lg font-comic text-marvel-gold mb-3">Curve / Brick Analysis</h3>
+                <div className="mcu-glass p-5">
+                  <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Curve / Brick Analysis</h3>
                   <p className="text-xs text-gray-400 mb-3">On-curve = have at least one playable card that turn</p>
 
                   <div className="space-y-3">
@@ -6122,8 +6386,8 @@ RESPONSE GUIDELINES:
 
               {/* Combo Results */}
               {(mode === 'combo' || mode === 'advanced') && comboCards.length >= 2 && (
-                <div className="bg-gray-800 rounded-lg p-4 panel-border">
-                  <h3 className="text-lg font-comic text-marvel-gold mb-3">Combo Finder Results</h3>
+                <div className="mcu-glass p-5">
+                  <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Combo Finder Results</h3>
                   <p className="text-xs text-gray-400 mb-3">Chance of having ALL pieces: {comboCards.join(' + ')}</p>
 
                   <div className="space-y-2">
@@ -6155,19 +6419,19 @@ RESPONSE GUIDELINES:
           {/* Interactive Play-Through Mode */}
           {mode === 'play' && (
             <div className="space-y-4">
-              <div className="bg-gray-800 rounded-lg p-4 panel-border">
+              <div className="mcu-glass p-5">
                 <div className="flex gap-2 mb-4">
                   <button
                     onClick={startNewGame}
                     disabled={!selectedDeck}
-                    className="flex-1 bg-marvel-red text-white py-2 rounded font-medium hover:opacity-90 disabled:opacity-50"
+                    className="flex-1 bg-mcu-blue text-white py-2 rounded-lg font-display font-medium hover:shadow-glow-blue transition-all duration-200 disabled:opacity-50"
                   >
                     New Game
                   </button>
                   <button
                     onClick={drawNext}
                     disabled={!playState || playState.turn >= 6 || playState.deck.length === 0}
-                    className="flex-1 bg-marvel-blue text-white py-2 rounded font-medium hover:opacity-90 disabled:opacity-50"
+                    className="flex-1 bg-mcu-blue text-white py-2 rounded font-medium hover:opacity-90 disabled:opacity-50"
                   >
                     Draw Next
                   </button>
@@ -6195,14 +6459,14 @@ RESPONSE GUIDELINES:
                             key={i}
                             className={`relative p-2 rounded-lg border-2 bg-gray-700 min-w-16 ${
                               playState.drawnThisTurn.includes(card) && playState.turn > 0
-                                ? 'border-marvel-gold'
+                                ? 'border-mcu-gold'
                                 : 'border-gray-600'
                             }`}
                           >
-                            <div className="absolute top-0 left-0 w-5 h-5 bg-marvel-blue rounded-br flex items-center justify-center text-xs text-white font-bold">
+                            <div className="absolute top-0 left-0 w-5 h-5 bg-mcu-blue rounded-br flex items-center justify-center text-xs text-white font-bold">
                               {card.cost}
                             </div>
-                            <div className="absolute top-0 right-0 w-5 h-5 bg-marvel-red rounded-bl flex items-center justify-center text-xs text-white font-bold">
+                            <div className="absolute top-0 right-0 w-5 h-5 bg-mcu-red rounded-bl flex items-center justify-center text-xs text-white font-bold">
                               {card.power}
                             </div>
                             <div className="mt-5 text-xs text-white text-center">{card.name}</div>
@@ -6212,7 +6476,7 @@ RESPONSE GUIDELINES:
                     </div>
 
                     {playState.turn > 0 && playState.drawnThisTurn.length > 0 && (
-                      <div className="text-sm text-marvel-gold">
+                      <div className="text-sm text-mcu-gold">
                         Drew this turn: {playState.drawnThisTurn.map(c => c.name).join(', ')}
                       </div>
                     )}
@@ -6242,26 +6506,26 @@ RESPONSE GUIDELINES:
 
           {/* Info Panel */}
           {!results && mode !== 'play' && selectedDeck && (
-            <div className="bg-gray-800 rounded-lg p-4 panel-border">
-              <h3 className="text-lg font-comic text-marvel-gold mb-2">Simulation Info</h3>
+            <div className="mcu-glass p-5">
+              <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-2">Simulation Info</h3>
               <p className="text-sm text-gray-400 mb-3">
                 Marvel Snap draws 3 cards initially, then 1 per turn. By turn 6, you've seen 9 of 12 cards.
               </p>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="bg-gray-700 rounded p-2 text-center">
-                  <div className="text-marvel-blue font-bold">12</div>
+                  <div className="text-mcu-blue font-bold">12</div>
                   <div className="text-gray-400 text-xs">Deck Size</div>
                 </div>
                 <div className="bg-gray-700 rounded p-2 text-center">
-                  <div className="text-marvel-blue font-bold">3</div>
+                  <div className="text-mcu-blue font-bold">3</div>
                   <div className="text-gray-400 text-xs">Starting Hand</div>
                 </div>
                 <div className="bg-gray-700 rounded p-2 text-center">
-                  <div className="text-marvel-blue font-bold">1</div>
+                  <div className="text-mcu-blue font-bold">1</div>
                   <div className="text-gray-400 text-xs">Draw/Turn</div>
                 </div>
                 <div className="bg-gray-700 rounded p-2 text-center">
-                  <div className="text-marvel-blue font-bold">9</div>
+                  <div className="text-mcu-blue font-bold">9</div>
                   <div className="text-gray-400 text-xs">Cards by T6</div>
                 </div>
               </div>
@@ -6280,7 +6544,7 @@ RESPONSE GUIDELINES:
       return (
         <div className="modal-overlay" onClick={onCancel}>
           <div className="modal p-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-xl font-comic text-marvel-gold mb-4 text-center">Log Analysis Complete</h3>
+            <h3 className="text-xl font-display font-semibold text-mcu-blue-light mb-4 text-center">Log Analysis Complete</h3>
 
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div className="bg-gray-700 rounded-lg p-3 text-center">
@@ -6330,7 +6594,7 @@ RESPONSE GUIDELINES:
 
             <div className="flex gap-2">
               <button onClick={() => onConfirm(matches)}
-                className="flex-1 bg-marvel-blue text-white py-3 rounded-lg font-medium hover:bg-blue-600">
+                className="flex-1 bg-mcu-blue text-white py-3 rounded-lg font-medium hover:bg-blue-600">
                 Import {matches.length} Matches
               </button>
               <button onClick={onCancel}
@@ -6348,11 +6612,11 @@ RESPONSE GUIDELINES:
       return (
         <div className="modal-overlay" onClick={onCancel}>
           <div className="modal p-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-xl font-comic text-marvel-gold mb-4 text-center">Sync Data Received</h3>
+            <h3 className="text-xl font-display font-semibold text-mcu-blue-light mb-4 text-center">Sync Data Received</h3>
 
             <div className="bg-gray-700 rounded-lg p-4 mb-4">
               <div className="text-center mb-3">
-                <div className="text-3xl font-bold text-marvel-blue">{syncData.c?.length || 0}</div>
+                <div className="text-3xl font-bold text-mcu-blue">{syncData.c?.length || 0}</div>
                 <div className="text-sm text-gray-400">Cards in Collection</div>
               </div>
               {syncData.s && (
@@ -6381,7 +6645,7 @@ RESPONSE GUIDELINES:
 
             <div className="flex gap-2">
               <button onClick={onConfirm}
-                className="flex-1 bg-marvel-blue text-white py-3 rounded-lg font-medium hover:bg-blue-600">
+                className="flex-1 bg-mcu-blue text-white py-3 rounded-lg font-medium hover:bg-blue-600">
                 Import Collection
               </button>
               <button onClick={onCancel}
@@ -8018,10 +8282,10 @@ RESPONSE GUIDELINES:
           <Header title="SETTINGS" />
 
           {/* App Info */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
+          <div className="mcu-glass p-5 mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-marvel-red rounded-lg flex items-center justify-center">
-                <span className="text-2xl font-comic text-white">S</span>
+              <div className="w-12 h-12 bg-mcu-blue rounded-lg flex items-center justify-center">
+                <span className="text-2xl font-display font-bold text-white">S</span>
               </div>
               <div>
                 <div className="text-white font-bold">Snapapoulous Prime</div>
@@ -8031,8 +8295,8 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Quick Navigation - More Features */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
-            <h3 className="text-lg font-comic text-marvel-gold mb-3">More Features</h3>
+          <div className="mcu-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">More Features</h3>
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'missions' }))}
@@ -8094,8 +8358,8 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* PC Game Data Sync - Phase 5 */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4 pc-sync-section">
-            <h3 className="text-lg font-comic text-marvel-gold mb-3">PC Game Data Sync</h3>
+          <div className="mcu-glass p-5 mb-4 pc-sync-section">
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">PC Game Data Sync</h3>
             <p className="text-gray-400 text-sm mb-4">
               Import your collection, stats, and card performance directly from game files.
             </p>
@@ -8117,15 +8381,15 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* QR Sync - Phase 4 */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
-            <h3 className="text-lg font-comic text-marvel-gold mb-3">Cross-Device Sync</h3>
+          <div className="mcu-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Cross-Device Sync</h3>
             <p className="text-gray-400 text-sm mb-4">
               Generate a QR code to quickly sync your collection to another device.
             </p>
 
             <button
               onClick={generateSyncQR}
-              className="w-full bg-marvel-blue text-white py-3 rounded-lg font-medium hover:bg-blue-600 mb-3"
+              className="w-full bg-mcu-blue text-white py-3 rounded-lg font-medium hover:bg-blue-600 mb-3"
             >
               📱 Generate Sync QR Code
             </button>
@@ -8181,7 +8445,7 @@ RESPONSE GUIDELINES:
                 <div className="flex items-center gap-2 mb-2">
                   <div className="flex-1 bg-gray-700 rounded-full h-3">
                     <div
-                      className="bg-marvel-blue h-3 rounded-full transition-all"
+                      className="bg-mcu-blue h-3 rounded-full transition-all"
                       style={{ width: `${(qrScanProgress.scanned.length / qrScanProgress.total) * 100}%` }}
                     />
                   </div>
@@ -8236,15 +8500,15 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* AI Provider Configuration */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
-            <h3 className="text-lg font-comic text-marvel-gold mb-4">AI Provider</h3>
+          <div className="mcu-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-4">AI Provider</h3>
 
             {/* Google OAuth - Primary */}
-            <div className="mb-4 p-4 bg-gray-700 rounded-lg border-2 border-marvel-blue">
+            <div className="mb-4 p-4 bg-gray-700 rounded-lg border-2 border-mcu-blue">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-white font-medium">Google (Gemini)</span>
-                  <span className="bg-marvel-blue text-white text-xs px-2 py-0.5 rounded">Recommended</span>
+                  <span className="bg-mcu-blue text-white text-xs px-2 py-0.5 rounded">Recommended</span>
                 </div>
                 <StatusBadge status={testStatus['gemini-oauth']} />
               </div>
@@ -8254,7 +8518,7 @@ RESPONSE GUIDELINES:
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     <button onClick={() => selectProvider('gemini-oauth')}
-                      className={`flex-1 py-2 rounded font-medium ${aiConfig.provider === 'gemini-oauth' ? 'bg-marvel-blue text-white' : 'bg-gray-600 text-gray-300'}`}>
+                      className={`flex-1 py-2 rounded font-medium ${aiConfig.provider === 'gemini-oauth' ? 'bg-mcu-blue text-white' : 'bg-gray-600 text-gray-300'}`}>
                       {aiConfig.provider === 'gemini-oauth' ? 'Selected' : 'Use This'}
                     </button>
                     <button onClick={() => testConnection('gemini-oauth')}
@@ -8269,7 +8533,7 @@ RESPONSE GUIDELINES:
                       <select
                         value={aiConfig.model || AIProviders['gemini-oauth'].defaultModel}
                         onChange={(e) => setAiConfig(prev => ({ ...prev, model: e.target.value }))}
-                        className="w-full bg-gray-600 text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-marvel-blue focus:outline-none">
+                        className="w-full bg-gray-600 text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-mcu-blue focus:outline-none">
                         {AIProviders['gemini-oauth'].models.map(m => (
                           <option key={m} value={m}>{m}</option>
                         ))}
@@ -8301,10 +8565,10 @@ RESPONSE GUIDELINES:
                   <input type="password" placeholder="API Key..."
                     value={aiConfig.apiKeys?.[provider.id] || ''}
                     onChange={(e) => setApiKey(provider.id, e.target.value)}
-                    className="flex-1 bg-gray-600 text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-marvel-red focus:outline-none" />
+                    className="flex-1 bg-gray-600 text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
                   <button onClick={() => { selectProvider(provider.id); testConnection(provider.id); }}
                     disabled={!aiConfig.apiKeys?.[provider.id]}
-                    className="bg-marvel-blue text-white px-3 py-2 rounded text-sm hover:bg-blue-600 disabled:opacity-50">
+                    className="bg-mcu-blue text-white px-3 py-2 rounded text-sm hover:bg-blue-600 disabled:opacity-50">
                     Test
                   </button>
                 </div>
@@ -8341,7 +8605,7 @@ RESPONSE GUIDELINES:
                         placeholder="http://localhost:11434"
                         value={aiConfig.localEndpoint || ''}
                         onChange={(e) => setAiConfig(prev => ({ ...prev, localEndpoint: e.target.value }))}
-                        className="flex-1 bg-gray-600 text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-marvel-red focus:outline-none" />
+                        className="flex-1 bg-gray-600 text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
                       <button onClick={() => { selectProvider(provider.id); testConnection(provider.id); }}
                         className="bg-gray-600 text-white px-3 py-2 rounded text-sm hover:bg-gray-500">Test</button>
                     </div>
@@ -8350,7 +8614,7 @@ RESPONSE GUIDELINES:
                       <input type="text" placeholder="Model name..."
                         value={aiConfig.model || ''}
                         onChange={(e) => setAiConfig(prev => ({ ...prev, model: e.target.value }))}
-                        className="w-full mt-2 bg-gray-600 text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-marvel-red focus:outline-none" />
+                        className="w-full mt-2 bg-gray-600 text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
                     )}
                   </div>
                 ))}
@@ -8369,8 +8633,8 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* AI Context Settings - Phase 4 */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
-            <h3 className="text-lg font-comic text-marvel-gold mb-3">AI Context</h3>
+          <div className="mcu-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">AI Context</h3>
             <p className="text-gray-400 text-sm mb-3">
               Configure how much context Snapapoulous has access to for personalized advice.
             </p>
@@ -8398,7 +8662,7 @@ RESPONSE GUIDELINES:
             {/* Context Preview */}
             {!settings.useSimplePersona && (
               <div className="mt-3 p-3 bg-gray-700 rounded-lg text-xs text-gray-300">
-                <p className="font-medium text-marvel-gold mb-2">Context includes:</p>
+                <p className="font-medium text-mcu-gold mb-2">Context includes:</p>
                 <ul className="space-y-1 list-disc list-inside">
                   <li>Current date & season (Dragons Season)</li>
                   <li>Your match history analysis (trends, streaks, deck performance)</li>
@@ -8419,21 +8683,21 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Card Database */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
-            <h3 className="text-lg font-comic text-marvel-gold mb-3">Card Database</h3>
+          <div className="mcu-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Card Database</h3>
             <p className="text-gray-400 text-sm mb-3">Fetch latest card data from MarvelSnapZone. No API key required.</p>
             <button onClick={refreshCardData} disabled={isRefreshingCards}
               className="w-full bg-series-3 text-white py-2 rounded hover:opacity-80 disabled:opacity-50">
               {isRefreshingCards ? 'Refreshing...' : 'Refresh Card Data'}
             </button>
             <p className="text-gray-500 text-xs mt-2">
-              Data source: <a href="https://marvelsnapzone.com" target="_blank" className="text-marvel-blue hover:underline">MarvelSnapZone</a>
+              Data source: <a href="https://marvelsnapzone.com" target="_blank" className="text-mcu-blue hover:underline">MarvelSnapZone</a>
             </p>
           </div>
 
           {/* Performance Mode */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
-            <h3 className="text-lg font-comic text-marvel-gold mb-3">Performance Mode</h3>
+          <div className="mcu-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Performance Mode</h3>
             <p className="text-gray-400 text-sm mb-3">
               Reduce animations and effects to improve performance on older devices or save battery.
             </p>
@@ -8442,7 +8706,7 @@ RESPONSE GUIDELINES:
                 onClick={() => handlePerformanceModeChange('auto')}
                 className={`py-3 rounded-lg font-medium text-sm transition-colors ${
                   performanceMode === 'auto'
-                    ? 'bg-marvel-blue text-white'
+                    ? 'bg-mcu-blue text-white'
                     : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
               >
@@ -8475,28 +8739,63 @@ RESPONSE GUIDELINES:
               {performanceMode === 'low' && 'Minimal animations for smoother performance on any device.'}
             </p>
             {document.body.classList.contains('low-end-mode') && (
-              <div className="mt-2 text-xs text-marvel-gold flex items-center gap-1">
+              <div className="mt-2 text-xs text-mcu-gold flex items-center gap-1">
                 <span>Currently running in low-end mode</span>
               </div>
             )}
           </div>
 
+          {/* Reduced Motion */}
+          <div className="mcu-glass p-5 mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-display font-semibold text-mcu-blue-light">Reduce Motion</h3>
+                <p className="text-gray-400 text-sm mt-1">
+                  Disable animations for accessibility or to reduce visual distractions.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  const newValue = !settings.reducedMotion;
+                  setSettings(s => ({ ...s, reducedMotion: newValue }));
+                  setReducedMotion(newValue);
+                  showToast(newValue ? 'Motion reduced' : 'Motion enabled');
+                }}
+                className={`relative w-14 h-8 rounded-full transition-colors ${
+                  settings.reducedMotion ? 'bg-mcu-blue' : 'bg-gray-600'
+                }`}
+                aria-label={settings.reducedMotion ? 'Disable reduced motion' : 'Enable reduced motion'}
+                role="switch"
+                aria-checked={settings.reducedMotion}
+              >
+                <span className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white shadow-md transform transition-transform ${
+                  settings.reducedMotion ? 'translate-x-6' : 'translate-x-0'
+                }`} />
+              </button>
+            </div>
+            {window.matchMedia('(prefers-reduced-motion: reduce)').matches && !settings.reducedMotion && (
+              <p className="text-mcu-gold text-xs mt-3 flex items-center gap-1">
+                <span>Your system prefers reduced motion. Consider enabling this setting.</span>
+              </p>
+            )}
+          </div>
+
           {/* Export/Import */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
-            <h3 className="text-lg font-comic text-marvel-gold mb-3">Export Data</h3>
+          <div className="mcu-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Export Data</h3>
             <div className="space-y-2 mb-4">
-              <button onClick={exportVault} className="w-full bg-marvel-gold text-black py-3 rounded-lg font-medium hover:bg-yellow-400 flex items-center justify-center gap-2">
+              <button onClick={exportVault} className="w-full bg-mcu-gold text-black py-3 rounded-lg font-medium hover:bg-yellow-400 flex items-center justify-center gap-2">
                 <span>📦</span> Export Full Vault (Recommended)
               </button>
               <div className="grid grid-cols-4 gap-2">
-                <button onClick={() => handleExport('all')} className="bg-marvel-blue text-white py-2 rounded text-sm hover:bg-blue-600">Backup</button>
+                <button onClick={() => handleExport('all')} className="bg-mcu-blue text-white py-2 rounded text-sm hover:bg-blue-600">Backup</button>
                 <button onClick={() => handleExport('collection')} className="bg-series-3 text-white py-2 rounded text-sm hover:opacity-80">Collection</button>
                 <button onClick={() => handleExport('matches')} className="bg-series-2 text-white py-2 rounded text-sm hover:opacity-80">Matches</button>
                 <button onClick={() => handleExport('decks')} className="bg-series-4 text-black py-2 rounded text-sm hover:opacity-80">Decks</button>
               </div>
             </div>
 
-            <h3 className="text-lg font-comic text-marvel-gold mb-3">Import Data</h3>
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Import Data</h3>
             {!showImport ? (
               <button onClick={() => setShowImport(true)} className="w-full bg-gray-700 text-white py-2 rounded hover:bg-gray-600">
                 Import from JSON
@@ -8505,9 +8804,9 @@ RESPONSE GUIDELINES:
               <div className="space-y-2">
                 <textarea value={importData} onChange={(e) => setImportData(e.target.value)}
                   placeholder="Paste JSON data here..."
-                  className="w-full h-24 bg-gray-700 text-white rounded px-3 py-2 border-2 border-gray-600 focus:border-marvel-red focus:outline-none text-sm" />
+                  className="w-full h-24 bg-gray-700 text-white rounded px-3 py-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 text-sm" />
                 <div className="flex gap-2">
-                  <button onClick={handleImport} className="flex-1 bg-marvel-blue text-white py-2 rounded hover:bg-blue-600">Import</button>
+                  <button onClick={handleImport} className="flex-1 bg-mcu-blue text-white py-2 rounded hover:bg-blue-600">Import</button>
                   <button onClick={() => { setShowImport(false); setImportData(''); }} className="flex-1 bg-gray-600 text-white py-2 rounded hover:bg-gray-500">Cancel</button>
                 </div>
               </div>
@@ -8515,8 +8814,8 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Danger Zone */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border border-red-500/50">
-            <h3 className="text-lg font-comic text-red-400 mb-3">Danger Zone</h3>
+          <div className="mcu-glass p-5 border-red-500/50">
+            <h3 className="text-lg font-display font-semibold text-mcu-red mb-3">Danger Zone</h3>
             <button onClick={() => {
               if (confirm('Clear ALL data including AI settings?')) {
                 localStorage.clear();
@@ -8574,7 +8873,7 @@ RESPONSE GUIDELINES:
       // Mission progress bar component
       const MissionProgressBar = ({ progress, target, completed }) => {
         const percentage = target > 0 ? Math.min((progress / target) * 100, 100) : 0;
-        const barColor = completed ? 'bg-series-2' : 'bg-marvel-blue';
+        const barColor = completed ? 'bg-series-2' : 'bg-mcu-blue';
 
         return (
           <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
@@ -8588,17 +8887,17 @@ RESPONSE GUIDELINES:
 
       // Single mission item component
       const MissionItem = ({ mission }) => {
-        const borderColor = mission.completed ? 'border-series-2' : 'border-marvel-blue';
+        const borderColor = mission.completed ? 'border-series-2' : 'border-mcu-blue';
         const textColor = mission.completed ? 'text-series-2' : 'text-white';
 
         return (
-          <div className={`bg-gray-800 rounded-lg p-4 panel-border border-l-4 ${borderColor} mb-3 ${mission.completed ? 'opacity-75' : ''}`}>
+          <div className={`mcu-glass p-5 border-l-4 ${borderColor} mb-3 ${mission.completed ? 'opacity-75' : ''}`}>
             <div className="flex justify-between items-start mb-2">
               <p className={`font-medium ${textColor} flex-1`}>
                 {mission.description}
                 {mission.completed && <span className="ml-2 text-series-2">&#10003;</span>}
               </p>
-              <span className="text-marvel-gold text-sm font-bold ml-2 whitespace-nowrap">
+              <span className="text-mcu-gold text-sm font-bold ml-2 whitespace-nowrap">
                 {mission.reward}
               </span>
             </div>
@@ -8618,7 +8917,7 @@ RESPONSE GUIDELINES:
 
       // Empty state message
       const EmptyMissions = ({ type }) => (
-        <div className="bg-gray-800 rounded-lg p-6 panel-border text-center">
+        <div className="mcu-glass p-6 text-center">
           <p className="text-gray-400">No {type} missions tracked yet.</p>
           <p className="text-gray-500 text-sm mt-2">
             Import your game data to see missions here.
@@ -8632,12 +8931,12 @@ RESPONSE GUIDELINES:
 
           {/* Overall Progress Summary */}
           <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className="bg-gray-800 rounded-lg p-4 panel-border text-center">
-              <div className="text-3xl font-comic text-marvel-gold">{dailyProgress}%</div>
+            <div className="mcu-glass p-5 text-center">
+              <div className="text-3xl font-display font-bold text-mcu-gold">{dailyProgress}%</div>
               <div className="text-gray-400 text-sm">Daily Progress</div>
             </div>
-            <div className="bg-gray-800 rounded-lg p-4 panel-border text-center">
-              <div className="text-3xl font-comic text-marvel-gold">{weeklyProgress}%</div>
+            <div className="mcu-glass p-5 text-center">
+              <div className="text-3xl font-display font-bold text-mcu-gold">{weeklyProgress}%</div>
               <div className="text-gray-400 text-sm">Weekly Progress</div>
             </div>
           </div>
@@ -8645,7 +8944,7 @@ RESPONSE GUIDELINES:
           {/* Daily Missions Section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xl font-comic text-marvel-gold">Daily Missions</h2>
+              <h2 className="text-xl font-display font-semibold text-mcu-blue-light">Daily Missions</h2>
               <span className="text-gray-400 text-sm">
                 {missions.dailyCompleted}/{missions.daily.length} Complete
               </span>
@@ -8662,7 +8961,7 @@ RESPONSE GUIDELINES:
           {/* Weekly Missions Section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xl font-comic text-marvel-gold">Weekly Missions</h2>
+              <h2 className="text-xl font-display font-semibold text-mcu-blue-light">Weekly Missions</h2>
               <span className="text-gray-400 text-sm">
                 {missions.weeklyCompleted}/{missions.weekly.length} Complete
               </span>
@@ -8679,7 +8978,7 @@ RESPONSE GUIDELINES:
           {/* Info Note */}
           <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
             <p className="text-gray-400 text-sm">
-              <span className="text-marvel-gold font-medium">Tip:</span> Mission progress is tracked automatically when you import your game data from Settings.
+              <span className="text-mcu-gold font-medium">Tip:</span> Mission progress is tracked automatically when you import your game data from Settings.
             </p>
           </div>
         </div>
@@ -8705,11 +9004,11 @@ RESPONSE GUIDELINES:
         if (this.state.hasError) {
           return (
             <div className="p-4 bg-red-900/50 rounded-lg text-center m-4">
-              <h2 className="text-xl font-comic text-marvel-red mb-2">Something went wrong</h2>
+              <h2 className="text-xl font-display font-semibold text-mcu-red mb-2">Something went wrong</h2>
               <p className="text-gray-300 mb-4">{this.state.error?.message || 'An unexpected error occurred'}</p>
               <button
                 onClick={() => this.setState({ hasError: false, error: null })}
-                className="bg-marvel-blue px-4 py-2 rounded font-medium hover:bg-blue-600"
+                className="bg-mcu-blue px-4 py-2 rounded font-medium hover:bg-blue-600"
               >
                 Try Again
               </button>
@@ -8758,7 +9057,7 @@ RESPONSE GUIDELINES:
           >
             <h3
               id="confirm-dialog-title"
-              className="text-xl font-comic text-marvel-gold mb-3"
+              className="text-xl font-display font-semibold text-mcu-blue-light mb-3"
             >
               {title}
             </h3>
@@ -8776,7 +9075,7 @@ RESPONSE GUIDELINES:
                 className={`flex-1 py-3 rounded-lg font-medium touch-target ${
                   danger
                     ? 'bg-red-600 text-white hover:bg-red-500'
-                    : 'bg-marvel-blue text-white hover:bg-blue-600'
+                    : 'bg-mcu-blue text-white hover:bg-blue-600'
                 }`}
               >
                 {confirmText}
@@ -8834,7 +9133,7 @@ RESPONSE GUIDELINES:
         const levelDiff = currentLevel - expectedLevel;
 
         if (levelDiff >= 5) return { status: 'ahead', message: `${levelDiff} levels ahead`, color: 'text-green-400' };
-        if (levelDiff >= 0) return { status: 'ontrack', message: 'On track', color: 'text-marvel-gold' };
+        if (levelDiff >= 0) return { status: 'ontrack', message: 'On track', color: 'text-mcu-gold' };
         if (levelDiff >= -5) return { status: 'behind', message: `${Math.abs(levelDiff)} levels behind`, color: 'text-yellow-400' };
         return { status: 'critical', message: `${Math.abs(levelDiff)} levels behind!`, color: 'text-red-400' };
       };
@@ -8863,9 +9162,9 @@ RESPONSE GUIDELINES:
           <Header title="BATTLE PASS" />
 
           {/* Season Info Card */}
-          <div className="bg-gradient-to-r from-marvel-red to-purple-700 rounded-lg p-4 panel-border mb-4">
+          <div className="mcu-glass bg-gradient-to-r from-mcu-red/30 to-series-3/30 p-4 mb-4">
             <div className="flex justify-between items-center mb-2">
-              <h2 className="text-lg font-comic text-white">
+              <h2 className="text-lg font-display font-semibold text-white">
                 {battlePass?.season || 'Current Season'}
               </h2>
               <span className="text-sm bg-black/30 px-2 py-1 rounded text-white">
@@ -8880,9 +9179,9 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Large Level Display */}
-          <div className="bg-gray-800 rounded-lg p-6 panel-border mb-4 text-center">
+          <div className="mcu-glass p-6 mb-4 text-center">
             <div className="text-gray-400 text-sm mb-1">Current Level</div>
-            <div className="text-6xl font-comic text-marvel-gold mb-2">
+            <div className="text-6xl font-hero text-mcu-gold mcu-text-glow mb-2">
               {currentLevel}
             </div>
             <div className="text-gray-400 text-sm">of {MAX_LEVEL}</div>
@@ -8895,7 +9194,7 @@ RESPONSE GUIDELINES:
               </div>
               <div className="h-4 bg-gray-700 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-marvel-blue to-marvel-red transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-mcu-blue to-series-3 transition-all duration-500"
                   style={{ width: `${xpProgress}%` }}
                 />
               </div>
@@ -8908,8 +9207,8 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Tier Rewards Preview */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border mb-4">
-            <h3 className="text-lg font-comic text-marvel-gold mb-3">Upcoming Rewards</h3>
+          <div className="mcu-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Upcoming Rewards</h3>
             <div className="space-y-2">
               {tierRewards.map((tier, index) => (
                 <div
@@ -8918,7 +9217,7 @@ RESPONSE GUIDELINES:
                     tier.claimed
                       ? 'bg-green-900/30 border border-green-600/50'
                       : index === 1
-                        ? 'bg-marvel-blue/20 border border-marvel-blue/50'
+                        ? 'bg-mcu-blue/20 border border-mcu-blue/50'
                         : 'bg-gray-700/50'
                   }`}
                 >
@@ -8936,7 +9235,7 @@ RESPONSE GUIDELINES:
                   {tier.claimed ? (
                     <span className="text-green-400 text-sm">Claimed</span>
                   ) : index === 1 ? (
-                    <span className="text-marvel-blue text-sm font-medium">Next</span>
+                    <span className="text-mcu-blue text-sm font-medium">Next</span>
                   ) : (
                     <span className="text-gray-500 text-sm">Locked</span>
                   )}
@@ -8946,8 +9245,8 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Season Progress Stats */}
-          <div className="bg-gray-800 rounded-lg p-4 panel-border">
-            <h3 className="text-lg font-comic text-marvel-gold mb-3">Season Stats</h3>
+          <div className="mcu-glass p-5">
+            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Season Stats</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-700/50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-white">{currentLevel}</div>
@@ -8976,9 +9275,9 @@ RESPONSE GUIDELINES:
 
           {/* No Data State */}
           {!battlePass && (
-            <div className="bg-gray-800 rounded-lg p-6 panel-border text-center mt-4">
+            <div className="mcu-glass p-6 text-center mt-4">
               <div className="text-4xl mb-3">📊</div>
-              <h3 className="text-lg font-comic text-gray-300 mb-2">No Battle Pass Data</h3>
+              <h3 className="text-lg font-display font-semibold text-gray-300 mb-2">No Battle Pass Data</h3>
               <p className="text-sm text-gray-500 mb-4">
                 Link your Marvel Snap folder in Settings to import your Battle Pass progress.
               </p>
@@ -9078,13 +9377,13 @@ RESPONSE GUIDELINES:
 
       return (
         <div
-          className="fixed bottom-20 left-4 right-4 bg-marvel-blue rounded-lg p-4 shadow-lg z-40 panel-border install-banner-enter"
+          className="fixed bottom-20 left-4 right-4 mcu-glass bg-mcu-blue/20 p-4 shadow-lg z-40 install-banner-enter"
           role="complementary"
           aria-label="Install app prompt"
           style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
         >
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-marvel-red rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 bg-mcu-blue rounded-lg flex items-center justify-center flex-shrink-0">
               <span className="text-2xl">⚡</span>
             </div>
             <div className="flex-1 min-w-0">
@@ -9093,7 +9392,7 @@ RESPONSE GUIDELINES:
             </div>
             <button
               onClick={handleInstall}
-              className="bg-marvel-gold text-black px-3 py-2 rounded font-bold text-sm hover:bg-yellow-400 flex-shrink-0"
+              className="bg-mcu-gold text-black px-3 py-2 rounded font-bold text-sm hover:bg-yellow-400 flex-shrink-0"
             >
               Install
             </button>
@@ -9110,12 +9409,106 @@ RESPONSE GUIDELINES:
     };
 
     // ==================== MAIN APP ====================
+    // Performance mode detection - runs once at app init
+    const detectPerformanceMode = () => {
+      const savedMode = localStorage.getItem('snap_perf_mode');
+      if (savedMode) {
+        document.documentElement.setAttribute('data-perf', savedMode);
+        return;
+      }
+      // Auto-detect low-power devices
+      const isLowPower =
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+        (navigator.deviceMemory && navigator.deviceMemory <= 4);
+      if (isLowPower) {
+        document.documentElement.setAttribute('data-perf', 'low');
+      }
+    };
+    detectPerformanceMode();
+
+    // Reduced motion preference toggle
+    const setReducedMotion = (enabled) => {
+      if (enabled) {
+        document.documentElement.setAttribute('data-motion', 'reduced');
+        localStorage.setItem('snap_motion_reduced', 'true');
+      } else {
+        document.documentElement.removeAttribute('data-motion');
+        localStorage.removeItem('snap_motion_reduced');
+      }
+    };
+
+    // Check saved motion preference
+    if (localStorage.getItem('snap_motion_reduced') === 'true') {
+      document.documentElement.setAttribute('data-motion', 'reduced');
+    }
+
+    // Victory/Defeat Splash Overlay - Spider-Verse Style
+    const VictorySplash = ({ show, result, cubes, onClose }) => {
+      const isWin = result === 'WIN';
+      const isHighStakes = cubes >= 4;
+      const isMaxStakes = cubes === 8;
+
+      useEffect(() => {
+        if (show) {
+          const duration = isMaxStakes ? 2500 : isHighStakes ? 2000 : 1500;
+          const timer = setTimeout(onClose, duration);
+          return () => clearTimeout(timer);
+        }
+      }, [show, isHighStakes, isMaxStakes, onClose]);
+
+      if (!show) return null;
+
+      // Only show full splash for 4+ cubes
+      if (cubes < 4) {
+        return (
+          <div className="fixed bottom-24 left-4 right-4 z-50 animate-bounce">
+            <div className={`mcu-glass p-4 ${isWin ? 'border-l-4 border-green-500' : 'border-l-4 border-mcu-red'} sketch-border`}>
+              <div className="flex items-center justify-between">
+                <span className="font-display font-bold text-lg">{isWin ? 'Victory!' : 'Defeat'}</span>
+                <span className={`font-hero text-2xl ${isWin ? 'text-green-400' : 'text-mcu-red'}`}>
+                  {isWin ? '+' : '-'}{cubes}
+                </span>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onClose}>
+          <div className="text-center">
+            {/* Main Title with Spider-Verse Chromatic Effect */}
+            <h1 className={`font-hero text-6xl md:text-8xl mb-4 ${isMaxStakes ? 'chromatic-glitch' : 'glitch-text'}`}
+                style={{ color: isWin ? '#22C55E' : '#ff4444' }}>
+              {isWin ? 'VICTORY' : 'DEFEAT'}
+            </h1>
+
+            {/* Cube Count Badge with Sketch Border */}
+            <div className={`inline-block px-6 py-3 sketch-border transform rotate-2 ${isWin ? 'bg-spider-yellow' : 'bg-mcu-red'}`}>
+              <span className="font-hero text-3xl text-black">
+                {isWin ? '+' : ''}{cubes} CUBES
+              </span>
+            </div>
+
+            {/* Starburst Effect for 8-cube matches */}
+            {isMaxStakes && (
+              <div className="mt-6 animate-pulse">
+                <span className="text-4xl">✨ INCREDIBLE! ✨</span>
+              </div>
+            )}
+
+            <p className="mt-6 text-gray-400 text-sm">Tap anywhere to continue</p>
+          </div>
+        </div>
+      );
+    };
+
     const App = () => {
       const [activeTab, setActiveTab] = useState('dashboard');
       const [collection, setCollection] = useState(() => loadFromStorage('snap_collection', { owned: [], lastUpdated: new Date().toISOString() }));
       const [matches, setMatches] = useState(() => loadFromStorage('snap_matches', []));
       const [decks, setDecks] = useState(() => loadFromStorage('snap_decks', []));
-      const [settings, setSettings] = useState(() => loadFromStorage('snap_settings', { theme: 'dark' }));
+      const [settings, setSettings] = useState(() => loadFromStorage('snap_settings', { theme: 'dark', perfMode: 'auto', reducedMotion: false }));
       const [aiConfig, setAiConfig] = useState(() => loadFromStorage('snap_ai_config', {
         provider: '',
         model: '',
@@ -9126,6 +9519,9 @@ RESPONSE GUIDELINES:
 
       // Card data version - triggers re-render when uniqueCards updates
       const [cardDataVersion, setCardDataVersion] = useState(0);
+
+      // Victory/Defeat splash state
+      const [victorySplash, setVictorySplash] = useState({ show: false, result: null, cubes: 0 });
 
       // Subscribe to uniqueCards updates to trigger re-renders
       useEffect(() => {
@@ -9145,6 +9541,15 @@ RESPONSE GUIDELINES:
       useEffect(() => { saveToStorage('snap_decks', decks); }, [decks]);
       useEffect(() => { saveToStorage('snap_settings', settings); }, [settings]);
       useEffect(() => { saveToStorage('snap_ai_config', aiConfig); }, [aiConfig]);
+
+      // Sync reduced motion setting on load and when settings change
+      useEffect(() => {
+        if (settings.reducedMotion) {
+          document.documentElement.setAttribute('data-motion', 'reduced');
+        } else {
+          document.documentElement.removeAttribute('data-motion');
+        }
+      }, [settings.reducedMotion]);
 
       // Phase 4: Check for sync parameter in URL on load (supports v1, v2, and multi-part)
       useEffect(() => {
@@ -9292,6 +9697,8 @@ RESPONSE GUIDELINES:
           result, cubes,
           opponent: '', deck: '', notes: '', snapped: 'NONE'
         }]);
+        // Trigger victory/defeat splash
+        setVictorySplash({ show: true, result, cubes });
       };
 
       useEffect(() => {
@@ -9412,13 +9819,20 @@ RESPONSE GUIDELINES:
       }, []);
 
       return (
-        <div className="min-h-screen bg-marvel-black">
+        <div className="min-h-screen bg-stark-dark mcu-hud-grid">
           {/* Skip link for keyboard accessibility */}
-          <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:bg-marvel-red focus:text-white focus:px-4 focus:py-2 focus:font-medium">
+          <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:bg-mcu-blue focus:text-white focus:px-4 focus:py-2 focus:font-medium">
             Skip to main content
           </a>
           <OfflineIndicator />
           <InstallBanner />
+          {/* Victory/Defeat Splash Overlay */}
+          <VictorySplash
+            show={victorySplash.show}
+            result={victorySplash.result}
+            cubes={victorySplash.cubes}
+            onClose={() => setVictorySplash({ show: false, result: null, cubes: 0 })}
+          />
           <main id="main-content" tabIndex="-1" role="main" aria-label="App content">
             {activeTab === 'dashboard' && (
               <ErrorBoundary>

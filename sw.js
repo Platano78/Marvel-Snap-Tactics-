@@ -1,5 +1,6 @@
 // Snapapoulous Prime Service Worker
-const CACHE_NAME = 'snapapoulous-v12';
+const CACHE_NAME = 'snapapoulous-v13';
+const FONT_CACHE = 'snap-fonts-v1';
 // Dynamically build asset URLs based on service worker location
 const SW_SCOPE = self.registration ? self.registration.scope : self.location.href.replace(/sw\.js$/, '');
 const OFFLINE_ASSETS = [
@@ -101,8 +102,36 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip external requests (API calls, CDN resources)
+  // Skip external requests EXCEPT Google Fonts (which we cache)
   const url = new URL(event.request.url);
+
+  // Cache Google Fonts for offline support
+  if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
+    event.respondWith(
+      caches.open(FONT_CACHE).then((cache) => {
+        return cache.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) {
+            // Return cached font, but also fetch fresh in background
+            fetch(event.request).then((networkResponse) => {
+              if (networkResponse.ok) {
+                cache.put(event.request, networkResponse);
+              }
+            }).catch(() => {});
+            return cachedResponse;
+          }
+          // Not cached, fetch and cache
+          return fetch(event.request).then((networkResponse) => {
+            if (networkResponse.ok) {
+              cache.put(event.request, networkResponse.clone());
+            }
+            return networkResponse;
+          });
+        });
+      })
+    );
+    return;
+  }
+
   if (url.origin !== location.origin) {
     return;
   }
