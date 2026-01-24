@@ -4597,10 +4597,11 @@ RESPONSE GUIDELINES:
 
             <div className="mcu-glass p-5 mb-4">
               <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Import from Deck Code</h3>
-              <p className="text-gray-400 text-sm mb-2">Paste a base64 encoded deck code</p>
-              <input type="text" placeholder="Paste deck code here..."
+              <p className="text-gray-400 text-sm mb-2">Paste the full deck export from the game (includes # comments and code)</p>
+              <textarea placeholder="# (1) Iron Man&#10;# (2) Hulk&#10;...&#10;base64code&#10;#"
                 value={importCode} onChange={(e) => setImportCode(e.target.value)}
-                className="w-full bg-gray-700 text-white rounded px-3 py-2 mb-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
+                rows={6}
+                className="w-full bg-gray-700 text-white rounded px-3 py-2 mb-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 font-mono text-sm" />
               <button onClick={importFromCode}
                 className="w-full bg-mcu-blue text-white py-2 rounded-lg hover:shadow-glow-blue transition-all duration-200">
                 Import from Code
