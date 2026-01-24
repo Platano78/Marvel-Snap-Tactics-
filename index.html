@@ -2447,20 +2447,27 @@ RESPONSE GUIDELINES:
     const GameDataParser = {
       /**
        * Parse CollectionState.json for owned cards
+       * Now async to ensure card data is loaded before parsing
        */
-      parseCollection(json) {
+      async parseCollection(json) {
         const cards = new Set();
+
+        // Ensure full card data is loaded before building defId map
+        // This is critical - fallback data doesn't have defId fields
+        const cardData = await CardDataLoader.load();
 
         // Build defId→name lookup map from card database
         // Game stores CardDefId (e.g., "AntMan") but UI matches by name (e.g., "Ant Man")
         const defIdToName = new Map();
-        uniqueCards.forEach(card => {
+        cardData.forEach(card => {
           if (card.defId) {
             defIdToName.set(card.defId, card.name);
           }
           // Also map name directly in case some entries use display names
           defIdToName.set(card.name, card.name);
         });
+
+        console.log(`[parseCollection] Built defId map with ${defIdToName.size} entries from ${cardData.length} cards`);
 
         // Helper to recursively find all CardDefId values
         const findCards = (obj) => {
@@ -6975,7 +6982,7 @@ RESPONSE GUIDELINES:
 
               switch (key) {
                 case 'collection':
-                  results.collection = GameDataParser.parseCollection(json);
+                  results.collection = await GameDataParser.parseCollection(json);
                   // Also parse enhanced collection for Hall of Armor
                   results.collectionEnhanced = GameDataParser.parseCollectionEnhanced(json);
                   break;
@@ -7274,7 +7281,7 @@ RESPONSE GUIDELINES:
             const json = JSON.parse(content);
 
             if (file.name === 'CollectionState.json' || file.name.includes('Collection')) {
-              results.collection = GameDataParser.parseCollection(json);
+              results.collection = await GameDataParser.parseCollection(json);
             } else if (file.name === 'ProfileState.json' || file.name.includes('Profile')) {
               results.profile = GameDataParser.parseProfile(json);
             } else if (file.name === 'CharacterMasteryState.json' || file.name.includes('Mastery')) {
@@ -7284,7 +7291,7 @@ RESPONSE GUIDELINES:
             } else {
               // Try to detect file type from content
               if (json?.ServerState?.CardInventory) {
-                results.collection = GameDataParser.parseCollection(json);
+                results.collection = await GameDataParser.parseCollection(json);
               } else if (json?.ServerState?.Account) {
                 results.profile = GameDataParser.parseProfile(json);
               } else if (json?.ServerState?.CharacterMasteryProgress) {
