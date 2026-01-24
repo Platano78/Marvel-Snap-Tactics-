@@ -2451,17 +2451,36 @@ RESPONSE GUIDELINES:
       parseCollection(json) {
         const cards = new Set();
 
+        // Build defId→name lookup map from card database
+        // Game stores CardDefId (e.g., "AntMan") but UI matches by name (e.g., "Ant Man")
+        const defIdToName = new Map();
+        uniqueCards.forEach(card => {
+          if (card.defId) {
+            defIdToName.set(card.defId, card.name);
+          }
+          // Also map name directly in case some entries use display names
+          defIdToName.set(card.name, card.name);
+        });
+
         // Helper to recursively find all CardDefId values
         const findCards = (obj) => {
           if (!obj || typeof obj !== 'object') return;
 
           if (obj.CardDefId && typeof obj.CardDefId === 'string') {
+            const cardDefId = obj.CardDefId;
             // Filter out tokens/created cards (usually have special naming)
-            if (!obj.CardDefId.includes('Token') &&
-                !obj.CardDefId.includes('Stone') &&
-                !obj.CardDefId.includes('Shard') &&
-                !obj.CardDefId.startsWith('_')) {
-              cards.add(obj.CardDefId);
+            if (!cardDefId.includes('Token') &&
+                !cardDefId.includes('Stone') &&
+                !cardDefId.includes('Shard') &&
+                !cardDefId.startsWith('_')) {
+              // Convert CardDefId to display name for UI matching
+              const displayName = defIdToName.get(cardDefId);
+              if (displayName) {
+                cards.add(displayName);
+              } else {
+                // Card not in database - log but don't add (might be new card)
+                console.log(`[parseCollection] Unknown CardDefId: ${cardDefId}`);
+              }
             }
           }
 
@@ -3354,6 +3373,35 @@ RESPONSE GUIDELINES:
       return Array.from(series).sort((a, b) => a - b);
     };
 
+    // Map internal series numbers to player-friendly display names
+    // Untapped.gg uses different numbering than in-game pools
+    const getSeriesDisplayName = (series) => {
+      const displayNames = {
+        1: 'Pool 1',
+        2: 'Pool 1',
+        3: 'Pool 1',
+        4: 'Pool 2',
+        5: 'Pool 2',
+        6: 'Pool 3',
+        7: 'Pool 4',
+        8: 'Pool 5',
+        9: 'Spotlight',
+        10: 'Spotlight'
+      };
+      return displayNames[series] || `Series ${series}`;
+    };
+
+    // Get series display label for UI (short form)
+    const getSeriesLabel = (series) => {
+      const labels = {
+        1: 'P1', 2: 'P1', 3: 'P1',
+        4: 'P2', 5: 'P2',
+        6: 'P3', 7: 'P4', 8: 'P5',
+        9: '⭐', 10: '⭐'
+      };
+      return labels[series] || `S${series}`;
+    };
+
     // ==================== COMPONENTS ====================
 
     // Navigation Bar
@@ -3990,12 +4038,55 @@ RESPONSE GUIDELINES:
         return uniqueCards.filter(card => ownedSet.has(card.name));
       }, [collection.owned]);
 
-      // Calculate series stats based on YOUR owned cards (supports all series)
+      // Calculate pool stats based on YOUR owned cards (aggregates internal series to player-facing pools)
+      const poolStats = useMemo(() => {
+        const stats = {};
+        const ownedSet = new Set(collection.owned || []);
+
+        // Initialize stats for player-facing pools
+        const pools = ['Pool 1', 'Pool 2', 'Pool 3', 'Pool 4', 'Pool 5', 'Spotlight'];
+        pools.forEach(pool => {
+          stats[pool] = { owned: 0, total: 0, percent: 0, color: 'series-1' };
+        });
+
+        // Map pool to color class
+        const poolColors = {
+          'Pool 1': 'series-1',
+          'Pool 2': 'series-4',
+          'Pool 3': 'series-6',
+          'Pool 4': 'series-7',
+          'Pool 5': 'series-8',
+          'Spotlight': 'series-9'
+        };
+        pools.forEach(pool => { stats[pool].color = poolColors[pool]; });
+
+        uniqueCards.forEach(card => {
+          const series = card.series;
+          if (series > 0) {
+            const poolName = getSeriesDisplayName(series);
+            if (stats[poolName]) {
+              stats[poolName].total++;
+              if (ownedSet.has(card.name)) {
+                stats[poolName].owned++;
+              }
+            }
+          }
+        });
+
+        // Calculate percentages
+        Object.keys(stats).forEach(pool => {
+          stats[pool].percent = stats[pool].total > 0 ? Math.round((stats[pool].owned / stats[pool].total) * 100) : 0;
+        });
+
+        // Only return pools that have cards
+        return Object.fromEntries(Object.entries(stats).filter(([_, v]) => v.total > 0));
+      }, [collection.owned]);
+
+      // Legacy seriesStats for filtering (keep internal series numbers for filtering)
       const seriesStats = useMemo(() => {
         const stats = {};
         const ownedSet = new Set(collection.owned || []);
 
-        // Initialize stats for all available series
         getAvailableSeries().forEach(s => {
           stats[s] = { owned: 0, total: 0, percent: 0 };
         });
@@ -4010,7 +4101,6 @@ RESPONSE GUIDELINES:
           }
         });
 
-        // Calculate percentages
         Object.keys(stats).forEach(s => {
           stats[s].percent = stats[s].total > 0 ? Math.round((stats[s].owned / stats[s].total) * 100) : 0;
         });
@@ -4067,19 +4157,31 @@ RESPONSE GUIDELINES:
         <div className="px-4 pb-20">
           <Header title="MY COLLECTION" />
 
-          {/* Series Completion Bars - YOUR progress per series */}
+          {/* Pool Completion Bars - YOUR progress per pool */}
           <div className="mcu-glass p-5 mb-4">
-            <div className="text-white font-medium mb-3 text-center">Series Completion</div>
+            <div className="text-white font-medium mb-3 text-center">Pool Completion</div>
             <div className="space-y-2">
-              {getAvailableSeries().map(series => (
-                <div key={series} className="flex items-center gap-2">
-                  <span className={`w-8 h-6 rounded text-xs font-bold flex items-center justify-center text-white ${getSeriesColorClass(series)}`}>S{series}</span>
-                  <div className="flex-1 bg-gray-700 rounded-full h-3 overflow-hidden">
-                    <div className={`h-full transition-all duration-300 ${getSeriesColorClass(series)}`} style={{ width: `${seriesStats[series]?.percent || 0}%` }} />
+              {Object.entries(poolStats).map(([poolName, stats]) => {
+                // Use explicit class names for Tailwind purging
+                const colorClasses = {
+                  'series-1': 'bg-series-1',
+                  'series-4': 'bg-series-4',
+                  'series-6': 'bg-series-6',
+                  'series-7': 'bg-series-7',
+                  'series-8': 'bg-series-8',
+                  'series-9': 'bg-series-9'
+                };
+                const bgClass = colorClasses[stats.color] || 'bg-series-6';
+                return (
+                  <div key={poolName} className="flex items-center gap-2">
+                    <span className={`w-16 h-6 rounded text-xs font-bold flex items-center justify-center text-white ${bgClass}`}>{poolName === 'Spotlight' ? '⭐' : poolName.replace('Pool ', 'P')}</span>
+                    <div className="flex-1 bg-gray-700 rounded-full h-3 overflow-hidden">
+                      <div className={`h-full transition-all duration-300 ${bgClass}`} style={{ width: `${stats.percent}%` }} />
+                    </div>
+                    <span className="text-gray-300 text-xs w-20 text-right">{stats.owned}/{stats.total} ({stats.percent}%)</span>
                   </div>
-                  <span className="text-gray-300 text-xs w-20 text-right">{seriesStats[series]?.owned || 0}/{seriesStats[series]?.total || 0} ({seriesStats[series]?.percent || 0}%)</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
             <div className="text-center text-mcu-gold font-bold mt-3">
               Total: {ownedCards.length} cards owned
@@ -4117,9 +4219,9 @@ RESPONSE GUIDELINES:
             <div className="flex gap-2">
               <select value={seriesFilter} onChange={(e) => setSeriesFilter(e.target.value)}
                 className="flex-1 bg-gray-700 text-white rounded px-2 py-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20">
-                <option value="all">{viewMode === 'owned' ? 'All My Series' : 'All Series'}</option>
+                <option value="all">{viewMode === 'owned' ? 'All My Pools' : 'All Pools'}</option>
                 {availableSeries.map(s => (
-                  <option key={s} value={s}>Series {s} {viewMode === 'owned' ? `(${seriesStats[s].owned})` : ''}</option>
+                  <option key={s} value={s}>{getSeriesDisplayName(s)} {viewMode === 'owned' ? `(${seriesStats[s]?.owned || 0})` : ''}</option>
                 ))}
               </select>
               {viewMode === 'owned' && (
