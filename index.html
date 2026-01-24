@@ -4407,8 +4407,11 @@ RESPONSE GUIDELINES:
       // Decode deck code (base64 encoded card list)
       // Game uses abbreviated defIds like "Fntmx8" for Fantomex
       // Accepts full deck paste (with # comments) or just the base64 string
-      const decodeDeckCode = (input) => {
+      const decodeDeckCode = async (input) => {
         try {
+          // Ensure card data is loaded before matching (fallback data doesn't have defId)
+          const cardData = await CardDataLoader.load();
+
           // Extract base64 line from full deck paste (line with 20+ alphanumeric chars, no spaces or #)
           const lines = input.trim().split('\n');
           const base64Line = lines.find(line => /^[A-Za-z0-9+/=]{20,}$/.test(line.trim()));
@@ -4424,15 +4427,16 @@ RESPONSE GUIDELINES:
             const base = abbrev.replace(/[0-9A-Z]$/, '').toLowerCase();
 
             // Try exact defId match first (for simple names like "Blade")
-            let match = uniqueCards.find(c => c.defId?.toLowerCase() === abbrev.toLowerCase());
+            let match = cardData.find(c => c.defId?.toLowerCase() === abbrev.toLowerCase());
             if (match) return match.name;
 
             // Try matching by consonant pattern
-            const toConsonants = (s) => s.toLowerCase().replace(/[aeiou\s\-\'\.]/g, '');
+            // Game abbreviations remove ALL vowels including 'y' (e.g., Lady -> Ld)
+            const toConsonants = (s) => s.toLowerCase().replace(/[aeiouy\s\-\'\.]/g, '');
             const abbrConsonants = toConsonants(base);
 
             // Find best match by comparing consonant patterns
-            match = uniqueCards.find(c => {
+            match = cardData.find(c => {
               const defConsonants = toConsonants(c.defId || c.name);
               return defConsonants.startsWith(abbrConsonants) || abbrConsonants.startsWith(defConsonants);
             });
@@ -4440,7 +4444,7 @@ RESPONSE GUIDELINES:
             if (match) return match.name;
 
             // Fallback: try partial name match
-            match = uniqueCards.find(c =>
+            match = cardData.find(c =>
               c.name.toLowerCase().replace(/[^a-z]/g, '').startsWith(base.replace(/[^a-z]/g, ''))
             );
 
@@ -4473,10 +4477,10 @@ RESPONSE GUIDELINES:
         }
       };
 
-      const importFromCode = () => {
+      const importFromCode = async () => {
         setImportError('');
         try {
-          const cards = decodeDeckCode(importCode);
+          const cards = await decodeDeckCode(importCode);
           setSelectedCards(cards);
           setDeckName('Imported Deck');
           setView('create');
