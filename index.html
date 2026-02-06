@@ -137,6 +137,12 @@
             'series-9': '#84CC16',
             'series-10': '#A855F7',
             'spotlight': '#F97316',
+            // Stitch Design Tokens
+            'stitch-muted': '#b792c9',
+            'stitch-accent': '#3c2348',
+            'stitch-border': '#553267',
+            'stitch-green': '#0bda76',
+            'stitch-card': '#2a1a33',
             // Legacy (for gradual migration)
             'marvel-red': '#ED1D24',
             'marvel-blue': '#006EC7',
@@ -253,6 +259,13 @@
       --holo-glow: 0 0 15px rgba(173, 43, 238, 0.4);
       --rank-glow: drop-shadow(0 0 15px rgba(173, 43, 238, 0.6));
 
+      /* Stitch Design Tokens */
+      --stitch-muted: #b792c9;
+      --stitch-accent: #3c2348;
+      --stitch-border: #553267;
+      --stitch-green: #0bda76;
+      --stitch-card: #2a1a33;
+
       /* Spider-Verse Highlight (overlays only) */
       --ui-highlight: var(--spider-yellow);
       --ui-highlight-glitch: var(--spider-pink);
@@ -358,36 +371,6 @@
     }
 
     /* ============================================
-       COSMIC GLASS PANEL (replaces .panel-border)
-       60% min opacity for text readability
-       ============================================ */
-    .mcu-glass,
-    .cosmic-glass {
-      background: #1c1022;
-      background: var(--ui-surface-glass);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--ui-border-accent);
-      box-shadow: var(--ui-shadow-glow);
-      border-radius: 1rem;
-      will-change: transform;
-    }
-    @supports (backdrop-filter: blur(12px)) {
-      .mcu-glass,
-      .cosmic-glass {
-        background: var(--ui-surface-glass);
-      }
-    }
-
-    @media (max-width: 768px) {
-      .mcu-glass,
-      .cosmic-glass {
-        backdrop-filter: var(--glass-blur-mobile);
-        -webkit-backdrop-filter: var(--glass-blur-mobile);
-      }
-    }
-
-    /* ============================================
        COSMIC GLOW EFFECTS
        ============================================ */
     .mcu-glow-blue {
@@ -414,19 +397,6 @@
     /* Rank Glow */
     .rank-glow {
       filter: drop-shadow(0 0 15px rgba(173, 43, 238, 0.6));
-    }
-
-    /* Cosmic Background */
-    .cosmic-bg {
-      background: radial-gradient(circle at top right, #3c2348, #120818);
-    }
-
-    /* Cosmic Stat Card */
-    .cosmic-stat {
-      background: linear-gradient(135deg, #1c1022 0%, #2d1f4e 50%, #1c1022 100%);
-      border: 1px solid rgba(173, 43, 238, 0.2);
-      border-radius: 1rem;
-      padding: 1rem;
     }
 
     /* Card Slot (empty deck slot) */
@@ -530,7 +500,6 @@
       }
       .holo-glow,
       .rank-glow,
-      .cosmic-stat,
       .card-slot.filled {
         box-shadow: none;
         filter: none;
@@ -571,6 +540,154 @@
     .series-border-4 { border-color: #EAB308; }
     .series-border-5 { border-color: #EF4444; }
     .series-border-spotlight { border-color: #F97316; }
+
+    /* ============================================
+       STITCH DESIGN SYSTEM COMPONENTS
+       Reusable classes for the Stitch UI redesign
+       ============================================ */
+
+    /* Stat card */
+    .stitch-stat {
+      background: rgba(173, 43, 238, 0.08);
+      border: 1px solid rgba(173, 43, 238, 0.2);
+      border-radius: 0.75rem;
+      padding: 1rem;
+    }
+
+    /* Micro label */
+    .stitch-label {
+      color: var(--stitch-muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 700;
+    }
+
+    /* Card panel */
+    .stitch-card {
+      background: var(--stitch-card);
+      border-radius: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Filter pills */
+    .stitch-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.375rem 0.875rem;
+      border-radius: 9999px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      background: var(--stitch-accent);
+      color: var(--stitch-muted);
+      border: 1px solid var(--stitch-border);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .stitch-pill:hover {
+      background: rgba(85, 50, 103, 0.8);
+    }
+    .stitch-pill.active {
+      background: var(--cosmic-purple);
+      color: white;
+      border-color: var(--cosmic-purple);
+    }
+
+    /* Sticky top bar */
+    .stitch-topbar {
+      background: rgba(28, 16, 34, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--stitch-border);
+    }
+
+    /* Progress bars */
+    .stitch-progress {
+      background: rgba(26, 19, 32, 0.8);
+      border-radius: 9999px;
+      height: 0.5rem;
+      overflow: hidden;
+    }
+    .stitch-progress-fill {
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 0.3s ease;
+    }
+
+    /* Small chips / badges */
+    .stitch-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(173, 43, 238, 0.2);
+      color: white;
+    }
+
+    /* List entry */
+    .stitch-list-item {
+      background: var(--stitch-card);
+      border-radius: 0.75rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 0.75rem;
+      transition: background 0.15s ease;
+    }
+    .stitch-list-item:hover {
+      background: rgba(60, 35, 72, 0.5);
+    }
+
+    /* Section header */
+    .stitch-section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--stitch-muted);
+      margin-bottom: 0.75rem;
+    }
+    .stitch-section-header .material-symbols-outlined {
+      font-size: 18px;
+      color: var(--cosmic-purple-text);
+    }
+
+    /* Card art with fallback gradient */
+    .card-art {
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: var(--stitch-card);
+    }
+    .card-art-fallback {
+      background: linear-gradient(135deg, #2a1a33 0%, #3c2348 50%, #2a1a33 100%);
+    }
+
+    /* Floating action button */
+    .stitch-fab {
+      position: fixed;
+      bottom: 5.5rem;
+      right: 1.25rem;
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 9999px;
+      background: var(--cosmic-purple);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(173, 43, 238, 0.4);
+      z-index: 40;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .stitch-fab:active {
+      transform: scale(0.95);
+    }
+
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: #1c1022; }
     ::-webkit-scrollbar-thumb { background: #ad2bee; border-radius: 4px; }
@@ -1449,66 +1566,80 @@
       localStorage.removeItem('snap_google_token_expiry');
     };
 
+    // ==================== CARD ART URL HELPER ====================
+    // Generate card art URL from card name or defId
+    const CARD_ART_CDN = 'https://marvelsnapzone.com/wp-content/themes/blocksy-child/assets/media/cards/';
+    const getCardArtUrl = (card) => {
+      if (card.art) return card.art;
+      // Build slug from defId or name: "Iron Man" -> "iron-man", "AmericaChavez" -> "america-chavez"
+      const slug = (card.defId || card.name)
+        .replace(/([a-z])([A-Z])/g, '$1-$2')  // camelCase -> camel-Case
+        .replace(/\s+/g, '-')                   // spaces -> hyphens
+        .replace(/[^a-zA-Z0-9-]/g, '')          // remove special chars
+        .toLowerCase();
+      return `${CARD_ART_CDN}${slug}.webp?v=787`;
+    };
+
     // ==================== CARD DATA ====================
-    // Series 1 fallback data for offline-first functionality
+    // Series 1 fallback data for offline-first functionality (with art URLs)
     const CARD_DATA_FALLBACK = [
-      { name: "Abomination", cost: 5, power: 9, series: 1, ability: "No ability." },
-      { name: "Ant-Man", cost: 1, power: 1, series: 1, ability: "Ongoing: If your side of this location is full, +3 Power." },
-      { name: "America Chavez", cost: 6, power: 9, series: 1, ability: "On Reveal: This always starts in your deck, and is drawn on turn 6." },
-      { name: "Angela", cost: 2, power: 0, series: 1, ability: "When you play a card here, +2 Power." },
-      { name: "Armor", cost: 2, power: 3, series: 1, ability: "Ongoing: Cards at this location can't be destroyed." },
-      { name: "Bishop", cost: 3, power: 1, series: 1, ability: "When you play a card, +1 Power." },
-      { name: "Blue Marvel", cost: 5, power: 3, series: 1, ability: "Ongoing: Your other cards have +1 Power." },
-      { name: "Cable", cost: 2, power: 2, series: 1, ability: "On Reveal: Draw a card from your opponent's deck." },
-      { name: "Captain America", cost: 3, power: 3, series: 1, ability: "Ongoing: Your other cards at this location have +1 Power." },
-      { name: "Carnage", cost: 2, power: 2, series: 1, ability: "On Reveal: Destroy your other cards here. +2 Power for each destroyed." },
-      { name: "Colossus", cost: 2, power: 3, series: 1, ability: "Ongoing: Can't be destroyed, moved, or have its Power reduced." },
-      { name: "Cosmo", cost: 3, power: 3, series: 1, ability: "Ongoing: On Reveal abilities won't happen at this location." },
-      { name: "Cyclops", cost: 3, power: 4, series: 1, ability: "No ability." },
-      { name: "Deathlok", cost: 3, power: 5, series: 1, ability: "On Reveal: Destroy your other cards at this location." },
-      { name: "Elektra", cost: 1, power: 2, series: 1, ability: "On Reveal: Destroy a random enemy 1-Cost card at this location." },
-      { name: "Enchantress", cost: 4, power: 5, series: 1, ability: "On Reveal: Remove the abilities from all Ongoing cards at this location." },
-      { name: "Forge", cost: 2, power: 1, series: 1, ability: "On Reveal: Give the next card you play +2 Power." },
-      { name: "Gamora", cost: 5, power: 7, series: 1, ability: "On Reveal: If your opponent played a card here this turn, +5 Power." },
-      { name: "Groot", cost: 3, power: 3, series: 1, ability: "On Reveal: If your opponent played a card here this turn, +3 Power." },
-      { name: "Hawkeye", cost: 1, power: 1, series: 1, ability: "On Reveal: If you play a card here next turn, +3 Power." },
-      { name: "Hulk", cost: 6, power: 12, series: 1, ability: "No ability." },
-      { name: "Human Torch", cost: 1, power: 2, series: 1, ability: "When this moves to a location, double its Power." },
-      { name: "Iron Fist", cost: 1, power: 2, series: 1, ability: "On Reveal: After you play your next card, move it one location to the left." },
-      { name: "Iron Man", cost: 5, power: 0, series: 1, ability: "Ongoing: Your total Power is doubled at this location." },
-      { name: "Jessica Jones", cost: 4, power: 4, series: 1, ability: "On Reveal: If you don't play a card here next turn, +4 Power." },
-      { name: "Klaw", cost: 5, power: 4, series: 1, ability: "Ongoing: The location to the right has +6 Power." },
-      { name: "Korg", cost: 1, power: 1, series: 1, ability: "On Reveal: Shuffle a Rock into your opponent's deck." },
-      { name: "Lady Sif", cost: 3, power: 4, series: 1, ability: "On Reveal: Discard the highest-cost card from your hand." },
-      { name: "Lizard", cost: 2, power: 5, series: 1, ability: "Ongoing: -3 Power if your opponent has 4 cards here." },
-      { name: "Mantis", cost: 1, power: 2, series: 1, ability: "On Reveal: If your opponent played a card here this turn, draw a card from their deck." },
-      { name: "Medusa", cost: 2, power: 2, series: 1, ability: "On Reveal: If this is at the middle location, +3 Power." },
-      { name: "Mister Fantastic", cost: 3, power: 2, series: 1, ability: "Ongoing: Adjacent locations have +2 Power." },
-      { name: "Mister Sinister", cost: 2, power: 2, series: 1, ability: "On Reveal: Add a Sinister Clone to this location with the same Power." },
-      { name: "Moon Girl", cost: 4, power: 4, series: 1, ability: "On Reveal: Duplicate your hand." },
-      { name: "Morph", cost: 3, power: 0, series: 1, ability: "On Reveal: Become a copy of a random card in your opponent's hand." },
-      { name: "Multiple Man", cost: 2, power: 3, series: 1, ability: "When this moves, add a copy to the old location." },
-      { name: "Namor", cost: 4, power: 5, series: 1, ability: "Ongoing: +5 Power if this is your only card here." },
-      { name: "Nightcrawler", cost: 1, power: 2, series: 1, ability: "You can move this once." },
-      { name: "Nova", cost: 1, power: 1, series: 1, ability: "When this is destroyed, give your cards +1 Power." },
-      { name: "Odin", cost: 6, power: 8, series: 1, ability: "On Reveal: Activate the On Reveal abilities of your other cards at this location." },
-      { name: "Onslaught", cost: 6, power: 7, series: 1, ability: "Ongoing: Double your other Ongoing effects at this location." },
-      { name: "Punisher", cost: 3, power: 2, series: 1, ability: "Ongoing: +1 Power for each enemy card at this location." },
-      { name: "Rocket Raccoon", cost: 1, power: 2, series: 1, ability: "On Reveal: If your opponent played a card here this turn, +2 Power." },
-      { name: "Scarlet Witch", cost: 2, power: 3, series: 1, ability: "On Reveal: Replace this location with a random location." },
-      { name: "Sentinel", cost: 2, power: 3, series: 1, ability: "On Reveal: Add another Sentinel to your hand." },
-      { name: "Spectrum", cost: 6, power: 5, series: 1, ability: "On Reveal: Give your Ongoing cards +2 Power." },
-      { name: "Spider-Woman", cost: 5, power: 7, series: 1, ability: "On Reveal: Afflict all enemy cards here with -1 Power." },
-      { name: "Squirrel Girl", cost: 1, power: 1, series: 1, ability: "On Reveal: Add a 1-Power Squirrel to each other location." },
-      { name: "Star-Lord", cost: 2, power: 2, series: 1, ability: "On Reveal: If your opponent played a card here this turn, +3 Power." },
-      { name: "Strong Guy", cost: 4, power: 4, series: 1, ability: "Ongoing: If your hand is empty, +6 Power." },
-      { name: "Sword Master", cost: 3, power: 6, series: 1, ability: "On Reveal: Discard a card from your hand." },
-      { name: "The Thing", cost: 4, power: 6, series: 1, ability: "No ability." },
-      { name: "White Queen", cost: 4, power: 6, series: 1, ability: "On Reveal: Draw a copy of the highest-Cost card in your opponent's hand." },
-      { name: "White Tiger", cost: 5, power: 1, series: 1, ability: "On Reveal: Add a 7-Power Tiger to another location." },
-      { name: "Wolfsbane", cost: 3, power: 1, series: 1, ability: "On Reveal: +2 Power for each other card you have here." },
-      { name: "Wolverine", cost: 2, power: 2, series: 1, ability: "When this is discarded or destroyed, regenerate it at a random location." },
-      { name: "Yondu", cost: 1, power: 2, series: 1, ability: "On Reveal: Remove the top card of your opponent's deck." }
+      { name: "Abomination", cost: 5, power: 9, series: 1, ability: "No ability.", art: `${CARD_ART_CDN}abomination.webp?v=787` },
+      { name: "Ant-Man", cost: 1, power: 1, series: 1, ability: "Ongoing: If your side of this location is full, +3 Power.", art: `${CARD_ART_CDN}ant-man.webp?v=787` },
+      { name: "America Chavez", cost: 6, power: 9, series: 1, ability: "On Reveal: This always starts in your deck, and is drawn on turn 6.", art: `${CARD_ART_CDN}america-chavez.webp?v=787` },
+      { name: "Angela", cost: 2, power: 0, series: 1, ability: "When you play a card here, +2 Power.", art: `${CARD_ART_CDN}angela.webp?v=787` },
+      { name: "Armor", cost: 2, power: 3, series: 1, ability: "Ongoing: Cards at this location can't be destroyed.", art: `${CARD_ART_CDN}armor.webp?v=787` },
+      { name: "Bishop", cost: 3, power: 1, series: 1, ability: "When you play a card, +1 Power.", art: `${CARD_ART_CDN}bishop.webp?v=787` },
+      { name: "Blue Marvel", cost: 5, power: 3, series: 1, ability: "Ongoing: Your other cards have +1 Power.", art: `${CARD_ART_CDN}blue-marvel.webp?v=787` },
+      { name: "Cable", cost: 2, power: 2, series: 1, ability: "On Reveal: Draw a card from your opponent's deck.", art: `${CARD_ART_CDN}cable.webp?v=787` },
+      { name: "Captain America", cost: 3, power: 3, series: 1, ability: "Ongoing: Your other cards at this location have +1 Power.", art: `${CARD_ART_CDN}captain-america.webp?v=787` },
+      { name: "Carnage", cost: 2, power: 2, series: 1, ability: "On Reveal: Destroy your other cards here. +2 Power for each destroyed.", art: `${CARD_ART_CDN}carnage.webp?v=787` },
+      { name: "Colossus", cost: 2, power: 3, series: 1, ability: "Ongoing: Can't be destroyed, moved, or have its Power reduced.", art: `${CARD_ART_CDN}colossus.webp?v=787` },
+      { name: "Cosmo", cost: 3, power: 3, series: 1, ability: "Ongoing: On Reveal abilities won't happen at this location.", art: `${CARD_ART_CDN}cosmo.webp?v=787` },
+      { name: "Cyclops", cost: 3, power: 4, series: 1, ability: "No ability.", art: `${CARD_ART_CDN}cyclops.webp?v=787` },
+      { name: "Deathlok", cost: 3, power: 5, series: 1, ability: "On Reveal: Destroy your other cards at this location.", art: `${CARD_ART_CDN}deathlok.webp?v=787` },
+      { name: "Elektra", cost: 1, power: 2, series: 1, ability: "On Reveal: Destroy a random enemy 1-Cost card at this location.", art: `${CARD_ART_CDN}elektra.webp?v=787` },
+      { name: "Enchantress", cost: 4, power: 5, series: 1, ability: "On Reveal: Remove the abilities from all Ongoing cards at this location.", art: `${CARD_ART_CDN}enchantress.webp?v=787` },
+      { name: "Forge", cost: 2, power: 1, series: 1, ability: "On Reveal: Give the next card you play +2 Power.", art: `${CARD_ART_CDN}forge.webp?v=787` },
+      { name: "Gamora", cost: 5, power: 7, series: 1, ability: "On Reveal: If your opponent played a card here this turn, +5 Power.", art: `${CARD_ART_CDN}gamora.webp?v=787` },
+      { name: "Groot", cost: 3, power: 3, series: 1, ability: "On Reveal: If your opponent played a card here this turn, +3 Power.", art: `${CARD_ART_CDN}groot.webp?v=787` },
+      { name: "Hawkeye", cost: 1, power: 1, series: 1, ability: "On Reveal: If you play a card here next turn, +3 Power.", art: `${CARD_ART_CDN}hawkeye.webp?v=787` },
+      { name: "Hulk", cost: 6, power: 12, series: 1, ability: "No ability.", art: `${CARD_ART_CDN}hulk.webp?v=787` },
+      { name: "Human Torch", cost: 1, power: 2, series: 1, ability: "When this moves to a location, double its Power.", art: `${CARD_ART_CDN}human-torch.webp?v=787` },
+      { name: "Iron Fist", cost: 1, power: 2, series: 1, ability: "On Reveal: After you play your next card, move it one location to the left.", art: `${CARD_ART_CDN}iron-fist.webp?v=787` },
+      { name: "Iron Man", cost: 5, power: 0, series: 1, ability: "Ongoing: Your total Power is doubled at this location.", art: `${CARD_ART_CDN}iron-man.webp?v=787` },
+      { name: "Jessica Jones", cost: 4, power: 4, series: 1, ability: "On Reveal: If you don't play a card here next turn, +4 Power.", art: `${CARD_ART_CDN}jessica-jones.webp?v=787` },
+      { name: "Klaw", cost: 5, power: 4, series: 1, ability: "Ongoing: The location to the right has +6 Power.", art: `${CARD_ART_CDN}klaw.webp?v=787` },
+      { name: "Korg", cost: 1, power: 1, series: 1, ability: "On Reveal: Shuffle a Rock into your opponent's deck.", art: `${CARD_ART_CDN}korg.webp?v=787` },
+      { name: "Lady Sif", cost: 3, power: 4, series: 1, ability: "On Reveal: Discard the highest-cost card from your hand.", art: `${CARD_ART_CDN}lady-sif.webp?v=787` },
+      { name: "Lizard", cost: 2, power: 5, series: 1, ability: "Ongoing: -3 Power if your opponent has 4 cards here.", art: `${CARD_ART_CDN}lizard.webp?v=787` },
+      { name: "Mantis", cost: 1, power: 2, series: 1, ability: "On Reveal: If your opponent played a card here this turn, draw a card from their deck.", art: `${CARD_ART_CDN}mantis.webp?v=787` },
+      { name: "Medusa", cost: 2, power: 2, series: 1, ability: "On Reveal: If this is at the middle location, +3 Power.", art: `${CARD_ART_CDN}medusa.webp?v=787` },
+      { name: "Mister Fantastic", cost: 3, power: 2, series: 1, ability: "Ongoing: Adjacent locations have +2 Power.", art: `${CARD_ART_CDN}mister-fantastic.webp?v=787` },
+      { name: "Mister Sinister", cost: 2, power: 2, series: 1, ability: "On Reveal: Add a Sinister Clone to this location with the same Power.", art: `${CARD_ART_CDN}mister-sinister.webp?v=787` },
+      { name: "Moon Girl", cost: 4, power: 4, series: 1, ability: "On Reveal: Duplicate your hand.", art: `${CARD_ART_CDN}moon-girl.webp?v=787` },
+      { name: "Morph", cost: 3, power: 0, series: 1, ability: "On Reveal: Become a copy of a random card in your opponent's hand.", art: `${CARD_ART_CDN}morph.webp?v=787` },
+      { name: "Multiple Man", cost: 2, power: 3, series: 1, ability: "When this moves, add a copy to the old location.", art: `${CARD_ART_CDN}multiple-man.webp?v=787` },
+      { name: "Namor", cost: 4, power: 5, series: 1, ability: "Ongoing: +5 Power if this is your only card here.", art: `${CARD_ART_CDN}namor.webp?v=787` },
+      { name: "Nightcrawler", cost: 1, power: 2, series: 1, ability: "You can move this once.", art: `${CARD_ART_CDN}nightcrawler.webp?v=787` },
+      { name: "Nova", cost: 1, power: 1, series: 1, ability: "When this is destroyed, give your cards +1 Power.", art: `${CARD_ART_CDN}nova.webp?v=787` },
+      { name: "Odin", cost: 6, power: 8, series: 1, ability: "On Reveal: Activate the On Reveal abilities of your other cards at this location.", art: `${CARD_ART_CDN}odin.webp?v=787` },
+      { name: "Onslaught", cost: 6, power: 7, series: 1, ability: "Ongoing: Double your other Ongoing effects at this location.", art: `${CARD_ART_CDN}onslaught.webp?v=787` },
+      { name: "Punisher", cost: 3, power: 2, series: 1, ability: "Ongoing: +1 Power for each enemy card at this location.", art: `${CARD_ART_CDN}punisher.webp?v=787` },
+      { name: "Rocket Raccoon", cost: 1, power: 2, series: 1, ability: "On Reveal: If your opponent played a card here this turn, +2 Power.", art: `${CARD_ART_CDN}rocket-raccoon.webp?v=787` },
+      { name: "Scarlet Witch", cost: 2, power: 3, series: 1, ability: "On Reveal: Replace this location with a random location.", art: `${CARD_ART_CDN}scarlet-witch.webp?v=787` },
+      { name: "Sentinel", cost: 2, power: 3, series: 1, ability: "On Reveal: Add another Sentinel to your hand.", art: `${CARD_ART_CDN}sentinel.webp?v=787` },
+      { name: "Spectrum", cost: 6, power: 5, series: 1, ability: "On Reveal: Give your Ongoing cards +2 Power.", art: `${CARD_ART_CDN}spectrum.webp?v=787` },
+      { name: "Spider-Woman", cost: 5, power: 7, series: 1, ability: "On Reveal: Afflict all enemy cards here with -1 Power.", art: `${CARD_ART_CDN}spider-woman.webp?v=787` },
+      { name: "Squirrel Girl", cost: 1, power: 1, series: 1, ability: "On Reveal: Add a 1-Power Squirrel to each other location.", art: `${CARD_ART_CDN}squirrel-girl.webp?v=787` },
+      { name: "Star-Lord", cost: 2, power: 2, series: 1, ability: "On Reveal: If your opponent played a card here this turn, +3 Power.", art: `${CARD_ART_CDN}star-lord.webp?v=787` },
+      { name: "Strong Guy", cost: 4, power: 4, series: 1, ability: "Ongoing: If your hand is empty, +6 Power.", art: `${CARD_ART_CDN}strong-guy.webp?v=787` },
+      { name: "Sword Master", cost: 3, power: 6, series: 1, ability: "On Reveal: Discard a card from your hand.", art: `${CARD_ART_CDN}sword-master.webp?v=787` },
+      { name: "The Thing", cost: 4, power: 6, series: 1, ability: "No ability.", art: `${CARD_ART_CDN}the-thing.webp?v=787` },
+      { name: "White Queen", cost: 4, power: 6, series: 1, ability: "On Reveal: Draw a copy of the highest-Cost card in your opponent's hand.", art: `${CARD_ART_CDN}white-queen.webp?v=787` },
+      { name: "White Tiger", cost: 5, power: 1, series: 1, ability: "On Reveal: Add a 7-Power Tiger to another location.", art: `${CARD_ART_CDN}white-tiger.webp?v=787` },
+      { name: "Wolfsbane", cost: 3, power: 1, series: 1, ability: "On Reveal: +2 Power for each other card you have here.", art: `${CARD_ART_CDN}wolfsbane.webp?v=787` },
+      { name: "Wolverine", cost: 2, power: 2, series: 1, ability: "When this is discarded or destroyed, regenerate it at a random location.", art: `${CARD_ART_CDN}wolverine.webp?v=787` },
+      { name: "Yondu", cost: 1, power: 2, series: 1, ability: "On Reveal: Remove the top card of your opponent's deck.", art: `${CARD_ART_CDN}yondu.webp?v=787` }
     ];
 
     // Card data is loaded from external file for better caching
@@ -1548,11 +1679,13 @@
           if (response.ok) {
             const data = await response.json();
             if (Array.isArray(data) && data.length > 0) {
-              this.cache = data;
-              CARD_DATA = data;
+              // Enrich cards with art URLs if missing
+              const enriched = data.map(card => card.art ? card : { ...card, art: getCardArtUrl(card) });
+              this.cache = enriched;
+              CARD_DATA = enriched;
               cardDataLoaded = true;
-              console.log(`[CardDataLoader] Loaded ${data.length} cards from card-data.json`);
-              return data;
+              console.log(`[CardDataLoader] Loaded ${enriched.length} cards from card-data.json`);
+              return enriched;
             }
           }
         } catch (error) {
@@ -3515,31 +3648,28 @@ RESPONSE GUIDELINES:
 
     // Navigation Bar
     const NavBar = ({ activeTab, setActiveTab }) => {
-      // Primary tabs with Material Symbols icons
       const primaryTabs = [
         { id: 'dashboard', label: 'Home', icon: 'home' },
         { id: 'collection', label: 'Cards', icon: 'style' },
-        { id: 'decks', label: 'Decks', icon: 'layers' },
-        { id: 'ai', label: 'AI', icon: 'smart_toy' },
+        { id: 'decks', label: 'Decks', icon: 'auto_fix_high' },
+        { id: 'history', label: 'History', icon: 'history' },
         { id: 'settings', label: 'More', icon: 'menu' }
       ];
 
-      const tabs = primaryTabs;
       return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50" style={{background: 'linear-gradient(to top, #120818, rgba(28,16,34,0.95))', borderTop: '1px solid rgba(173,43,238,0.3)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)'}} role="navigation" aria-label="Main navigation">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-stitch-border" style={{background: 'rgba(28,16,34,0.95)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)'}} role="navigation" aria-label="Main navigation">
           <div className="flex justify-around items-center h-16 max-w-lg mx-auto" role="tablist" aria-label="App sections">
-            {tabs.map(tab => (
+            {primaryTabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 role="tab"
                 aria-selected={activeTab === tab.id}
                 aria-controls={`panel-${tab.id}`}
                 id={`tab-${tab.id}`}
-                className={`flex flex-col items-center justify-center w-full h-full min-w-[44px] min-h-[44px] transition-all duration-200 ${
+                className={`flex flex-col items-center justify-center w-full h-full min-w-[44px] min-h-[44px] transition-colors duration-200 ${
                   activeTab === tab.id
                     ? 'text-cosmic-purple-text'
-                    : 'text-gray-500 hover:text-[#c75fff]'
-                }`}
-                style={activeTab === tab.id ? {filter: 'drop-shadow(0 0 8px rgba(173,43,238,0.5))'} : {}}>
+                    : 'text-stitch-muted hover:text-white'
+                }`}>
                 <span className="material-symbols-outlined" aria-hidden="true" style={{fontSize: '22px'}}>{tab.icon}</span>
                 <span className="text-[10px] mt-0.5 font-medium font-display tracking-wide">{tab.label}</span>
               </button>
@@ -3549,10 +3679,22 @@ RESPONSE GUIDELINES:
       );
     };
 
-    // Header - Cosmic Gradient Style
-    const Header = ({ title }) => (
-      <header className="py-4 px-6 mb-4 cosmic-bg" style={{borderBottom: '1px solid rgba(173,43,238,0.3)'}}>
-        <h1 className="text-2xl font-display font-bold text-white tracking-wider mcu-text-glow">{title}</h1>
+    // Header - Stitch Top Bar Style
+    const Header = ({ title, subtitle, onBack }) => (
+      <header className="stitch-topbar sticky top-0 z-40 py-3 px-4 mb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {onBack && (
+              <button onClick={onBack} className="text-stitch-muted hover:text-white min-w-[44px] min-h-[44px] flex items-center justify-center">
+                <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+              </button>
+            )}
+            <div>
+              <h1 className="text-lg font-display font-bold text-white tracking-wide">{title}</h1>
+              {subtitle && <p className="text-xs text-cosmic-purple-text font-medium">{subtitle}</p>}
+            </div>
+          </div>
+        </div>
       </header>
     );
 
@@ -3639,27 +3781,27 @@ RESPONSE GUIDELINES:
 
           {/* Player OS: Wallet Widget */}
           {wallet && (
-            <div className="cosmic-glass p-4 mb-4 border-l-4 border-cosmic-purple-text">
+            <div className="stitch-card p-4 mb-4 border-l-4 border-cosmic-purple-text">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs uppercase text-gray-400">Wallet</span>
-                <span className="text-xs px-2 py-0.5 bg-mcu-gold/30 text-mcu-gold rounded">Synced</span>
+                <span className="stitch-label">Wallet</span>
+                <span className="stitch-badge bg-mcu-gold/20 text-mcu-gold">Synced</span>
               </div>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div>
                   <div className="text-lg font-bold text-blue-400">{(wallet.credits || 0).toLocaleString()}</div>
-                  <div className="text-xs text-gray-500">Credits</div>
+                  <div className="text-xs text-stitch-muted">Credits</div>
                 </div>
                 <div>
                   <div className="text-lg font-bold text-yellow-400">{(wallet.gold || 0).toLocaleString()}</div>
-                  <div className="text-xs text-gray-500">Gold</div>
+                  <div className="text-xs text-stitch-muted">Gold</div>
                 </div>
                 <div>
                   <div className="text-lg font-bold text-purple-400">{(wallet.tokens || 0).toLocaleString()}</div>
-                  <div className="text-xs text-gray-500">Tokens</div>
+                  <div className="text-xs text-stitch-muted">Tokens</div>
                 </div>
                 <div>
                   <div className="text-lg font-bold text-orange-400">{(wallet.keys || wallet.spotlightKeys || 0).toLocaleString()}</div>
-                  <div className="text-xs text-gray-500">Keys</div>
+                  <div className="text-xs text-stitch-muted">Keys</div>
                 </div>
               </div>
             </div>
@@ -3669,15 +3811,15 @@ RESPONSE GUIDELINES:
           {(rank || timeModel) && (
             <div className="grid grid-cols-2 gap-3 mb-4">
               {rank && (
-                <div className="cosmic-glass rank-glow p-4 border-l-4 border-series-3">
-                  <div className="text-gray-400 text-xs uppercase">Rank</div>
+                <div className="stitch-stat rank-glow border-l-4 border-series-3">
+                  <div className="stitch-label">Rank</div>
                   <div className="text-2xl font-display font-bold text-white">{rank.tier}</div>
-                  <div className="text-sm text-gray-400">Level {rank.currentRank}</div>
+                  <div className="text-sm text-stitch-muted">Level {rank.currentRank}</div>
                 </div>
               )}
               {timeModel && (
-                <div className="cosmic-glass p-4 border-l-4 border-mcu-blue">
-                  <div className="text-gray-400 text-xs uppercase">Resets</div>
+                <div className="stitch-stat border-l-4 border-cosmic-purple-text">
+                  <div className="stitch-label">Resets</div>
                   <div className="text-sm text-cyan-400">Daily: {getTimeUntil(timeModel.dailyReset) || '—'}</div>
                   <div className="text-sm text-cyan-300">Weekly: {getTimeUntil(timeModel.weeklyReset) || '—'}</div>
                 </div>
@@ -3687,9 +3829,9 @@ RESPONSE GUIDELINES:
 
           {/* Player OS: Pity Counters (Spotlight Oracle Preview) */}
           {rewards && (
-            <div className="cosmic-glass p-4 mb-4 border-l-4 border-mcu-red">
+            <div className="stitch-card p-4 mb-4 border-l-4 border-mcu-red">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs uppercase text-gray-400">Pity Counters</span>
+                <span className="stitch-label">Pity Counters</span>
                 {(rewards.isCloseToS4 || rewards.isCloseToS5 || rewards.isCloseToSpotlight) && (
                   <span className="text-xs px-2 py-0.5 bg-mcu-red/30 text-mcu-red rounded animate-pulse">Close!</span>
                 )}
@@ -3698,7 +3840,7 @@ RESPONSE GUIDELINES:
                 <div className="text-center">
                   <div className="relative pt-1">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-gray-400">S4</span>
+                      <span className="text-xs text-stitch-muted">S4</span>
                       <span className="text-xs font-bold text-green-400">{rewards.pityCounters?.s4 || 0}/20</span>
                     </div>
                     <div className="w-full bg-[#1a1320] rounded-full h-2">
@@ -3712,7 +3854,7 @@ RESPONSE GUIDELINES:
                 <div className="text-center">
                   <div className="relative pt-1">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-gray-400">S5</span>
+                      <span className="text-xs text-stitch-muted">S5</span>
                       <span className="text-xs font-bold text-purple-400">{rewards.pityCounters?.s5 || 0}/60</span>
                     </div>
                     <div className="w-full bg-[#1a1320] rounded-full h-2">
@@ -3726,7 +3868,7 @@ RESPONSE GUIDELINES:
                 <div className="text-center">
                   <div className="relative pt-1">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-gray-400">Key</span>
+                      <span className="text-xs text-stitch-muted">Key</span>
                       <span className="text-xs font-bold text-orange-400">{rewards.pityCounters?.spotlightKey || 0}/4</span>
                     </div>
                     <div className="w-full bg-[#1a1320] rounded-full h-2">
@@ -3743,107 +3885,116 @@ RESPONSE GUIDELINES:
 
           {/* Lifetime Stats (from imported data) */}
           {displayStats.hasImported && (
-            <div className="cosmic-glass p-4 mb-4 border-l-4 border-cosmic-purple-text">
+            <div className="stitch-card p-4 mb-4 border-l-4 border-cosmic-purple-text">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs uppercase text-gray-400">Lifetime Stats</span>
-                <span className="text-xs px-2 py-0.5 bg-cosmic-purple/30 text-cosmic-purple-text rounded">From Game</span>
+                <span className="stitch-label">Lifetime Stats</span>
+                <span className="stitch-badge">From Game</span>
               </div>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div>
                   <div className="text-lg font-bold text-white">{displayStats.totalGames.toLocaleString()}</div>
-                  <div className="text-xs text-gray-500">Games</div>
+                  <div className="text-xs text-stitch-muted">Games</div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-green-400">{displayStats.wins.toLocaleString()}</div>
-                  <div className="text-xs text-gray-500">Wins</div>
+                  <div className="text-lg font-bold text-stitch-green">{displayStats.wins.toLocaleString()}</div>
+                  <div className="text-xs text-stitch-muted">Wins</div>
                 </div>
                 <div>
                   <div className="text-lg font-bold text-red-400">{displayStats.losses.toLocaleString()}</div>
-                  <div className="text-xs text-gray-500">Losses</div>
+                  <div className="text-xs text-stitch-muted">Losses</div>
                 </div>
                 <div>
                   <div className="text-lg font-bold text-mcu-gold">{displayStats.winRate}%</div>
-                  <div className="text-xs text-gray-500">Win Rate</div>
+                  <div className="text-xs text-stitch-muted">Win Rate</div>
                 </div>
               </div>
               {displayStats.snapId && (
-                <div className="text-xs text-gray-500 text-right mt-2">{displayStats.snapId}</div>
+                <div className="text-xs text-stitch-muted text-right mt-2">{displayStats.snapId}</div>
               )}
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="cosmic-stat p-4 border-l-4 border-mcu-red">
-              <div className="text-gray-400 text-xs uppercase">Collection</div>
-              <div className="text-3xl font-display font-bold text-white">{completionPercent}%</div>
-              <div className="text-sm text-gray-400">{ownedInDatabase}/{totalCards} cards</div>
+          <div className="grid grid-cols-4 gap-3 mb-4">
+            <div className="stitch-stat">
+              <div className="stitch-label mb-1">Collection</div>
+              <div className="text-2xl font-display font-bold text-white">{completionPercent}%</div>
+              <div className="text-xs text-stitch-muted">{ownedInDatabase}/{totalCards}</div>
             </div>
-            <div className="cosmic-stat p-4 border-l-4 border-mcu-gold">
-              <div className="text-gray-400 text-xs uppercase">{displayStats.hasImported ? 'Session' : 'Win Rate'}</div>
-              <div className="text-3xl font-display font-bold text-white">{winRate}%</div>
-              <div className="text-sm text-gray-400">{totalWins}/{totalGames} {displayStats.hasImported ? 'tracked' : 'games'}</div>
+            <div className="stitch-stat">
+              <div className="stitch-label mb-1">Win Rate</div>
+              <div className="text-2xl font-display font-bold text-white">{winRate}%</div>
+              <div className="text-xs text-stitch-muted">{totalWins}/{totalGames}</div>
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="cosmic-stat p-4 border-l-4 border-mcu-blue">
-              <div className="text-gray-400 text-xs uppercase">Net Cubes</div>
-              <div className={`text-3xl font-display font-bold ${netCubes >= 0 ? 'text-green-400' : 'text-mcu-red'}`}>
+            <div className="stitch-stat">
+              <div className="stitch-label mb-1">Net Cubes</div>
+              <div className={`text-2xl font-display font-bold ${netCubes >= 0 ? 'text-stitch-green' : 'text-red-500'}`}>
                 {netCubes >= 0 ? '+' : ''}{netCubes}
               </div>
-              <div className="text-sm text-gray-400">Today: {todayCubes >= 0 ? '+' : ''}{todayCubes}</div>
+              <div className="text-xs text-stitch-muted">Today {todayCubes >= 0 ? '+' : ''}{todayCubes}</div>
             </div>
-            <div className="cosmic-stat p-4 border-l-4 border-series-3">
-              <div className="text-gray-400 text-xs uppercase">Streak</div>
-              <div className={`text-3xl font-display font-bold ${streak.type === 'WIN' ? 'text-green-400' : streak.type === 'LOSS' ? 'text-mcu-red' : 'text-gray-400'}`}>
-                {streak.count} {streak.type === 'WIN' ? 'W' : streak.type === 'LOSS' ? 'L' : '-'}
+            <div className="stitch-stat">
+              <div className="stitch-label mb-1">Streak</div>
+              <div className={`text-2xl font-display font-bold ${streak.type === 'WIN' ? 'text-stitch-green' : streak.type === 'LOSS' ? 'text-red-500' : 'text-stitch-muted'}`}>
+                {streak.count}{streak.type === 'WIN' ? 'W' : streak.type === 'LOSS' ? 'L' : '-'}
               </div>
-              <div className="text-sm text-gray-400">Current</div>
+              <div className="text-xs text-stitch-muted">Current</div>
             </div>
           </div>
-          <div className="cosmic-glass p-5 mb-4">
-            <h2 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Quick Match</h2>
+          <div className="stitch-card p-5 mb-4">
+            <div className="stitch-section-header">
+              <span className="material-symbols-outlined" aria-hidden="true">bolt</span>
+              Quick Match
+            </div>
             <div className="mb-3" role="group" aria-label="Record win">
-              <div className="text-sm text-green-400 mb-2" id="win-label">WIN</div>
+              <div className="text-sm text-stitch-green mb-2 font-bold" id="win-label">VICTORY</div>
               <div className="flex gap-2" role="group" aria-labelledby="win-label">
                 {[1, 2, 4, 8].map(cubes => (
                   <button key={`win-${cubes}`} onClick={() => onQuickMatch('WIN', cubes)}
                     aria-label={`Record win of ${cubes} cube${cubes > 1 ? 's' : ''}`}
-                    className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded hover:shadow-[0_0_15px_rgba(173,43,238,0.5)] active:shadow-none transition-all">
+                    className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-all active:scale-95">
                     +{cubes}
                   </button>
                 ))}
               </div>
             </div>
             <div role="group" aria-label="Record loss">
-              <div className="text-sm text-red-400 mb-2" id="loss-label">LOSS</div>
+              <div className="text-sm text-red-500 mb-2 font-bold" id="loss-label">DEFEAT</div>
               <div className="flex gap-2" role="group" aria-labelledby="loss-label">
                 {[1, 2, 4, 8].map(cubes => (
                   <button key={`loss-${cubes}`} onClick={() => onQuickMatch('LOSS', cubes)}
                     aria-label={`Record loss of ${cubes} cube${cubes > 1 ? 's' : ''}`}
-                    className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded hover:shadow-[0_0_15px_rgba(173,43,238,0.5)] active:shadow-none transition-all">
+                    className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl transition-all active:scale-95">
                     -{cubes}
                   </button>
                 ))}
               </div>
             </div>
           </div>
-          <div className="cosmic-glass p-5">
+          <div className="stitch-card p-5">
             <div className="flex justify-between items-center mb-3">
-              <h2 className="text-lg font-display font-semibold text-[#c75fff]">Recent Matches</h2>
-              <button onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'history' }))} className="text-xs text-[#c75fff] hover:text-white transition-colors">View All &rarr;</button>
+              <div className="stitch-section-header mb-0">
+                <span className="material-symbols-outlined" aria-hidden="true">history</span>
+                Recent Matches
+              </div>
+              <button onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'history' }))} className="text-xs text-cosmic-purple-text hover:text-white transition-colors">View All &rarr;</button>
             </div>
             {matches.length === 0 ? (
-              <p className="text-gray-400 text-center py-4">No matches recorded yet</p>
+              <p className="text-stitch-muted text-center py-4">No matches recorded yet</p>
             ) : (
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {matches.slice(-5).reverse().map(match => (
-                  <div key={match.id} className={`flex items-center justify-between p-2 rounded border-l-4 ${
-                    match.result === 'WIN' ? 'bg-green-900/30 border-green-500' : 'bg-red-900/30 border-red-500'
+                  <div key={match.id} className={`stitch-list-item flex items-center justify-between border-l-4 ${
+                    match.result === 'WIN' ? 'border-stitch-green' : 'border-red-500'
                   }`}>
-                    <span className={`font-bold ${match.result === 'WIN' ? 'text-green-400' : 'text-red-400'}`}>
-                      {match.result === 'WIN' ? '+' : '-'}{match.cubes} cubes
-                    </span>
-                    <span className="text-gray-400 text-sm">{formatDate(match.timestamp)}</span>
+                    <div className="flex items-center gap-3">
+                      <span className={`stitch-badge ${match.result === 'WIN' ? 'bg-stitch-green/20 text-stitch-green' : 'bg-red-500/20 text-red-400'}`}>
+                        {match.result === 'WIN' ? '+' : '-'}{match.cubes}
+                      </span>
+                      <span className={`text-sm font-bold ${match.result === 'WIN' ? 'text-stitch-green' : 'text-red-400'}`}>
+                        {match.result === 'WIN' ? 'Victory' : 'Defeat'}
+                      </span>
+                    </div>
+                    <span className="text-stitch-muted text-xs">{formatDate(match.timestamp)}</span>
                   </div>
                 ))}
               </div>
@@ -3907,22 +4058,18 @@ RESPONSE GUIDELINES:
           <Header title="MATCH HISTORY" />
 
           {/* Stat Cards */}
-          <div className="grid grid-cols-3 gap-3 mb-5">
-            <div className="cosmic-stat p-3 text-center rounded-xl">
-              <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">Today</div>
-              <div className={`text-2xl font-display font-bold flex items-center justify-center gap-1 ${todayStats.net >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                <span className="material-symbols-outlined text-base">
-                  {todayStats.net >= 0 ? 'arrow_upward' : 'arrow_downward'}
-                </span>
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="stitch-stat p-4">
+              <div className="stitch-label mb-1">Today's Net</div>
+              <div className={`text-3xl font-display font-bold ${todayStats.net >= 0 ? 'text-stitch-green' : 'text-red-500'}`}>
                 {todayStats.net >= 0 ? '+' : ''}{todayStats.net}
               </div>
-              <div className="text-gray-500 text-xs">{todayStats.count} games</div>
+              <div className="text-xs text-stitch-muted">{todayStats.count} games played</div>
             </div>
-
-            <div className="cosmic-stat p-3 text-center rounded-xl">
-              <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">Win Rate</div>
-              <div className="text-2xl font-display font-bold text-[#c75fff]">{winRate}%</div>
-              <div className={`text-xs flex items-center justify-center gap-0.5 ${trendDiff >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            <div className="stitch-stat p-4">
+              <div className="stitch-label mb-1">Win Rate</div>
+              <div className="text-3xl font-display font-bold text-cosmic-purple-text">{winRate}%</div>
+              <div className={`text-xs flex items-center gap-0.5 ${trendDiff >= 0 ? 'text-stitch-green' : 'text-red-400'}`}>
                 {trendDiff !== 0 && (
                   <>
                     <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>
@@ -3931,16 +4078,17 @@ RESPONSE GUIDELINES:
                     {trendDiff > 0 ? '+' : ''}{trendDiff}% 7d
                   </>
                 )}
-                {trendDiff === 0 && <span className="text-gray-500">Steady</span>}
+                {trendDiff === 0 && <span className="text-stitch-muted">Steady</span>}
               </div>
             </div>
-
-            <div className="cosmic-stat p-3 text-center rounded-xl">
-              <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">Matches</div>
-              <div className="text-2xl font-display font-bold text-mcu-gold">{matches.length}</div>
-              <div className="text-gray-500 text-xs">
+          </div>
+          <div className="stitch-card p-3 mb-4 flex items-center justify-between">
+            <span className="stitch-label">Total Matches</span>
+            <div className="flex items-center gap-3">
+              <span className="text-lg font-display font-bold text-white">{matches.length}</span>
+              <span className="text-xs text-stitch-muted">
                 {matches.filter(m => m.result === 'WIN').length}W / {matches.filter(m => m.result === 'LOSS').length}L
-              </div>
+              </span>
             </div>
           </div>
 
@@ -3950,24 +4098,20 @@ RESPONSE GUIDELINES:
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-4 py-2.5 rounded-full text-sm font-semibold transition-all ${
-                  filter === f
-                    ? 'bg-[#ad2bee] text-white shadow-lg shadow-[#ad2bee]/30'
-                    : 'bg-[#1a1320] text-gray-400 hover:text-white hover:bg-[#2b1933]'
-                }`}
+                className={`stitch-pill ${filter === f ? 'active' : ''}`}
               >
                 {f === 'all' ? 'All' : f === 'wins' ? 'Wins' : 'Losses'}
               </button>
             ))}
-            <span className="ml-auto text-sm text-gray-500 self-center">{filteredMatches.length} results</span>
+            <span className="ml-auto text-sm text-stitch-muted self-center">{filteredMatches.length} results</span>
           </div>
 
           {/* Match List */}
           {filteredMatches.length === 0 ? (
-            <div className="cosmic-glass p-8 text-center rounded-xl">
-              <span className="material-symbols-outlined text-4xl text-gray-600 mb-2 block">history</span>
-              <div className="text-gray-400">No matches recorded yet</div>
-              <div className="text-gray-600 text-sm mt-1">Log matches from the Dashboard</div>
+            <div className="stitch-card p-8 text-center">
+              <span className="material-symbols-outlined text-4xl text-stitch-muted mb-2 block">history</span>
+              <div className="text-stitch-muted">No matches recorded yet</div>
+              <div className="text-stitch-muted/60 text-sm mt-1">Log matches from the Dashboard</div>
             </div>
           ) : (
             <div className="space-y-2">
@@ -3979,8 +4123,8 @@ RESPONSE GUIDELINES:
                 return (
                   <button
                     key={match.id}
-                    className={`w-full text-left cosmic-glass rounded-xl overflow-hidden border-l-4 transition-all cursor-pointer ${
-                      isWin ? 'border-green-500' : 'border-red-500'
+                    className={`w-full text-left stitch-list-item overflow-hidden border-l-4 transition-all cursor-pointer ${
+                      isWin ? 'border-stitch-green' : 'border-red-500'
                     }`}
                     onClick={() => toggleExpand(match.id)}
                     aria-expanded={isExpanded}
@@ -3988,14 +4132,14 @@ RESPONSE GUIDELINES:
                     {/* Main Row */}
                     <div className="flex items-center justify-between p-3">
                       <div className="flex items-center gap-3">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide ${
+                        <span className={`stitch-badge text-xs uppercase tracking-wide ${
                           isWin
-                            ? 'bg-green-500/20 text-green-400'
+                            ? 'bg-stitch-green/20 text-stitch-green'
                             : 'bg-red-500/20 text-red-400'
                         }`}>
                           {isWin ? 'Victory' : 'Defeat'}
                         </span>
-                        <span className={`text-lg font-display font-bold ${isWin ? 'text-green-400' : 'text-red-400'}`}>
+                        <span className={`text-lg font-display font-bold ${isWin ? 'text-stitch-green' : 'text-red-400'}`}>
                           {isWin ? '+' : '-'}{match.cubes}
                         </span>
                         {snap && (
@@ -4463,11 +4607,13 @@ RESPONSE GUIDELINES:
           <Header title="MY COLLECTION" />
 
           {/* Pool Completion Bars - YOUR progress per pool */}
-          <div className="cosmic-glass p-5 mb-4">
-            <div className="text-white font-medium mb-3 text-center">Pool Completion</div>
-            <div className="space-y-2">
+          <div className="stitch-card p-5 mb-4">
+            <div className="stitch-section-header">
+              <span className="material-symbols-outlined" aria-hidden="true">pie_chart</span>
+              Pool Completion
+            </div>
+            <div className="space-y-3">
               {Object.entries(poolStats).map(([poolName, stats]) => {
-                // Use explicit class names for Tailwind purging
                 const colorClasses = {
                   'series-1': 'bg-series-1',
                   'series-4': 'bg-series-4',
@@ -4479,40 +4625,32 @@ RESPONSE GUIDELINES:
                 const bgClass = colorClasses[stats.color] || 'bg-series-6';
                 return (
                   <div key={poolName} className="flex items-center gap-2">
-                    <span className={`w-16 h-6 rounded text-xs font-bold flex items-center justify-center text-white ${bgClass}`}>{poolName === 'Spotlight' ? '⭐' : poolName.replace('Pool ', 'P')}</span>
-                    <div className="flex-1 bg-[#1a1320] rounded-full h-3 overflow-hidden">
-                      <div className={`h-full transition-all duration-300 ${bgClass}`} style={{ width: `${stats.percent}%` }} />
+                    <span className={`w-16 h-6 rounded-full text-xs font-bold flex items-center justify-center text-white ${bgClass}`}>{poolName === 'Spotlight' ? '⭐' : poolName.replace('Pool ', 'P')}</span>
+                    <div className="flex-1 stitch-progress">
+                      <div className={`stitch-progress-fill ${bgClass}`} style={{ width: `${stats.percent}%` }} />
                     </div>
-                    <span className="text-gray-300 text-xs w-20 text-right">{stats.owned}/{stats.total} ({stats.percent}%)</span>
+                    <span className="text-stitch-muted text-xs w-20 text-right">{stats.owned}/{stats.total} ({stats.percent}%)</span>
                   </div>
                 );
               })}
             </div>
-            <div className="text-center text-mcu-gold font-bold mt-3">
-              Total: {ownedCards.length} cards owned
+            <div className="text-center text-mcu-gold font-bold mt-3 text-sm">
+              {ownedCards.length} cards owned
             </div>
           </div>
 
           {/* View Mode Toggle & Filters */}
-          <div className="cosmic-glass p-5 mb-4">
-            {/* View Mode Toggle */}
+          <div className="mb-4">
+            {/* View Mode Pills */}
             <div className="flex gap-2 mb-3">
               <button
                 onClick={() => setViewMode('owned')}
-                className={`flex-1 py-2 rounded font-medium text-sm transition-all ${
-                  viewMode === 'owned'
-                    ? 'bg-mcu-gold text-black'
-                    : 'bg-[#1a1320] text-gray-300 hover:bg-[#2b1933]'
-                }`}>
+                className={`stitch-pill flex-1 justify-center ${viewMode === 'owned' ? 'active' : ''}`}>
                 My Cards ({ownedCards.length})
               </button>
               <button
                 onClick={() => setViewMode('browse')}
-                className={`flex-1 py-2 rounded font-medium text-sm transition-all ${
-                  viewMode === 'browse'
-                    ? 'bg-mcu-blue text-white'
-                    : 'bg-[#1a1320] text-gray-300 hover:bg-[#2b1933]'
-                }`}>
+                className={`stitch-pill flex-1 justify-center ${viewMode === 'browse' ? 'active' : ''}`}>
                 + Add Cards
               </button>
             </div>
@@ -4520,11 +4658,11 @@ RESPONSE GUIDELINES:
             <input type="text" placeholder={viewMode === 'owned' ? "Search your cards..." : "Search cards to add..."} value={search}
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search cards"
-              className="w-full bg-[#1a1320] text-white rounded px-3 py-2 mb-3 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
+              className="w-full bg-stitch-accent text-white rounded-xl px-4 py-2.5 mb-3 border border-stitch-border focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple/20 placeholder-stitch-muted" />
 
             <div className="flex gap-2">
               <select value={seriesFilter} onChange={(e) => setSeriesFilter(e.target.value)}
-                className="flex-1 bg-[#1a1320] text-white rounded px-2 py-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20">
+                className="flex-1 bg-stitch-accent text-white rounded-xl px-3 py-2.5 border border-stitch-border focus:border-cosmic-purple-text focus:outline-none">
                 <option value="all">{viewMode === 'owned' ? 'All My Pools' : 'All Pools'}</option>
                 {availableSeries.map(s => (
                   <option key={s} value={s}>{getSeriesDisplayName(s)} {viewMode === 'owned' ? `(${seriesStats[s]?.owned || 0})` : ''}</option>
@@ -4532,50 +4670,71 @@ RESPONSE GUIDELINES:
               </select>
               {viewMode === 'owned' && (
                 <button onClick={handleClearAll}
-                  className="bg-red-600 text-white text-xs px-3 py-2 rounded hover:opacity-80 touch-target-sm">Clear All</button>
+                  className="bg-red-600 text-white text-xs px-3 py-2.5 rounded-xl hover:opacity-80">Clear All</button>
               )}
             </div>
           </div>
 
-          {/* Card Grid */}
+          {/* Card Grid with Art */}
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {filteredCards.map(card => {
               const isOwned = collection.owned.includes(card.name);
+              const artUrl = getCardArtUrl(card);
               return (
-                <div key={card.name} className={`relative p-2 rounded-lg border-3 transition-all card-hover ${getSeriesBorderClass(card.series)} ${
-                    isOwned ? 'bg-[#1a1320] border-opacity-100 holo-glow' : 'bg-[#120818] border-opacity-60'
-                  }`} style={{ borderWidth: '3px' }}>
-                  <button onClick={() => toggleCard(card.name)} className="w-full h-full"
+                <div key={card.name} className={`relative aspect-[3/4] rounded-xl border-2 overflow-hidden transition-all card-hover ${getSeriesBorderClass(card.series)} ${
+                    isOwned ? 'border-opacity-100' : 'border-opacity-40 opacity-50 grayscale'
+                  }`}>
+                  {/* Card Art Background */}
+                  <div className="absolute inset-0 card-art card-art-fallback" style={{ backgroundImage: `url(${artUrl})` }} />
+                  {/* Gradient overlay for text readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+
+                  {/* Cost badge - top left */}
+                  <div className="absolute top-1.5 left-1.5 w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-lg z-10">{card.cost}</div>
+                  {/* Power badge - top right */}
+                  <div className="absolute top-1.5 right-1.5 w-7 h-7 bg-orange-500 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-lg z-10">{card.power}</div>
+
+                  {/* Card name - bottom */}
+                  <div className="absolute bottom-0 left-0 right-0 p-2 z-10">
+                    <div className="text-sm font-bold text-white truncate drop-shadow-lg">{card.name}</div>
+                  </div>
+
+                  {/* Owned checkmark */}
+                  {isOwned && viewMode === 'browse' && (
+                    <div className="absolute top-1 right-1 w-6 h-6 bg-stitch-green rounded-full flex items-center justify-center z-20">
+                      <span className="text-white text-xs font-bold">✓</span>
+                    </div>
+                  )}
+
+                  {/* Unowned overlay in browse mode */}
+                  {!isOwned && viewMode === 'browse' && (
+                    <>
+                      <div className="absolute inset-0 flex items-center justify-center z-10">
+                        <span className="material-symbols-outlined text-white/60 text-3xl" aria-hidden="true">lock</span>
+                      </div>
+                      <div className="absolute top-1 right-1 w-6 h-6 bg-cosmic-purple rounded-full flex items-center justify-center z-20">
+                        <span className="text-white text-xs font-bold">+</span>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Click target */}
+                  <button onClick={() => toggleCard(card.name)} className="absolute inset-0 z-10"
                     aria-pressed={isOwned}
-                    aria-label={`${card.name}, ${card.cost} cost, ${card.power} power, ${isOwned ? 'owned' : 'not owned'}`}>
-                    <div className="absolute top-1 left-1 w-6 h-6 bg-mcu-blue rounded-full flex items-center justify-center text-xs font-bold text-white">{card.cost}</div>
-                    <div className="absolute top-1 right-1 w-6 h-6 bg-mcu-red rounded-full flex items-center justify-center text-xs font-bold text-white">{card.power}</div>
-                    <div className="mt-6 text-xs text-white text-center truncate">{card.name}</div>
-                    {isOwned && (
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs">✓</span>
-                      </div>
-                    )}
-                    {!isOwned && viewMode === 'browse' && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg">
-                        <span className="material-symbols-outlined text-gray-400 text-lg" aria-hidden="true">lock</span>
-                      </div>
-                    )}
-                    {!isOwned && viewMode === 'browse' && (
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-mcu-blue rounded-full flex items-center justify-center z-10">
-                        <span className="text-white text-xs">+</span>
-                      </div>
-                    )}
-                  </button>
+                    aria-label={`${card.name}, ${card.cost} cost, ${card.power} power, ${isOwned ? 'owned' : 'not owned'}`} />
+
+                  {/* Info button */}
                   <button onClick={(e) => { e.stopPropagation(); setSelectedCard(card); }}
-                    className="absolute bottom-1 right-1 w-7 h-7 bg-[#2b1933] hover:bg-mcu-gold rounded-full flex items-center justify-center text-xs text-white z-10 touch-expand"
-                    title="View card details">i</button>
+                    className="absolute bottom-1.5 right-1.5 w-7 h-7 bg-black/60 hover:bg-cosmic-purple rounded-full flex items-center justify-center text-xs text-white z-20"
+                    title="View card details">
+                    <span className="material-symbols-outlined" style={{fontSize: '16px'}}>info</span>
+                  </button>
                 </div>
               );
             })}
           </div>
           {filteredCards.length === 0 && (
-            <div className="text-center text-gray-400 py-8">
+            <div className="text-center text-stitch-muted py-8">
               {viewMode === 'owned'
                 ? (collection.owned.length === 0
                     ? 'No cards in your collection yet. Use "+ Add Cards" or import your game files!'
@@ -4586,38 +4745,42 @@ RESPONSE GUIDELINES:
 
           {/* Card Detail Modal */}
           {selectedCard && (
-            <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4" onClick={() => setSelectedCard(null)}>
-              <div className="cosmic-glass max-w-sm w-full p-6" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="text-xl font-display font-semibold text-white">{selectedCard.name}</h3>
-                  <button onClick={() => setSelectedCard(null)} className="text-gray-400 hover:text-white text-xl">&times;</button>
+            <div className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4" onClick={() => setSelectedCard(null)}>
+              <div className="stitch-card max-w-sm w-full overflow-hidden" onClick={e => e.stopPropagation()}>
+                {/* Card Art Header */}
+                <div className="relative aspect-[3/4] max-h-64 overflow-hidden">
+                  <div className="absolute inset-0 card-art" style={{ backgroundImage: `url(${getCardArtUrl(selectedCard)})` }} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-stitch-card via-transparent to-transparent" />
+                  <button onClick={() => setSelectedCard(null)}
+                    className="absolute top-3 right-3 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-black/80 z-10">
+                    <span className="material-symbols-outlined" style={{fontSize: '20px'}}>close</span>
+                  </button>
+                  {/* Cost/Power badges on art */}
+                  <div className="absolute top-3 left-3 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-lg">{selectedCard.cost}</div>
+                  <div className="absolute bottom-3 right-3 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-lg">{selectedCard.power}</div>
                 </div>
-                <div className="flex gap-4 mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="w-8 h-8 bg-mcu-blue rounded-full flex items-center justify-center font-bold text-white">{selectedCard.cost}</span>
-                    <span className="text-gray-400 text-sm">Cost</span>
+                {/* Card Info */}
+                <div className="p-5 -mt-4 relative z-10">
+                  <h3 className="text-xl font-display font-bold text-white mb-1">{selectedCard.name}</h3>
+                  <div className="flex gap-2 mb-3">
+                    <span className={`stitch-badge ${getSeriesColorClass(selectedCard.series)}`}>
+                      {getSeriesDisplayName(selectedCard.series)}
+                    </span>
+                    {selectedCard.ability && selectedCard.ability.startsWith('Ongoing') && (
+                      <span className="stitch-badge bg-blue-500/20 text-blue-400">Ongoing</span>
+                    )}
+                    {selectedCard.ability && selectedCard.ability.startsWith('On Reveal') && (
+                      <span className="stitch-badge bg-yellow-500/20 text-yellow-400">On Reveal</span>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-8 h-8 bg-mcu-red rounded-full flex items-center justify-center font-bold text-white">{selectedCard.power}</span>
-                    <span className="text-gray-400 text-sm">Power</span>
+                  <div className="bg-stitch-accent rounded-xl p-4 mb-4">
+                    <p className="text-gray-300 text-sm leading-relaxed">{selectedCard.ability || 'No ability text available.'}</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-white ${
-                      selectedCard.series === 1 ? 'bg-series-1' : selectedCard.series === 2 ? 'bg-series-2' :
-                      selectedCard.series === 3 ? 'bg-series-3' : selectedCard.series === 4 ? 'bg-series-4' : 'bg-series-5'
-                    }`}>{selectedCard.series}</span>
-                    <span className="text-gray-400 text-sm">Series</span>
-                  </div>
-                </div>
-                <div className="bg-[#1a1320] rounded-lg p-4">
-                  <p className="text-gray-300 text-sm leading-relaxed">{selectedCard.ability || 'No ability text available.'}</p>
-                </div>
-                <div className="mt-4 flex gap-2">
                   <button onClick={() => { toggleCard(selectedCard.name); setSelectedCard(null); }}
-                    className={`flex-1 py-2 rounded font-medium ${
+                    className={`w-full py-3 rounded-xl font-bold transition-all ${
                       collection.owned.includes(selectedCard.name)
                         ? 'bg-red-600 hover:bg-red-700 text-white'
-                        : 'bg-green-600 hover:bg-green-700 text-white'
+                        : 'bg-stitch-green hover:opacity-90 text-white'
                     }`}>
                     {collection.owned.includes(selectedCard.name) ? 'Remove from Collection' : 'Add to Collection'}
                   </button>
@@ -4835,7 +4998,7 @@ RESPONSE GUIDELINES:
               </button>
             </div>
             {decks.length === 0 ? (
-              <div className="text-center text-gray-400 py-12">
+              <div className="text-center text-stitch-muted py-12">
                 <p className="text-lg mb-2">No decks yet</p>
                 <p className="text-sm">Create a deck or import one from MarvelSnapZone</p>
               </div>
@@ -4844,7 +5007,7 @@ RESPONSE GUIDELINES:
                 {decks.map(deck => {
                   const stats = getDeckStats(deck.cards);
                   return (
-                    <div key={deck.id} className="cosmic-glass p-5">
+                    <div key={deck.id} className="stitch-card p-5">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="text-lg font-display font-semibold text-white">{deck.name}</h3>
                         <div className="flex gap-2">
@@ -4852,7 +5015,7 @@ RESPONSE GUIDELINES:
                           <button onClick={() => deleteDeck(deck.id)} className="text-red-500 hover:text-red-400 text-sm">Delete</button>
                         </div>
                       </div>
-                      <div className="flex gap-4 text-sm text-gray-400 mb-3">
+                      <div className="flex gap-4 text-sm text-stitch-muted mb-3">
                         <span>Avg Cost: <span className="text-mcu-blue">{stats.avgCost}</span></span>
                         <span>Total Power: <span className="text-mcu-red">{stats.totalPower}</span></span>
                         <span>Owned: <span className={stats.ownedCount === 12 ? 'text-green-500' : 'text-yellow-500'}>{stats.ownedCount}/12</span></span>
@@ -4906,9 +5069,9 @@ RESPONSE GUIDELINES:
             <Header title="IMPORT DECK" />
             <button onClick={() => setView('list')} className="text-mcu-blue mb-4">&larr; Back to Decks</button>
 
-            <div className="cosmic-glass p-5 mb-4">
+            <div className="stitch-card p-5 mb-4">
               <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Import from Deck Code</h3>
-              <p className="text-gray-400 text-sm mb-2">Paste the full deck export from the game (includes # comments and code)</p>
+              <p className="text-stitch-muted text-sm mb-2">Paste the full deck export from the game (includes # comments and code)</p>
               <textarea placeholder="# (1) Iron Man&#10;# (2) Hulk&#10;...&#10;base64code&#10;#"
                 value={importCode} onChange={(e) => setImportCode(e.target.value)}
                 rows={6}
@@ -4919,9 +5082,9 @@ RESPONSE GUIDELINES:
               </button>
             </div>
 
-            <div className="cosmic-glass p-5">
+            <div className="stitch-card p-5">
               <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Import from URL</h3>
-              <p className="text-gray-400 text-sm mb-2">Paste a MarvelSnapZone or Untapped.gg deck URL</p>
+              <p className="text-stitch-muted text-sm mb-2">Paste a MarvelSnapZone or Untapped.gg deck URL</p>
               <input type="text" placeholder="https://marvelsnapzone.com/decks/..."
                 value={importUrl} onChange={(e) => setImportUrl(e.target.value)}
                 aria-label="Deck URL"
@@ -4945,13 +5108,13 @@ RESPONSE GUIDELINES:
           <Header title={editingDeck ? 'EDIT DECK' : 'CREATE DECK'} />
           <button onClick={() => setView('list')} className="text-mcu-blue mb-4">&larr; Back to Decks</button>
 
-          <div className="cosmic-glass p-5 mb-4">
+          <div className="stitch-card p-5 mb-4">
             <input type="text" placeholder="Deck name..."
               value={deckName} onChange={(e) => setDeckName(e.target.value)}
               aria-label="Deck name"
               className="w-full bg-stark-surface text-white rounded-lg px-4 py-3 mb-3 border border-mcu-blue/30 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 text-lg font-display" />
             <div className="flex justify-between items-center">
-              <span className="text-gray-400">Cards: <span className={selectedCards.length === 12 ? 'text-green-500' : 'text-yellow-500'}>{selectedCards.length}/12</span></span>
+              <span className="text-stitch-muted">Cards: <span className={selectedCards.length === 12 ? 'text-green-500' : 'text-yellow-500'}>{selectedCards.length}/12</span></span>
               <button onClick={saveDeck} disabled={selectedCards.length !== 12 || !deckName.trim()}
                 className="bg-mcu-blue text-white px-4 py-2 rounded-lg hover:shadow-glow-blue transition-all duration-200 disabled:opacity-50">
                 Save Deck
@@ -4959,11 +5122,14 @@ RESPONSE GUIDELINES:
             </div>
           </div>
 
-          {/* Selected Cards - 4x3 Grid */}
-          <div className="cosmic-glass p-5 mb-4">
+          {/* Selected Cards - 4x3 Grid with Art */}
+          <div className="stitch-card p-5 mb-4">
             <div className="flex justify-between items-center mb-3">
-              <h3 className="text-sm text-[#c75fff] font-semibold tracking-wide uppercase">Deck Slots</h3>
-              <span className="text-xs text-gray-400">{selectedCards.length}/12 Cards</span>
+              <div className="stitch-section-header mb-0">
+                <span className="material-symbols-outlined" aria-hidden="true">grid_view</span>
+                Deck Slots
+              </div>
+              <span className="stitch-badge">{selectedCards.length}/12</span>
             </div>
             <div className="grid grid-cols-4 gap-2">
               {Array.from({ length: 12 }).map((_, i) => {
@@ -4971,48 +5137,49 @@ RESPONSE GUIDELINES:
                 const card = cardName ? cardLookup.get(cardName) || null : null;
                 return cardName ? (
                   <button key={cardName} onClick={() => toggleCardInDeck(cardName)}
-                    className="card-slot filled relative flex flex-col items-center justify-center p-1 cursor-pointer hover:scale-105 transition-transform duration-150 group">
-                    <span className="absolute top-1 left-1 w-5 h-5 rounded-full bg-[#2b1933] border border-[rgba(173,43,238,0.4)] flex items-center justify-center text-[10px] font-bold text-mcu-gold">
+                    className="relative aspect-[3/4] rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-150 group border-2 border-cosmic-purple/40 holo-glow">
+                    <div className="absolute inset-0 card-art" style={{ backgroundImage: `url(${getCardArtUrl(card || { name: cardName })})` }} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                    <span className="absolute top-1 left-1 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white shadow">
                       {card?.cost ?? '?'}
                     </span>
-                    <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-mcu-red/80 flex items-center justify-center text-[9px] text-white opacity-0 group-hover:opacity-100 transition-opacity">&times;</span>
-                    <span className="text-[11px] text-white text-center leading-tight mt-3 px-1 truncate w-full">{cardName}</span>
-                    <span className="text-[9px] text-gray-400 mt-0.5">PWR {card?.power ?? '?'}</span>
+                    <span className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500/80 flex items-center justify-center text-[9px] text-white opacity-0 group-hover:opacity-100 transition-opacity">&times;</span>
+                    <span className="absolute bottom-1 left-1 right-1 text-[10px] text-white text-center leading-tight truncate font-bold drop-shadow-lg">{cardName}</span>
                   </button>
                 ) : (
-                  <button key={`empty-${i}`} className="card-slot flex items-center justify-center" aria-label={`Empty slot ${i + 1}, click to add card`}>
-                    <span className="text-[10px] text-gray-600 select-none">{i + 1}</span>
-                  </button>
+                  <div key={`empty-${i}`} className="card-slot flex items-center justify-center border-stitch-border" aria-label={`Empty slot ${i + 1}`}>
+                    <span className="material-symbols-outlined text-stitch-muted/30" style={{fontSize: '20px'}}>add</span>
+                  </div>
                 );
               })}
             </div>
-            <div className="mt-3 pt-3 border-t border-[rgba(173,43,238,0.2)]">
+            <div className="mt-3 pt-3 border-t border-stitch-border">
               <div className="flex justify-around text-center">
                 <div>
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">Cards</div>
-                  <div className={`text-sm font-bold ${selectedCards.length === 12 ? 'text-green-400' : 'text-mcu-gold'}`}>{selectedCards.length}/12</div>
+                  <div className="stitch-label">Cards</div>
+                  <div className={`text-sm font-bold ${selectedCards.length === 12 ? 'text-stitch-green' : 'text-mcu-gold'}`}>{selectedCards.length}/12</div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">Avg Energy</div>
-                  <div className="text-sm font-bold text-mcu-blue">{selectedCards.length > 0 ? getDeckStats(selectedCards).avgCost : '--'}</div>
+                  <div className="stitch-label">Avg Energy</div>
+                  <div className="text-sm font-bold text-cosmic-purple-text">{selectedCards.length > 0 ? getDeckStats(selectedCards).avgCost : '--'}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">Total Power</div>
-                  <div className="text-sm font-bold text-mcu-red">{selectedCards.length > 0 ? getDeckStats(selectedCards).totalPower : '--'}</div>
+                  <div className="stitch-label">Total Power</div>
+                  <div className="text-sm font-bold text-orange-400">{selectedCards.length > 0 ? getDeckStats(selectedCards).totalPower : '--'}</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Card Picker */}
-          <div className="cosmic-glass p-5">
+          <div className="stitch-card p-5">
             <div className="flex gap-2 mb-3">
               <input type="text" placeholder="Search cards..."
                 value={searchCard} onChange={(e) => setSearchCard(e.target.value)}
                 aria-label="Search cards to add"
-                className="flex-1 bg-[#1a1320] text-white rounded px-3 py-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
+                className="flex-1 bg-stitch-accent text-white rounded-xl px-4 py-2.5 border border-stitch-border focus:border-cosmic-purple-text focus:outline-none placeholder-stitch-muted" />
               <select value={seriesFilter} onChange={(e) => setSeriesFilter(e.target.value)}
-                className="bg-[#1a1320] text-white rounded px-2 py-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20">
+                className="bg-stitch-accent text-white rounded-xl px-3 py-2.5 border border-stitch-border focus:border-cosmic-purple-text focus:outline-none">
                 <option value="all">All</option>
                 <option value="1">S1</option>
                 <option value="2">S2</option>
@@ -5069,8 +5236,8 @@ RESPONSE GUIDELINES:
         loadData();
       }, []);
 
-      if (loading) return <div className="px-4 pb-20"><Header title="SPOTLIGHT ORACLE" /><div className="text-center py-8 text-gray-400">Loading...</div></div>;
-      if (!schedule) return <div className="px-4 pb-20"><Header title="SPOTLIGHT ORACLE" /><div className="cosmic-glass p-6 text-center"><div className="text-4xl mb-4">🔮</div><p className="text-gray-400">Schedule unavailable</p></div></div>;
+      if (loading) return <div className="px-4 pb-20"><Header title="SPOTLIGHT ORACLE" /><div className="text-center py-8 text-stitch-muted">Loading...</div></div>;
+      if (!schedule) return <div className="px-4 pb-20"><Header title="SPOTLIGHT ORACLE" /><div className="stitch-card p-6 text-center"><div className="text-4xl mb-4">🔮</div><p className="text-stitch-muted">Schedule unavailable</p></div></div>;
 
       const ownedCards = new Set((collection?.owned || []).map(c => c.toLowerCase()));
       const pity = rewards?.pityCounters || { s4: 0, s5: 0, spotlightKey: 0 };
@@ -5086,23 +5253,23 @@ RESPONSE GUIDELINES:
       return (
         <div className="px-4 pb-20">
           <Header title="SPOTLIGHT ORACLE" />
-          <div className="cosmic-glass p-5 mb-4 border-l-4 border-mcu-gold">
+          <div className="stitch-card p-5 mb-4 border-l-4 border-mcu-gold">
             <h2 className="text-lg font-display font-semibold text-[#c75fff] mb-3">🔮 Pity Status</h2>
             <div className="grid grid-cols-3 gap-4 text-center">
-              <div><div className="text-2xl font-bold text-green-400">{pity.s4}/20</div><div className="text-xs text-gray-400">S4</div></div>
-              <div><div className="text-2xl font-bold text-purple-400">{pity.s5}/60</div><div className="text-xs text-gray-400">S5</div></div>
-              <div><div className="text-2xl font-bold text-orange-400">{pity.spotlightKey}/4</div><div className="text-xs text-gray-400">Key</div></div>
+              <div><div className="text-2xl font-bold text-green-400">{pity.s4}/20</div><div className="text-xs text-stitch-muted">S4</div></div>
+              <div><div className="text-2xl font-bold text-purple-400">{pity.s5}/60</div><div className="text-xs text-stitch-muted">S5</div></div>
+              <div><div className="text-2xl font-bold text-orange-400">{pity.spotlightKey}/4</div><div className="text-xs text-stitch-muted">Key</div></div>
             </div>
           </div>
           <div className="space-y-4">
             {analyzedWeeks.map((week, idx) => (
-              <div key={idx} className={`cosmic-glass p-5 border-l-4 ${week.evRating === 'excellent' ? 'border-green-500' : week.evRating === 'good' ? 'border-blue-500' : 'border-[rgba(173,43,238,0.3)]'}`}>
+              <div key={idx} className={`stitch-card p-5 border-l-4 ${week.evRating === 'excellent' ? 'border-green-500' : week.evRating === 'good' ? 'border-blue-500' : 'border-[rgba(173,43,238,0.3)]'}`}>
                 <div className="flex justify-between items-start mb-2">
-                  <div className="text-xs text-gray-400">Week {week.weekNumber} • {new Date(week.startDate).toLocaleDateString()}</div>
-                  <div className={`text-xs px-2 py-1 rounded ${week.evRating === 'excellent' ? 'bg-green-500/30 text-green-400' : 'bg-[#1a1320] text-gray-400'}`}>{week.evRating === 'excellent' ? 'PRIME' : week.evRating.toUpperCase()}</div>
+                  <div className="text-xs text-stitch-muted">Week {week.weekNumber} • {new Date(week.startDate).toLocaleDateString()}</div>
+                  <div className={`text-xs px-2 py-1 rounded ${week.evRating === 'excellent' ? 'bg-green-500/30 text-green-400' : 'bg-[#1a1320] text-stitch-muted'}`}>{week.evRating === 'excellent' ? 'PRIME' : week.evRating.toUpperCase()}</div>
                 </div>
-                <div className="mb-2"><span className={`font-bold ${ownedCards.has(week.spotlight.mainCard.toLowerCase()) ? 'text-gray-400 line-through' : 'text-white'}`}>⭐ {week.spotlight.mainCard}</span></div>
-                <div className="flex flex-wrap gap-1 mb-2">{week.cacheCards.map((c, i) => <span key={i} className={`text-xs px-2 py-0.5 rounded ${ownedCards.has(c.name.toLowerCase()) ? 'bg-[#1a1320] text-gray-400 line-through' : 'bg-[#1a1320] text-white'}`}>{c.name}</span>)}</div>
+                <div className="mb-2"><span className={`font-bold ${ownedCards.has(week.spotlight.mainCard.toLowerCase()) ? 'text-stitch-muted line-through' : 'text-white'}`}>⭐ {week.spotlight.mainCard}</span></div>
+                <div className="flex flex-wrap gap-1 mb-2">{week.cacheCards.map((c, i) => <span key={i} className={`text-xs px-2 py-0.5 rounded ${ownedCards.has(c.name.toLowerCase()) ? 'bg-[#1a1320] text-stitch-muted line-through' : 'bg-[#1a1320] text-white'}`}>{c.name}</span>)}</div>
                 <div className="flex justify-between text-xs pt-2 border-t border-[rgba(173,43,238,0.2)]"><span>Missing: {week.missingCards.length}/{week.totalCards}</span><span className={week.evRating === 'excellent' ? 'text-green-400' : ''}>EV: {week.ev === Infinity ? '∞' : week.ev}</span></div>
               </div>
             ))}
@@ -5131,10 +5298,10 @@ RESPONSE GUIDELINES:
         return (
           <div className="px-4 pb-20">
             <Header title="HALL OF ARMOR" />
-            <div className="cosmic-glass p-6 text-center">
+            <div className="stitch-card p-6 text-center">
               <div className="text-4xl mb-4">🏆</div>
               <h2 className="text-xl font-display font-semibold text-[#c75fff] mb-2">Sync Your Collection</h2>
-              <p className="text-gray-400 mb-4">
+              <p className="text-stitch-muted mb-4">
                 Link your game folder to display your God Splits, variants, and collection achievements.
               </p>
               <p className="text-sm text-gray-500">
@@ -5181,7 +5348,7 @@ RESPONSE GUIDELINES:
         if (lower.includes('gold')) return { name: 'Gold', color: 'text-yellow-400', bg: 'bg-yellow-900/30' };
         if (lower.includes('krackle')) return { name: 'Krackle', color: 'text-pink-400', bg: 'bg-pink-900/30' };
         if (lower.includes('prism')) return { name: 'Prism', color: 'text-purple-400', bg: 'bg-purple-900/30' };
-        return { name: 'Special', color: 'text-gray-400', bg: 'bg-gray-900/30' };
+        return { name: 'Special', color: 'text-stitch-muted', bg: 'bg-gray-900/30' };
       };
 
       return (
@@ -5190,23 +5357,23 @@ RESPONSE GUIDELINES:
 
           {/* Stats Overview */}
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="cosmic-glass p-4 border-l-4 border-mcu-gold text-center">
+            <div className="stitch-card p-4 border-l-4 border-mcu-gold text-center">
               <div className="text-2xl font-display font-bold text-mcu-gold">{godSplitCount}</div>
-              <div className="text-xs text-gray-400">God Splits</div>
+              <div className="text-xs text-stitch-muted">God Splits</div>
             </div>
-            <div className="cosmic-glass p-4 border-l-4 border-series-3 text-center">
+            <div className="stitch-card p-4 border-l-4 border-series-3 text-center">
               <div className="text-2xl font-display font-bold text-series-3">{variantCount}</div>
-              <div className="text-xs text-gray-400">Variants</div>
+              <div className="text-xs text-stitch-muted">Variants</div>
             </div>
-            <div className="cosmic-glass p-4 border-l-4 border-mcu-blue text-center">
+            <div className="stitch-card p-4 border-l-4 border-mcu-blue text-center">
               <div className="text-2xl font-display font-bold text-mcu-blue">{totalBoosters.toLocaleString()}</div>
-              <div className="text-xs text-gray-400">Boosters</div>
+              <div className="text-xs text-stitch-muted">Boosters</div>
             </div>
           </div>
 
           {/* God Splits Showcase */}
           {godSplitCount > 0 && (
-            <div className="cosmic-glass p-5 mb-4">
+            <div className="stitch-card p-5 mb-4">
               <h2 className="text-lg font-display font-semibold text-[#c75fff] mb-3 flex items-center gap-2">
                 <span>✨</span> God Splits
               </h2>
@@ -5218,13 +5385,13 @@ RESPONSE GUIDELINES:
                       <div className={`font-bold text-sm ${type?.color || 'text-white'}`}>
                         {split.cardDefId.replace(/_/g, ' ')}
                       </div>
-                      <div className="text-xs text-gray-400">{type?.name || 'Special'}</div>
+                      <div className="text-xs text-stitch-muted">{type?.name || 'Special'}</div>
                     </div>
                   );
                 })}
                 {godSplitCount > 12 && (
                   <div className="px-3 py-2 rounded-lg bg-[#1a1320] flex items-center">
-                    <span className="text-gray-400 text-sm">+{godSplitCount - 12} more</span>
+                    <span className="text-stitch-muted text-sm">+{godSplitCount - 12} more</span>
                   </div>
                 )}
               </div>
@@ -5262,7 +5429,7 @@ RESPONSE GUIDELINES:
               return (
                 <div
                   key={idx}
-                  className={`cosmic-glass p-4 relative ${
+                  className={`stitch-card p-4 relative ${
                     hasGodSplit ? 'border-l-4 border-mcu-gold mcu-glow-gold' :
                     hasInfinity ? 'border-l-4 border-series-3' :
                     'border-l-4 border-[rgba(173,43,238,0.3)]'
@@ -5281,7 +5448,7 @@ RESPONSE GUIDELINES:
                   <div className="font-bold text-white text-sm truncate mb-1">
                     {card.cardDefId.replace(/_/g, ' ')}
                   </div>
-                  <div className="flex justify-between text-xs text-gray-400">
+                  <div className="flex justify-between text-xs text-stitch-muted">
                     <span>{card.variants?.length || 0} variants</span>
                     <span>{card.boosters} boosters</span>
                   </div>
@@ -5291,13 +5458,13 @@ RESPONSE GUIDELINES:
           </div>
 
           {sortedCards.length === 0 && (
-            <div className="cosmic-glass p-6 text-center">
-              <p className="text-gray-400">No cards match this filter.</p>
+            <div className="stitch-card p-6 text-center">
+              <p className="text-stitch-muted">No cards match this filter.</p>
             </div>
           )}
 
           {sortedCards.length > 20 && (
-            <div className="text-center mt-4 text-gray-400 text-sm">
+            <div className="text-center mt-4 text-stitch-muted text-sm">
               Showing 20 of {sortedCards.length} cards
             </div>
           )}
@@ -5375,34 +5542,34 @@ RESPONSE GUIDELINES:
           <Header title="ECONOMY HQ" />
 
           {/* Resource Overview */}
-          <div className="cosmic-glass p-5 mb-4">
+          <div className="stitch-card p-5 mb-4">
             <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Current Resources</h3>
             <div className="grid grid-cols-4 gap-2">
               <div className="bg-[#1a1320] rounded-lg p-2 text-center">
                 <div className="text-2xl">💰</div>
                 <div className="text-white font-bold">{(wallet.credits || 0).toLocaleString()}</div>
-                <div className="text-gray-400 text-xs">Credits</div>
+                <div className="text-stitch-muted text-xs">Credits</div>
               </div>
               <div className="bg-[#1a1320] rounded-lg p-2 text-center">
                 <div className="text-2xl">🪙</div>
                 <div className="text-yellow-400 font-bold">{(wallet.gold || 0).toLocaleString()}</div>
-                <div className="text-gray-400 text-xs">Gold</div>
+                <div className="text-stitch-muted text-xs">Gold</div>
               </div>
               <div className="bg-[#1a1320] rounded-lg p-2 text-center">
                 <div className="text-2xl">🎟️</div>
                 <div className="text-purple-400 font-bold">{(wallet.tokens || 0).toLocaleString()}</div>
-                <div className="text-gray-400 text-xs">Tokens</div>
+                <div className="text-stitch-muted text-xs">Tokens</div>
               </div>
               <div className="bg-[#1a1320] rounded-lg p-2 text-center">
                 <div className="text-2xl">🔑</div>
                 <div className="text-mcu-red font-bold">{wallet.keys || 0}</div>
-                <div className="text-gray-400 text-xs">Keys</div>
+                <div className="text-stitch-muted text-xs">Keys</div>
               </div>
             </div>
           </div>
 
           {/* Key Allocation Advisor */}
-          <div className={`cosmic-glass p-5 mb-4 border-l-4 ${
+          <div className={`stitch-card p-5 mb-4 border-l-4 ${
             recommendation.urgent ? 'border-mcu-blue' : 'border-mcu-gold'
           }`}>
             <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-2">Key Allocation Advisor</h3>
@@ -5422,7 +5589,7 @@ RESPONSE GUIDELINES:
             {rewards.series4 && (
               <div className="mt-3 space-y-2">
                 <div>
-                  <div className="flex justify-between text-xs text-gray-400 mb-1">
+                  <div className="flex justify-between text-xs text-stitch-muted mb-1">
                     <span>Spotlight Key Pity</span>
                     <span>{rewards.spotlightKey?.current || 0}/{rewards.spotlightKey?.max || 4}</span>
                   </div>
@@ -5431,7 +5598,7 @@ RESPONSE GUIDELINES:
                   </div>
                 </div>
                 <div>
-                  <div className="flex justify-between text-xs text-gray-400 mb-1">
+                  <div className="flex justify-between text-xs text-stitch-muted mb-1">
                     <span>S4 Pity</span>
                     <span>{rewards.series4?.current || 0}/{rewards.series4?.max || 40}</span>
                   </div>
@@ -5441,7 +5608,7 @@ RESPONSE GUIDELINES:
                 </div>
                 {rewards.series5 && (
                   <div>
-                    <div className="flex justify-between text-xs text-gray-400 mb-1">
+                    <div className="flex justify-between text-xs text-stitch-muted mb-1">
                       <span>S5 Pity</span>
                       <span>{rewards.series5?.current || 0}/{rewards.series5?.max || 50}</span>
                     </div>
@@ -5455,7 +5622,7 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Token Shop Planner */}
-          <div className="cosmic-glass p-5 mb-4">
+          <div className="stitch-card p-5 mb-4">
             <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Token Shop</h3>
             {affordableItems.length > 0 ? (
               <div className="space-y-2">
@@ -5469,7 +5636,7 @@ RESPONSE GUIDELINES:
               </div>
             ) : tokenshop.items?.length > 0 ? (
               <div>
-                <p className="text-gray-400 text-sm mb-2">Saving up for:</p>
+                <p className="text-stitch-muted text-sm mb-2">Saving up for:</p>
                 {tokenshop.items.slice(0, 3).map((item, i) => (
                   <div key={i} className="flex justify-between items-center text-sm mb-1">
                     <span className="text-gray-300">{item.name}</span>
@@ -5478,29 +5645,29 @@ RESPONSE GUIDELINES:
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400">Import game data to see token shop items.</p>
+              <p className="text-stitch-muted">Import game data to see token shop items.</p>
             )}
           </div>
 
           {/* Credit Burn Optimizer */}
-          <div className="cosmic-glass p-5">
+          <div className="stitch-card p-5">
             <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Credit Optimizer</h3>
             <div className="text-white mb-2">
               With <span className="text-green-400 font-bold">{wallet.credits?.toLocaleString()}</span> credits, you can do:
             </div>
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div className="bg-[#1a1320] rounded p-2">
-                <div className="text-gray-400">Common → Uncommon</div>
+                <div className="text-stitch-muted">Common → Uncommon</div>
                 <div className="text-white font-bold">{maxCheapUpgrades}x</div>
                 <div className="text-green-400 text-xs">+{maxCheapUpgrades} CL</div>
               </div>
               <div className="bg-[#1a1320] rounded p-2">
-                <div className="text-gray-400">Rare → Epic</div>
+                <div className="text-stitch-muted">Rare → Epic</div>
                 <div className="text-white font-bold">{Math.floor(wallet.credits / 100)}x</div>
                 <div className="text-green-400 text-xs">+{Math.floor(wallet.credits / 100) * 4} CL</div>
               </div>
             </div>
-            <p className="text-gray-400 text-xs mt-2">
+            <p className="text-stitch-muted text-xs mt-2">
               Check the Plan tab for booster-optimized upgrade suggestions.
             </p>
           </div>
@@ -5591,7 +5758,7 @@ RESPONSE GUIDELINES:
           <Header title="BOARD SNAPSHOT" />
 
           {/* Instructions */}
-          <div className="cosmic-glass p-4 mb-4 text-sm">
+          <div className="stitch-card p-4 mb-4 text-sm">
             <p className="text-gray-300">
               <span className="text-mcu-gold font-bold">How to use:</span> Tap cards below to add them to lanes.
               Set opponent power, then copy to share with AI advisor.
@@ -5601,8 +5768,8 @@ RESPONSE GUIDELINES:
           {/* Board - 3 Lanes */}
           <div className="grid grid-cols-3 gap-2 mb-4">
             {lanes.map((lane, laneIndex) => (
-              <div key={laneIndex} className="cosmic-glass p-3 min-h-32">
-                <div className="text-center text-gray-400 text-xs mb-2">Lane {laneIndex + 1}</div>
+              <div key={laneIndex} className="stitch-card p-3 min-h-32">
+                <div className="text-center text-stitch-muted text-xs mb-2">Lane {laneIndex + 1}</div>
 
                 {/* Cards in lane */}
                 <div className="space-y-1 mb-2">
@@ -5627,7 +5794,7 @@ RESPONSE GUIDELINES:
                 <div className="text-center border-t border-[rgba(173,43,238,0.2)] pt-2">
                   <div className="text-mcu-blue font-bold">{lanePowers[laneIndex]}</div>
                   <div className="flex items-center justify-center gap-1 mt-1">
-                    <span className="text-xs text-gray-400">vs</span>
+                    <span className="text-xs text-stitch-muted">vs</span>
                     <input
                       type="number"
                       value={opponentPower[laneIndex]}
@@ -5646,15 +5813,15 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Power Summary */}
-          <div className="flex justify-between items-center cosmic-glass p-4 mb-4">
+          <div className="flex justify-between items-center stitch-card p-4 mb-4">
             <div className="text-center">
               <div className="text-mcu-blue text-xl font-bold">{totalPower}</div>
-              <div className="text-gray-400 text-xs">Your Power</div>
+              <div className="text-stitch-muted text-xs">Your Power</div>
             </div>
-            <div className="text-gray-400 text-lg">vs</div>
+            <div className="text-stitch-muted text-lg">vs</div>
             <div className="text-center">
               <div className="text-red-400 text-xl font-bold">{totalOpponentPower}</div>
-              <div className="text-gray-400 text-xs">Opponent</div>
+              <div className="text-stitch-muted text-xs">Opponent</div>
             </div>
           </div>
 
@@ -5680,7 +5847,7 @@ RESPONSE GUIDELINES:
               <div className="text-center mb-3">
                 <span className="text-white">Place </span>
                 <span className="text-mcu-gold font-bold">{selectedCard.name}</span>
-                <span className="text-gray-400"> ({selectedCard.power} power)</span>
+                <span className="text-stitch-muted"> ({selectedCard.power} power)</span>
               </div>
               <div className="grid grid-cols-3 gap-2 mb-2">
                 {[0, 1, 2].map(laneIdx => (
@@ -5709,7 +5876,7 @@ RESPONSE GUIDELINES:
           )}
 
           {/* Card Search & Selection */}
-          <div className="cosmic-glass p-5">
+          <div className="stitch-card p-5">
             <input
               type="text"
               placeholder="Search cards..."
@@ -5769,7 +5936,7 @@ RESPONSE GUIDELINES:
       return (
         <div className="px-4 pb-20">
           <Header title="SNAP CALCULATOR" />
-          <div className={`cosmic-glass ${rec.bgColor} p-6 mb-4 text-center ${rec.animate ? 'arc-pulse' : ''}`}>
+          <div className={`stitch-card ${rec.bgColor} p-6 mb-4 text-center ${rec.animate ? 'arc-pulse' : ''}`}>
             <div className="text-4xl font-hero text-white mb-2 mcu-text-glow">{rec.action}</div>
             <div className="text-white/80">
               {rec.action === 'SNAP' && 'The odds favor you. Make your move!'}
@@ -5777,39 +5944,39 @@ RESPONSE GUIDELINES:
               {rec.action === 'RETREAT' && 'Live to fight another match.'}
             </div>
           </div>
-          <div className="cosmic-glass p-5 mb-4">
+          <div className="stitch-card p-5 mb-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-white font-medium">Current Turn</span>
               <span className="text-mcu-gold font-bold text-xl">{turn}</span>
             </div>
             <input type="range" min="1" max="7" value={turn} onChange={(e) => setTurn(parseInt(e.target.value))} className="w-full" />
-            <div className="text-center text-sm text-gray-400 mt-2">Cards seen: {cardsSeen}/12</div>
+            <div className="text-center text-sm text-stitch-muted mt-2">Cards seen: {cardsSeen}/12</div>
           </div>
-          <div className="cosmic-glass p-5 mb-4">
+          <div className="stitch-card p-5 mb-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-white font-medium">Win Confidence</span>
               <span className={`font-bold text-xl ${confidence >= 70 ? 'text-green-400' : confidence >= 45 ? 'text-yellow-400' : 'text-red-400'}`}>{confidence}%</span>
             </div>
             <input type="range" min="0" max="100" value={confidence} onChange={(e) => setConfidence(parseInt(e.target.value))} className="w-full" />
           </div>
-          <div className="cosmic-glass p-5">
+          <div className="stitch-card p-5">
             <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Draw Probability</h3>
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div>
-                <label htmlFor="cards-to-draw" className="text-sm text-gray-400">Cards to Draw</label>
+                <label htmlFor="cards-to-draw" className="text-sm text-stitch-muted">Cards to Draw</label>
                 <input id="cards-to-draw" type="number" min="1" max="12" value={cardsToDraw}
                   onChange={(e) => setCardsToDraw(Math.max(1, Math.min(12, parseInt(e.target.value) || 1)))}
                   className="w-full bg-[#1a1320] text-white rounded px-3 py-2 mt-1 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
               </div>
               <div>
-                <label htmlFor="copies-in-deck" className="text-sm text-gray-400">Copies in Deck</label>
+                <label htmlFor="copies-in-deck" className="text-sm text-stitch-muted">Copies in Deck</label>
                 <input id="copies-in-deck" type="number" min="1" max="4" value={copiesInDeck}
                   onChange={(e) => setCopiesInDeck(Math.max(1, Math.min(4, parseInt(e.target.value) || 1)))}
                   className="w-full bg-[#1a1320] text-white rounded px-3 py-2 mt-1 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
               </div>
             </div>
             <div className="bg-[#1a1320] rounded-lg p-4 text-center">
-              <div className="text-gray-400 text-sm mb-1">Probability of drawing at least 1:</div>
+              <div className="text-stitch-muted text-sm mb-1">Probability of drawing at least 1:</div>
               <div className={`text-3xl font-display font-bold ${drawProbability >= 70 ? 'text-green-400' : drawProbability >= 40 ? 'text-mcu-gold' : 'text-mcu-red'}`}>
                 {drawProbability.toFixed(1)}%
               </div>
@@ -6506,7 +6673,7 @@ RESPONSE GUIDELINES:
             <div className={`${color} h-full`} style={{ width: `${Math.min(100, value)}%` }} />
           </div>
           <span className="text-white text-sm w-16 text-right">{value.toFixed(1)}%</span>
-          {label && <span className="text-gray-400 text-xs">{label}</span>}
+          {label && <span className="text-stitch-muted text-xs">{label}</span>}
         </div>
       );
 
@@ -6515,10 +6682,10 @@ RESPONSE GUIDELINES:
           <Header title="DECK SIMULATOR" />
 
           {/* Deck Selector */}
-          <div className="cosmic-glass p-5 mb-4">
-            <label className="block text-sm text-gray-400 mb-2">Select Deck</label>
+          <div className="stitch-card p-5 mb-4">
+            <label className="block text-sm text-stitch-muted mb-2">Select Deck</label>
             {decks.length === 0 ? (
-              <div className="text-center text-gray-400 py-4">
+              <div className="text-center text-stitch-muted py-4">
                 <p className="mb-2">No decks created yet</p>
                 <p className="text-sm">Go to Decks tab to create a 12-card deck</p>
               </div>
@@ -6554,8 +6721,8 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Mode Selector */}
-          <div className="cosmic-glass p-5 mb-4">
-            <label className="block text-sm text-gray-400 mb-2">Simulation Mode</label>
+          <div className="stitch-card p-5 mb-4">
+            <label className="block text-sm text-stitch-muted mb-2">Simulation Mode</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {[
                 { id: 'opening', label: 'Opening Hand', icon: '🃏' },
@@ -6583,7 +6750,7 @@ RESPONSE GUIDELINES:
 
           {/* Run Controls (not for play-through mode) */}
           {mode !== 'play' && (
-            <div className="cosmic-glass p-5 mb-4">
+            <div className="stitch-card p-5 mb-4">
               <div className="flex gap-2 mb-3">
                 <button
                   onClick={() => setNumRuns(1000)}
@@ -6630,7 +6797,7 @@ RESPONSE GUIDELINES:
                 <div className="space-y-2">
                   <ProgressBar value={progress} />
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-400">{Math.round(progress * 100)}% complete</span>
+                    <span className="text-sm text-stitch-muted">{Math.round(progress * 100)}% complete</span>
                     <button
                       onClick={cancelSimulation}
                       className="px-4 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
@@ -6652,7 +6819,7 @@ RESPONSE GUIDELINES:
           )}
 
           {/* Advanced Rules Panel */}
-          <div className="cosmic-glass mb-4 overflow-hidden">
+          <div className="stitch-card mb-4 overflow-hidden">
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}
               className="w-full p-4 flex justify-between items-center text-left"
@@ -6660,7 +6827,7 @@ RESPONSE GUIDELINES:
               <span className="text-white font-medium">
                 Advanced Rules {isAdvancedModified && <span className="text-mcu-gold text-xs ml-2">(Modified)</span>}
               </span>
-              <span className="text-gray-400">{showAdvanced ? '▲' : '▼'}</span>
+              <span className="text-stitch-muted">{showAdvanced ? '▲' : '▼'}</span>
             </button>
 
             {showAdvanced && (
@@ -6673,7 +6840,7 @@ RESPONSE GUIDELINES:
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs text-gray-400 mb-1">Starting Hand Size</label>
+                    <label className="block text-xs text-stitch-muted mb-1">Starting Hand Size</label>
                     <input
                       type="number"
                       value={advancedOptions.handSize}
@@ -6682,7 +6849,7 @@ RESPONSE GUIDELINES:
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-400 mb-1">Extra Draws/Turn</label>
+                    <label className="block text-xs text-stitch-muted mb-1">Extra Draws/Turn</label>
                     <input
                       type="number"
                       value={advancedOptions.extraDrawsPerTurn}
@@ -6691,7 +6858,7 @@ RESPONSE GUIDELINES:
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-400 mb-1">Thinning/Turn</label>
+                    <label className="block text-xs text-stitch-muted mb-1">Thinning/Turn</label>
                     <input
                       type="number"
                       value={advancedOptions.thinningPerTurn}
@@ -6700,7 +6867,7 @@ RESPONSE GUIDELINES:
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-400 mb-1">Junk Inserts/Turn</label>
+                    <label className="block text-xs text-stitch-muted mb-1">Junk Inserts/Turn</label>
                     <input
                       type="number"
                       value={advancedOptions.junkInsertsPerTurn}
@@ -6709,7 +6876,7 @@ RESPONSE GUIDELINES:
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-xs text-gray-400 mb-1">Hand Size Limit (0 = unlimited)</label>
+                    <label className="block text-xs text-stitch-muted mb-1">Hand Size Limit (0 = unlimited)</label>
                     <input
                       type="number"
                       value={advancedOptions.handSizeLimit}
@@ -6731,8 +6898,8 @@ RESPONSE GUIDELINES:
 
           {/* Combo Card Selector (for combo mode) */}
           {mode === 'combo' && selectedDeck && (
-            <div className="cosmic-glass p-5 mb-4">
-              <label className="block text-sm text-gray-400 mb-2">Select Combo Pieces (click cards)</label>
+            <div className="stitch-card p-5 mb-4">
+              <label className="block text-sm text-stitch-muted mb-2">Select Combo Pieces (click cards)</label>
               <div className="flex flex-wrap gap-1 mb-3">
                 {selectedDeck.cards.map(cardName => {
                   const isSelected = comboCards.includes(cardName);
@@ -6753,7 +6920,7 @@ RESPONSE GUIDELINES:
                 })}
               </div>
               {comboCards.length < 2 && (
-                <p className="text-sm text-gray-400">Select at least 2 cards to analyze combo probability</p>
+                <p className="text-sm text-stitch-muted">Select at least 2 cards to analyze combo probability</p>
               )}
               {comboCards.length >= 2 && (
                 <p className="text-sm text-mcu-gold">Combo: {comboCards.join(' + ')}</p>
@@ -6766,9 +6933,9 @@ RESPONSE GUIDELINES:
             <div className="space-y-4">
               {/* Opening Hand Results */}
               {(mode === 'opening' || mode === 'advanced') && (
-                <div className="cosmic-glass p-5">
+                <div className="stitch-card p-5">
                   <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Opening Hand Probability</h3>
-                  <p className="text-xs text-gray-400 mb-3">Chance of each card in starting hand ({advancedOptions.handSize} cards)</p>
+                  <p className="text-xs text-stitch-muted mb-3">Chance of each card in starting hand ({advancedOptions.handSize} cards)</p>
 
                   {!isAdvancedModified && exactResults && (
                     <div className="mb-3 p-2 bg-[#1a1320] rounded text-xs text-gray-300">
@@ -6783,7 +6950,7 @@ RESPONSE GUIDELINES:
                         <div key={name}>
                           <div className="flex justify-between text-sm mb-1">
                             <span className="text-white">{name}</span>
-                            <span className="text-gray-400">{prob.toFixed(1)}%</span>
+                            <span className="text-stitch-muted">{prob.toFixed(1)}%</span>
                           </div>
                           <PercentBar value={prob} />
                         </div>
@@ -6792,7 +6959,7 @@ RESPONSE GUIDELINES:
 
                   {results.sampleHands.length > 0 && (
                     <div className="mt-4 pt-4 border-t border-[rgba(173,43,238,0.2)]">
-                      <h4 className="text-sm text-gray-400 mb-2">Sample Opening Hands</h4>
+                      <h4 className="text-sm text-stitch-muted mb-2">Sample Opening Hands</h4>
                       <div className="space-y-1 max-h-40 overflow-y-auto">
                         {results.sampleHands.slice(0, 5).map((hand, i) => (
                           <div key={i} className="flex gap-1 flex-wrap">
@@ -6810,14 +6977,14 @@ RESPONSE GUIDELINES:
 
               {/* Draw by Turn Results */}
               {(mode === 'draw' || mode === 'advanced') && (
-                <div className="cosmic-glass p-5">
+                <div className="stitch-card p-5">
                   <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Draw by Turn Probability</h3>
-                  <p className="text-xs text-gray-400 mb-3">Chance of having each card by end of turn</p>
+                  <p className="text-xs text-stitch-muted mb-3">Chance of having each card by end of turn</p>
 
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="text-gray-400">
+                        <tr className="text-stitch-muted">
                           <th className="text-left py-1">Card</th>
                           {[1,2,3,4,5,6].map(t => (
                             <th key={t} className="text-center py-1 w-12">T{t}</th>
@@ -6829,7 +6996,7 @@ RESPONSE GUIDELINES:
                           <tr key={name} className="border-t border-[rgba(173,43,238,0.2)]">
                             <td className="py-1 text-white text-xs">{name}</td>
                             {turns.slice(1).map((prob, i) => (
-                              <td key={i} className={`text-center py-1 ${prob >= 70 ? 'text-green-400' : prob >= 40 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                              <td key={i} className={`text-center py-1 ${prob >= 70 ? 'text-green-400' : prob >= 40 ? 'text-yellow-400' : 'text-stitch-muted'}`}>
                                 {prob.toFixed(0)}%
                               </td>
                             ))}
@@ -6843,16 +7010,16 @@ RESPONSE GUIDELINES:
 
               {/* Curve Analysis Results */}
               {(mode === 'curve' || mode === 'advanced') && (
-                <div className="cosmic-glass p-5">
+                <div className="stitch-card p-5">
                   <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Curve / Brick Analysis</h3>
-                  <p className="text-xs text-gray-400 mb-3">On-curve = have at least one playable card that turn</p>
+                  <p className="text-xs text-stitch-muted mb-3">On-curve = have at least one playable card that turn</p>
 
                   <div className="space-y-3">
                     {results.curveAnalysis.map(({ turn, onCurveRate, brickRate, avgPlayableEnergy }) => (
                       <div key={turn}>
                         <div className="flex justify-between text-sm mb-1">
                           <span className="text-white">Turn {turn}</span>
-                          <span className="text-gray-400">
+                          <span className="text-stitch-muted">
                             <span className={onCurveRate >= 90 ? 'text-green-400' : onCurveRate >= 70 ? 'text-yellow-400' : 'text-red-400'}>
                               {onCurveRate.toFixed(1)}% playable
                             </span>
@@ -6878,13 +7045,13 @@ RESPONSE GUIDELINES:
                       <div className="text-2xl font-bold text-green-400">
                         {(results.curveAnalysis.reduce((sum, a) => sum + a.onCurveRate, 0) / 6).toFixed(1)}%
                       </div>
-                      <div className="text-xs text-gray-400">Avg On-Curve Rate</div>
+                      <div className="text-xs text-stitch-muted">Avg On-Curve Rate</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-red-400">
                         {(results.curveAnalysis.reduce((sum, a) => sum + a.brickRate, 0) / 6).toFixed(1)}%
                       </div>
-                      <div className="text-xs text-gray-400">Avg Brick Rate</div>
+                      <div className="text-xs text-stitch-muted">Avg Brick Rate</div>
                     </div>
                   </div>
                 </div>
@@ -6892,9 +7059,9 @@ RESPONSE GUIDELINES:
 
               {/* Combo Results */}
               {(mode === 'combo' || mode === 'advanced') && comboCards.length >= 2 && (
-                <div className="cosmic-glass p-5">
+                <div className="stitch-card p-5">
                   <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Combo Finder Results</h3>
-                  <p className="text-xs text-gray-400 mb-3">Chance of having ALL pieces: {comboCards.join(' + ')}</p>
+                  <p className="text-xs text-stitch-muted mb-3">Chance of having ALL pieces: {comboCards.join(' + ')}</p>
 
                   <div className="space-y-2">
                     {Object.entries(results.comboResults).map(([turn, prob]) => (
@@ -6925,7 +7092,7 @@ RESPONSE GUIDELINES:
           {/* Interactive Play-Through Mode */}
           {mode === 'play' && (
             <div className="space-y-4">
-              <div className="cosmic-glass p-5">
+              <div className="stitch-card p-5">
                 <div className="flex gap-2 mb-4">
                   <button
                     onClick={startNewGame}
@@ -6952,13 +7119,13 @@ RESPONSE GUIDELINES:
 
                 {playState && (
                   <>
-                    <div className="flex justify-between text-sm text-gray-400 mb-3">
+                    <div className="flex justify-between text-sm text-stitch-muted mb-3">
                       <span>Turn: <span className="text-white font-bold">{playState.turn}</span></span>
                       <span>Deck: <span className="text-white">{playState.deck.length} cards</span></span>
                     </div>
 
                     <div className="mb-4">
-                      <h4 className="text-sm text-gray-400 mb-2">Your Hand ({playState.hand.length} cards)</h4>
+                      <h4 className="text-sm text-stitch-muted mb-2">Your Hand ({playState.hand.length} cards)</h4>
                       <div className="flex flex-wrap gap-2">
                         {playState.hand.map((card, i) => (
                           <div
@@ -6988,10 +7155,10 @@ RESPONSE GUIDELINES:
                     )}
 
                     <div className="mt-4 pt-4 border-t border-[rgba(173,43,238,0.2)]">
-                      <h4 className="text-sm text-gray-400 mb-2">Remaining Deck</h4>
+                      <h4 className="text-sm text-stitch-muted mb-2">Remaining Deck</h4>
                       <div className="flex flex-wrap gap-1">
                         {playState.deck.map((card, i) => (
-                          <span key={i} className="text-xs px-2 py-0.5 bg-[#1a1320] text-gray-400 rounded">
+                          <span key={i} className="text-xs px-2 py-0.5 bg-[#1a1320] text-stitch-muted rounded">
                             ?
                           </span>
                         ))}
@@ -7001,7 +7168,7 @@ RESPONSE GUIDELINES:
                 )}
 
                 {!playState && selectedDeck && (
-                  <div className="text-center text-gray-400 py-8">
+                  <div className="text-center text-stitch-muted py-8">
                     <p className="mb-2">Click "New Game" to start a simulation</p>
                     <p className="text-sm">Deck: {selectedDeck.name}</p>
                   </div>
@@ -7012,27 +7179,27 @@ RESPONSE GUIDELINES:
 
           {/* Info Panel */}
           {!results && mode !== 'play' && selectedDeck && (
-            <div className="cosmic-glass p-5">
+            <div className="stitch-card p-5">
               <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-2">Simulation Info</h3>
-              <p className="text-sm text-gray-400 mb-3">
+              <p className="text-sm text-stitch-muted mb-3">
                 Marvel Snap draws 3 cards initially, then 1 per turn. By turn 6, you've seen 9 of 12 cards.
               </p>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="bg-[#1a1320] rounded p-2 text-center">
                   <div className="text-mcu-blue font-bold">12</div>
-                  <div className="text-gray-400 text-xs">Deck Size</div>
+                  <div className="text-stitch-muted text-xs">Deck Size</div>
                 </div>
                 <div className="bg-[#1a1320] rounded p-2 text-center">
                   <div className="text-mcu-blue font-bold">3</div>
-                  <div className="text-gray-400 text-xs">Starting Hand</div>
+                  <div className="text-stitch-muted text-xs">Starting Hand</div>
                 </div>
                 <div className="bg-[#1a1320] rounded p-2 text-center">
                   <div className="text-mcu-blue font-bold">1</div>
-                  <div className="text-gray-400 text-xs">Draw/Turn</div>
+                  <div className="text-stitch-muted text-xs">Draw/Turn</div>
                 </div>
                 <div className="bg-[#1a1320] rounded p-2 text-center">
                   <div className="text-mcu-blue font-bold">9</div>
-                  <div className="text-gray-400 text-xs">Cards by T6</div>
+                  <div className="text-stitch-muted text-xs">Cards by T6</div>
                 </div>
               </div>
             </div>
@@ -7055,24 +7222,24 @@ RESPONSE GUIDELINES:
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div className="bg-[#1a1320] rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-white">{matches.length}</div>
-                <div className="text-xs text-gray-400">New Matches</div>
+                <div className="text-xs text-stitch-muted">New Matches</div>
               </div>
               <div className="bg-[#1a1320] rounded-lg p-3 text-center">
-                <div className="text-2xl font-bold text-gray-400">{skippedCount}</div>
-                <div className="text-xs text-gray-400">Duplicates Skipped</div>
+                <div className="text-2xl font-bold text-stitch-muted">{skippedCount}</div>
+                <div className="text-xs text-stitch-muted">Duplicates Skipped</div>
               </div>
               <div className="bg-green-900/50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-green-400">{wins}</div>
-                <div className="text-xs text-gray-400">Wins</div>
+                <div className="text-xs text-stitch-muted">Wins</div>
               </div>
               <div className="bg-red-900/50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-red-400">{losses}</div>
-                <div className="text-xs text-gray-400">Losses</div>
+                <div className="text-xs text-stitch-muted">Losses</div>
               </div>
             </div>
 
             <div className="bg-[#1a1320] rounded-lg p-3 mb-4 text-center">
-              <div className="text-xs text-gray-400 mb-1">Net Cubes from Import</div>
+              <div className="text-xs text-stitch-muted mb-1">Net Cubes from Import</div>
               <div className={`text-2xl font-bold ${totalCubes >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {totalCubes >= 0 ? '+' : ''}{totalCubes}
               </div>
@@ -7088,11 +7255,11 @@ RESPONSE GUIDELINES:
                     }`}>
                       <span className={m.result === 'WIN' ? 'text-green-400' : 'text-red-400'}>{m.result}</span>
                       <span className="text-white">{m.result === 'WIN' ? '+' : '-'}{m.cubes}</span>
-                      <span className="text-gray-400 text-xs">{formatDate(m.timestamp)}</span>
+                      <span className="text-stitch-muted text-xs">{formatDate(m.timestamp)}</span>
                     </div>
                   ))}
                   {matches.length > 5 && (
-                    <div className="text-center text-gray-400 text-xs py-1">...and {matches.length - 5} more</div>
+                    <div className="text-center text-stitch-muted text-xs py-1">...and {matches.length - 5} more</div>
                   )}
                 </div>
               </div>
@@ -7123,29 +7290,29 @@ RESPONSE GUIDELINES:
             <div className="bg-[#1a1320] rounded-lg p-4 mb-4">
               <div className="text-center mb-3">
                 <div className="text-3xl font-bold text-mcu-blue">{syncData.c?.length || 0}</div>
-                <div className="text-sm text-gray-400">Cards in Collection</div>
+                <div className="text-sm text-stitch-muted">Cards in Collection</div>
               </div>
               {syncData.s && (
                 <div className="grid grid-cols-3 gap-2 text-center text-sm">
                   <div>
                     <div className="text-green-400 font-bold">{syncData.s.wins || 0}</div>
-                    <div className="text-gray-400 text-xs">Wins</div>
+                    <div className="text-stitch-muted text-xs">Wins</div>
                   </div>
                   <div>
                     <div className="text-red-400 font-bold">{syncData.s.losses || 0}</div>
-                    <div className="text-gray-400 text-xs">Losses</div>
+                    <div className="text-stitch-muted text-xs">Losses</div>
                   </div>
                   <div>
                     <div className={`font-bold ${(syncData.s.cubes || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {(syncData.s.cubes || 0) >= 0 ? '+' : ''}{syncData.s.cubes || 0}
                     </div>
-                    <div className="text-gray-400 text-xs">Cubes</div>
+                    <div className="text-stitch-muted text-xs">Cubes</div>
                   </div>
                 </div>
               )}
             </div>
 
-            <p className="text-gray-400 text-sm mb-4 text-center">
+            <p className="text-stitch-muted text-sm mb-4 text-center">
               This will merge the synced collection with your current data.
             </p>
 
@@ -8389,16 +8556,20 @@ RESPONSE GUIDELINES:
             const response = await fetchWithCorsProxy('https://marvelsnap.io/api/search.php?database&limit=500');
             if (response.ok) {
               const data = await response.json();
-              normalizedCards = (data || []).filter(c => c.type === 'Character').map(card => ({
-                name: card.name,
-                cost: parseInt(card.cost) || 0,
-                power: parseInt(card.power) || 0,
-                ability: card.ability || '',
-                series: card.pool?.includes('Pool 1') || card.pool?.includes('Starter') ? 1 :
-                        card.pool?.includes('Pool 2') ? 2 :
-                        card.pool?.includes('Pool 3') ? 3 :
-                        card.pool?.includes('Series 4') ? 4 : 5
-              }));
+              normalizedCards = (data || []).filter(c => c.type === 'Character').map(card => {
+                const slug = (card.slug || card.name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                return {
+                  name: card.name,
+                  cost: parseInt(card.cost) || 0,
+                  power: parseInt(card.power) || 0,
+                  ability: card.ability || '',
+                  series: card.pool?.includes('Pool 1') || card.pool?.includes('Starter') ? 1 :
+                          card.pool?.includes('Pool 2') ? 2 :
+                          card.pool?.includes('Pool 3') ? 3 :
+                          card.pool?.includes('Series 4') ? 4 : 5,
+                  art: card.art || card.imageUrl || (slug ? `${CARD_ART_CDN}${slug}.webp?v=787` : '')
+                };
+              });
             }
           } catch (e) {
             console.log('marvelsnap.io failed, trying MarvelSnapZone...', e.message);
@@ -8409,13 +8580,17 @@ RESPONSE GUIDELINES:
             const response = await fetchWithCorsProxy('https://marvelsnapzone.com/getinfo/?searchtype=cards&searchcardstype=true');
             if (!response.ok) throw new Error('Both APIs failed');
             const data = await response.json();
-            normalizedCards = (data.success?.cards || []).map(card => ({
-              name: card.name,
-              cost: parseInt(card.cost) || 0,
-              power: parseInt(card.power) || 0,
-              ability: card.ability || card.description || '',
-              series: parseInt(card.source?.match(/Series (\d)/)?.[1]) || 3
-            }));
+            normalizedCards = (data.success?.cards || []).map(card => {
+              const slug = (card.slug || card.name || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+              return {
+                name: card.name,
+                cost: parseInt(card.cost) || 0,
+                power: parseInt(card.power) || 0,
+                ability: card.ability || card.description || '',
+                series: parseInt(card.source?.match(/Series (\d)/)?.[1]) || 3,
+                art: card.art || card.imageUrl || (slug ? `${CARD_ART_CDN}${slug}.webp?v=787` : '')
+              };
+            });
           }
 
           if (normalizedCards.length > 0) {
@@ -8788,106 +8963,130 @@ RESPONSE GUIDELINES:
           <Header title="SETTINGS" />
 
           {/* App Info */}
-          <div className="cosmic-glass p-5 mb-4">
+          <div className="stitch-card p-5 mb-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-mcu-blue rounded-lg flex items-center justify-center">
                 <span className="text-2xl font-display font-bold text-white">S</span>
               </div>
               <div>
                 <div className="text-white font-bold">Snapapoulous Prime</div>
-                <div className="text-gray-400 text-sm">v2.5.0 - Player-Centric Collection</div>
+                <div className="text-stitch-muted text-sm">v3.0.0 - Stitch Design Rebuild</div>
               </div>
             </div>
           </div>
 
           {/* Quick Navigation - More Features */}
-          <div className="cosmic-glass p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">More Features</h3>
+          <div className="stitch-card p-5 mb-4">
+            <div className="stitch-section-header">
+              <span className="material-symbols-outlined" aria-hidden="true">apps</span>
+              More Features
+            </div>
             <div className="grid grid-cols-3 gap-2">
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'missions' }))}
-                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'profile' }))}
+                className="stitch-list-item p-3 flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">assignment</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">person</span>
+                <span className="text-white text-sm">Profile</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'meta' }))}
+                className="stitch-list-item p-3 flex flex-col items-center"
+              >
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">leaderboard</span>
+                <span className="text-white text-sm">Meta Tiers</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'ai' }))}
+                className="stitch-list-item p-3 flex flex-col items-center"
+              >
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">smart_toy</span>
+                <span className="text-white text-sm">AI Advisor</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'missions' }))}
+                className="stitch-list-item p-3 flex flex-col items-center"
+              >
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">assignment</span>
                 <span className="text-white text-sm">Missions</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'battlepass' }))}
-                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="stitch-list-item p-3 flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">confirmation_number</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">confirmation_number</span>
                 <span className="text-white text-sm">Battle Pass</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'armor' }))}
-                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="stitch-list-item p-3 flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">military_tech</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">military_tech</span>
                 <span className="text-white text-sm">Hall of Armor</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'calculator' }))}
-                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="stitch-list-item p-3 flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">calculate</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">calculate</span>
                 <span className="text-white text-sm">Calculator</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'decks' }))}
-                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="stitch-list-item p-3 flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">style</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">style</span>
                 <span className="text-white text-sm">Decks</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'simulator' }))}
-                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="stitch-list-item p-3 flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">sports_esports</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">sports_esports</span>
                 <span className="text-white text-sm">Simulator</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'economy' }))}
-                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="stitch-list-item p-3 flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">account_balance</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">account_balance</span>
                 <span className="text-white text-sm">Economy HQ</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'board' }))}
-                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="stitch-list-item p-3 flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">target</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">target</span>
                 <span className="text-white text-sm">Board Snap</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'oracle' }))}
-                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="stitch-list-item p-3 flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">auto_awesome</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">auto_awesome</span>
                 <span className="text-white text-sm">Oracle</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'history' }))}
-                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="stitch-list-item p-3 flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">history</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">history</span>
                 <span className="text-white text-sm">Match History</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'planner' }))}
-                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="stitch-list-item p-3 flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">upgrade</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">upgrade</span>
                 <span className="text-white text-sm">Upgrade Plan</span>
               </button>
             </div>
           </div>
 
           {/* PC Game Data Sync - Phase 5 */}
-          <div className="cosmic-glass p-5 mb-4 pc-sync-section">
+          <div className="stitch-card p-5 mb-4 pc-sync-section">
             <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">PC Game Data Sync</h3>
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-stitch-muted text-sm mb-4">
               Import your collection, stats, and card performance directly from game files.
             </p>
 
@@ -8908,9 +9107,9 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* QR Sync - Phase 4 */}
-          <div className="cosmic-glass p-5 mb-4">
+          <div className="stitch-card p-5 mb-4">
             <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Cross-Device Sync</h3>
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-stitch-muted text-sm mb-4">
               Generate a QR code to quickly sync your collection to another device.
             </p>
 
@@ -8945,7 +9144,7 @@ RESPONSE GUIDELINES:
                     >
                       ← Prev
                     </button>
-                    <span className="text-gray-400 text-sm">
+                    <span className="text-stitch-muted text-sm">
                       QR {qrPartIndex + 1} of {qrCodeParts.length}
                     </span>
                     <button
@@ -8961,7 +9160,7 @@ RESPONSE GUIDELINES:
                     </button>
                   </div>
                 ) : null}
-                <p className="text-gray-400 text-xs">Scan with your phone camera to sync collection</p>
+                <p className="text-stitch-muted text-xs">Scan with your phone camera to sync collection</p>
               </div>
             )}
 
@@ -9027,7 +9226,7 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* AI Provider Configuration */}
-          <div className="cosmic-glass p-5 mb-4">
+          <div className="stitch-card p-5 mb-4">
             <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-4">AI Provider</h3>
 
             {/* Google OAuth - Primary */}
@@ -9039,7 +9238,7 @@ RESPONSE GUIDELINES:
                 </div>
                 <StatusBadge status={testStatus['gemini-oauth']} />
               </div>
-              <p className="text-gray-400 text-sm mb-3">One-click sign in, no API key needed</p>
+              <p className="text-stitch-muted text-sm mb-3">One-click sign in, no API key needed</p>
 
               {googleSignedIn ? (
                 <div className="space-y-2">
@@ -9056,7 +9255,7 @@ RESPONSE GUIDELINES:
                   {/* Model selector for Gemini OAuth */}
                   {aiConfig.provider === 'gemini-oauth' && (
                     <div className="mt-2">
-                      <label className="text-gray-400 text-xs mb-1 block">Select Model:</label>
+                      <label className="text-stitch-muted text-xs mb-1 block">Select Model:</label>
                       <select
                         value={aiConfig.model || AIProviders['gemini-oauth'].defaultModel}
                         onChange={(e) => setAiConfig(prev => ({ ...prev, model: e.target.value }))}
@@ -9087,7 +9286,7 @@ RESPONSE GUIDELINES:
                   <span className="text-white font-medium">{provider.name}</span>
                   <StatusBadge status={testStatus[provider.id]} />
                 </div>
-                <p className="text-gray-400 text-xs mb-2">{provider.description}</p>
+                <p className="text-stitch-muted text-xs mb-2">{provider.description}</p>
                 <div className="flex gap-2">
                   <input type="password" placeholder="API Key..."
                     value={aiConfig.apiKeys?.[provider.id] || ''}
@@ -9114,7 +9313,7 @@ RESPONSE GUIDELINES:
 
             {/* Advanced Section */}
             <button onClick={() => setShowAdvanced(!showAdvanced)}
-              className="w-full flex items-center justify-between py-2 text-gray-400 hover:text-white">
+              className="w-full flex items-center justify-between py-2 text-stitch-muted hover:text-white">
               <span className="text-sm">Advanced Options</span>
               <span>{showAdvanced ? '▲' : '▼'}</span>
             </button>
@@ -9127,7 +9326,7 @@ RESPONSE GUIDELINES:
                       <span className="text-white font-medium">{provider.name}</span>
                       <StatusBadge status={testStatus[provider.id]} />
                     </div>
-                    <p className="text-gray-400 text-xs mb-2">{provider.description}</p>
+                    <p className="text-stitch-muted text-xs mb-2">{provider.description}</p>
                     <div className="flex gap-2">
                       <input type="text"
                         placeholder="http://localhost:11434"
@@ -9161,9 +9360,9 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* AI Context Settings - Phase 4 */}
-          <div className="cosmic-glass p-5 mb-4">
+          <div className="stitch-card p-5 mb-4">
             <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">AI Context</h3>
-            <p className="text-gray-400 text-sm mb-3">
+            <p className="text-stitch-muted text-sm mb-3">
               Configure how much context Snapapoulous has access to for personalized advice.
             </p>
 
@@ -9204,16 +9403,16 @@ RESPONSE GUIDELINES:
 
             {settings.useSimplePersona && (
               <div className="mt-3 p-3 bg-[#1a1320] rounded-lg text-xs text-gray-300">
-                <p className="font-medium text-gray-400 mb-2">Simplified mode active:</p>
+                <p className="font-medium text-stitch-muted mb-2">Simplified mode active:</p>
                 <p>Basic stats only. Faster responses but less personalized advice.</p>
               </div>
             )}
           </div>
 
           {/* Card Database */}
-          <div className="cosmic-glass p-5 mb-4">
+          <div className="stitch-card p-5 mb-4">
             <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Card Database</h3>
-            <p className="text-gray-400 text-sm mb-3">Fetch latest card data from MarvelSnapZone. No API key required.</p>
+            <p className="text-stitch-muted text-sm mb-3">Fetch latest card data from MarvelSnapZone. No API key required.</p>
             <button onClick={refreshCardData} disabled={isRefreshingCards}
               className="w-full bg-series-3 text-white py-2 rounded hover:opacity-80 disabled:opacity-50">
               {isRefreshingCards ? 'Refreshing...' : 'Refresh Card Data'}
@@ -9224,9 +9423,9 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Performance Mode */}
-          <div className="cosmic-glass p-5 mb-4">
+          <div className="stitch-card p-5 mb-4">
             <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Performance Mode</h3>
-            <p className="text-gray-400 text-sm mb-3">
+            <p className="text-stitch-muted text-sm mb-3">
               Reduce animations and effects to improve performance on older devices or save battery.
             </p>
             <div className="grid grid-cols-3 gap-2">
@@ -9274,11 +9473,11 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Reduced Motion */}
-          <div className="cosmic-glass p-5 mb-4">
+          <div className="stitch-card p-5 mb-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-display font-semibold text-[#c75fff]">Reduce Motion</h3>
-                <p className="text-gray-400 text-sm mt-1">
+                <p className="text-stitch-muted text-sm mt-1">
                   Disable animations for accessibility or to reduce visual distractions.
                 </p>
               </div>
@@ -9309,7 +9508,7 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Export/Import */}
-          <div className="cosmic-glass p-5 mb-4">
+          <div className="stitch-card p-5 mb-4">
             <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Export Data</h3>
             <div className="space-y-2 mb-4">
               <button onClick={exportVault} className="w-full bg-mcu-gold text-black py-3 rounded-lg font-medium hover:bg-yellow-400 flex items-center justify-center gap-2">
@@ -9342,7 +9541,7 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Danger Zone */}
-          <div className="cosmic-glass p-5 border-red-500/50">
+          <div className="stitch-card p-5 border-red-500/50">
             <h3 className="text-lg font-display font-semibold text-mcu-red mb-3">Danger Zone</h3>
             <button onClick={() => {
               if (confirm('Clear ALL data including AI settings?')) {
@@ -9419,7 +9618,7 @@ RESPONSE GUIDELINES:
         const textColor = mission.completed ? 'text-series-2' : 'text-white';
 
         return (
-          <div className={`cosmic-glass p-5 border-l-4 ${borderColor} mb-3 ${mission.completed ? 'opacity-75' : ''}`}>
+          <div className={`stitch-card p-5 border-l-4 ${borderColor} mb-3 ${mission.completed ? 'opacity-75' : ''}`}>
             <div className="flex justify-between items-start mb-2">
               <p className={`font-medium ${textColor} flex-1`}>
                 {mission.description}
@@ -9435,7 +9634,7 @@ RESPONSE GUIDELINES:
                 target={mission.target}
                 completed={mission.completed}
               />
-              <span className={`text-sm ${mission.completed ? 'text-series-2' : 'text-gray-400'} whitespace-nowrap min-w-[60px] text-right`}>
+              <span className={`text-sm ${mission.completed ? 'text-series-2' : 'text-stitch-muted'} whitespace-nowrap min-w-[60px] text-right`}>
                 {mission.progress}/{mission.target}
               </span>
             </div>
@@ -9445,8 +9644,8 @@ RESPONSE GUIDELINES:
 
       // Empty state message
       const EmptyMissions = ({ type }) => (
-        <div className="cosmic-glass p-6 text-center">
-          <p className="text-gray-400">No {type} missions tracked yet.</p>
+        <div className="stitch-card p-6 text-center">
+          <p className="text-stitch-muted">No {type} missions tracked yet.</p>
           <p className="text-gray-500 text-sm mt-2">
             Import your game data to see missions here.
           </p>
@@ -9459,13 +9658,13 @@ RESPONSE GUIDELINES:
 
           {/* Overall Progress Summary */}
           <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className="cosmic-glass p-5 text-center">
+            <div className="stitch-card p-5 text-center">
               <div className="text-3xl font-display font-bold text-mcu-gold">{dailyProgress}%</div>
-              <div className="text-gray-400 text-sm">Daily Progress</div>
+              <div className="text-stitch-muted text-sm">Daily Progress</div>
             </div>
-            <div className="cosmic-glass p-5 text-center">
+            <div className="stitch-card p-5 text-center">
               <div className="text-3xl font-display font-bold text-mcu-gold">{weeklyProgress}%</div>
-              <div className="text-gray-400 text-sm">Weekly Progress</div>
+              <div className="text-stitch-muted text-sm">Weekly Progress</div>
             </div>
           </div>
 
@@ -9473,7 +9672,7 @@ RESPONSE GUIDELINES:
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xl font-display font-semibold text-[#c75fff]">Daily Missions</h2>
-              <span className="text-gray-400 text-sm">
+              <span className="text-stitch-muted text-sm">
                 {missions.dailyCompleted}/{missions.daily.length} Complete
               </span>
             </div>
@@ -9490,7 +9689,7 @@ RESPONSE GUIDELINES:
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xl font-display font-semibold text-[#c75fff]">Weekly Missions</h2>
-              <span className="text-gray-400 text-sm">
+              <span className="text-stitch-muted text-sm">
                 {missions.weeklyCompleted}/{missions.weekly.length} Complete
               </span>
             </div>
@@ -9505,7 +9704,7 @@ RESPONSE GUIDELINES:
 
           {/* Info Note */}
           <div className="bg-[#120818]/50 rounded-lg p-4 border border-[rgba(173,43,238,0.2)]">
-            <p className="text-gray-400 text-sm">
+            <p className="text-stitch-muted text-sm">
               <span className="text-mcu-gold font-medium">Tip:</span> Mission progress is tracked automatically when you import your game data from Settings.
             </p>
           </div>
@@ -9654,7 +9853,7 @@ RESPONSE GUIDELINES:
 
       // Calculate pacing status
       const calculatePacing = () => {
-        if (daysRemaining === null || daysRemaining === 0) return { status: 'unknown', message: 'Season data unavailable', color: 'text-gray-400' };
+        if (daysRemaining === null || daysRemaining === 0) return { status: 'unknown', message: 'Season data unavailable', color: 'text-stitch-muted' };
 
         const daysPassed = TOTAL_SEASON_DAYS - daysRemaining;
         const expectedLevel = Math.floor((daysPassed / TOTAL_SEASON_DAYS) * MAX_LEVEL);
@@ -9690,7 +9889,7 @@ RESPONSE GUIDELINES:
           <Header title="BATTLE PASS" />
 
           {/* Season Info Card */}
-          <div className="cosmic-glass bg-gradient-to-r from-mcu-red/30 to-series-3/30 p-4 mb-4">
+          <div className="stitch-card bg-gradient-to-r from-mcu-red/30 to-series-3/30 p-4 mb-4">
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-lg font-display font-semibold text-white">
                 {battlePass?.season || 'Current Season'}
@@ -9707,16 +9906,16 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Large Level Display */}
-          <div className="cosmic-glass p-6 mb-4 text-center">
-            <div className="text-gray-400 text-sm mb-1">Current Level</div>
+          <div className="stitch-card p-6 mb-4 text-center">
+            <div className="text-stitch-muted text-sm mb-1">Current Level</div>
             <div className="text-6xl font-hero text-mcu-gold mcu-text-glow mb-2">
               {currentLevel}
             </div>
-            <div className="text-gray-400 text-sm">of {MAX_LEVEL}</div>
+            <div className="text-stitch-muted text-sm">of {MAX_LEVEL}</div>
 
             {/* XP Progress Bar */}
             <div className="mt-4">
-              <div className="flex justify-between text-sm text-gray-400 mb-1">
+              <div className="flex justify-between text-sm text-stitch-muted mb-1">
                 <span>XP Progress</span>
                 <span>{currentXp} / {xpToNextLevel}</span>
               </div>
@@ -9735,7 +9934,7 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Tier Rewards Preview */}
-          <div className="cosmic-glass p-5 mb-4">
+          <div className="stitch-card p-5 mb-4">
             <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Upcoming Rewards</h3>
             <div className="space-y-2">
               {tierRewards.map((tier, index) => (
@@ -9757,7 +9956,7 @@ RESPONSE GUIDELINES:
                     </div>
                     <div>
                       <div className="text-white font-medium">{tier.reward}</div>
-                      <div className="text-xs text-gray-400">x{tier.amount}</div>
+                      <div className="text-xs text-stitch-muted">x{tier.amount}</div>
                     </div>
                   </div>
                   {tier.claimed ? (
@@ -9773,37 +9972,37 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Season Progress Stats */}
-          <div className="cosmic-glass p-5">
+          <div className="stitch-card p-5">
             <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Season Stats</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-[#1a1320]/50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-white">{currentLevel}</div>
-                <div className="text-xs text-gray-400">Levels Earned</div>
+                <div className="text-xs text-stitch-muted">Levels Earned</div>
               </div>
               <div className="bg-[#1a1320]/50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-white">
                   {battlePass?.claimedLevels?.length || 0}
                 </div>
-                <div className="text-xs text-gray-400">Rewards Claimed</div>
+                <div className="text-xs text-stitch-muted">Rewards Claimed</div>
               </div>
               <div className="bg-[#1a1320]/50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-white">
                   {MAX_LEVEL - currentLevel}
                 </div>
-                <div className="text-xs text-gray-400">Levels Remaining</div>
+                <div className="text-xs text-stitch-muted">Levels Remaining</div>
               </div>
               <div className="bg-[#1a1320]/50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-white">
                   {daysRemaining !== null ? Math.ceil((MAX_LEVEL - currentLevel) / Math.max(1, daysRemaining)) : '?'}
                 </div>
-                <div className="text-xs text-gray-400">Levels/Day Needed</div>
+                <div className="text-xs text-stitch-muted">Levels/Day Needed</div>
               </div>
             </div>
           </div>
 
           {/* No Data State */}
           {!battlePass && (
-            <div className="cosmic-glass p-6 text-center mt-4">
+            <div className="stitch-card p-6 text-center mt-4">
               <div className="text-4xl mb-3">📊</div>
               <h3 className="text-lg font-display font-semibold text-gray-300 mb-2">No Battle Pass Data</h3>
               <p className="text-sm text-gray-500 mb-4">
@@ -9905,7 +10104,7 @@ RESPONSE GUIDELINES:
 
       return (
         <div
-          className="fixed bottom-20 left-4 right-4 cosmic-glass bg-cosmic-purple/20 p-4 shadow-lg z-40 install-banner-enter"
+          className="fixed bottom-20 left-4 right-4 stitch-card bg-cosmic-purple/20 p-4 shadow-lg z-40 install-banner-enter"
           role="complementary"
           aria-label="Install app prompt"
           style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
@@ -9990,7 +10189,7 @@ RESPONSE GUIDELINES:
       if (cubes < 4) {
         return (
           <div className="fixed bottom-24 left-4 right-4 z-50 animate-bounce">
-            <div className={`cosmic-glass p-4 ${isWin ? 'border-l-4 border-green-500' : 'border-l-4 border-mcu-red'} sketch-border`}>
+            <div className={`stitch-card p-4 ${isWin ? 'border-l-4 border-green-500' : 'border-l-4 border-mcu-red'} sketch-border`}>
               <div className="flex items-center justify-between">
                 <span className="font-display font-bold text-lg">{isWin ? 'Victory!' : 'Defeat'}</span>
                 <span className={`font-hero text-2xl ${isWin ? 'text-green-400' : 'text-mcu-red'}`}>
@@ -10025,8 +10224,243 @@ RESPONSE GUIDELINES:
               </div>
             )}
 
-            <p className="mt-6 text-gray-400 text-sm">Tap anywhere to continue</p>
+            <p className="mt-6 text-stitch-muted text-sm">Tap anywhere to continue</p>
           </div>
+        </div>
+      );
+    };
+
+    // ==================== USER PROFILE COMPONENT ====================
+    const UserProfile = ({ collection, matches }) => {
+      const totalCards = uniqueCards.length;
+      const ownedCount = collection.owned.filter(name => uniqueCards.some(c => c.name === name)).length;
+      const completionPercent = totalCards > 0 ? Math.round((ownedCount / totalCards) * 100) : 0;
+      const totalWins = matches.filter(m => m.result === 'WIN').length;
+      const totalGames = matches.length;
+      const winRate = totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0;
+      const netCubes = matches.reduce((sum, m) => sum + (m.result === 'WIN' ? m.cubes : -m.cubes), 0);
+      const rank = loadFromStorage('snap_rank', null);
+      const importedStats = loadFromStorage('snap_profile_stats', null);
+      const decks = loadFromStorage('snap_decks', []);
+
+      const achievements = useMemo(() => {
+        const list = [];
+        if (ownedCount >= 50) list.push({ icon: 'style', name: 'Card Collector', desc: 'Own 50+ cards', progress: 100 });
+        else list.push({ icon: 'style', name: 'Card Collector', desc: 'Own 50+ cards', progress: Math.round((ownedCount / 50) * 100) });
+        if (totalGames >= 100) list.push({ icon: 'military_tech', name: 'Battle Hardened', desc: 'Play 100 matches', progress: 100 });
+        else list.push({ icon: 'military_tech', name: 'Battle Hardened', desc: 'Play 100 matches', progress: Math.min(100, Math.round((totalGames / 100) * 100)) });
+        if (winRate >= 60) list.push({ icon: 'emoji_events', name: 'Sharp Snapper', desc: '60%+ win rate', progress: 100 });
+        else list.push({ icon: 'emoji_events', name: 'Sharp Snapper', desc: '60%+ win rate', progress: Math.round((winRate / 60) * 100) });
+        if (netCubes >= 100) list.push({ icon: 'diamond', name: 'Cube Master', desc: 'Earn 100+ net cubes', progress: 100 });
+        else list.push({ icon: 'diamond', name: 'Cube Master', desc: 'Earn 100+ net cubes', progress: Math.min(100, Math.max(0, Math.round((netCubes / 100) * 100))) });
+        return list;
+      }, [ownedCount, totalGames, winRate, netCubes]);
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="PROFILE" />
+
+          {/* Profile Header */}
+          <div className="flex flex-col items-center mb-6">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-cosmic-purple to-cosmic-cyan p-1 mb-3">
+              <div className="w-full h-full rounded-full bg-stitch-card flex items-center justify-center">
+                <span className="material-symbols-outlined text-4xl text-cosmic-purple-text">person</span>
+              </div>
+            </div>
+            {rank && (
+              <div className="text-center">
+                <div className="text-2xl font-display font-bold text-white rank-glow">{rank.tier || 'UNRANKED'}</div>
+                {rank.currentRank && <div className="text-sm text-stitch-muted">Level {rank.currentRank}</div>}
+              </div>
+            )}
+            {importedStats?.snapId && (
+              <div className="text-xs text-stitch-muted mt-1">{importedStats.snapId}</div>
+            )}
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="stitch-stat p-4 text-center">
+              <div className="stitch-label mb-1">Collection</div>
+              <div className="text-3xl font-display font-bold text-white">{completionPercent}%</div>
+              <div className="text-xs text-stitch-muted">{ownedCount} / {totalCards} cards</div>
+            </div>
+            <div className="stitch-stat p-4 text-center">
+              <div className="stitch-label mb-1">Win Rate</div>
+              <div className="text-3xl font-display font-bold text-cosmic-purple-text">{winRate}%</div>
+              <div className="text-xs text-stitch-muted">{totalWins}W / {totalGames - totalWins}L</div>
+            </div>
+            <div className="stitch-stat p-4 text-center">
+              <div className="stitch-label mb-1">Total Cubes</div>
+              <div className={`text-3xl font-display font-bold ${netCubes >= 0 ? 'text-stitch-green' : 'text-red-500'}`}>
+                {netCubes >= 0 ? '+' : ''}{netCubes}
+              </div>
+              <div className="text-xs text-stitch-muted">{totalGames} matches</div>
+            </div>
+            <div className="stitch-stat p-4 text-center">
+              <div className="stitch-label mb-1">Highest Rank</div>
+              <div className="text-3xl font-display font-bold text-mcu-gold">
+                {rank?.tier || '--'}
+              </div>
+              <div className="text-xs text-stitch-muted">This season</div>
+            </div>
+          </div>
+
+          {/* Favorite Decks */}
+          {decks.length > 0 && (
+            <div className="mb-4">
+              <div className="stitch-section-header">
+                <span className="material-symbols-outlined" aria-hidden="true">auto_fix_high</span>
+                Favorite Decks
+              </div>
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {decks.slice(0, 5).map(deck => (
+                  <div key={deck.id} className="stitch-card p-4 min-w-[200px] border-l-4 border-cosmic-purple">
+                    <div className="text-sm font-bold text-white mb-1">{deck.name}</div>
+                    <div className="text-xs text-stitch-muted">{deck.cards?.length || 0} cards</div>
+                    <div className="flex -space-x-2 mt-2">
+                      {(deck.cards || []).slice(0, 4).map((cardName, i) => {
+                        const card = uniqueCards.find(c => c.name === cardName);
+                        return (
+                          <div key={i} className="w-8 h-10 rounded-lg overflow-hidden border border-stitch-border card-art"
+                            style={{ backgroundImage: `url(${getCardArtUrl(card || { name: cardName })})`, zIndex: 4 - i }} />
+                        );
+                      })}
+                      {(deck.cards || []).length > 4 && (
+                        <div className="w-8 h-10 rounded-lg bg-stitch-accent flex items-center justify-center text-xs text-stitch-muted border border-stitch-border">
+                          +{deck.cards.length - 4}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Achievements */}
+          <div className="stitch-section-header">
+            <span className="material-symbols-outlined" aria-hidden="true">workspace_premium</span>
+            Achievements
+          </div>
+          <div className="space-y-2">
+            {achievements.map((ach, i) => (
+              <div key={i} className="stitch-list-item flex items-center gap-3 p-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${ach.progress >= 100 ? 'bg-stitch-green/20' : 'bg-stitch-accent'}`}>
+                  <span className={`material-symbols-outlined ${ach.progress >= 100 ? 'text-stitch-green' : 'text-stitch-muted'}`} style={{fontSize: '20px'}}>{ach.icon}</span>
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm font-bold text-white">{ach.name}</div>
+                  <div className="text-xs text-stitch-muted">{ach.desc}</div>
+                  <div className="stitch-progress mt-1">
+                    <div className={`stitch-progress-fill ${ach.progress >= 100 ? 'bg-stitch-green' : 'bg-cosmic-purple'}`}
+                      style={{ width: `${Math.min(100, ach.progress)}%` }} />
+                  </div>
+                </div>
+                <span className="text-xs font-bold text-stitch-muted">{Math.min(100, ach.progress)}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // ==================== META TIER LIST COMPONENT ====================
+    const MetaTierList = () => {
+      const [timeRange, setTimeRange] = useState('week');
+
+      const tierData = useMemo(() => ({
+        S: [
+          { name: 'Destroy', winRate: 58, playRate: 12, cards: ['Death', 'Knull', 'Carnage', 'Deathlok'] },
+          { name: 'Bounce', winRate: 56, playRate: 9, cards: ['Beast', 'Falcon', 'Angela', 'Kitty Pryde'] },
+        ],
+        A: [
+          { name: 'Discard', winRate: 54, playRate: 8, cards: ['Blade', 'Lady Sif', 'Wolverine', 'Apocalypse'] },
+          { name: 'Move', winRate: 53, playRate: 7, cards: ['Human Torch', 'Multiple Man', 'Iron Fist', 'Heimdall'] },
+          { name: 'High Evo', winRate: 53, playRate: 6, cards: ['Hulk', 'Cyclops', 'Abomination', 'The Thing'] },
+        ],
+        B: [
+          { name: 'Ongoing', winRate: 51, playRate: 5, cards: ['Iron Man', 'Spectrum', 'Onslaught', 'Namor'] },
+          { name: 'Zoo', winRate: 50, playRate: 5, cards: ['Ant-Man', 'Squirrel Girl', 'Blue Marvel', 'Kazar'] },
+        ],
+        C: [
+          { name: 'Control', winRate: 49, playRate: 4, cards: ['Cosmo', 'Enchantress', 'Armor', 'Spider-Woman'] },
+        ]
+      }), []);
+
+      const tierColors = { S: 'bg-cosmic-purple', A: 'bg-blue-600', B: 'bg-yellow-600', C: 'bg-gray-600' };
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="META TIER LIST" subtitle="Community Rankings" />
+
+          {/* Time Range Filter */}
+          <div className="flex gap-2 mb-4">
+            {['week', 'month', 'season'].map(range => (
+              <button key={range} className={`stitch-pill ${timeRange === range ? 'active' : ''}`}
+                onClick={() => setTimeRange(range)}>
+                {range === 'week' ? '7 Days' : range === 'month' ? '30 Days' : 'Season'}
+              </button>
+            ))}
+          </div>
+
+          {/* Tier Sections */}
+          {Object.entries(tierData).map(([tier, decks]) => (
+            <div key={tier} className="mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`w-8 h-8 rounded-lg ${tierColors[tier]} flex items-center justify-center text-white font-bold text-sm`}>{tier}</span>
+                <span className="stitch-label">{tier === 'S' ? 'Top Tier' : tier === 'A' ? 'Strong' : tier === 'B' ? 'Viable' : 'Niche'}</span>
+              </div>
+              <div className="space-y-2">
+                {decks.map((deck, i) => {
+                  const heroCard = uniqueCards.find(c => c.name === deck.cards[0]);
+                  return (
+                    <div key={i} className={`stitch-list-item p-0 overflow-hidden ${tier === 'S' ? '' : ''}`}>
+                      {tier === 'S' ? (
+                        /* S-Tier: Full hero art banner */
+                        <div className="relative h-32 overflow-hidden">
+                          <div className="absolute inset-0 card-art" style={{ backgroundImage: `url(${getCardArtUrl(heroCard || { name: deck.cards[0] })})` }} />
+                          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+                          <div className="relative z-10 p-4 h-full flex flex-col justify-between">
+                            <div>
+                              <div className="text-lg font-display font-bold text-white">{deck.name}</div>
+                              <div className="flex gap-2 mt-1">
+                                <span className="stitch-badge bg-stitch-green/20 text-stitch-green">{deck.winRate}% WR</span>
+                                <span className="stitch-badge">{deck.playRate}% Play</span>
+                              </div>
+                            </div>
+                            <div className="flex -space-x-1">
+                              {deck.cards.slice(0, 4).map((cardName, j) => {
+                                const c = uniqueCards.find(cc => cc.name === cardName);
+                                return (
+                                  <div key={j} className="w-8 h-10 rounded-lg overflow-hidden border border-white/20 card-art"
+                                    style={{ backgroundImage: `url(${getCardArtUrl(c || { name: cardName })})` }} />
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        /* A/B/C-Tier: Compact list items */
+                        <div className="flex items-center gap-3 p-3">
+                          <div className="w-14 h-16 rounded-lg overflow-hidden flex-shrink-0 card-art"
+                            style={{ backgroundImage: `url(${getCardArtUrl(heroCard || { name: deck.cards[0] })})` }} />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-bold text-white">{deck.name}</div>
+                            <div className="flex gap-2 mt-1">
+                              <span className="text-xs text-stitch-green">{deck.winRate}% WR</span>
+                              <span className="text-xs text-stitch-muted">{deck.playRate}% Play</span>
+                            </div>
+                          </div>
+                          <span className="material-symbols-outlined text-stitch-muted" style={{fontSize: '18px'}}>chevron_right</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       );
     };
@@ -10087,7 +10521,9 @@ RESPONSE GUIDELINES:
           battlepass: 'Battle Pass',
           economy: 'Economy',
           board: 'Board Snapshot',
-          simulator: 'Simulator'
+          simulator: 'Simulator',
+          profile: 'Profile',
+          meta: 'Meta Tier List'
         };
         document.title = (titles[activeTab] || 'Home') + ' - Snapapoulous Prime';
       }, [activeTab]);
@@ -10207,7 +10643,7 @@ RESPONSE GUIDELINES:
         const tab = params.get('tab');
         const action = params.get('action');
 
-        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'simulator', 'calculator', 'settings', 'oracle', 'armor', 'missions', 'battlepass', 'economy', 'board', 'history', 'planner'].includes(tab)) {
+        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'simulator', 'calculator', 'settings', 'oracle', 'armor', 'missions', 'battlepass', 'economy', 'board', 'history', 'planner', 'profile', 'meta'].includes(tab)) {
           setActiveTab(tab);
         }
 
@@ -10452,6 +10888,16 @@ RESPONSE GUIDELINES:
             {activeTab === 'history' && (
               <ErrorBoundary>
                 <MatchHistory matches={matches} />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'profile' && (
+              <ErrorBoundary>
+                <UserProfile collection={collection} matches={matches} />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'meta' && (
+              <ErrorBoundary>
+                <MetaTierList />
               </ErrorBoundary>
             )}
             {activeTab === 'settings' && (

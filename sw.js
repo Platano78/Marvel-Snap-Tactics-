@@ -1,6 +1,7 @@
 // Snapapoulous Prime Service Worker
-const CACHE_NAME = 'snapapoulous-cosmic-v1';
+const CACHE_NAME = 'snapapoulous-stitch-v1';
 const FONT_CACHE = 'snap-fonts-v1';
+const ART_CACHE = 'snap-card-art-v1';
 // Dynamically build asset URLs based on service worker location
 const SW_SCOPE = self.registration ? self.registration.scope : self.location.href.replace(/sw\.js$/, '');
 const OFFLINE_ASSETS = [
@@ -41,11 +42,12 @@ self.addEventListener('activate', (event) => {
     caches.keys()
       .then((cacheNames) => {
         // Check if we're updating from an old cache
-        const hadOldCache = cacheNames.some(name => name !== CACHE_NAME && name.startsWith('snapapoulous-'));
+        const keepCaches = [CACHE_NAME, FONT_CACHE, ART_CACHE];
+        const hadOldCache = cacheNames.some(name => !keepCaches.includes(name) && name.startsWith('snapapoulous-'));
 
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME) {
+            if (!keepCaches.includes(cacheName)) {
               console.log('[SW] Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
@@ -126,6 +128,24 @@ self.addEventListener('fetch', (event) => {
             }
             return networkResponse;
           });
+        });
+      })
+    );
+    return;
+  }
+
+  // Cache card art images from MarvelSnapZone CDN
+  if (url.hostname === 'marvelsnapzone.com' && url.pathname.includes('/cards/')) {
+    event.respondWith(
+      caches.open(ART_CACHE).then((cache) => {
+        return cache.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) return cachedResponse;
+          return fetch(event.request).then((networkResponse) => {
+            if (networkResponse.ok) {
+              cache.put(event.request, networkResponse.clone());
+            }
+            return networkResponse;
+          }).catch(() => null);
         });
       })
     );
