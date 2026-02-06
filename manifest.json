@@ -5,8 +5,8 @@
   "start_url": "./index.html?source=pwa",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0a0c0e",
-  "theme_color": "#0a0c0e",
+  "background_color": "#120818",
+  "theme_color": "#1c1022",
   "orientation": "portrait-primary",
   "launch_handler": {
     "client_mode": "navigate-existing"

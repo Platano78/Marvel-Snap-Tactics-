@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#0a0c0e" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#0a0c0e" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#120818" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#120818" media="(prefers-color-scheme: dark)">
   <meta name="description" content="Marvel Snap AI Companion & Tracker - Track your collection, log matches, and get tactical advice">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -22,8 +22,11 @@
   <link rel="dns-prefetch" href="https://unpkg.com">
   <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
 
-  <!-- Google Fonts - Inter (UI) + Permanent Marker (Hero/Spider-Verse) -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+  <!-- Google Fonts - Spline Sans (UI) + Inter (fallback) + Permanent Marker (Hero) + Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
 
   <!-- Service Worker Update Handler - runs early to catch SW updates -->
   <script>
@@ -107,15 +110,18 @@
       theme: {
         extend: {
           colors: {
-            // MCU Foundation
-            'mcu-blue': '#00aaff',
-            'mcu-blue-light': '#33bbff',
+            // Cosmic Purple Foundation
+            'mcu-blue': '#c75fff',
+            'mcu-blue-light': '#d9a8ff',
             'mcu-red': '#ff4444',
-            'mcu-gold': '#C9A227',
-            'stark-dark': '#0a0c0e',
-            'stark-surface': '#121216',
-            'stark-surface-2': '#1a1a20',
-            // Spider-Verse Accents
+            'mcu-gold': '#ffd700',
+            'stark-dark': '#120818',
+            'stark-surface': '#1c1022',
+            'stark-surface-2': '#2b1933',
+            // Cosmic Accents
+            'cosmic-purple': '#ad2bee',
+            'cosmic-purple-text': '#c75fff',
+            'cosmic-cyan': '#00f3ff',
             'spider-pink': '#ff00ff',
             'spider-cyan': '#00ffff',
             'spider-yellow': '#fef08a',
@@ -139,19 +145,18 @@
             'marvel-white': '#FFFFFF',
           },
           fontFamily: {
-            'display': ['Inter', 'system-ui', 'sans-serif'],
+            'display': ['Spline Sans', 'Inter', 'system-ui', 'sans-serif'],
             'hero': ['Permanent Marker', 'cursive'],
             'mono': ['SF Mono', 'Menlo', 'Monaco', 'monospace'],
-            // Legacy
             'comic': ['Impact', 'Arial Black', 'sans-serif'],
           },
           boxShadow: {
-            'glass': '0 0 20px rgba(0, 170, 255, 0.1)',
-            'glow-blue': '0 0 15px rgba(0, 170, 255, 0.4), inset 0 0 5px rgba(0, 170, 255, 0.2)',
+            'glass': '0 0 20px rgba(173, 43, 238, 0.15)',
+            'glow-blue': '0 0 15px rgba(173, 43, 238, 0.4), inset 0 0 5px rgba(173, 43, 238, 0.2)',
             'glow-red': '0 0 15px rgba(255, 68, 68, 0.4), inset 0 0 5px rgba(255, 68, 68, 0.2)',
-            'glow-gold': '0 0 15px rgba(201, 162, 39, 0.4), inset 0 0 5px rgba(201, 162, 39, 0.2)',
+            'glow-gold': '0 0 15px rgba(255, 215, 0, 0.4), inset 0 0 5px rgba(255, 215, 0, 0.2)',
+            'glow-purple': '0 0 15px rgba(173, 43, 238, 0.4)',
             'sketch': '6px 6px 0 #111',
-            // Legacy
             'comic': '4px 4px 0px #1A1A1A',
             'comic-sm': '2px 2px 0px #1A1A1A',
           },
@@ -169,15 +174,18 @@
        LAYER 1: BRAND TOKENS (Raw palette values)
        ============================================ */
     :root {
-      /* MCU Foundation */
-      --mcu-blue: #00aaff;
-      --mcu-blue-light: #33bbff;
-      --mcu-blue-glow: rgba(0, 170, 255, 0.4);
+      /* Cosmic Purple Foundation */
+      --mcu-blue: #c75fff;
+      --mcu-blue-light: #d9a8ff;
+      --mcu-blue-glow: rgba(173, 43, 238, 0.4);
       --mcu-red: #ff4444;
       --mcu-red-glow: rgba(255, 68, 68, 0.4);
-      --mcu-gold: #C9A227;
+      --mcu-gold: #ffd700;
 
-      /* Spider-Verse Accents */
+      /* Cosmic Accents */
+      --cosmic-purple: #ad2bee;
+      --cosmic-purple-text: #c75fff;
+      --cosmic-cyan: #00f3ff;
       --spider-pink: #ff00ff;
       --spider-cyan: #00ffff;
       --spider-yellow: #fef08a;
@@ -197,33 +205,32 @@
 
       /* ============================================
          LAYER 2: SEMANTIC TOKENS
-         Role-based mappings to reduce decision fatigue
          ============================================ */
 
-      /* Surfaces */
-      --ui-surface-base: #0a0c0e;
-      --ui-surface-1: #121216;
-      --ui-surface-2: #1a1a20;
-      --ui-surface-glass: rgba(18, 18, 22, 0.7);
-      --ui-surface-glass-solid: rgba(18, 18, 22, 0.92);
+      /* Surfaces - Cosmic Purple */
+      --ui-surface-base: #120818;
+      --ui-surface-1: #1c1022;
+      --ui-surface-2: #2b1933;
+      --ui-surface-glass: rgba(60, 35, 72, 0.6);
+      --ui-surface-glass-solid: rgba(28, 16, 34, 0.92);
 
       /* Borders */
       --ui-border: rgba(255, 255, 255, 0.08);
-      --ui-border-accent: rgba(0, 170, 255, 0.3);
+      --ui-border-accent: rgba(173, 43, 238, 0.6);
 
       /* Text */
       --ui-text-primary: #eaeaf0;
-      --ui-text-secondary: #8888a0;
-      --ui-text-muted: #5c5c6e;
-      --ui-text-accent: var(--mcu-blue-light);
+      --ui-text-secondary: #a08cb0;
+      --ui-text-muted: #6e5c7e;
+      --ui-text-accent: var(--cosmic-purple-text);
 
       /* Legacy text tokens (WCAG AA compliant) */
       --text-muted: #9CA3AF;
       --text-placeholder: #9CA3AF;
       --text-disabled: #D1D5DB;
 
-      /* Accent (maps to MCU blue by default) */
-      --ui-accent: var(--mcu-blue);
+      /* Accent (maps to cosmic purple) */
+      --ui-accent: var(--cosmic-purple-text);
       --ui-accent-glow: var(--mcu-blue-glow);
       --ui-accent-light: var(--mcu-blue-light);
 
@@ -231,16 +238,20 @@
       --ui-success: #22C55E;
       --ui-warning: #EAB308;
       --ui-danger: var(--mcu-red);
-      --ui-info: var(--mcu-blue);
+      --ui-info: var(--cosmic-purple-text);
 
-      /* Focus Ring (accessibility) */
+      /* Focus Ring (accessibility - gold passes at 13.95:1) */
       --ui-focus-ring: var(--mcu-gold);
-      --ui-focus-ring-glow: rgba(201, 162, 39, 0.4);
+      --ui-focus-ring-glow: rgba(255, 215, 0, 0.4);
 
       /* Shadows */
       --ui-shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.3);
-      --ui-shadow-glow: 0 0 20px var(--ui-accent-glow);
+      --ui-shadow-glow: 0 0 15px rgba(173, 43, 238, 0.15);
       --ui-shadow-strong: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+      /* Cosmic Glow Effects */
+      --holo-glow: 0 0 15px rgba(173, 43, 238, 0.4);
+      --rank-glow: drop-shadow(0 0 15px rgba(173, 43, 238, 0.6));
 
       /* Spider-Verse Highlight (overlays only) */
       --ui-highlight: var(--spider-yellow);
@@ -260,13 +271,13 @@
       --sketch-shadow: 6px 6px 0 #111;
 
       /* Neon Outer Glow for accessibility */
-      --text-glow-accent: 0 0 8px var(--mcu-blue-glow), 0 0 16px var(--mcu-blue-glow);
+      --text-glow-accent: 0 0 8px rgba(173, 43, 238, 0.4), 0 0 16px rgba(173, 43, 238, 0.3);
 
       /* ============================================
          LAYER 4: TYPOGRAPHY TOKENS
          ============================================ */
 
-      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-ui: 'Spline Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
       --font-hero: 'Permanent Marker', cursive;
     }
@@ -347,30 +358,40 @@
     }
 
     /* ============================================
-       MCU GLASS PANEL (replaces .panel-border)
+       COSMIC GLASS PANEL (replaces .panel-border)
+       60% min opacity for text readability
        ============================================ */
-    .mcu-glass {
+    .mcu-glass,
+    .cosmic-glass {
+      background: #1c1022;
       background: var(--ui-surface-glass);
       backdrop-filter: var(--glass-blur);
       -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid var(--ui-border-accent);
       box-shadow: var(--ui-shadow-glow);
-      border-radius: 12px;
+      border-radius: 1rem;
       will-change: transform;
+    }
+    @supports (backdrop-filter: blur(12px)) {
+      .mcu-glass,
+      .cosmic-glass {
+        background: var(--ui-surface-glass);
+      }
     }
 
     @media (max-width: 768px) {
-      .mcu-glass {
+      .mcu-glass,
+      .cosmic-glass {
         backdrop-filter: var(--glass-blur-mobile);
         -webkit-backdrop-filter: var(--glass-blur-mobile);
       }
     }
 
     /* ============================================
-       MCU GLOW EFFECTS
+       COSMIC GLOW EFFECTS
        ============================================ */
     .mcu-glow-blue {
-      box-shadow: 0 0 15px var(--mcu-blue-glow), inset 0 0 5px var(--mcu-blue-glow);
+      box-shadow: 0 0 15px rgba(173, 43, 238, 0.4), inset 0 0 5px rgba(173, 43, 238, 0.2);
     }
 
     .mcu-glow-red {
@@ -378,11 +399,82 @@
     }
 
     .mcu-glow-gold {
-      box-shadow: 0 0 15px rgba(201, 162, 39, 0.4), inset 0 0 5px rgba(201, 162, 39, 0.2);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), inset 0 0 5px rgba(255, 215, 0, 0.2);
     }
 
     .mcu-text-glow {
       text-shadow: var(--text-glow-accent);
+    }
+
+    /* Holographic Card Glow */
+    .holo-glow {
+      box-shadow: 0 0 15px rgba(173, 43, 238, 0.4);
+    }
+
+    /* Rank Glow */
+    .rank-glow {
+      filter: drop-shadow(0 0 15px rgba(173, 43, 238, 0.6));
+    }
+
+    /* Cosmic Background */
+    .cosmic-bg {
+      background: radial-gradient(circle at top right, #3c2348, #120818);
+    }
+
+    /* Cosmic Stat Card */
+    .cosmic-stat {
+      background: linear-gradient(135deg, #1c1022 0%, #2d1f4e 50%, #1c1022 100%);
+      border: 1px solid rgba(173, 43, 238, 0.2);
+      border-radius: 1rem;
+      padding: 1rem;
+    }
+
+    /* Card Slot (empty deck slot) */
+    .card-slot {
+      background: linear-gradient(135deg, #1a1320, #251830);
+      border: 2px dashed rgba(173, 43, 238, 0.3);
+      border-radius: 0.75rem;
+      aspect-ratio: 3/4;
+    }
+    @supports not (aspect-ratio: 3/4) {
+      .card-slot {
+        position: relative;
+        padding-bottom: 133.33%;
+        height: 0;
+      }
+    }
+    .card-slot.filled {
+      border-style: solid;
+      border-color: rgba(173, 43, 238, 0.6);
+      box-shadow: 0 0 15px rgba(173, 43, 238, 0.4);
+    }
+
+    /* Show remove button on touch devices (no hover capability) */
+    @media (hover: none) {
+      .group .group-hover\:opacity-100 {
+        opacity: 1;
+      }
+    }
+
+    /* Cosmic Gradient (linear variant) */
+    .cosmic-gradient {
+      background: linear-gradient(135deg, #1c1022 0%, #2d1b4d 50%, #1c1022 100%);
+    }
+
+    /* Scrollbar hide utility */
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Material Symbols sizing */
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 24px;
+      line-height: 1;
     }
 
     /* Spider-Verse Chromatic Text (Victory/High-Energy only) */
@@ -398,18 +490,18 @@
       box-shadow: var(--sketch-shadow);
     }
 
-    /* HUD Grid Background */
+    /* Cosmic HUD Grid Background */
     .mcu-hud-grid {
       background-image:
-        linear-gradient(rgba(0, 170, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 170, 255, 0.05) 1px, transparent 1px);
+        linear-gradient(rgba(173, 43, 238, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(173, 43, 238, 0.04) 1px, transparent 1px);
       background-size: 40px 40px;
     }
 
-    /* Arc Reactor Pulse Animation */
+    /* Cosmic Pulse Animation */
     @keyframes arc-pulse {
-      0%, 100% { box-shadow: 0 0 20px var(--mcu-blue-glow); }
-      50% { box-shadow: 0 0 30px var(--mcu-blue-glow), 0 0 40px var(--mcu-blue-glow); }
+      0%, 100% { box-shadow: 0 0 20px rgba(173, 43, 238, 0.3); }
+      50% { box-shadow: 0 0 30px rgba(173, 43, 238, 0.5), 0 0 40px rgba(173, 43, 238, 0.3); }
     }
 
     .arc-pulse {
@@ -428,13 +520,20 @@
       animation: chromatic-glitch 0.3s ease-in-out infinite;
     }
 
-    /* Reduced Motion Support for animations */
+    /* Reduced Motion Support for all cosmic effects */
     @media (prefers-reduced-motion: reduce) {
       .arc-pulse,
       .glitch-text,
       .chromatic-glitch {
         animation: none;
         text-shadow: none;
+      }
+      .holo-glow,
+      .rank-glow,
+      .cosmic-stat,
+      .card-slot.filled {
+        box-shadow: none;
+        filter: none;
       }
     }
 
@@ -473,12 +572,12 @@
     .series-border-5 { border-color: #EF4444; }
     .series-border-spotlight { border-color: #F97316; }
     ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #2D2D2D; }
-    ::-webkit-scrollbar-thumb { background: #ED1D24; border-radius: 4px; }
+    ::-webkit-scrollbar-track { background: #1c1022; }
+    ::-webkit-scrollbar-thumb { background: #ad2bee; border-radius: 4px; }
     .tab-active { position: relative; }
-    .tab-active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 3px; background: #ED1D24; }
-    input[type="range"] { -webkit-appearance: none; background: #2D2D2D; border-radius: 4px; height: 8px; }
-    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: #ED1D24; border-radius: 50%; cursor: pointer; border: 2px solid #FFC107; }
+    .tab-active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 3px; background: #ad2bee; }
+    input[type="range"] { -webkit-appearance: none; background: #1c1022; border-radius: 4px; height: 8px; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; background: #ad2bee; border-radius: 50%; cursor: pointer; border: 2px solid #ffd700; }
     @keyframes pulse-snap { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
     .pulse-snap { animation: pulse-snap 0.5s ease-in-out infinite; }
     @keyframes typing { 0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; } }
@@ -490,17 +589,17 @@
     .chat-bubble-ai { border-bottom-left-radius: 0.25rem; }
     /* Drop Zone Styling */
     .drop-zone {
-      border: 3px dashed #006EC7;
-      border-radius: 8px;
+      border: 3px dashed rgba(173, 43, 238, 0.4);
+      border-radius: 1rem;
       padding: 2rem;
       text-align: center;
-      background: rgba(0, 110, 199, 0.05);
+      background: rgba(173, 43, 238, 0.05);
       cursor: pointer;
       transition: all 0.2s ease;
     }
     .drop-zone:hover, .drop-zone.drag-over {
-      border-color: #ED1D24;
-      background: rgba(237, 29, 36, 0.1);
+      border-color: #c75fff;
+      background: rgba(173, 43, 238, 0.1);
       transform: scale(1.02);
     }
     .drop-zone .drop-icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
@@ -508,7 +607,7 @@
       display: block;
       margin-top: 0.5rem;
       font-size: 0.7rem;
-      color: #006EC7;
+      color: #c75fff;
       font-family: monospace;
       opacity: 0.7;
     }
@@ -524,21 +623,21 @@
       padding: 1rem;
     }
     .modal {
-      background: #2D2D2D;
-      border-radius: 12px;
+      background: #1c1022;
+      border-radius: 1rem;
       max-width: 400px;
       width: 100%;
       max-height: 80vh;
       overflow-y: auto;
-      border: 3px solid #1A1A1A;
-      box-shadow: 4px 4px 0px #1A1A1A;
+      border: 1px solid rgba(173, 43, 238, 0.4);
+      box-shadow: 0 0 30px rgba(173, 43, 238, 0.2);
     }
     /* Spinner */
     .spinner {
       width: 40px;
       height: 40px;
-      border: 4px solid #2D2D2D;
-      border-top-color: #ED1D24;
+      border: 4px solid #1c1022;
+      border-top-color: #ad2bee;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
@@ -577,16 +676,17 @@
 
     /* Linked Folder Styles */
     .linked-folder-section {
-      background: rgba(0, 110, 199, 0.1);
-      border: 2px solid #006EC7;
-      border-radius: 12px;
+      background: rgba(173, 43, 238, 0.1);
+      border: 2px solid rgba(173, 43, 238, 0.4);
+      border-radius: 1rem;
       padding: 16px;
       margin-bottom: 12px;
     }
     .linked-folder-section h4 {
       margin: 0 0 8px 0;
-      color: #006EC7;
-      font-family: Impact, 'Arial Black', sans-serif;
+      color: #c75fff;
+      font-family: 'Spline Sans', 'Inter', sans-serif;
+      font-weight: 700;
     }
     .linked-folder-section .description {
       margin: 0 0 12px 0;
@@ -597,14 +697,14 @@
       width: 100%;
       padding: 14px 20px;
       font-size: 1em;
-      background: #006EC7;
+      background: #ad2bee;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 0.75rem;
       cursor: pointer;
       font-weight: bold;
     }
-    .link-folder-btn:hover { background: #0088ee; }
+    .link-folder-btn:hover { background: #c75fff; }
     .linked-status {
       display: flex;
       flex-direction: column;
@@ -645,14 +745,14 @@
     .sync-btn {
       padding: 12px 20px;
       font-size: 1em;
-      background: #006EC7;
+      background: #ad2bee;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 0.75rem;
       cursor: pointer;
       font-weight: bold;
     }
-    .sync-btn:hover { background: #0088ee; }
+    .sync-btn:hover { background: #c75fff; }
     .sync-btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .last-sync {
       margin: 0;
@@ -662,7 +762,7 @@
     }
     .not-supported-msg {
       background: rgba(251, 191, 36, 0.1);
-      border: 1px solid #FFC107;
+      border: 1px solid #ffd700;
       border-radius: 8px;
       padding: 12px;
       font-size: 0.85em;
@@ -680,22 +780,22 @@
       font-size: 0.8em;
     }
     .drop-zone-json {
-      border: 3px dashed #006EC7;
-      border-radius: 12px;
+      border: 3px dashed rgba(173, 43, 238, 0.4);
+      border-radius: 1rem;
       padding: 30px 20px;
       text-align: center;
-      background: rgba(0, 110, 199, 0.05);
+      background: rgba(173, 43, 238, 0.05);
       transition: all 0.2s ease;
       cursor: pointer;
     }
     .drop-zone-json:hover,
     .drop-zone-json.drag-over {
-      border-color: #FFC107;
-      background: rgba(255, 193, 7, 0.1);
+      border-color: #ffd700;
+      background: rgba(255, 215, 0, 0.1);
     }
     .drop-zone-json code {
-      background: #1A1A1A;
-      color: #FFC107;
+      background: #120818;
+      color: #ffd700;
       padding: 4px 8px;
       border-radius: 4px;
       font-size: 0.75em;
@@ -718,7 +818,7 @@
     .performance-card .rank {
       width: 36px;
       font-weight: bold;
-      color: #FFC107;
+      color: #ffd700;
       font-size: 0.9em;
     }
     .performance-card .card-name {
@@ -753,7 +853,7 @@
     .import-toggle input {
       width: 18px;
       height: 18px;
-      accent-color: #ED1D24;
+      accent-color: #ad2bee;
     }
     .preview-stats-grid {
       display: grid;
@@ -821,7 +921,7 @@
     }
     .summary-stat.positive .value { color: #22c55e; }
     .summary-stat.negative .value { color: #ef4444; }
-    .summary-stat.net .value { color: #FFC107; }
+    .summary-stat.net .value { color: #ffd700; }
 
     /* Stats Section Styling */
     .stats-section {
@@ -833,7 +933,7 @@
     .stats-section h3 {
       margin: 0 0 12px 0;
       font-size: 1em;
-      color: #FFC107;
+      color: #ffd700;
     }
     .stats-grid {
       display: grid;
@@ -841,8 +941,9 @@
       gap: 10px;
     }
     .stat-card {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 8px;
+      background: linear-gradient(135deg, #1c1022 0%, #2d1f4e 50%, #1c1022 100%);
+      border: 1px solid rgba(173, 43, 238, 0.15);
+      border-radius: 0.75rem;
       padding: 12px;
       text-align: center;
     }
@@ -856,7 +957,7 @@
       font-size: 0.75em;
       color: #9CA3AF;
     }
-    .stat-card.highlight .stat-value { color: #FFC107; }
+    .stat-card.highlight .stat-value { color: #ffd700; }
     .stat-card.positive .stat-value { color: #22c55e; }
     .stat-card.negative .stat-value { color: #ef4444; }
     .data-source {
@@ -871,7 +972,7 @@
       color: #9CA3AF;
     }
     .import-prompt a {
-      color: #006EC7;
+      color: #c75fff;
       text-decoration: underline;
     }
 
@@ -881,11 +982,12 @@
       bottom: 80px;
       left: 50%;
       transform: translateX(-50%);
-      background: #333;
+      background: #2b1933;
       color: white;
       padding: 12px 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 0 15px rgba(173, 43, 238, 0.2);
+      border: 1px solid rgba(173, 43, 238, 0.3);
       z-index: 1000;
       white-space: pre-line;
       max-width: 90%;
@@ -1045,7 +1147,7 @@
     }
     .swipe-item {
       position: relative;
-      background: #2D2D2D;
+      background: #1c1022;
       transition: transform 0.2s ease-out;
     }
 
@@ -3413,22 +3515,18 @@ RESPONSE GUIDELINES:
 
     // Navigation Bar
     const NavBar = ({ activeTab, setActiveTab }) => {
-      // Primary tabs shown in main navigation
+      // Primary tabs with Material Symbols icons
       const primaryTabs = [
-        { id: 'dashboard', label: 'Home', icon: '⚡' },
-        { id: 'oracle', label: 'Oracle', icon: '🔮' },
-        { id: 'collection', label: 'Cards', icon: '🃏' },
-        { id: 'planner', label: 'Plan', icon: '📈' },
-        { id: 'ai', label: 'AI', icon: '🤖' },
-        { id: 'settings', label: 'More', icon: '☰' }
+        { id: 'dashboard', label: 'Home', icon: 'home' },
+        { id: 'collection', label: 'Cards', icon: 'style' },
+        { id: 'decks', label: 'Decks', icon: 'layers' },
+        { id: 'ai', label: 'AI', icon: 'smart_toy' },
+        { id: 'settings', label: 'More', icon: 'menu' }
       ];
 
-      // Determine which tabs to show based on screen width
-      // On mobile: show primary tabs only
-      // Settings menu provides access to: missions, battlepass, armor
       const tabs = primaryTabs;
       return (
-        <nav className="fixed bottom-0 left-0 right-0 bg-stark-dark/95 backdrop-blur-md border-t border-mcu-blue/20 z-50" role="navigation" aria-label="Main navigation">
+        <nav className="fixed bottom-0 left-0 right-0 z-50" style={{background: 'linear-gradient(to top, #120818, rgba(28,16,34,0.95))', borderTop: '1px solid rgba(173,43,238,0.3)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)'}} role="navigation" aria-label="Main navigation">
           <div className="flex justify-around items-center h-16 max-w-lg mx-auto" role="tablist" aria-label="App sections">
             {tabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
@@ -3438,11 +3536,12 @@ RESPONSE GUIDELINES:
                 id={`tab-${tab.id}`}
                 className={`flex flex-col items-center justify-center w-full h-full min-w-[44px] min-h-[44px] transition-all duration-200 ${
                   activeTab === tab.id
-                    ? 'text-mcu-blue shadow-glow-blue'
-                    : 'text-gray-400 hover:text-mcu-blue-light'
-                }`}>
-                <span className="text-xl" aria-hidden="true">{tab.icon}</span>
-                <span className="text-xs mt-1 font-medium font-display tracking-wide">{tab.label}</span>
+                    ? 'text-cosmic-purple-text'
+                    : 'text-gray-500 hover:text-[#c75fff]'
+                }`}
+                style={activeTab === tab.id ? {filter: 'drop-shadow(0 0 8px rgba(173,43,238,0.5))'} : {}}>
+                <span className="material-symbols-outlined" aria-hidden="true" style={{fontSize: '22px'}}>{tab.icon}</span>
+                <span className="text-[10px] mt-0.5 font-medium font-display tracking-wide">{tab.label}</span>
               </button>
             ))}
           </div>
@@ -3450,10 +3549,10 @@ RESPONSE GUIDELINES:
       );
     };
 
-    // Header - MCU Glass Panel Style
+    // Header - Cosmic Gradient Style
     const Header = ({ title }) => (
-      <header className="mcu-glass py-4 px-6 mb-4 border-b border-mcu-blue/30">
-        <h1 className="text-2xl font-display font-bold text-white text-center tracking-wider mcu-text-glow">{title}</h1>
+      <header className="py-4 px-6 mb-4 cosmic-bg" style={{borderBottom: '1px solid rgba(173,43,238,0.3)'}}>
+        <h1 className="text-2xl font-display font-bold text-white tracking-wider mcu-text-glow">{title}</h1>
       </header>
     );
 
@@ -3540,7 +3639,7 @@ RESPONSE GUIDELINES:
 
           {/* Player OS: Wallet Widget */}
           {wallet && (
-            <div className="mcu-glass p-4 mb-4 border-l-4 border-mcu-gold">
+            <div className="cosmic-glass p-4 mb-4 border-l-4 border-cosmic-purple-text">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs uppercase text-gray-400">Wallet</span>
                 <span className="text-xs px-2 py-0.5 bg-mcu-gold/30 text-mcu-gold rounded">Synced</span>
@@ -3570,14 +3669,14 @@ RESPONSE GUIDELINES:
           {(rank || timeModel) && (
             <div className="grid grid-cols-2 gap-3 mb-4">
               {rank && (
-                <div className="mcu-glass p-4 border-l-4 border-series-3">
+                <div className="cosmic-glass rank-glow p-4 border-l-4 border-series-3">
                   <div className="text-gray-400 text-xs uppercase">Rank</div>
                   <div className="text-2xl font-display font-bold text-white">{rank.tier}</div>
                   <div className="text-sm text-gray-400">Level {rank.currentRank}</div>
                 </div>
               )}
               {timeModel && (
-                <div className="mcu-glass p-4 border-l-4 border-mcu-blue">
+                <div className="cosmic-glass p-4 border-l-4 border-mcu-blue">
                   <div className="text-gray-400 text-xs uppercase">Resets</div>
                   <div className="text-sm text-cyan-400">Daily: {getTimeUntil(timeModel.dailyReset) || '—'}</div>
                   <div className="text-sm text-cyan-300">Weekly: {getTimeUntil(timeModel.weeklyReset) || '—'}</div>
@@ -3588,7 +3687,7 @@ RESPONSE GUIDELINES:
 
           {/* Player OS: Pity Counters (Spotlight Oracle Preview) */}
           {rewards && (
-            <div className="mcu-glass p-4 mb-4 border-l-4 border-mcu-red">
+            <div className="cosmic-glass p-4 mb-4 border-l-4 border-mcu-red">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs uppercase text-gray-400">Pity Counters</span>
                 {(rewards.isCloseToS4 || rewards.isCloseToS5 || rewards.isCloseToSpotlight) && (
@@ -3602,7 +3701,7 @@ RESPONSE GUIDELINES:
                       <span className="text-xs text-gray-400">S4</span>
                       <span className="text-xs font-bold text-green-400">{rewards.pityCounters?.s4 || 0}/20</span>
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div className="w-full bg-[#1a1320] rounded-full h-2">
                       <div
                         className={`h-2 rounded-full ${rewards.isCloseToS4 ? 'bg-green-400' : 'bg-green-600'}`}
                         style={{ width: `${Math.min(100, ((rewards.pityCounters?.s4 || 0) / 20) * 100)}%` }}
@@ -3616,7 +3715,7 @@ RESPONSE GUIDELINES:
                       <span className="text-xs text-gray-400">S5</span>
                       <span className="text-xs font-bold text-purple-400">{rewards.pityCounters?.s5 || 0}/60</span>
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div className="w-full bg-[#1a1320] rounded-full h-2">
                       <div
                         className={`h-2 rounded-full ${rewards.isCloseToS5 ? 'bg-purple-400' : 'bg-purple-600'}`}
                         style={{ width: `${Math.min(100, ((rewards.pityCounters?.s5 || 0) / 60) * 100)}%` }}
@@ -3630,7 +3729,7 @@ RESPONSE GUIDELINES:
                       <span className="text-xs text-gray-400">Key</span>
                       <span className="text-xs font-bold text-orange-400">{rewards.pityCounters?.spotlightKey || 0}/4</span>
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div className="w-full bg-[#1a1320] rounded-full h-2">
                       <div
                         className={`h-2 rounded-full ${rewards.isCloseToSpotlight ? 'bg-orange-400' : 'bg-orange-600'}`}
                         style={{ width: `${Math.min(100, ((rewards.pityCounters?.spotlightKey || 0) / 4) * 100)}%` }}
@@ -3644,10 +3743,10 @@ RESPONSE GUIDELINES:
 
           {/* Lifetime Stats (from imported data) */}
           {displayStats.hasImported && (
-            <div className="mcu-glass p-4 mb-4 border-l-4 border-mcu-blue">
+            <div className="cosmic-glass p-4 mb-4 border-l-4 border-cosmic-purple-text">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs uppercase text-gray-400">Lifetime Stats</span>
-                <span className="text-xs px-2 py-0.5 bg-mcu-blue/30 text-mcu-blue rounded">From Game</span>
+                <span className="text-xs px-2 py-0.5 bg-cosmic-purple/30 text-cosmic-purple-text rounded">From Game</span>
               </div>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div>
@@ -3674,42 +3773,42 @@ RESPONSE GUIDELINES:
           )}
 
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="mcu-glass p-4 border-l-4 border-mcu-red">
+            <div className="cosmic-stat p-4 border-l-4 border-mcu-red">
               <div className="text-gray-400 text-xs uppercase">Collection</div>
-              <div className="text-2xl font-display font-bold text-white">{completionPercent}%</div>
+              <div className="text-3xl font-display font-bold text-white">{completionPercent}%</div>
               <div className="text-sm text-gray-400">{ownedInDatabase}/{totalCards} cards</div>
             </div>
-            <div className="mcu-glass p-4 border-l-4 border-mcu-gold">
+            <div className="cosmic-stat p-4 border-l-4 border-mcu-gold">
               <div className="text-gray-400 text-xs uppercase">{displayStats.hasImported ? 'Session' : 'Win Rate'}</div>
-              <div className="text-2xl font-display font-bold text-white">{winRate}%</div>
+              <div className="text-3xl font-display font-bold text-white">{winRate}%</div>
               <div className="text-sm text-gray-400">{totalWins}/{totalGames} {displayStats.hasImported ? 'tracked' : 'games'}</div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="mcu-glass p-4 border-l-4 border-mcu-blue">
+            <div className="cosmic-stat p-4 border-l-4 border-mcu-blue">
               <div className="text-gray-400 text-xs uppercase">Net Cubes</div>
-              <div className={`text-2xl font-display font-bold ${netCubes >= 0 ? 'text-green-400' : 'text-mcu-red'}`}>
+              <div className={`text-3xl font-display font-bold ${netCubes >= 0 ? 'text-green-400' : 'text-mcu-red'}`}>
                 {netCubes >= 0 ? '+' : ''}{netCubes}
               </div>
               <div className="text-sm text-gray-400">Today: {todayCubes >= 0 ? '+' : ''}{todayCubes}</div>
             </div>
-            <div className="mcu-glass p-4 border-l-4 border-series-3">
+            <div className="cosmic-stat p-4 border-l-4 border-series-3">
               <div className="text-gray-400 text-xs uppercase">Streak</div>
-              <div className={`text-2xl font-display font-bold ${streak.type === 'WIN' ? 'text-green-400' : streak.type === 'LOSS' ? 'text-mcu-red' : 'text-gray-400'}`}>
+              <div className={`text-3xl font-display font-bold ${streak.type === 'WIN' ? 'text-green-400' : streak.type === 'LOSS' ? 'text-mcu-red' : 'text-gray-400'}`}>
                 {streak.count} {streak.type === 'WIN' ? 'W' : streak.type === 'LOSS' ? 'L' : '-'}
               </div>
               <div className="text-sm text-gray-400">Current</div>
             </div>
           </div>
-          <div className="mcu-glass p-5 mb-4">
-            <h2 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Quick Match</h2>
+          <div className="cosmic-glass p-5 mb-4">
+            <h2 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Quick Match</h2>
             <div className="mb-3" role="group" aria-label="Record win">
               <div className="text-sm text-green-400 mb-2" id="win-label">WIN</div>
               <div className="flex gap-2" role="group" aria-labelledby="win-label">
                 {[1, 2, 4, 8].map(cubes => (
                   <button key={`win-${cubes}`} onClick={() => onQuickMatch('WIN', cubes)}
                     aria-label={`Record win of ${cubes} cube${cubes > 1 ? 's' : ''}`}
-                    className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded shadow-glow-blue active:shadow-none hover:shadow-glow-blue transition-all">
+                    className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded hover:shadow-[0_0_15px_rgba(173,43,238,0.5)] active:shadow-none transition-all">
                     +{cubes}
                   </button>
                 ))}
@@ -3721,22 +3820,25 @@ RESPONSE GUIDELINES:
                 {[1, 2, 4, 8].map(cubes => (
                   <button key={`loss-${cubes}`} onClick={() => onQuickMatch('LOSS', cubes)}
                     aria-label={`Record loss of ${cubes} cube${cubes > 1 ? 's' : ''}`}
-                    className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded shadow-glow-blue active:shadow-none hover:shadow-glow-blue transition-all">
+                    className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded hover:shadow-[0_0_15px_rgba(173,43,238,0.5)] active:shadow-none transition-all">
                     -{cubes}
                   </button>
                 ))}
               </div>
             </div>
           </div>
-          <div className="mcu-glass p-5">
-            <h2 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Recent Matches</h2>
+          <div className="cosmic-glass p-5">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-lg font-display font-semibold text-[#c75fff]">Recent Matches</h2>
+              <button onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'history' }))} className="text-xs text-[#c75fff] hover:text-white transition-colors">View All &rarr;</button>
+            </div>
             {matches.length === 0 ? (
               <p className="text-gray-400 text-center py-4">No matches recorded yet</p>
             ) : (
               <div className="space-y-2 max-h-48 overflow-y-auto">
-                {[...matches].reverse().slice(0, 5).map(match => (
-                  <div key={match.id} className={`flex items-center justify-between p-2 rounded ${
-                    match.result === 'WIN' ? 'bg-green-900/30' : 'bg-red-900/30'
+                {matches.slice(-5).reverse().map(match => (
+                  <div key={match.id} className={`flex items-center justify-between p-2 rounded border-l-4 ${
+                    match.result === 'WIN' ? 'bg-green-900/30 border-green-500' : 'bg-red-900/30 border-red-500'
                   }`}>
                     <span className={`font-bold ${match.result === 'WIN' ? 'text-green-400' : 'text-red-400'}`}>
                       {match.result === 'WIN' ? '+' : '-'}{match.cubes} cubes
@@ -3747,6 +3849,202 @@ RESPONSE GUIDELINES:
               </div>
             )}
           </div>
+        </div>
+      );
+    };
+
+    // Match History Standalone View
+    const MatchHistory = ({ matches }) => {
+      const [expanded, setExpanded] = useState(null);
+      const [filter, setFilter] = useState('all');
+
+      const filteredMatches = useMemo(() => {
+        const sorted = [...matches].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        if (filter === 'wins') return sorted.filter(m => m.result === 'WIN');
+        if (filter === 'losses') return sorted.filter(m => m.result === 'LOSS');
+        return sorted;
+      }, [matches, filter]);
+
+      const todayStats = useMemo(() => {
+        const today = new Date().toDateString();
+        const todayMatches = matches.filter(m => new Date(m.timestamp).toDateString() === today);
+        const net = todayMatches.reduce((sum, m) => sum + (m.result === 'WIN' ? m.cubes : -m.cubes), 0);
+        return { net, count: todayMatches.length };
+      }, [matches]);
+
+      const winRate = useMemo(() => {
+        if (matches.length === 0) return 0;
+        const wins = matches.filter(m => m.result === 'WIN').length;
+        return Math.round((wins / matches.length) * 100);
+      }, [matches]);
+
+      const weekWinRate = useMemo(() => {
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const weekMatches = matches.filter(m => new Date(m.timestamp) >= weekAgo);
+        if (weekMatches.length === 0) return null;
+        const wins = weekMatches.filter(m => m.result === 'WIN').length;
+        return Math.round((wins / weekMatches.length) * 100);
+      }, [matches]);
+
+      const trendDiff = weekWinRate !== null ? weekWinRate - winRate : 0;
+
+      const toggleExpand = (id) => {
+        setExpanded(prev => prev === id ? null : id);
+      };
+
+      const snapLabel = (snapped) => {
+        switch (snapped) {
+          case 'PLAYER': return 'You Snapped';
+          case 'OPPONENT': return 'Opp Snapped';
+          case 'BOTH': return 'Both Snapped';
+          default: return null;
+        }
+      };
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="MATCH HISTORY" />
+
+          {/* Stat Cards */}
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            <div className="cosmic-stat p-3 text-center rounded-xl">
+              <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">Today</div>
+              <div className={`text-2xl font-display font-bold flex items-center justify-center gap-1 ${todayStats.net >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                <span className="material-symbols-outlined text-base">
+                  {todayStats.net >= 0 ? 'arrow_upward' : 'arrow_downward'}
+                </span>
+                {todayStats.net >= 0 ? '+' : ''}{todayStats.net}
+              </div>
+              <div className="text-gray-500 text-xs">{todayStats.count} games</div>
+            </div>
+
+            <div className="cosmic-stat p-3 text-center rounded-xl">
+              <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">Win Rate</div>
+              <div className="text-2xl font-display font-bold text-[#c75fff]">{winRate}%</div>
+              <div className={`text-xs flex items-center justify-center gap-0.5 ${trendDiff >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {trendDiff !== 0 && (
+                  <>
+                    <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>
+                      {trendDiff > 0 ? 'trending_up' : 'trending_down'}
+                    </span>
+                    {trendDiff > 0 ? '+' : ''}{trendDiff}% 7d
+                  </>
+                )}
+                {trendDiff === 0 && <span className="text-gray-500">Steady</span>}
+              </div>
+            </div>
+
+            <div className="cosmic-stat p-3 text-center rounded-xl">
+              <div className="text-gray-400 text-xs uppercase tracking-wide mb-1">Matches</div>
+              <div className="text-2xl font-display font-bold text-mcu-gold">{matches.length}</div>
+              <div className="text-gray-500 text-xs">
+                {matches.filter(m => m.result === 'WIN').length}W / {matches.filter(m => m.result === 'LOSS').length}L
+              </div>
+            </div>
+          </div>
+
+          {/* Filter Pills */}
+          <div className="flex gap-2 mb-4">
+            {['all', 'wins', 'losses'].map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-2.5 rounded-full text-sm font-semibold transition-all ${
+                  filter === f
+                    ? 'bg-[#ad2bee] text-white shadow-lg shadow-[#ad2bee]/30'
+                    : 'bg-[#1a1320] text-gray-400 hover:text-white hover:bg-[#2b1933]'
+                }`}
+              >
+                {f === 'all' ? 'All' : f === 'wins' ? 'Wins' : 'Losses'}
+              </button>
+            ))}
+            <span className="ml-auto text-sm text-gray-500 self-center">{filteredMatches.length} results</span>
+          </div>
+
+          {/* Match List */}
+          {filteredMatches.length === 0 ? (
+            <div className="cosmic-glass p-8 text-center rounded-xl">
+              <span className="material-symbols-outlined text-4xl text-gray-600 mb-2 block">history</span>
+              <div className="text-gray-400">No matches recorded yet</div>
+              <div className="text-gray-600 text-sm mt-1">Log matches from the Dashboard</div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {filteredMatches.map(match => {
+                const isWin = match.result === 'WIN';
+                const isExpanded = expanded === match.id;
+                const snap = snapLabel(match.snapped);
+
+                return (
+                  <button
+                    key={match.id}
+                    className={`w-full text-left cosmic-glass rounded-xl overflow-hidden border-l-4 transition-all cursor-pointer ${
+                      isWin ? 'border-green-500' : 'border-red-500'
+                    }`}
+                    onClick={() => toggleExpand(match.id)}
+                    aria-expanded={isExpanded}
+                  >
+                    {/* Main Row */}
+                    <div className="flex items-center justify-between p-3">
+                      <div className="flex items-center gap-3">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide ${
+                          isWin
+                            ? 'bg-green-500/20 text-green-400'
+                            : 'bg-red-500/20 text-red-400'
+                        }`}>
+                          {isWin ? 'Victory' : 'Defeat'}
+                        </span>
+                        <span className={`text-lg font-display font-bold ${isWin ? 'text-green-400' : 'text-red-400'}`}>
+                          {isWin ? '+' : '-'}{match.cubes}
+                        </span>
+                        {snap && (
+                          <span className="text-xs px-1.5 py-0.5 rounded bg-[#ad2bee]/20 text-[#c75fff]">
+                            {snap}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">{formatDate(match.timestamp)}</span>
+                        <span className={`material-symbols-outlined text-gray-500 text-sm transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                          expand_more
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Expanded Details */}
+                    {isExpanded && (
+                      <div className="px-3 pb-3 pt-0 border-t border-[rgba(173,43,238,0.15)]">
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                          {match.opponent && (
+                            <div>
+                              <span className="text-gray-500 text-xs uppercase">Opponent</span>
+                              <div className="text-sm text-white">{match.opponent}</div>
+                            </div>
+                          )}
+                          {match.deck && (
+                            <div>
+                              <span className="text-gray-500 text-xs uppercase">Deck</span>
+                              <div className="text-sm text-[#c75fff]">{match.deck}</div>
+                            </div>
+                          )}
+                        </div>
+                        {match.notes && (
+                          <div className="mt-2">
+                            <span className="text-gray-500 text-xs uppercase">Notes</span>
+                            <div className="text-sm text-gray-300 mt-0.5">{match.notes}</div>
+                          </div>
+                        )}
+                        {!match.opponent && !match.deck && !match.notes && (
+                          <div className="text-gray-600 text-xs mt-2 italic">No additional details recorded</div>
+                        )}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       );
     };
@@ -3960,7 +4258,7 @@ RESPONSE GUIDELINES:
                 <div className={`max-w-[85%] p-3 chat-bubble ${
                   msg.role === 'user'
                     ? 'bg-mcu-blue text-white chat-bubble-user'
-                    : 'bg-gray-700 text-white chat-bubble-ai'
+                    : 'bg-[#1a1320] text-white chat-bubble-ai'
                 }`}>
                   <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                 </div>
@@ -3969,7 +4267,7 @@ RESPONSE GUIDELINES:
 
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-700 p-4 rounded-lg chat-bubble chat-bubble-ai">
+                <div className="bg-[#1a1320] p-4 rounded-lg chat-bubble chat-bubble-ai">
                   <div className="flex gap-1">
                     <span className="w-2 h-2 bg-mcu-red rounded-full typing-dot"></span>
                     <span className="w-2 h-2 bg-mcu-red rounded-full typing-dot"></span>
@@ -3993,7 +4291,7 @@ RESPONSE GUIDELINES:
               <div className="flex flex-wrap gap-2">
                 {quickPrompts.map(prompt => (
                   <button key={prompt} onClick={() => setInput(prompt)}
-                    className="bg-gray-700 text-gray-300 text-xs px-4 py-2 rounded-full hover:bg-gray-600 touch-target-sm">
+                    className="bg-[#1a1320] text-gray-300 text-xs px-4 py-2 rounded-full hover:bg-[#2b1933] touch-target-sm">
                     {prompt}
                   </button>
                 ))}
@@ -4001,13 +4299,13 @@ RESPONSE GUIDELINES:
             </div>
           )}
 
-          <div className="p-4 bg-gray-900 border-t border-gray-700">
+          <div className="p-4 bg-gray-900 border-t border-[rgba(173,43,238,0.2)]">
             <div className="flex gap-2">
               <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                 placeholder="Ask Snapapoulous..."
                 disabled={isLoading}
-                className="flex-1 bg-gray-800 text-white rounded-lg px-4 py-3 border-2 border-gray-700 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 disabled:opacity-50"
+                className="flex-1 bg-[#120818] text-white rounded-lg px-4 py-3 border-2 border-[rgba(173,43,238,0.2)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 disabled:opacity-50"
               />
               <button onClick={sendMessage} disabled={isLoading || !input.trim()}
                 className="bg-mcu-blue text-white px-6 py-3 rounded-lg font-display font-medium hover:shadow-glow-blue transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-glass">
@@ -4165,7 +4463,7 @@ RESPONSE GUIDELINES:
           <Header title="MY COLLECTION" />
 
           {/* Pool Completion Bars - YOUR progress per pool */}
-          <div className="mcu-glass p-5 mb-4">
+          <div className="cosmic-glass p-5 mb-4">
             <div className="text-white font-medium mb-3 text-center">Pool Completion</div>
             <div className="space-y-2">
               {Object.entries(poolStats).map(([poolName, stats]) => {
@@ -4182,7 +4480,7 @@ RESPONSE GUIDELINES:
                 return (
                   <div key={poolName} className="flex items-center gap-2">
                     <span className={`w-16 h-6 rounded text-xs font-bold flex items-center justify-center text-white ${bgClass}`}>{poolName === 'Spotlight' ? '⭐' : poolName.replace('Pool ', 'P')}</span>
-                    <div className="flex-1 bg-gray-700 rounded-full h-3 overflow-hidden">
+                    <div className="flex-1 bg-[#1a1320] rounded-full h-3 overflow-hidden">
                       <div className={`h-full transition-all duration-300 ${bgClass}`} style={{ width: `${stats.percent}%` }} />
                     </div>
                     <span className="text-gray-300 text-xs w-20 text-right">{stats.owned}/{stats.total} ({stats.percent}%)</span>
@@ -4196,7 +4494,7 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* View Mode Toggle & Filters */}
-          <div className="mcu-glass p-5 mb-4">
+          <div className="cosmic-glass p-5 mb-4">
             {/* View Mode Toggle */}
             <div className="flex gap-2 mb-3">
               <button
@@ -4204,7 +4502,7 @@ RESPONSE GUIDELINES:
                 className={`flex-1 py-2 rounded font-medium text-sm transition-all ${
                   viewMode === 'owned'
                     ? 'bg-mcu-gold text-black'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-[#1a1320] text-gray-300 hover:bg-[#2b1933]'
                 }`}>
                 My Cards ({ownedCards.length})
               </button>
@@ -4213,7 +4511,7 @@ RESPONSE GUIDELINES:
                 className={`flex-1 py-2 rounded font-medium text-sm transition-all ${
                   viewMode === 'browse'
                     ? 'bg-mcu-blue text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-[#1a1320] text-gray-300 hover:bg-[#2b1933]'
                 }`}>
                 + Add Cards
               </button>
@@ -4221,11 +4519,12 @@ RESPONSE GUIDELINES:
 
             <input type="text" placeholder={viewMode === 'owned' ? "Search your cards..." : "Search cards to add..."} value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-gray-700 text-white rounded px-3 py-2 mb-3 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
+              aria-label="Search cards"
+              className="w-full bg-[#1a1320] text-white rounded px-3 py-2 mb-3 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
 
             <div className="flex gap-2">
               <select value={seriesFilter} onChange={(e) => setSeriesFilter(e.target.value)}
-                className="flex-1 bg-gray-700 text-white rounded px-2 py-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20">
+                className="flex-1 bg-[#1a1320] text-white rounded px-2 py-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20">
                 <option value="all">{viewMode === 'owned' ? 'All My Pools' : 'All Pools'}</option>
                 {availableSeries.map(s => (
                   <option key={s} value={s}>{getSeriesDisplayName(s)} {viewMode === 'owned' ? `(${seriesStats[s]?.owned || 0})` : ''}</option>
@@ -4244,7 +4543,7 @@ RESPONSE GUIDELINES:
               const isOwned = collection.owned.includes(card.name);
               return (
                 <div key={card.name} className={`relative p-2 rounded-lg border-3 transition-all card-hover ${getSeriesBorderClass(card.series)} ${
-                    isOwned ? 'bg-gray-700 border-opacity-100' : 'bg-gray-800 border-opacity-60'
+                    isOwned ? 'bg-[#1a1320] border-opacity-100 holo-glow' : 'bg-[#120818] border-opacity-60'
                   }`} style={{ borderWidth: '3px' }}>
                   <button onClick={() => toggleCard(card.name)} className="w-full h-full"
                     aria-pressed={isOwned}
@@ -4258,13 +4557,18 @@ RESPONSE GUIDELINES:
                       </div>
                     )}
                     {!isOwned && viewMode === 'browse' && (
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-mcu-blue rounded-full flex items-center justify-center">
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg">
+                        <span className="material-symbols-outlined text-gray-400 text-lg" aria-hidden="true">lock</span>
+                      </div>
+                    )}
+                    {!isOwned && viewMode === 'browse' && (
+                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-mcu-blue rounded-full flex items-center justify-center z-10">
                         <span className="text-white text-xs">+</span>
                       </div>
                     )}
                   </button>
                   <button onClick={(e) => { e.stopPropagation(); setSelectedCard(card); }}
-                    className="absolute bottom-1 right-1 w-7 h-7 bg-gray-600 hover:bg-mcu-gold rounded-full flex items-center justify-center text-xs text-white z-10 touch-expand"
+                    className="absolute bottom-1 right-1 w-7 h-7 bg-[#2b1933] hover:bg-mcu-gold rounded-full flex items-center justify-center text-xs text-white z-10 touch-expand"
                     title="View card details">i</button>
                 </div>
               );
@@ -4283,7 +4587,7 @@ RESPONSE GUIDELINES:
           {/* Card Detail Modal */}
           {selectedCard && (
             <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4" onClick={() => setSelectedCard(null)}>
-              <div className="mcu-glass max-w-sm w-full p-6" onClick={e => e.stopPropagation()}>
+              <div className="cosmic-glass max-w-sm w-full p-6" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-xl font-display font-semibold text-white">{selectedCard.name}</h3>
                   <button onClick={() => setSelectedCard(null)} className="text-gray-400 hover:text-white text-xl">&times;</button>
@@ -4305,7 +4609,7 @@ RESPONSE GUIDELINES:
                     <span className="text-gray-400 text-sm">Series</span>
                   </div>
                 </div>
-                <div className="bg-gray-700 rounded-lg p-4">
+                <div className="bg-[#1a1320] rounded-lg p-4">
                   <p className="text-gray-300 text-sm leading-relaxed">{selectedCard.ability || 'No ability text available.'}</p>
                 </div>
                 <div className="mt-4 flex gap-2">
@@ -4349,6 +4653,13 @@ RESPONSE GUIDELINES:
       const [searchCard, setSearchCard] = useState('');
       const [seriesFilter, setSeriesFilter] = useState('all');
       const [deckToDelete, setDeckToDelete] = useState(null);
+
+      // Memoized card lookup map to avoid repeated .find() in deck slot render
+      const cardLookup = useMemo(() => {
+        const map = new Map();
+        uniqueCards.forEach(c => map.set(c.name, c));
+        return map;
+      }, [uniqueCards]);
 
       const startNewDeck = () => {
         setDeckName('');
@@ -4533,7 +4844,7 @@ RESPONSE GUIDELINES:
                 {decks.map(deck => {
                   const stats = getDeckStats(deck.cards);
                   return (
-                    <div key={deck.id} className="mcu-glass p-5">
+                    <div key={deck.id} className="cosmic-glass p-5">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="text-lg font-display font-semibold text-white">{deck.name}</h3>
                         <div className="flex gap-2">
@@ -4561,7 +4872,7 @@ RESPONSE GUIDELINES:
                           const card = uniqueCards.find(c => c.name === cardName);
                           const owned = collection.owned.includes(cardName);
                           return (
-                            <span key={cardName} className={`text-xs px-2 py-1 rounded-full ${owned ? 'bg-gray-700 text-white' : 'bg-red-900 text-red-300'}`}>
+                            <span key={cardName} className={`text-xs px-2 py-1 rounded-full ${owned ? 'bg-[#1c1022] text-white' : 'bg-red-900 text-red-300'}`}>
                               {card?.cost || '?'}/{cardName}
                             </span>
                           );
@@ -4595,25 +4906,26 @@ RESPONSE GUIDELINES:
             <Header title="IMPORT DECK" />
             <button onClick={() => setView('list')} className="text-mcu-blue mb-4">&larr; Back to Decks</button>
 
-            <div className="mcu-glass p-5 mb-4">
-              <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Import from Deck Code</h3>
+            <div className="cosmic-glass p-5 mb-4">
+              <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Import from Deck Code</h3>
               <p className="text-gray-400 text-sm mb-2">Paste the full deck export from the game (includes # comments and code)</p>
               <textarea placeholder="# (1) Iron Man&#10;# (2) Hulk&#10;...&#10;base64code&#10;#"
                 value={importCode} onChange={(e) => setImportCode(e.target.value)}
                 rows={6}
-                className="w-full bg-gray-700 text-white rounded px-3 py-2 mb-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 font-mono text-sm" />
+                className="w-full bg-[#1a1320] text-white rounded px-3 py-2 mb-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 font-mono text-sm" />
               <button onClick={importFromCode}
                 className="w-full bg-mcu-blue text-white py-2 rounded-lg hover:shadow-glow-blue transition-all duration-200">
                 Import from Code
               </button>
             </div>
 
-            <div className="mcu-glass p-5">
-              <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Import from URL</h3>
+            <div className="cosmic-glass p-5">
+              <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Import from URL</h3>
               <p className="text-gray-400 text-sm mb-2">Paste a MarvelSnapZone or Untapped.gg deck URL</p>
               <input type="text" placeholder="https://marvelsnapzone.com/decks/..."
                 value={importUrl} onChange={(e) => setImportUrl(e.target.value)}
-                className="w-full bg-gray-700 text-white rounded px-3 py-2 mb-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
+                aria-label="Deck URL"
+                className="w-full bg-[#1a1320] text-white rounded px-3 py-2 mb-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
               <button onClick={importFromUrl}
                 className="w-full bg-series-3 text-white py-2 rounded hover:opacity-80">
                 Import from URL
@@ -4633,9 +4945,10 @@ RESPONSE GUIDELINES:
           <Header title={editingDeck ? 'EDIT DECK' : 'CREATE DECK'} />
           <button onClick={() => setView('list')} className="text-mcu-blue mb-4">&larr; Back to Decks</button>
 
-          <div className="mcu-glass p-5 mb-4">
+          <div className="cosmic-glass p-5 mb-4">
             <input type="text" placeholder="Deck name..."
               value={deckName} onChange={(e) => setDeckName(e.target.value)}
+              aria-label="Deck name"
               className="w-full bg-stark-surface text-white rounded-lg px-4 py-3 mb-3 border border-mcu-blue/30 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 text-lg font-display" />
             <div className="flex justify-between items-center">
               <span className="text-gray-400">Cards: <span className={selectedCards.length === 12 ? 'text-green-500' : 'text-yellow-500'}>{selectedCards.length}/12</span></span>
@@ -4646,40 +4959,60 @@ RESPONSE GUIDELINES:
             </div>
           </div>
 
-          {/* Selected Cards */}
-          {selectedCards.length > 0 && (
-            <div className="mcu-glass p-5 mb-4">
-              <h3 className="text-sm text-gray-400 mb-2">Selected Cards</h3>
-              <div className="flex flex-wrap gap-1">
-                {selectedCards.map(cardName => {
-                  const card = uniqueCards.find(c => c.name === cardName);
-                  return (
-                    <button key={cardName} onClick={() => toggleCardInDeck(cardName)}
-                      className="text-xs px-2 py-1 rounded-full bg-mcu-red text-white hover:shadow-glow-red transition-all">
-                      {card?.cost || '?'}/{cardName} &times;
-                    </button>
-                  );
-                })}
-              </div>
-              {selectedCards.length === 12 && (
-                <div className="mt-3 pt-3 border-t border-gray-700">
-                  <div className="flex gap-4 text-sm text-gray-400">
-                    <span>Avg Cost: <span className="text-mcu-blue">{getDeckStats(selectedCards).avgCost}</span></span>
-                    <span>Total Power: <span className="text-mcu-red">{getDeckStats(selectedCards).totalPower}</span></span>
-                  </div>
-                </div>
-              )}
+          {/* Selected Cards - 4x3 Grid */}
+          <div className="cosmic-glass p-5 mb-4">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-sm text-[#c75fff] font-semibold tracking-wide uppercase">Deck Slots</h3>
+              <span className="text-xs text-gray-400">{selectedCards.length}/12 Cards</span>
             </div>
-          )}
+            <div className="grid grid-cols-4 gap-2">
+              {Array.from({ length: 12 }).map((_, i) => {
+                const cardName = selectedCards[i];
+                const card = cardName ? cardLookup.get(cardName) || null : null;
+                return cardName ? (
+                  <button key={cardName} onClick={() => toggleCardInDeck(cardName)}
+                    className="card-slot filled relative flex flex-col items-center justify-center p-1 cursor-pointer hover:scale-105 transition-transform duration-150 group">
+                    <span className="absolute top-1 left-1 w-5 h-5 rounded-full bg-[#2b1933] border border-[rgba(173,43,238,0.4)] flex items-center justify-center text-[10px] font-bold text-mcu-gold">
+                      {card?.cost ?? '?'}
+                    </span>
+                    <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-mcu-red/80 flex items-center justify-center text-[9px] text-white opacity-0 group-hover:opacity-100 transition-opacity">&times;</span>
+                    <span className="text-[11px] text-white text-center leading-tight mt-3 px-1 truncate w-full">{cardName}</span>
+                    <span className="text-[9px] text-gray-400 mt-0.5">PWR {card?.power ?? '?'}</span>
+                  </button>
+                ) : (
+                  <button key={`empty-${i}`} className="card-slot flex items-center justify-center" aria-label={`Empty slot ${i + 1}, click to add card`}>
+                    <span className="text-[10px] text-gray-600 select-none">{i + 1}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-3 pt-3 border-t border-[rgba(173,43,238,0.2)]">
+              <div className="flex justify-around text-center">
+                <div>
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">Cards</div>
+                  <div className={`text-sm font-bold ${selectedCards.length === 12 ? 'text-green-400' : 'text-mcu-gold'}`}>{selectedCards.length}/12</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">Avg Energy</div>
+                  <div className="text-sm font-bold text-mcu-blue">{selectedCards.length > 0 ? getDeckStats(selectedCards).avgCost : '--'}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">Total Power</div>
+                  <div className="text-sm font-bold text-mcu-red">{selectedCards.length > 0 ? getDeckStats(selectedCards).totalPower : '--'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Card Picker */}
-          <div className="mcu-glass p-5">
+          <div className="cosmic-glass p-5">
             <div className="flex gap-2 mb-3">
               <input type="text" placeholder="Search cards..."
                 value={searchCard} onChange={(e) => setSearchCard(e.target.value)}
-                className="flex-1 bg-gray-700 text-white rounded px-3 py-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
+                aria-label="Search cards to add"
+                className="flex-1 bg-[#1a1320] text-white rounded px-3 py-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
               <select value={seriesFilter} onChange={(e) => setSeriesFilter(e.target.value)}
-                className="bg-gray-700 text-white rounded px-2 py-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20">
+                className="bg-[#1a1320] text-white rounded px-2 py-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20">
                 <option value="all">All</option>
                 <option value="1">S1</option>
                 <option value="2">S2</option>
@@ -4696,9 +5029,9 @@ RESPONSE GUIDELINES:
                   <button key={card.name} onClick={() => toggleCardInDeck(card.name)}
                     disabled={!isSelected && selectedCards.length >= 12}
                     className={`relative p-2 rounded-lg border-2 transition-all ${
-                      isSelected ? 'border-mcu-blue bg-gray-600' :
-                      isOwned ? 'border-gray-600 bg-gray-700 hover:border-mcu-blue' :
-                      'border-gray-700 bg-gray-800 opacity-60'
+                      isSelected ? 'border-mcu-blue bg-[#2b1933]' :
+                      isOwned ? 'border-[rgba(173,43,238,0.3)] bg-[#1a1320] hover:border-mcu-blue' :
+                      'border-[rgba(173,43,238,0.2)] bg-[#120818] opacity-60'
                     } disabled:opacity-30`}>
                     <div className="absolute top-0 left-0 w-4 h-4 bg-mcu-blue rounded-br flex items-center justify-center text-xs text-white">{card.cost}</div>
                     <div className="absolute top-0 right-0 w-4 h-4 bg-mcu-red rounded-bl flex items-center justify-center text-xs text-white">{card.power}</div>
@@ -4737,7 +5070,7 @@ RESPONSE GUIDELINES:
       }, []);
 
       if (loading) return <div className="px-4 pb-20"><Header title="SPOTLIGHT ORACLE" /><div className="text-center py-8 text-gray-400">Loading...</div></div>;
-      if (!schedule) return <div className="px-4 pb-20"><Header title="SPOTLIGHT ORACLE" /><div className="mcu-glass p-6 text-center"><div className="text-4xl mb-4">🔮</div><p className="text-gray-400">Schedule unavailable</p></div></div>;
+      if (!schedule) return <div className="px-4 pb-20"><Header title="SPOTLIGHT ORACLE" /><div className="cosmic-glass p-6 text-center"><div className="text-4xl mb-4">🔮</div><p className="text-gray-400">Schedule unavailable</p></div></div>;
 
       const ownedCards = new Set((collection?.owned || []).map(c => c.toLowerCase()));
       const pity = rewards?.pityCounters || { s4: 0, s5: 0, spotlightKey: 0 };
@@ -4753,8 +5086,8 @@ RESPONSE GUIDELINES:
       return (
         <div className="px-4 pb-20">
           <Header title="SPOTLIGHT ORACLE" />
-          <div className="mcu-glass p-5 mb-4 border-l-4 border-mcu-gold">
-            <h2 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">🔮 Pity Status</h2>
+          <div className="cosmic-glass p-5 mb-4 border-l-4 border-mcu-gold">
+            <h2 className="text-lg font-display font-semibold text-[#c75fff] mb-3">🔮 Pity Status</h2>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div><div className="text-2xl font-bold text-green-400">{pity.s4}/20</div><div className="text-xs text-gray-400">S4</div></div>
               <div><div className="text-2xl font-bold text-purple-400">{pity.s5}/60</div><div className="text-xs text-gray-400">S5</div></div>
@@ -4763,14 +5096,14 @@ RESPONSE GUIDELINES:
           </div>
           <div className="space-y-4">
             {analyzedWeeks.map((week, idx) => (
-              <div key={idx} className={`mcu-glass p-5 border-l-4 ${week.evRating === 'excellent' ? 'border-green-500' : week.evRating === 'good' ? 'border-blue-500' : 'border-gray-600'}`}>
+              <div key={idx} className={`cosmic-glass p-5 border-l-4 ${week.evRating === 'excellent' ? 'border-green-500' : week.evRating === 'good' ? 'border-blue-500' : 'border-[rgba(173,43,238,0.3)]'}`}>
                 <div className="flex justify-between items-start mb-2">
                   <div className="text-xs text-gray-400">Week {week.weekNumber} • {new Date(week.startDate).toLocaleDateString()}</div>
-                  <div className={`text-xs px-2 py-1 rounded ${week.evRating === 'excellent' ? 'bg-green-500/30 text-green-400' : 'bg-gray-700 text-gray-400'}`}>{week.evRating === 'excellent' ? 'PRIME' : week.evRating.toUpperCase()}</div>
+                  <div className={`text-xs px-2 py-1 rounded ${week.evRating === 'excellent' ? 'bg-green-500/30 text-green-400' : 'bg-[#1a1320] text-gray-400'}`}>{week.evRating === 'excellent' ? 'PRIME' : week.evRating.toUpperCase()}</div>
                 </div>
                 <div className="mb-2"><span className={`font-bold ${ownedCards.has(week.spotlight.mainCard.toLowerCase()) ? 'text-gray-400 line-through' : 'text-white'}`}>⭐ {week.spotlight.mainCard}</span></div>
-                <div className="flex flex-wrap gap-1 mb-2">{week.cacheCards.map((c, i) => <span key={i} className={`text-xs px-2 py-0.5 rounded ${ownedCards.has(c.name.toLowerCase()) ? 'bg-gray-700 text-gray-400 line-through' : 'bg-gray-700 text-white'}`}>{c.name}</span>)}</div>
-                <div className="flex justify-between text-xs pt-2 border-t border-gray-700"><span>Missing: {week.missingCards.length}/{week.totalCards}</span><span className={week.evRating === 'excellent' ? 'text-green-400' : ''}>EV: {week.ev === Infinity ? '∞' : week.ev}</span></div>
+                <div className="flex flex-wrap gap-1 mb-2">{week.cacheCards.map((c, i) => <span key={i} className={`text-xs px-2 py-0.5 rounded ${ownedCards.has(c.name.toLowerCase()) ? 'bg-[#1a1320] text-gray-400 line-through' : 'bg-[#1a1320] text-white'}`}>{c.name}</span>)}</div>
+                <div className="flex justify-between text-xs pt-2 border-t border-[rgba(173,43,238,0.2)]"><span>Missing: {week.missingCards.length}/{week.totalCards}</span><span className={week.evRating === 'excellent' ? 'text-green-400' : ''}>EV: {week.ev === Infinity ? '∞' : week.ev}</span></div>
               </div>
             ))}
           </div>
@@ -4798,9 +5131,9 @@ RESPONSE GUIDELINES:
         return (
           <div className="px-4 pb-20">
             <Header title="HALL OF ARMOR" />
-            <div className="mcu-glass p-6 text-center">
+            <div className="cosmic-glass p-6 text-center">
               <div className="text-4xl mb-4">🏆</div>
-              <h2 className="text-xl font-display font-semibold text-mcu-blue-light mb-2">Sync Your Collection</h2>
+              <h2 className="text-xl font-display font-semibold text-[#c75fff] mb-2">Sync Your Collection</h2>
               <p className="text-gray-400 mb-4">
                 Link your game folder to display your God Splits, variants, and collection achievements.
               </p>
@@ -4857,15 +5190,15 @@ RESPONSE GUIDELINES:
 
           {/* Stats Overview */}
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="mcu-glass p-4 border-l-4 border-mcu-gold text-center">
+            <div className="cosmic-glass p-4 border-l-4 border-mcu-gold text-center">
               <div className="text-2xl font-display font-bold text-mcu-gold">{godSplitCount}</div>
               <div className="text-xs text-gray-400">God Splits</div>
             </div>
-            <div className="mcu-glass p-4 border-l-4 border-series-3 text-center">
+            <div className="cosmic-glass p-4 border-l-4 border-series-3 text-center">
               <div className="text-2xl font-display font-bold text-series-3">{variantCount}</div>
               <div className="text-xs text-gray-400">Variants</div>
             </div>
-            <div className="mcu-glass p-4 border-l-4 border-mcu-blue text-center">
+            <div className="cosmic-glass p-4 border-l-4 border-mcu-blue text-center">
               <div className="text-2xl font-display font-bold text-mcu-blue">{totalBoosters.toLocaleString()}</div>
               <div className="text-xs text-gray-400">Boosters</div>
             </div>
@@ -4873,15 +5206,15 @@ RESPONSE GUIDELINES:
 
           {/* God Splits Showcase */}
           {godSplitCount > 0 && (
-            <div className="mcu-glass p-5 mb-4">
-              <h2 className="text-lg font-display font-semibold text-mcu-blue-light mb-3 flex items-center gap-2">
+            <div className="cosmic-glass p-5 mb-4">
+              <h2 className="text-lg font-display font-semibold text-[#c75fff] mb-3 flex items-center gap-2">
                 <span>✨</span> God Splits
               </h2>
               <div className="flex flex-wrap gap-2">
                 {godSplits.slice(0, 12).map((split, idx) => {
                   const type = getGodSplitType(split.effect);
                   return (
-                    <div key={idx} className={`px-3 py-2 rounded-lg ${type?.bg || 'bg-gray-700'} border border-gray-600`}>
+                    <div key={idx} className={`px-3 py-2 rounded-lg ${type?.bg || 'bg-[#1a1320]'} border border-[rgba(173,43,238,0.3)]`}>
                       <div className={`font-bold text-sm ${type?.color || 'text-white'}`}>
                         {split.cardDefId.replace(/_/g, ' ')}
                       </div>
@@ -4890,7 +5223,7 @@ RESPONSE GUIDELINES:
                   );
                 })}
                 {godSplitCount > 12 && (
-                  <div className="px-3 py-2 rounded-lg bg-gray-700 flex items-center">
+                  <div className="px-3 py-2 rounded-lg bg-[#1a1320] flex items-center">
                     <span className="text-gray-400 text-sm">+{godSplitCount - 12} more</span>
                   </div>
                 )}
@@ -4912,7 +5245,7 @@ RESPONSE GUIDELINES:
                 className={`px-3 py-1 rounded text-sm transition-colors ${
                   filter === f.id
                     ? 'bg-mcu-gold text-black font-bold'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-[#1a1320] text-gray-300 hover:bg-[#2b1933]'
                 }`}
               >
                 {f.label}
@@ -4929,10 +5262,10 @@ RESPONSE GUIDELINES:
               return (
                 <div
                   key={idx}
-                  className={`mcu-glass p-4 relative ${
+                  className={`cosmic-glass p-4 relative ${
                     hasGodSplit ? 'border-l-4 border-mcu-gold mcu-glow-gold' :
                     hasInfinity ? 'border-l-4 border-series-3' :
-                    'border-l-4 border-gray-600'
+                    'border-l-4 border-[rgba(173,43,238,0.3)]'
                   }`}
                 >
                   {/* Badges */}
@@ -4958,7 +5291,7 @@ RESPONSE GUIDELINES:
           </div>
 
           {sortedCards.length === 0 && (
-            <div className="mcu-glass p-6 text-center">
+            <div className="cosmic-glass p-6 text-center">
               <p className="text-gray-400">No cards match this filter.</p>
             </div>
           )}
@@ -5042,25 +5375,25 @@ RESPONSE GUIDELINES:
           <Header title="ECONOMY HQ" />
 
           {/* Resource Overview */}
-          <div className="mcu-glass p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Current Resources</h3>
+          <div className="cosmic-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Current Resources</h3>
             <div className="grid grid-cols-4 gap-2">
-              <div className="bg-gray-700 rounded-lg p-2 text-center">
+              <div className="bg-[#1a1320] rounded-lg p-2 text-center">
                 <div className="text-2xl">💰</div>
                 <div className="text-white font-bold">{(wallet.credits || 0).toLocaleString()}</div>
                 <div className="text-gray-400 text-xs">Credits</div>
               </div>
-              <div className="bg-gray-700 rounded-lg p-2 text-center">
+              <div className="bg-[#1a1320] rounded-lg p-2 text-center">
                 <div className="text-2xl">🪙</div>
                 <div className="text-yellow-400 font-bold">{(wallet.gold || 0).toLocaleString()}</div>
                 <div className="text-gray-400 text-xs">Gold</div>
               </div>
-              <div className="bg-gray-700 rounded-lg p-2 text-center">
+              <div className="bg-[#1a1320] rounded-lg p-2 text-center">
                 <div className="text-2xl">🎟️</div>
                 <div className="text-purple-400 font-bold">{(wallet.tokens || 0).toLocaleString()}</div>
                 <div className="text-gray-400 text-xs">Tokens</div>
               </div>
-              <div className="bg-gray-700 rounded-lg p-2 text-center">
+              <div className="bg-[#1a1320] rounded-lg p-2 text-center">
                 <div className="text-2xl">🔑</div>
                 <div className="text-mcu-red font-bold">{wallet.keys || 0}</div>
                 <div className="text-gray-400 text-xs">Keys</div>
@@ -5069,10 +5402,10 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Key Allocation Advisor */}
-          <div className={`mcu-glass p-5 mb-4 border-l-4 ${
+          <div className={`cosmic-glass p-5 mb-4 border-l-4 ${
             recommendation.urgent ? 'border-mcu-blue' : 'border-mcu-gold'
           }`}>
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-2">Key Allocation Advisor</h3>
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-2">Key Allocation Advisor</h3>
             <div className={`text-lg font-bold mb-1 ${
               recommendation.action === 'SPOTLIGHT' ? 'text-yellow-400' :
               recommendation.action === 'COLLECTOR' ? 'text-purple-400' :
@@ -5093,7 +5426,7 @@ RESPONSE GUIDELINES:
                     <span>Spotlight Key Pity</span>
                     <span>{rewards.spotlightKey?.current || 0}/{rewards.spotlightKey?.max || 4}</span>
                   </div>
-                  <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-2 bg-[#1a1320] rounded-full overflow-hidden">
                     <div className="h-full bg-yellow-500 transition-all" style={{ width: `${keyProgress}%` }}></div>
                   </div>
                 </div>
@@ -5102,7 +5435,7 @@ RESPONSE GUIDELINES:
                     <span>S4 Pity</span>
                     <span>{rewards.series4?.current || 0}/{rewards.series4?.max || 40}</span>
                   </div>
-                  <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-2 bg-[#1a1320] rounded-full overflow-hidden">
                     <div className="h-full bg-green-500 transition-all" style={{ width: `${s4Progress}%` }}></div>
                   </div>
                 </div>
@@ -5112,7 +5445,7 @@ RESPONSE GUIDELINES:
                       <span>S5 Pity</span>
                       <span>{rewards.series5?.current || 0}/{rewards.series5?.max || 50}</span>
                     </div>
-                    <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-2 bg-[#1a1320] rounded-full overflow-hidden">
                       <div className="h-full bg-red-500 transition-all" style={{ width: `${s5Progress}%` }}></div>
                     </div>
                   </div>
@@ -5122,13 +5455,13 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Token Shop Planner */}
-          <div className="mcu-glass p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Token Shop</h3>
+          <div className="cosmic-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Token Shop</h3>
             {affordableItems.length > 0 ? (
               <div className="space-y-2">
                 <p className="text-green-400 text-sm mb-2">You can afford {affordableItems.length} item(s)!</p>
                 {affordableItems.slice(0, 5).map((item, i) => (
-                  <div key={i} className="flex justify-between items-center bg-gray-700 rounded p-2">
+                  <div key={i} className="flex justify-between items-center bg-[#1a1320] rounded p-2">
                     <span className="text-white">{item.name}</span>
                     <span className="text-purple-400">{item.cost} tokens</span>
                   </div>
@@ -5150,18 +5483,18 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Credit Burn Optimizer */}
-          <div className="mcu-glass p-5">
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Credit Optimizer</h3>
+          <div className="cosmic-glass p-5">
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Credit Optimizer</h3>
             <div className="text-white mb-2">
               With <span className="text-green-400 font-bold">{wallet.credits?.toLocaleString()}</span> credits, you can do:
             </div>
             <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="bg-gray-700 rounded p-2">
+              <div className="bg-[#1a1320] rounded p-2">
                 <div className="text-gray-400">Common → Uncommon</div>
                 <div className="text-white font-bold">{maxCheapUpgrades}x</div>
                 <div className="text-green-400 text-xs">+{maxCheapUpgrades} CL</div>
               </div>
-              <div className="bg-gray-700 rounded p-2">
+              <div className="bg-[#1a1320] rounded p-2">
                 <div className="text-gray-400">Rare → Epic</div>
                 <div className="text-white font-bold">{Math.floor(wallet.credits / 100)}x</div>
                 <div className="text-green-400 text-xs">+{Math.floor(wallet.credits / 100) * 4} CL</div>
@@ -5258,7 +5591,7 @@ RESPONSE GUIDELINES:
           <Header title="BOARD SNAPSHOT" />
 
           {/* Instructions */}
-          <div className="mcu-glass p-4 mb-4 text-sm">
+          <div className="cosmic-glass p-4 mb-4 text-sm">
             <p className="text-gray-300">
               <span className="text-mcu-gold font-bold">How to use:</span> Tap cards below to add them to lanes.
               Set opponent power, then copy to share with AI advisor.
@@ -5268,7 +5601,7 @@ RESPONSE GUIDELINES:
           {/* Board - 3 Lanes */}
           <div className="grid grid-cols-3 gap-2 mb-4">
             {lanes.map((lane, laneIndex) => (
-              <div key={laneIndex} className="mcu-glass p-3 min-h-32">
+              <div key={laneIndex} className="cosmic-glass p-3 min-h-32">
                 <div className="text-center text-gray-400 text-xs mb-2">Lane {laneIndex + 1}</div>
 
                 {/* Cards in lane */}
@@ -5277,21 +5610,21 @@ RESPONSE GUIDELINES:
                     <div
                       key={cardIndex}
                       onClick={() => removeCardFromLane(laneIndex, cardIndex)}
-                      className="bg-gray-700 rounded px-2 py-1 text-xs text-white cursor-pointer hover:bg-red-900 flex justify-between"
+                      className="bg-[#1a1320] rounded px-2 py-1 text-xs text-white cursor-pointer hover:bg-red-900 flex justify-between"
                     >
                       <span className="truncate">{card.name}</span>
                       <span className="text-mcu-gold ml-1">{card.power}</span>
                     </div>
                   ))}
                   {lane.length < 4 && (
-                    <div className="border-2 border-dashed border-gray-600 rounded h-6 flex items-center justify-center text-gray-500 text-xs">
+                    <div className="border-2 border-dashed border-[rgba(173,43,238,0.3)] rounded h-6 flex items-center justify-center text-gray-500 text-xs">
                       +
                     </div>
                   )}
                 </div>
 
                 {/* Lane totals */}
-                <div className="text-center border-t border-gray-700 pt-2">
+                <div className="text-center border-t border-[rgba(173,43,238,0.2)] pt-2">
                   <div className="text-mcu-blue font-bold">{lanePowers[laneIndex]}</div>
                   <div className="flex items-center justify-center gap-1 mt-1">
                     <span className="text-xs text-gray-400">vs</span>
@@ -5303,7 +5636,7 @@ RESPONSE GUIDELINES:
                         newOpp[laneIndex] = parseInt(e.target.value) || 0;
                         setOpponentPower(newOpp);
                       }}
-                      className="w-12 bg-gray-700 rounded text-center text-red-400 text-sm p-1"
+                      className="w-12 bg-[#1a1320] rounded text-center text-red-400 text-sm p-1"
                       min="0"
                     />
                   </div>
@@ -5313,7 +5646,7 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Power Summary */}
-          <div className="flex justify-between items-center mcu-glass p-4 mb-4">
+          <div className="flex justify-between items-center cosmic-glass p-4 mb-4">
             <div className="text-center">
               <div className="text-mcu-blue text-xl font-bold">{totalPower}</div>
               <div className="text-gray-400 text-xs">Your Power</div>
@@ -5335,7 +5668,7 @@ RESPONSE GUIDELINES:
             </button>
             <button
               onClick={clearBoard}
-              className="bg-gray-700 text-white px-4 py-3 rounded-lg font-medium hover:bg-gray-600"
+              className="bg-[#1a1320] text-white px-4 py-3 rounded-lg font-medium hover:bg-[#2b1933]"
             >
               🗑️ Clear
             </button>
@@ -5357,7 +5690,7 @@ RESPONSE GUIDELINES:
                     disabled={lanes[laneIdx].length >= 4}
                     className={`py-3 rounded-lg font-bold transition-colors ${
                       lanes[laneIdx].length >= 4
-                        ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                        ? 'bg-[#1a1320] text-gray-500 cursor-not-allowed'
                         : 'bg-mcu-blue text-white hover:bg-blue-500'
                     }`}
                   >
@@ -5368,7 +5701,7 @@ RESPONSE GUIDELINES:
               </div>
               <button
                 onClick={cancelSelection}
-                className="w-full py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600"
+                className="w-full py-2 bg-[#1a1320] text-gray-300 rounded-lg hover:bg-[#2b1933]"
               >
                 Cancel
               </button>
@@ -5376,13 +5709,13 @@ RESPONSE GUIDELINES:
           )}
 
           {/* Card Search & Selection */}
-          <div className="mcu-glass p-5">
+          <div className="cosmic-glass p-5">
             <input
               type="text"
               placeholder="Search cards..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-400 mb-3"
+              className="w-full bg-[#1a1320] rounded-lg px-4 py-2 text-white placeholder-gray-400 mb-3"
             />
 
             <div className="grid grid-cols-4 gap-2">
@@ -5390,7 +5723,7 @@ RESPONSE GUIDELINES:
                 <button
                   key={i}
                   onClick={() => selectCard(card)}
-                  className={`bg-gray-700 rounded-lg p-2 text-center transition-colors hover:bg-gray-600 ${
+                  className={`bg-[#1a1320] rounded-lg p-2 text-center transition-colors hover:bg-[#2b1933] ${
                     selectedCard?.name === card.name ? 'ring-2 ring-mcu-gold' : ''
                   }`}
                 >
@@ -5436,7 +5769,7 @@ RESPONSE GUIDELINES:
       return (
         <div className="px-4 pb-20">
           <Header title="SNAP CALCULATOR" />
-          <div className={`mcu-glass ${rec.bgColor} p-6 mb-4 text-center ${rec.animate ? 'arc-pulse' : ''}`}>
+          <div className={`cosmic-glass ${rec.bgColor} p-6 mb-4 text-center ${rec.animate ? 'arc-pulse' : ''}`}>
             <div className="text-4xl font-hero text-white mb-2 mcu-text-glow">{rec.action}</div>
             <div className="text-white/80">
               {rec.action === 'SNAP' && 'The odds favor you. Make your move!'}
@@ -5444,7 +5777,7 @@ RESPONSE GUIDELINES:
               {rec.action === 'RETREAT' && 'Live to fight another match.'}
             </div>
           </div>
-          <div className="mcu-glass p-5 mb-4">
+          <div className="cosmic-glass p-5 mb-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-white font-medium">Current Turn</span>
               <span className="text-mcu-gold font-bold text-xl">{turn}</span>
@@ -5452,30 +5785,30 @@ RESPONSE GUIDELINES:
             <input type="range" min="1" max="7" value={turn} onChange={(e) => setTurn(parseInt(e.target.value))} className="w-full" />
             <div className="text-center text-sm text-gray-400 mt-2">Cards seen: {cardsSeen}/12</div>
           </div>
-          <div className="mcu-glass p-5 mb-4">
+          <div className="cosmic-glass p-5 mb-4">
             <div className="flex justify-between items-center mb-2">
               <span className="text-white font-medium">Win Confidence</span>
               <span className={`font-bold text-xl ${confidence >= 70 ? 'text-green-400' : confidence >= 45 ? 'text-yellow-400' : 'text-red-400'}`}>{confidence}%</span>
             </div>
             <input type="range" min="0" max="100" value={confidence} onChange={(e) => setConfidence(parseInt(e.target.value))} className="w-full" />
           </div>
-          <div className="mcu-glass p-5">
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Draw Probability</h3>
+          <div className="cosmic-glass p-5">
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Draw Probability</h3>
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div>
                 <label htmlFor="cards-to-draw" className="text-sm text-gray-400">Cards to Draw</label>
                 <input id="cards-to-draw" type="number" min="1" max="12" value={cardsToDraw}
                   onChange={(e) => setCardsToDraw(Math.max(1, Math.min(12, parseInt(e.target.value) || 1)))}
-                  className="w-full bg-gray-700 text-white rounded px-3 py-2 mt-1 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
+                  className="w-full bg-[#1a1320] text-white rounded px-3 py-2 mt-1 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
               </div>
               <div>
                 <label htmlFor="copies-in-deck" className="text-sm text-gray-400">Copies in Deck</label>
                 <input id="copies-in-deck" type="number" min="1" max="4" value={copiesInDeck}
                   onChange={(e) => setCopiesInDeck(Math.max(1, Math.min(4, parseInt(e.target.value) || 1)))}
-                  className="w-full bg-gray-700 text-white rounded px-3 py-2 mt-1 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
+                  className="w-full bg-[#1a1320] text-white rounded px-3 py-2 mt-1 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
               </div>
             </div>
-            <div className="bg-gray-700 rounded-lg p-4 text-center">
+            <div className="bg-[#1a1320] rounded-lg p-4 text-center">
               <div className="text-gray-400 text-sm mb-1">Probability of drawing at least 1:</div>
               <div className={`text-3xl font-display font-bold ${drawProbability >= 70 ? 'text-green-400' : drawProbability >= 40 ? 'text-mcu-gold' : 'text-mcu-red'}`}>
                 {drawProbability.toFixed(1)}%
@@ -6158,7 +6491,7 @@ RESPONSE GUIDELINES:
 
       // Progress bar component
       const ProgressBar = ({ value }) => (
-        <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+        <div className="w-full bg-[#1a1320] rounded-full h-4 overflow-hidden">
           <div
             className="bg-mcu-blue h-full transition-all duration-200 ease-out"
             style={{ width: `${value * 100}%` }}
@@ -6169,7 +6502,7 @@ RESPONSE GUIDELINES:
       // Percentage bar component
       const PercentBar = ({ value, color = 'bg-mcu-blue', label }) => (
         <div className="flex items-center gap-2">
-          <div className="flex-1 bg-gray-700 rounded h-4 overflow-hidden">
+          <div className="flex-1 bg-[#1a1320] rounded h-4 overflow-hidden">
             <div className={`${color} h-full`} style={{ width: `${Math.min(100, value)}%` }} />
           </div>
           <span className="text-white text-sm w-16 text-right">{value.toFixed(1)}%</span>
@@ -6182,7 +6515,7 @@ RESPONSE GUIDELINES:
           <Header title="DECK SIMULATOR" />
 
           {/* Deck Selector */}
-          <div className="mcu-glass p-5 mb-4">
+          <div className="cosmic-glass p-5 mb-4">
             <label className="block text-sm text-gray-400 mb-2">Select Deck</label>
             {decks.length === 0 ? (
               <div className="text-center text-gray-400 py-4">
@@ -6193,7 +6526,7 @@ RESPONSE GUIDELINES:
               <select
                 value={selectedDeckId}
                 onChange={(e) => setSelectedDeckId(e.target.value)}
-                className="w-full bg-gray-700 text-white rounded px-3 py-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20"
+                className="w-full bg-[#1a1320] text-white rounded px-3 py-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20"
               >
                 <option value="">Select a deck...</option>
                 {decks.map(deck => (
@@ -6210,7 +6543,7 @@ RESPONSE GUIDELINES:
                   return (
                     <span
                       key={cardName}
-                      className={`text-xs px-2 py-1 rounded-full ${owned ? 'bg-gray-700 text-white' : 'bg-red-900 text-red-300'}`}
+                      className={`text-xs px-2 py-1 rounded-full ${owned ? 'bg-[#1a1320] text-white' : 'bg-red-900 text-red-300'}`}
                     >
                       {card?.cost || '?'}/{cardName}
                     </span>
@@ -6221,7 +6554,7 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Mode Selector */}
-          <div className="mcu-glass p-5 mb-4">
+          <div className="cosmic-glass p-5 mb-4">
             <label className="block text-sm text-gray-400 mb-2">Simulation Mode</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {[
@@ -6238,7 +6571,7 @@ RESPONSE GUIDELINES:
                   className={`p-3 rounded-lg text-sm font-medium transition-colors ${
                     mode === m.id
                       ? 'bg-mcu-blue text-white'
-                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      : 'bg-[#1a1320] text-gray-300 hover:bg-[#2b1933]'
                   }`}
                 >
                   <span className="block text-lg mb-1">{m.icon}</span>
@@ -6250,25 +6583,25 @@ RESPONSE GUIDELINES:
 
           {/* Run Controls (not for play-through mode) */}
           {mode !== 'play' && (
-            <div className="mcu-glass p-5 mb-4">
+            <div className="cosmic-glass p-5 mb-4">
               <div className="flex gap-2 mb-3">
                 <button
                   onClick={() => setNumRuns(1000)}
-                  className={`px-3 py-1 rounded text-sm ${numRuns === 1000 ? 'bg-mcu-blue text-white' : 'bg-gray-700 text-gray-300'}`}
+                  className={`px-3 py-1 rounded text-sm ${numRuns === 1000 ? 'bg-mcu-blue text-white' : 'bg-[#1a1320] text-gray-300'}`}
                 >1K</button>
                 <button
                   onClick={() => setNumRuns(10000)}
-                  className={`px-3 py-1 rounded text-sm ${numRuns === 10000 ? 'bg-mcu-blue text-white' : 'bg-gray-700 text-gray-300'}`}
+                  className={`px-3 py-1 rounded text-sm ${numRuns === 10000 ? 'bg-mcu-blue text-white' : 'bg-[#1a1320] text-gray-300'}`}
                 >10K</button>
                 <button
                   onClick={() => setNumRuns(50000)}
-                  className={`px-3 py-1 rounded text-sm ${numRuns === 50000 ? 'bg-mcu-blue text-white' : 'bg-gray-700 text-gray-300'}`}
+                  className={`px-3 py-1 rounded text-sm ${numRuns === 50000 ? 'bg-mcu-blue text-white' : 'bg-[#1a1320] text-gray-300'}`}
                 >50K</button>
                 <input
                   type="number"
                   value={numRuns}
                   onChange={(e) => setNumRuns(Math.max(100, Math.min(200000, parseInt(e.target.value) || 1000)))}
-                  className="flex-1 bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+                  className="flex-1 bg-[#1a1320] text-white rounded px-2 py-1 text-sm border border-[rgba(173,43,238,0.3)]"
                   placeholder="Custom"
                 />
               </div>
@@ -6288,7 +6621,7 @@ RESPONSE GUIDELINES:
                     type="number"
                     value={seed}
                     onChange={(e) => setSeed(parseInt(e.target.value) || 0)}
-                    className="w-24 bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+                    className="w-24 bg-[#1a1320] text-white rounded px-2 py-1 text-sm border border-[rgba(173,43,238,0.3)]"
                   />
                 )}
               </div>
@@ -6319,7 +6652,7 @@ RESPONSE GUIDELINES:
           )}
 
           {/* Advanced Rules Panel */}
-          <div className="mcu-glass mb-4 overflow-hidden">
+          <div className="cosmic-glass mb-4 overflow-hidden">
             <button
               onClick={() => setShowAdvanced(!showAdvanced)}
               className="w-full p-4 flex justify-between items-center text-left"
@@ -6331,7 +6664,7 @@ RESPONSE GUIDELINES:
             </button>
 
             {showAdvanced && (
-              <div className="px-4 pb-4 space-y-3 border-t border-gray-700 pt-3">
+              <div className="px-4 pb-4 space-y-3 border-t border-[rgba(173,43,238,0.2)] pt-3">
                 {isAdvancedModified && (
                   <div className="bg-yellow-900/30 border border-yellow-600 rounded p-2 text-xs text-yellow-300">
                     ⚠️ Advanced rules active - Exact math disabled, Monte Carlo only
@@ -6345,7 +6678,7 @@ RESPONSE GUIDELINES:
                       type="number"
                       value={advancedOptions.handSize}
                       onChange={(e) => setAdvancedOptions(prev => ({ ...prev, handSize: Math.max(1, Math.min(12, parseInt(e.target.value) || 3)) }))}
-                      className="w-full bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+                      className="w-full bg-[#1a1320] text-white rounded px-2 py-1 text-sm border border-[rgba(173,43,238,0.3)]"
                     />
                   </div>
                   <div>
@@ -6354,7 +6687,7 @@ RESPONSE GUIDELINES:
                       type="number"
                       value={advancedOptions.extraDrawsPerTurn}
                       onChange={(e) => setAdvancedOptions(prev => ({ ...prev, extraDrawsPerTurn: Math.max(0, Math.min(5, parseInt(e.target.value) || 0)) }))}
-                      className="w-full bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+                      className="w-full bg-[#1a1320] text-white rounded px-2 py-1 text-sm border border-[rgba(173,43,238,0.3)]"
                     />
                   </div>
                   <div>
@@ -6363,7 +6696,7 @@ RESPONSE GUIDELINES:
                       type="number"
                       value={advancedOptions.thinningPerTurn}
                       onChange={(e) => setAdvancedOptions(prev => ({ ...prev, thinningPerTurn: Math.max(0, Math.min(5, parseInt(e.target.value) || 0)) }))}
-                      className="w-full bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+                      className="w-full bg-[#1a1320] text-white rounded px-2 py-1 text-sm border border-[rgba(173,43,238,0.3)]"
                     />
                   </div>
                   <div>
@@ -6372,7 +6705,7 @@ RESPONSE GUIDELINES:
                       type="number"
                       value={advancedOptions.junkInsertsPerTurn}
                       onChange={(e) => setAdvancedOptions(prev => ({ ...prev, junkInsertsPerTurn: Math.max(0, Math.min(5, parseInt(e.target.value) || 0)) }))}
-                      className="w-full bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+                      className="w-full bg-[#1a1320] text-white rounded px-2 py-1 text-sm border border-[rgba(173,43,238,0.3)]"
                     />
                   </div>
                   <div className="col-span-2">
@@ -6381,7 +6714,7 @@ RESPONSE GUIDELINES:
                       type="number"
                       value={advancedOptions.handSizeLimit}
                       onChange={(e) => setAdvancedOptions(prev => ({ ...prev, handSizeLimit: Math.max(0, Math.min(20, parseInt(e.target.value) || 0)) }))}
-                      className="w-full bg-gray-700 text-white rounded px-2 py-1 text-sm border border-gray-600"
+                      className="w-full bg-[#1a1320] text-white rounded px-2 py-1 text-sm border border-[rgba(173,43,238,0.3)]"
                     />
                   </div>
                 </div>
@@ -6398,7 +6731,7 @@ RESPONSE GUIDELINES:
 
           {/* Combo Card Selector (for combo mode) */}
           {mode === 'combo' && selectedDeck && (
-            <div className="mcu-glass p-5 mb-4">
+            <div className="cosmic-glass p-5 mb-4">
               <label className="block text-sm text-gray-400 mb-2">Select Combo Pieces (click cards)</label>
               <div className="flex flex-wrap gap-1 mb-3">
                 {selectedDeck.cards.map(cardName => {
@@ -6411,7 +6744,7 @@ RESPONSE GUIDELINES:
                       className={`text-xs px-2 py-1 rounded-full transition-colors ${
                         isSelected
                           ? 'bg-mcu-gold text-black font-medium'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          : 'bg-[#1a1320] text-gray-300 hover:bg-[#2b1933]'
                       }`}
                     >
                       {card?.cost || '?'}/{cardName}
@@ -6433,12 +6766,12 @@ RESPONSE GUIDELINES:
             <div className="space-y-4">
               {/* Opening Hand Results */}
               {(mode === 'opening' || mode === 'advanced') && (
-                <div className="mcu-glass p-5">
-                  <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Opening Hand Probability</h3>
+                <div className="cosmic-glass p-5">
+                  <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Opening Hand Probability</h3>
                   <p className="text-xs text-gray-400 mb-3">Chance of each card in starting hand ({advancedOptions.handSize} cards)</p>
 
                   {!isAdvancedModified && exactResults && (
-                    <div className="mb-3 p-2 bg-gray-700 rounded text-xs text-gray-300">
+                    <div className="mb-3 p-2 bg-[#1a1320] rounded text-xs text-gray-300">
                       <span className="text-mcu-blue">Exact math:</span> {exactResults.openingHandProb.toFixed(1)}% per card
                     </div>
                   )}
@@ -6458,14 +6791,14 @@ RESPONSE GUIDELINES:
                   </div>
 
                   {results.sampleHands.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-700">
+                    <div className="mt-4 pt-4 border-t border-[rgba(173,43,238,0.2)]">
                       <h4 className="text-sm text-gray-400 mb-2">Sample Opening Hands</h4>
                       <div className="space-y-1 max-h-40 overflow-y-auto">
                         {results.sampleHands.slice(0, 5).map((hand, i) => (
                           <div key={i} className="flex gap-1 flex-wrap">
                             <span className="text-xs text-gray-500 w-6">#{i+1}</span>
                             {hand.map((name, j) => (
-                              <span key={j} className="text-xs px-2 py-0.5 bg-gray-700 rounded text-white">{name}</span>
+                              <span key={j} className="text-xs px-2 py-0.5 bg-[#1a1320] rounded text-white">{name}</span>
                             ))}
                           </div>
                         ))}
@@ -6477,8 +6810,8 @@ RESPONSE GUIDELINES:
 
               {/* Draw by Turn Results */}
               {(mode === 'draw' || mode === 'advanced') && (
-                <div className="mcu-glass p-5">
-                  <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Draw by Turn Probability</h3>
+                <div className="cosmic-glass p-5">
+                  <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Draw by Turn Probability</h3>
                   <p className="text-xs text-gray-400 mb-3">Chance of having each card by end of turn</p>
 
                   <div className="overflow-x-auto">
@@ -6493,7 +6826,7 @@ RESPONSE GUIDELINES:
                       </thead>
                       <tbody>
                         {Object.entries(results.cardByTurn).map(([name, turns]) => (
-                          <tr key={name} className="border-t border-gray-700">
+                          <tr key={name} className="border-t border-[rgba(173,43,238,0.2)]">
                             <td className="py-1 text-white text-xs">{name}</td>
                             {turns.slice(1).map((prob, i) => (
                               <td key={i} className={`text-center py-1 ${prob >= 70 ? 'text-green-400' : prob >= 40 ? 'text-yellow-400' : 'text-gray-400'}`}>
@@ -6510,8 +6843,8 @@ RESPONSE GUIDELINES:
 
               {/* Curve Analysis Results */}
               {(mode === 'curve' || mode === 'advanced') && (
-                <div className="mcu-glass p-5">
-                  <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Curve / Brick Analysis</h3>
+                <div className="cosmic-glass p-5">
+                  <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Curve / Brick Analysis</h3>
                   <p className="text-xs text-gray-400 mb-3">On-curve = have at least one playable card that turn</p>
 
                   <div className="space-y-3">
@@ -6540,7 +6873,7 @@ RESPONSE GUIDELINES:
                     ))}
                   </div>
 
-                  <div className="mt-4 pt-4 border-t border-gray-700 grid grid-cols-2 gap-4">
+                  <div className="mt-4 pt-4 border-t border-[rgba(173,43,238,0.2)] grid grid-cols-2 gap-4">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-green-400">
                         {(results.curveAnalysis.reduce((sum, a) => sum + a.onCurveRate, 0) / 6).toFixed(1)}%
@@ -6559,8 +6892,8 @@ RESPONSE GUIDELINES:
 
               {/* Combo Results */}
               {(mode === 'combo' || mode === 'advanced') && comboCards.length >= 2 && (
-                <div className="mcu-glass p-5">
-                  <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Combo Finder Results</h3>
+                <div className="cosmic-glass p-5">
+                  <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Combo Finder Results</h3>
                   <p className="text-xs text-gray-400 mb-3">Chance of having ALL pieces: {comboCards.join(' + ')}</p>
 
                   <div className="space-y-2">
@@ -6592,7 +6925,7 @@ RESPONSE GUIDELINES:
           {/* Interactive Play-Through Mode */}
           {mode === 'play' && (
             <div className="space-y-4">
-              <div className="mcu-glass p-5">
+              <div className="cosmic-glass p-5">
                 <div className="flex gap-2 mb-4">
                   <button
                     onClick={startNewGame}
@@ -6611,7 +6944,7 @@ RESPONSE GUIDELINES:
                   <button
                     onClick={undoAction}
                     disabled={playHistory.length <= 1}
-                    className="px-4 bg-gray-600 text-white py-2 rounded font-medium hover:opacity-90 disabled:opacity-50"
+                    className="px-4 bg-[#2b1933] text-white py-2 rounded font-medium hover:opacity-90 disabled:opacity-50"
                   >
                     Undo
                   </button>
@@ -6630,10 +6963,10 @@ RESPONSE GUIDELINES:
                         {playState.hand.map((card, i) => (
                           <div
                             key={i}
-                            className={`relative p-2 rounded-lg border-2 bg-gray-700 min-w-16 ${
+                            className={`relative p-2 rounded-lg border-2 bg-[#1a1320] min-w-16 ${
                               playState.drawnThisTurn.includes(card) && playState.turn > 0
                                 ? 'border-mcu-gold'
-                                : 'border-gray-600'
+                                : 'border-[rgba(173,43,238,0.3)]'
                             }`}
                           >
                             <div className="absolute top-0 left-0 w-5 h-5 bg-mcu-blue rounded-br flex items-center justify-center text-xs text-white font-bold">
@@ -6654,11 +6987,11 @@ RESPONSE GUIDELINES:
                       </div>
                     )}
 
-                    <div className="mt-4 pt-4 border-t border-gray-700">
+                    <div className="mt-4 pt-4 border-t border-[rgba(173,43,238,0.2)]">
                       <h4 className="text-sm text-gray-400 mb-2">Remaining Deck</h4>
                       <div className="flex flex-wrap gap-1">
                         {playState.deck.map((card, i) => (
-                          <span key={i} className="text-xs px-2 py-0.5 bg-gray-700 text-gray-400 rounded">
+                          <span key={i} className="text-xs px-2 py-0.5 bg-[#1a1320] text-gray-400 rounded">
                             ?
                           </span>
                         ))}
@@ -6679,25 +7012,25 @@ RESPONSE GUIDELINES:
 
           {/* Info Panel */}
           {!results && mode !== 'play' && selectedDeck && (
-            <div className="mcu-glass p-5">
-              <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-2">Simulation Info</h3>
+            <div className="cosmic-glass p-5">
+              <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-2">Simulation Info</h3>
               <p className="text-sm text-gray-400 mb-3">
                 Marvel Snap draws 3 cards initially, then 1 per turn. By turn 6, you've seen 9 of 12 cards.
               </p>
               <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="bg-gray-700 rounded p-2 text-center">
+                <div className="bg-[#1a1320] rounded p-2 text-center">
                   <div className="text-mcu-blue font-bold">12</div>
                   <div className="text-gray-400 text-xs">Deck Size</div>
                 </div>
-                <div className="bg-gray-700 rounded p-2 text-center">
+                <div className="bg-[#1a1320] rounded p-2 text-center">
                   <div className="text-mcu-blue font-bold">3</div>
                   <div className="text-gray-400 text-xs">Starting Hand</div>
                 </div>
-                <div className="bg-gray-700 rounded p-2 text-center">
+                <div className="bg-[#1a1320] rounded p-2 text-center">
                   <div className="text-mcu-blue font-bold">1</div>
                   <div className="text-gray-400 text-xs">Draw/Turn</div>
                 </div>
-                <div className="bg-gray-700 rounded p-2 text-center">
+                <div className="bg-[#1a1320] rounded p-2 text-center">
                   <div className="text-mcu-blue font-bold">9</div>
                   <div className="text-gray-400 text-xs">Cards by T6</div>
                 </div>
@@ -6717,14 +7050,14 @@ RESPONSE GUIDELINES:
       return (
         <div className="modal-overlay" onClick={onCancel}>
           <div className="modal p-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-xl font-display font-semibold text-mcu-blue-light mb-4 text-center">Log Analysis Complete</h3>
+            <h3 className="text-xl font-display font-semibold text-[#c75fff] mb-4 text-center">Log Analysis Complete</h3>
 
             <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="bg-gray-700 rounded-lg p-3 text-center">
+              <div className="bg-[#1a1320] rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-white">{matches.length}</div>
                 <div className="text-xs text-gray-400">New Matches</div>
               </div>
-              <div className="bg-gray-700 rounded-lg p-3 text-center">
+              <div className="bg-[#1a1320] rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-gray-400">{skippedCount}</div>
                 <div className="text-xs text-gray-400">Duplicates Skipped</div>
               </div>
@@ -6738,7 +7071,7 @@ RESPONSE GUIDELINES:
               </div>
             </div>
 
-            <div className="bg-gray-700 rounded-lg p-3 mb-4 text-center">
+            <div className="bg-[#1a1320] rounded-lg p-3 mb-4 text-center">
               <div className="text-xs text-gray-400 mb-1">Net Cubes from Import</div>
               <div className={`text-2xl font-bold ${totalCubes >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {totalCubes >= 0 ? '+' : ''}{totalCubes}
@@ -6771,7 +7104,7 @@ RESPONSE GUIDELINES:
                 Import {matches.length} Matches
               </button>
               <button onClick={onCancel}
-                className="flex-1 bg-gray-600 text-white py-3 rounded-lg font-medium hover:bg-gray-500">
+                className="flex-1 bg-[#2b1933] text-white py-3 rounded-lg font-medium hover:bg-[#3c2348]">
                 Cancel
               </button>
             </div>
@@ -6785,9 +7118,9 @@ RESPONSE GUIDELINES:
       return (
         <div className="modal-overlay" onClick={onCancel}>
           <div className="modal p-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-xl font-display font-semibold text-mcu-blue-light mb-4 text-center">Sync Data Received</h3>
+            <h3 className="text-xl font-display font-semibold text-[#c75fff] mb-4 text-center">Sync Data Received</h3>
 
-            <div className="bg-gray-700 rounded-lg p-4 mb-4">
+            <div className="bg-[#1a1320] rounded-lg p-4 mb-4">
               <div className="text-center mb-3">
                 <div className="text-3xl font-bold text-mcu-blue">{syncData.c?.length || 0}</div>
                 <div className="text-sm text-gray-400">Cards in Collection</div>
@@ -6822,7 +7155,7 @@ RESPONSE GUIDELINES:
                 Import Collection
               </button>
               <button onClick={onCancel}
-                className="flex-1 bg-gray-600 text-white py-3 rounded-lg font-medium hover:bg-gray-500">
+                className="flex-1 bg-[#2b1933] text-white py-3 rounded-lg font-medium hover:bg-[#3c2348]">
                 Cancel
               </button>
             </div>
@@ -7070,7 +7403,7 @@ RESPONSE GUIDELINES:
               </button>
               <p style={{ fontSize: '0.75em', color: '#9CA3AF', marginTop: '8px' }}>
                 Navigate to:<br />
-                <code style={{ background: '#1A1A1A', padding: '2px 6px', borderRadius: '4px', color: '#FFC107' }}>
+                <code style={{ background: '#120818', padding: '2px 6px', borderRadius: '4px', color: '#ffd700' }}>
                   %AppData%\LocalLow\Second Dinner\SNAP\Standalone\States\nvprod
                 </code>
               </p>
@@ -7115,7 +7448,7 @@ RESPONSE GUIDELINES:
       return (
         <div className="modal-overlay">
           <div className="modal sync-preview-modal" style={{ padding: '20px' }}>
-            <h3 style={{ margin: '0 0 16px 0', color: '#FFC107', fontFamily: 'Impact, sans-serif' }}>
+            <h3 style={{ margin: '0 0 16px 0', color: '#ffd700', fontFamily: 'Spline Sans, Inter, sans-serif' }}>
               Game Data Found!
             </h3>
 
@@ -7236,7 +7569,7 @@ RESPONSE GUIDELINES:
             <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
               <button
                 onClick={() => onConfirm(data, selectedImports)}
-                style={{ flex: 1, padding: '12px', background: '#006EC7', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                style={{ flex: 1, padding: '12px', background: '#ad2bee', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
               >
                 Import Selected
               </button>
@@ -7358,7 +7691,7 @@ RESPONSE GUIDELINES:
           />
 
           <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
-            <p style={{ margin: '0 0 6px 0', fontSize: '0.85em', fontWeight: 'bold', color: '#FFC107' }}>Supported Files:</p>
+            <p style={{ margin: '0 0 6px 0', fontSize: '0.85em', fontWeight: 'bold', color: '#ffd700' }}>Supported Files:</p>
             <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '0.8em', color: '#aaa' }}>
               <li><strong>CollectionState.json</strong> - Your card collection</li>
               <li><strong>ProfileState.json</strong> - Lifetime stats & card performance</li>
@@ -7366,7 +7699,7 @@ RESPONSE GUIDELINES:
               <li><strong>BattlePassState.json</strong> - Season pass progress</li>
               <li><strong>DeckState.json</strong> - Your saved decks (17+ decks supported)</li>
             </ul>
-            <p style={{ margin: '8px 0 0 0', fontSize: '0.8em', color: '#006EC7' }}>
+            <p style={{ margin: '8px 0 0 0', fontSize: '0.8em', color: '#c75fff' }}>
               Tip: Select all 5 files and drop them together!
             </p>
           </div>
@@ -7468,7 +7801,7 @@ RESPONSE GUIDELINES:
                   <span className="stat-label">Credits</span>
                 </div>
                 <div className="stat-card">
-                  <span className="stat-value" style={{ color: '#FFC107' }}>{(profileStats.currencies.gold || 0).toLocaleString()}</span>
+                  <span className="stat-value" style={{ color: '#ffd700' }}>{(profileStats.currencies.gold || 0).toLocaleString()}</span>
                   <span className="stat-label">Gold</span>
                 </div>
                 <div className="stat-card">
@@ -7690,7 +8023,7 @@ RESPONSE GUIDELINES:
                 <span className="stat-label">Total Boosters</span>
               </div>
               <div className="stat-card">
-                <span className="stat-value" style={{ color: '#FFC107' }}>{totalCreditsNeeded.toLocaleString()}</span>
+                <span className="stat-value" style={{ color: '#ffd700' }}>{totalCreditsNeeded.toLocaleString()}</span>
                 <span className="stat-label">Credits Needed</span>
               </div>
             </div>
@@ -7815,7 +8148,7 @@ RESPONSE GUIDELINES:
                     fontWeight: 'bold',
                     fontSize: '1.1em'
                   }}>+{card.clGain} CL</div>
-                  <div style={{ fontSize: '0.75em', color: '#FFC107' }}>{card.creditsNeeded} credits</div>
+                  <div style={{ fontSize: '0.75em', color: '#ffd700' }}>{card.creditsNeeded} credits</div>
                   <div style={{
                     fontSize: '0.7em',
                     color: '#9CA3AF',
@@ -7842,7 +8175,7 @@ RESPONSE GUIDELINES:
             borderRadius: '8px',
             fontSize: '0.8em'
           }}>
-            <h4 style={{ margin: '0 0 8px 0', color: '#FFC107' }}>Upgrade Efficiency Guide</h4>
+            <h4 style={{ margin: '0 0 8px 0', color: '#ffd700' }}>Upgrade Efficiency Guide</h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px', color: '#9CA3AF' }}>
               {UPGRADE_TIERS.map(tier => (
                 <div key={tier.from} style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -8455,7 +8788,7 @@ RESPONSE GUIDELINES:
           <Header title="SETTINGS" />
 
           {/* App Info */}
-          <div className="mcu-glass p-5 mb-4">
+          <div className="cosmic-glass p-5 mb-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-mcu-blue rounded-lg flex items-center justify-center">
                 <span className="text-2xl font-display font-bold text-white">S</span>
@@ -8468,71 +8801,92 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Quick Navigation - More Features */}
-          <div className="mcu-glass p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">More Features</h3>
+          <div className="cosmic-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">More Features</h3>
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'missions' }))}
-                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
               >
-                <span className="text-2xl mb-1">📋</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">assignment</span>
                 <span className="text-white text-sm">Missions</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'battlepass' }))}
-                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
               >
-                <span className="text-2xl mb-1">🎫</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">confirmation_number</span>
                 <span className="text-white text-sm">Battle Pass</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'armor' }))}
-                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
               >
-                <span className="text-2xl mb-1">🏆</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">military_tech</span>
                 <span className="text-white text-sm">Hall of Armor</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'calculator' }))}
-                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
               >
-                <span className="text-2xl mb-1">🎲</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">calculate</span>
                 <span className="text-white text-sm">Calculator</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'decks' }))}
-                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
               >
-                <span className="text-2xl mb-1">📚</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">style</span>
                 <span className="text-white text-sm">Decks</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'simulator' }))}
-                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
               >
-                <span className="text-2xl mb-1">🎮</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">sports_esports</span>
                 <span className="text-white text-sm">Simulator</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'economy' }))}
-                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
               >
-                <span className="text-2xl mb-1">💹</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">account_balance</span>
                 <span className="text-white text-sm">Economy HQ</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'board' }))}
-                className="bg-gray-700 hover:bg-gray-600 rounded-lg p-3 flex flex-col items-center transition-colors"
+                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
               >
-                <span className="text-2xl mb-1">🎯</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">target</span>
                 <span className="text-white text-sm">Board Snap</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'oracle' }))}
+                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
+              >
+                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">auto_awesome</span>
+                <span className="text-white text-sm">Oracle</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'history' }))}
+                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
+              >
+                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">history</span>
+                <span className="text-white text-sm">Match History</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'planner' }))}
+                className="bg-[#1a1320] hover:bg-[#2b1933] rounded-lg p-3 flex flex-col items-center transition-colors"
+              >
+                <span className="material-symbols-outlined text-2xl mb-1 text-[#c75fff]" aria-hidden="true">upgrade</span>
+                <span className="text-white text-sm">Upgrade Plan</span>
               </button>
             </div>
           </div>
 
           {/* PC Game Data Sync - Phase 5 */}
-          <div className="mcu-glass p-5 mb-4 pc-sync-section">
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">PC Game Data Sync</h3>
+          <div className="cosmic-glass p-5 mb-4 pc-sync-section">
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">PC Game Data Sync</h3>
             <p className="text-gray-400 text-sm mb-4">
               Import your collection, stats, and card performance directly from game files.
             </p>
@@ -8554,8 +8908,8 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* QR Sync - Phase 4 */}
-          <div className="mcu-glass p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Cross-Device Sync</h3>
+          <div className="cosmic-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Cross-Device Sync</h3>
             <p className="text-gray-400 text-sm mb-4">
               Generate a QR code to quickly sync your collection to another device.
             </p>
@@ -8587,7 +8941,7 @@ RESPONSE GUIDELINES:
                         setQrDataUrl(qrCodeParts[newIndex]);
                       }}
                       disabled={qrPartIndex === 0}
-                      className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50"
+                      className="px-3 py-1 bg-[#1a1320] text-white rounded disabled:opacity-50"
                     >
                       ← Prev
                     </button>
@@ -8601,7 +8955,7 @@ RESPONSE GUIDELINES:
                         setQrDataUrl(qrCodeParts[newIndex]);
                       }}
                       disabled={qrPartIndex === qrCodeParts.length - 1}
-                      className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50"
+                      className="px-3 py-1 bg-[#1a1320] text-white rounded disabled:opacity-50"
                     >
                       Next →
                     </button>
@@ -8616,7 +8970,7 @@ RESPONSE GUIDELINES:
               <div className="mt-4 bg-blue-900/30 border border-blue-500 rounded-lg p-4">
                 <h4 className="text-blue-300 font-medium mb-2">Multi-Part Sync Progress</h4>
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="flex-1 bg-gray-700 rounded-full h-3">
+                  <div className="flex-1 bg-[#1a1320] rounded-full h-3">
                     <div
                       className="bg-mcu-blue h-3 rounded-full transition-all"
                       style={{ width: `${(qrScanProgress.scanned.length / qrScanProgress.total) * 100}%` }}
@@ -8634,7 +8988,7 @@ RESPONSE GUIDELINES:
                       className={`px-2 py-1 text-xs rounded ${
                         qrScanProgress.scanned.includes(partNum)
                           ? 'bg-green-600 text-white'
-                          : 'bg-gray-600 text-gray-300'
+                          : 'bg-[#2b1933] text-gray-300'
                       }`}
                     >
                       {partNum}
@@ -8663,7 +9017,7 @@ RESPONSE GUIDELINES:
                     onClick={() => {
                       setShowMultiPartProgress(false);
                     }}
-                    className="flex-1 px-3 py-2 bg-gray-600 text-white rounded text-sm hover:bg-gray-500"
+                    className="flex-1 px-3 py-2 bg-[#2b1933] text-white rounded text-sm hover:bg-[#3c2348]"
                   >
                     Hide Progress
                   </button>
@@ -8673,11 +9027,11 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* AI Provider Configuration */}
-          <div className="mcu-glass p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-4">AI Provider</h3>
+          <div className="cosmic-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-4">AI Provider</h3>
 
             {/* Google OAuth - Primary */}
-            <div className="mb-4 p-4 bg-gray-700 rounded-lg border-2 border-mcu-blue">
+            <div className="mb-4 p-4 bg-[#1a1320] rounded-lg border-2 border-mcu-blue">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-white font-medium">Google (Gemini)</span>
@@ -8691,11 +9045,11 @@ RESPONSE GUIDELINES:
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     <button onClick={() => selectProvider('gemini-oauth')}
-                      className={`flex-1 py-2 rounded font-medium ${aiConfig.provider === 'gemini-oauth' ? 'bg-mcu-blue text-white' : 'bg-gray-600 text-gray-300'}`}>
+                      className={`flex-1 py-2 rounded font-medium ${aiConfig.provider === 'gemini-oauth' ? 'bg-mcu-blue text-white' : 'bg-[#2b1933] text-gray-300'}`}>
                       {aiConfig.provider === 'gemini-oauth' ? 'Selected' : 'Use This'}
                     </button>
                     <button onClick={() => testConnection('gemini-oauth')}
-                      className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-500">Test</button>
+                      className="bg-[#2b1933] text-white px-4 py-2 rounded hover:bg-[#3c2348]">Test</button>
                     <button onClick={handleGoogleSignOut}
                       className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500">Sign Out</button>
                   </div>
@@ -8706,7 +9060,7 @@ RESPONSE GUIDELINES:
                       <select
                         value={aiConfig.model || AIProviders['gemini-oauth'].defaultModel}
                         onChange={(e) => setAiConfig(prev => ({ ...prev, model: e.target.value }))}
-                        className="w-full bg-gray-600 text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-mcu-blue focus:outline-none">
+                        className="w-full bg-[#2b1933] text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-mcu-blue focus:outline-none">
                         {AIProviders['gemini-oauth'].models.map(m => (
                           <option key={m} value={m}>{m}</option>
                         ))}
@@ -8728,7 +9082,7 @@ RESPONSE GUIDELINES:
 
             {/* API Key Providers */}
             {mainProviders.filter(p => p.id !== 'gemini-oauth').map(provider => (
-              <div key={provider.id} className="mb-3 p-3 bg-gray-700 rounded-lg">
+              <div key={provider.id} className="mb-3 p-3 bg-[#1a1320] rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-white font-medium">{provider.name}</span>
                   <StatusBadge status={testStatus[provider.id]} />
@@ -8738,7 +9092,8 @@ RESPONSE GUIDELINES:
                   <input type="password" placeholder="API Key..."
                     value={aiConfig.apiKeys?.[provider.id] || ''}
                     onChange={(e) => setApiKey(provider.id, e.target.value)}
-                    className="flex-1 bg-gray-600 text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
+                    aria-label={provider.name + ' API Key'}
+                    className="flex-1 bg-[#2b1933] text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
                   <button onClick={() => { selectProvider(provider.id); testConnection(provider.id); }}
                     disabled={!aiConfig.apiKeys?.[provider.id]}
                     className="bg-mcu-blue text-white px-3 py-2 rounded text-sm hover:bg-blue-600 disabled:opacity-50">
@@ -8749,7 +9104,7 @@ RESPONSE GUIDELINES:
                   <div className="mt-2">
                     <select value={aiConfig.model || provider.defaultModel}
                       onChange={(e) => setAiConfig(prev => ({ ...prev, model: e.target.value }))}
-                      className="w-full bg-gray-600 text-white rounded px-2 py-1 text-sm border border-gray-500">
+                      className="w-full bg-[#2b1933] text-white rounded px-2 py-1 text-sm border border-gray-500">
                       {provider.models.map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
                   </div>
@@ -8767,7 +9122,7 @@ RESPONSE GUIDELINES:
             {showAdvanced && (
               <div className="mt-3 space-y-3">
                 {advancedProviders.map(provider => (
-                  <div key={provider.id} className="p-3 bg-gray-700 rounded-lg">
+                  <div key={provider.id} className="p-3 bg-[#1a1320] rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-white font-medium">{provider.name}</span>
                       <StatusBadge status={testStatus[provider.id]} />
@@ -8778,16 +9133,16 @@ RESPONSE GUIDELINES:
                         placeholder="http://localhost:11434"
                         value={aiConfig.localEndpoint || ''}
                         onChange={(e) => setAiConfig(prev => ({ ...prev, localEndpoint: e.target.value }))}
-                        className="flex-1 bg-gray-600 text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
+                        className="flex-1 bg-[#2b1933] text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
                       <button onClick={() => { selectProvider(provider.id); testConnection(provider.id); }}
-                        className="bg-gray-600 text-white px-3 py-2 rounded text-sm hover:bg-gray-500">Test</button>
+                        className="bg-[#2b1933] text-white px-3 py-2 rounded text-sm hover:bg-[#3c2348]">Test</button>
                     </div>
                     <p className="text-gray-500 text-xs mt-1">Common ports: Ollama (11434), LM Studio (1234), vLLM (8000)</p>
                     {aiConfig.provider === provider.id && (
                       <input type="text" placeholder="Model name..."
                         value={aiConfig.model || ''}
                         onChange={(e) => setAiConfig(prev => ({ ...prev, model: e.target.value }))}
-                        className="w-full mt-2 bg-gray-600 text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
+                        className="w-full mt-2 bg-[#2b1933] text-white rounded px-3 py-2 text-sm border border-gray-500 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
                     )}
                   </div>
                 ))}
@@ -8806,14 +9161,14 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* AI Context Settings - Phase 4 */}
-          <div className="mcu-glass p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">AI Context</h3>
+          <div className="cosmic-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">AI Context</h3>
             <p className="text-gray-400 text-sm mb-3">
               Configure how much context Snapapoulous has access to for personalized advice.
             </p>
 
             {/* Enhanced Persona Toggle */}
-            <div className="flex items-center justify-between py-2 border-b border-gray-700">
+            <div className="flex items-center justify-between py-2 border-b border-[rgba(173,43,238,0.2)]">
               <div>
                 <span className="text-white font-medium">Enhanced AI Context</span>
                 <p className="text-gray-500 text-xs mt-1">
@@ -8823,7 +9178,7 @@ RESPONSE GUIDELINES:
               <button
                 onClick={() => setSettings(prev => ({ ...prev, useSimplePersona: !prev.useSimplePersona }))}
                 className={`relative w-12 h-6 rounded-full transition-colors ${
-                  !settings.useSimplePersona ? 'bg-series-2' : 'bg-gray-600'
+                  !settings.useSimplePersona ? 'bg-series-2' : 'bg-[#2b1933]'
                 }`}
               >
                 <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
@@ -8834,7 +9189,7 @@ RESPONSE GUIDELINES:
 
             {/* Context Preview */}
             {!settings.useSimplePersona && (
-              <div className="mt-3 p-3 bg-gray-700 rounded-lg text-xs text-gray-300">
+              <div className="mt-3 p-3 bg-[#1a1320] rounded-lg text-xs text-gray-300">
                 <p className="font-medium text-mcu-gold mb-2">Context includes:</p>
                 <ul className="space-y-1 list-disc list-inside">
                   <li>Current date & season (Dragons Season)</li>
@@ -8848,7 +9203,7 @@ RESPONSE GUIDELINES:
             )}
 
             {settings.useSimplePersona && (
-              <div className="mt-3 p-3 bg-gray-700 rounded-lg text-xs text-gray-300">
+              <div className="mt-3 p-3 bg-[#1a1320] rounded-lg text-xs text-gray-300">
                 <p className="font-medium text-gray-400 mb-2">Simplified mode active:</p>
                 <p>Basic stats only. Faster responses but less personalized advice.</p>
               </div>
@@ -8856,8 +9211,8 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Card Database */}
-          <div className="mcu-glass p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Card Database</h3>
+          <div className="cosmic-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Card Database</h3>
             <p className="text-gray-400 text-sm mb-3">Fetch latest card data from MarvelSnapZone. No API key required.</p>
             <button onClick={refreshCardData} disabled={isRefreshingCards}
               className="w-full bg-series-3 text-white py-2 rounded hover:opacity-80 disabled:opacity-50">
@@ -8869,8 +9224,8 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Performance Mode */}
-          <div className="mcu-glass p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Performance Mode</h3>
+          <div className="cosmic-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Performance Mode</h3>
             <p className="text-gray-400 text-sm mb-3">
               Reduce animations and effects to improve performance on older devices or save battery.
             </p>
@@ -8880,7 +9235,7 @@ RESPONSE GUIDELINES:
                 className={`py-3 rounded-lg font-medium text-sm transition-colors ${
                   performanceMode === 'auto'
                     ? 'bg-mcu-blue text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-[#1a1320] text-gray-300 hover:bg-[#2b1933]'
                 }`}
               >
                 Auto
@@ -8890,7 +9245,7 @@ RESPONSE GUIDELINES:
                 className={`py-3 rounded-lg font-medium text-sm transition-colors ${
                   performanceMode === 'high'
                     ? 'bg-series-2 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-[#1a1320] text-gray-300 hover:bg-[#2b1933]'
                 }`}
               >
                 Full Effects
@@ -8900,7 +9255,7 @@ RESPONSE GUIDELINES:
                 className={`py-3 rounded-lg font-medium text-sm transition-colors ${
                   performanceMode === 'low'
                     ? 'bg-series-4 text-black'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-[#1a1320] text-gray-300 hover:bg-[#2b1933]'
                 }`}
               >
                 Low-End
@@ -8919,10 +9274,10 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Reduced Motion */}
-          <div className="mcu-glass p-5 mb-4">
+          <div className="cosmic-glass p-5 mb-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-display font-semibold text-mcu-blue-light">Reduce Motion</h3>
+                <h3 className="text-lg font-display font-semibold text-[#c75fff]">Reduce Motion</h3>
                 <p className="text-gray-400 text-sm mt-1">
                   Disable animations for accessibility or to reduce visual distractions.
                 </p>
@@ -8935,7 +9290,7 @@ RESPONSE GUIDELINES:
                   showToast(newValue ? 'Motion reduced' : 'Motion enabled');
                 }}
                 className={`relative w-14 h-8 rounded-full transition-colors ${
-                  settings.reducedMotion ? 'bg-mcu-blue' : 'bg-gray-600'
+                  settings.reducedMotion ? 'bg-mcu-blue' : 'bg-[#2b1933]'
                 }`}
                 aria-label={settings.reducedMotion ? 'Disable reduced motion' : 'Enable reduced motion'}
                 role="switch"
@@ -8954,8 +9309,8 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Export/Import */}
-          <div className="mcu-glass p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Export Data</h3>
+          <div className="cosmic-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Export Data</h3>
             <div className="space-y-2 mb-4">
               <button onClick={exportVault} className="w-full bg-mcu-gold text-black py-3 rounded-lg font-medium hover:bg-yellow-400 flex items-center justify-center gap-2">
                 <span>📦</span> Export Full Vault (Recommended)
@@ -8968,26 +9323,26 @@ RESPONSE GUIDELINES:
               </div>
             </div>
 
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Import Data</h3>
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Import Data</h3>
             {!showImport ? (
-              <button onClick={() => setShowImport(true)} className="w-full bg-gray-700 text-white py-2 rounded hover:bg-gray-600">
+              <button onClick={() => setShowImport(true)} className="w-full bg-[#1a1320] text-white py-2 rounded hover:bg-[#2b1933]">
                 Import from JSON
               </button>
             ) : (
               <div className="space-y-2">
                 <textarea value={importData} onChange={(e) => setImportData(e.target.value)}
                   placeholder="Paste JSON data here..."
-                  className="w-full h-24 bg-gray-700 text-white rounded px-3 py-2 border-2 border-gray-600 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 text-sm" />
+                  className="w-full h-24 bg-[#1a1320] text-white rounded px-3 py-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 text-sm" />
                 <div className="flex gap-2">
                   <button onClick={handleImport} className="flex-1 bg-mcu-blue text-white py-2 rounded hover:bg-blue-600">Import</button>
-                  <button onClick={() => { setShowImport(false); setImportData(''); }} className="flex-1 bg-gray-600 text-white py-2 rounded hover:bg-gray-500">Cancel</button>
+                  <button onClick={() => { setShowImport(false); setImportData(''); }} className="flex-1 bg-[#2b1933] text-white py-2 rounded hover:bg-[#3c2348]">Cancel</button>
                 </div>
               </div>
             )}
           </div>
 
           {/* Danger Zone */}
-          <div className="mcu-glass p-5 border-red-500/50">
+          <div className="cosmic-glass p-5 border-red-500/50">
             <h3 className="text-lg font-display font-semibold text-mcu-red mb-3">Danger Zone</h3>
             <button onClick={() => {
               if (confirm('Clear ALL data including AI settings?')) {
@@ -9049,7 +9404,7 @@ RESPONSE GUIDELINES:
         const barColor = completed ? 'bg-series-2' : 'bg-mcu-blue';
 
         return (
-          <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+          <div className="w-full bg-[#1a1320] rounded-full h-3 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-300 ${barColor}`}
               style={{ width: `${percentage}%` }}
@@ -9064,7 +9419,7 @@ RESPONSE GUIDELINES:
         const textColor = mission.completed ? 'text-series-2' : 'text-white';
 
         return (
-          <div className={`mcu-glass p-5 border-l-4 ${borderColor} mb-3 ${mission.completed ? 'opacity-75' : ''}`}>
+          <div className={`cosmic-glass p-5 border-l-4 ${borderColor} mb-3 ${mission.completed ? 'opacity-75' : ''}`}>
             <div className="flex justify-between items-start mb-2">
               <p className={`font-medium ${textColor} flex-1`}>
                 {mission.description}
@@ -9090,7 +9445,7 @@ RESPONSE GUIDELINES:
 
       // Empty state message
       const EmptyMissions = ({ type }) => (
-        <div className="mcu-glass p-6 text-center">
+        <div className="cosmic-glass p-6 text-center">
           <p className="text-gray-400">No {type} missions tracked yet.</p>
           <p className="text-gray-500 text-sm mt-2">
             Import your game data to see missions here.
@@ -9104,11 +9459,11 @@ RESPONSE GUIDELINES:
 
           {/* Overall Progress Summary */}
           <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className="mcu-glass p-5 text-center">
+            <div className="cosmic-glass p-5 text-center">
               <div className="text-3xl font-display font-bold text-mcu-gold">{dailyProgress}%</div>
               <div className="text-gray-400 text-sm">Daily Progress</div>
             </div>
-            <div className="mcu-glass p-5 text-center">
+            <div className="cosmic-glass p-5 text-center">
               <div className="text-3xl font-display font-bold text-mcu-gold">{weeklyProgress}%</div>
               <div className="text-gray-400 text-sm">Weekly Progress</div>
             </div>
@@ -9117,7 +9472,7 @@ RESPONSE GUIDELINES:
           {/* Daily Missions Section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xl font-display font-semibold text-mcu-blue-light">Daily Missions</h2>
+              <h2 className="text-xl font-display font-semibold text-[#c75fff]">Daily Missions</h2>
               <span className="text-gray-400 text-sm">
                 {missions.dailyCompleted}/{missions.daily.length} Complete
               </span>
@@ -9134,7 +9489,7 @@ RESPONSE GUIDELINES:
           {/* Weekly Missions Section */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xl font-display font-semibold text-mcu-blue-light">Weekly Missions</h2>
+              <h2 className="text-xl font-display font-semibold text-[#c75fff]">Weekly Missions</h2>
               <span className="text-gray-400 text-sm">
                 {missions.weeklyCompleted}/{missions.weekly.length} Complete
               </span>
@@ -9149,7 +9504,7 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Info Note */}
-          <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+          <div className="bg-[#120818]/50 rounded-lg p-4 border border-[rgba(173,43,238,0.2)]">
             <p className="text-gray-400 text-sm">
               <span className="text-mcu-gold font-medium">Tip:</span> Mission progress is tracked automatically when you import your game data from Settings.
             </p>
@@ -9230,7 +9585,7 @@ RESPONSE GUIDELINES:
           >
             <h3
               id="confirm-dialog-title"
-              className="text-xl font-display font-semibold text-mcu-blue-light mb-3"
+              className="text-xl font-display font-semibold text-[#c75fff] mb-3"
             >
               {title}
             </h3>
@@ -9238,7 +9593,7 @@ RESPONSE GUIDELINES:
             <div className="flex gap-3">
               <button
                 onClick={onCancel}
-                className="flex-1 bg-gray-600 text-white py-3 rounded-lg font-medium hover:bg-gray-500 touch-target"
+                className="flex-1 bg-[#2b1933] text-white py-3 rounded-lg font-medium hover:bg-[#3c2348] touch-target"
                 autoFocus
               >
                 {cancelText}
@@ -9335,7 +9690,7 @@ RESPONSE GUIDELINES:
           <Header title="BATTLE PASS" />
 
           {/* Season Info Card */}
-          <div className="mcu-glass bg-gradient-to-r from-mcu-red/30 to-series-3/30 p-4 mb-4">
+          <div className="cosmic-glass bg-gradient-to-r from-mcu-red/30 to-series-3/30 p-4 mb-4">
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-lg font-display font-semibold text-white">
                 {battlePass?.season || 'Current Season'}
@@ -9352,7 +9707,7 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Large Level Display */}
-          <div className="mcu-glass p-6 mb-4 text-center">
+          <div className="cosmic-glass p-6 mb-4 text-center">
             <div className="text-gray-400 text-sm mb-1">Current Level</div>
             <div className="text-6xl font-hero text-mcu-gold mcu-text-glow mb-2">
               {currentLevel}
@@ -9365,7 +9720,7 @@ RESPONSE GUIDELINES:
                 <span>XP Progress</span>
                 <span>{currentXp} / {xpToNextLevel}</span>
               </div>
-              <div className="h-4 bg-gray-700 rounded-full overflow-hidden">
+              <div className="h-4 bg-[#1a1320] rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-mcu-blue to-series-3 transition-all duration-500"
                   style={{ width: `${xpProgress}%` }}
@@ -9380,8 +9735,8 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Tier Rewards Preview */}
-          <div className="mcu-glass p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Upcoming Rewards</h3>
+          <div className="cosmic-glass p-5 mb-4">
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Upcoming Rewards</h3>
             <div className="space-y-2">
               {tierRewards.map((tier, index) => (
                 <div
@@ -9391,12 +9746,12 @@ RESPONSE GUIDELINES:
                       ? 'bg-green-900/30 border border-green-600/50'
                       : index === 1
                         ? 'bg-mcu-blue/20 border border-mcu-blue/50'
-                        : 'bg-gray-700/50'
+                        : 'bg-[#1a1320]/50'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold ${
-                      tier.claimed ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300'
+                      tier.claimed ? 'bg-green-600 text-white' : 'bg-[#2b1933] text-gray-300'
                     }`}>
                       {tier.level}
                     </div>
@@ -9418,26 +9773,26 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Season Progress Stats */}
-          <div className="mcu-glass p-5">
-            <h3 className="text-lg font-display font-semibold text-mcu-blue-light mb-3">Season Stats</h3>
+          <div className="cosmic-glass p-5">
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Season Stats</h3>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+              <div className="bg-[#1a1320]/50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-white">{currentLevel}</div>
                 <div className="text-xs text-gray-400">Levels Earned</div>
               </div>
-              <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+              <div className="bg-[#1a1320]/50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-white">
                   {battlePass?.claimedLevels?.length || 0}
                 </div>
                 <div className="text-xs text-gray-400">Rewards Claimed</div>
               </div>
-              <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+              <div className="bg-[#1a1320]/50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-white">
                   {MAX_LEVEL - currentLevel}
                 </div>
                 <div className="text-xs text-gray-400">Levels Remaining</div>
               </div>
-              <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+              <div className="bg-[#1a1320]/50 rounded-lg p-3 text-center">
                 <div className="text-2xl font-bold text-white">
                   {daysRemaining !== null ? Math.ceil((MAX_LEVEL - currentLevel) / Math.max(1, daysRemaining)) : '?'}
                 </div>
@@ -9448,7 +9803,7 @@ RESPONSE GUIDELINES:
 
           {/* No Data State */}
           {!battlePass && (
-            <div className="mcu-glass p-6 text-center mt-4">
+            <div className="cosmic-glass p-6 text-center mt-4">
               <div className="text-4xl mb-3">📊</div>
               <h3 className="text-lg font-display font-semibold text-gray-300 mb-2">No Battle Pass Data</h3>
               <p className="text-sm text-gray-500 mb-4">
@@ -9550,7 +9905,7 @@ RESPONSE GUIDELINES:
 
       return (
         <div
-          className="fixed bottom-20 left-4 right-4 mcu-glass bg-mcu-blue/20 p-4 shadow-lg z-40 install-banner-enter"
+          className="fixed bottom-20 left-4 right-4 cosmic-glass bg-cosmic-purple/20 p-4 shadow-lg z-40 install-banner-enter"
           role="complementary"
           aria-label="Install app prompt"
           style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
@@ -9635,7 +9990,7 @@ RESPONSE GUIDELINES:
       if (cubes < 4) {
         return (
           <div className="fixed bottom-24 left-4 right-4 z-50 animate-bounce">
-            <div className={`mcu-glass p-4 ${isWin ? 'border-l-4 border-green-500' : 'border-l-4 border-mcu-red'} sketch-border`}>
+            <div className={`cosmic-glass p-4 ${isWin ? 'border-l-4 border-green-500' : 'border-l-4 border-mcu-red'} sketch-border`}>
               <div className="flex items-center justify-between">
                 <span className="font-display font-bold text-lg">{isWin ? 'Victory!' : 'Defeat'}</span>
                 <span className={`font-hero text-2xl ${isWin ? 'text-green-400' : 'text-mcu-red'}`}>
@@ -9714,6 +10069,28 @@ RESPONSE GUIDELINES:
       useEffect(() => { saveToStorage('snap_decks', decks); }, [decks]);
       useEffect(() => { saveToStorage('snap_settings', settings); }, [settings]);
       useEffect(() => { saveToStorage('snap_ai_config', aiConfig); }, [aiConfig]);
+
+      // Dynamic document title
+      useEffect(() => {
+        const titles = {
+          dashboard: 'Home',
+          collection: 'Collection',
+          decks: 'Decks',
+          ai: 'AI Advisor',
+          settings: 'Settings',
+          history: 'Match History',
+          calculator: 'Calculator',
+          planner: 'Upgrade Planner',
+          oracle: 'Oracle',
+          armor: 'Hall of Armor',
+          missions: 'Missions',
+          battlepass: 'Battle Pass',
+          economy: 'Economy',
+          board: 'Board Snapshot',
+          simulator: 'Simulator'
+        };
+        document.title = (titles[activeTab] || 'Home') + ' - Snapapoulous Prime';
+      }, [activeTab]);
 
       // Sync reduced motion setting on load and when settings change
       useEffect(() => {
@@ -9830,7 +10207,7 @@ RESPONSE GUIDELINES:
         const tab = params.get('tab');
         const action = params.get('action');
 
-        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'simulator', 'calculator', 'settings'].includes(tab)) {
+        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'simulator', 'calculator', 'settings', 'oracle', 'armor', 'missions', 'battlepass', 'economy', 'board', 'history', 'planner'].includes(tab)) {
           setActiveTab(tab);
         }
 
@@ -10070,6 +10447,11 @@ RESPONSE GUIDELINES:
             {activeTab === 'calculator' && (
               <ErrorBoundary>
                 <Calculator />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'history' && (
+              <ErrorBoundary>
+                <MatchHistory matches={matches} />
               </ErrorBoundary>
             )}
             {activeTab === 'settings' && (
