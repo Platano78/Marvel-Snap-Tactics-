@@ -4597,6 +4597,7 @@ RESPONSE GUIDELINES:
       const [search, setSearch] = useState('');
       const [seriesFilter, setSeriesFilter] = useState('all');
       const [viewMode, setViewMode] = useState('owned'); // 'owned' (default) or 'browse' (add cards)
+      const [editMode, setEditMode] = useState(false); // edit mode for removing cards
       const [selectedCard, setSelectedCard] = useState(null);
       const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, action: null });
 
@@ -4778,12 +4779,12 @@ RESPONSE GUIDELINES:
             {/* View Mode Pills */}
             <div className="flex gap-2 mb-3">
               <button
-                onClick={() => setViewMode('owned')}
+                onClick={() => { setViewMode('owned'); setEditMode(false); }}
                 className={`stitch-pill flex-1 justify-center ${viewMode === 'owned' ? 'active' : ''}`}>
                 My Cards ({ownedCards.length})
               </button>
               <button
-                onClick={() => setViewMode('browse')}
+                onClick={() => { setViewMode('browse'); setEditMode(false); }}
                 className={`stitch-pill flex-1 justify-center ${viewMode === 'browse' ? 'active' : ''}`}>
                 + Add Cards
               </button>
@@ -4803,8 +4804,10 @@ RESPONSE GUIDELINES:
                 ))}
               </select>
               {viewMode === 'owned' && (
-                <button onClick={handleClearAll}
-                  className="bg-red-600 text-white text-xs px-3 py-2.5 rounded-xl hover:opacity-80">Clear All</button>
+                <button onClick={() => setEditMode(!editMode)}
+                  className={`text-white text-xs px-3 py-2.5 rounded-xl font-comic tracking-wide ${editMode ? 'bg-mcu-gold text-black' : 'bg-cosmic-purple hover:opacity-80'}`}>
+                  {editMode ? 'Done' : 'Edit'}
+                </button>
               )}
             </div>
           </div>
@@ -4849,17 +4852,24 @@ RESPONSE GUIDELINES:
                     </>
                   )}
 
-                  {/* Click target */}
-                  <button onClick={() => toggleCard(card.name)} className="absolute inset-0 z-10"
-                    aria-pressed={isOwned}
-                    aria-label={`${card.name}, ${card.cost} cost, ${card.power} power, ${isOwned ? 'owned' : 'not owned'}`} />
+                  {/* Click target - opens card info (or removes in edit mode) */}
+                  <button onClick={() => {
+                    if (editMode && viewMode === 'owned') {
+                      toggleCard(card.name);
+                    } else if (viewMode === 'browse' && !isOwned) {
+                      toggleCard(card.name);
+                    } else {
+                      setSelectedCard(card);
+                    }
+                  }} className="absolute inset-0 z-10"
+                    aria-label={`${card.name}, ${card.cost} cost, ${card.power} power${editMode ? ', tap to remove' : ''}`} />
 
-                  {/* Info button */}
-                  <button onClick={(e) => { e.stopPropagation(); setSelectedCard(card); }}
-                    className="absolute bottom-1.5 right-1.5 w-7 h-7 bg-black/60 hover:bg-cosmic-purple rounded-full flex items-center justify-center text-xs text-white z-20"
-                    title="View card details">
-                    <span className="material-symbols-outlined" style={{fontSize: '16px'}}>info</span>
-                  </button>
+                  {/* Edit mode: remove badge */}
+                  {editMode && viewMode === 'owned' && (
+                    <div className="absolute top-1 right-1 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center z-20 animate-pulse">
+                      <span className="text-white text-xs font-bold">✕</span>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -4915,14 +4925,25 @@ RESPONSE GUIDELINES:
                   <div className="bg-stitch-accent rounded-xl p-4 mb-4">
                     <p className="text-gray-300 text-sm leading-relaxed">{selectedCard.ability || 'No ability text available.'}</p>
                   </div>
-                  <button onClick={() => { toggleCard(selectedCard.name); setSelectedCard(null); }}
-                    className={`w-full py-3 rounded-xl font-bold transition-all ${
-                      collection.owned.includes(selectedCard.name)
-                        ? 'bg-red-600 hover:bg-red-700 text-white'
-                        : 'bg-stitch-green hover:opacity-90 text-white'
-                    }`}>
-                    {collection.owned.includes(selectedCard.name) ? 'Remove from Collection' : 'Add to Collection'}
-                  </button>
+                  {collection.owned.includes(selectedCard.name) ? (
+                    <div className="text-center">
+                      <div className="flex items-center justify-center gap-2 text-stitch-green mb-2">
+                        <span className="material-symbols-outlined" style={{fontSize: '18px'}}>check_circle</span>
+                        <span className="font-comic tracking-wide">In Your Collection</span>
+                      </div>
+                      {editMode && (
+                        <button onClick={() => { toggleCard(selectedCard.name); setSelectedCard(null); }}
+                          className="w-full py-3 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white comic-btn transition-all">
+                          Remove from Collection
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <button onClick={() => { toggleCard(selectedCard.name); setSelectedCard(null); }}
+                      className="w-full py-3 rounded-xl font-bold bg-stitch-green hover:opacity-90 text-white comic-btn transition-all">
+                      Add to Collection
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
