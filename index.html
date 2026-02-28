@@ -3332,6 +3332,23 @@ RESPONSE GUIDELINES:
       });
     };
 
+    // Resolve a game CardDefId to display name using a defIdMap
+    // Game files use suffixed IDs like "AngelaOriginal", "DeathV2", "NovaOriginalV2"
+    // while card DB has clean IDs like "Angela", "Death", "Nova"
+    const resolveCardDefId = (cardId, defIdMap) => {
+      // Direct match first
+      if (defIdMap.has(cardId)) return defIdMap.get(cardId);
+      // Strip common game suffixes and retry
+      const stripped = cardId.replace(/Original(V\d+)?$/, '').replace(/V\d+$/, '');
+      if (stripped !== cardId && defIdMap.has(stripped)) return defIdMap.get(stripped);
+      // Try adding common prefixes/words (e.g., "Bucky" → "BuckyBarnes")
+      for (const [defId, name] of defIdMap) {
+        if (defId.startsWith(cardId) && defId.length <= cardId.length + 10) return name;
+      }
+      // Return original as fallback
+      return cardId;
+    };
+
     // Auto-import all data without preview (for linked folder sync)
     // Player OS: Stores data for all features
     const autoImportAll = (data) => {
@@ -3417,10 +3434,21 @@ RESPONSE GUIDELINES:
         results.push(`Pity: S4=${pity.s4}/20, S5=${pity.s5}/60`);
       }
 
-      // Token Shop (Economy Intelligence)
+      // Token Shop (Economy Intelligence) — resolve cardDefId to display names
       if (data.tokenShop) {
+        const cardDb = typeof uniqueCards !== 'undefined' ? uniqueCards : [];
+        const shopDefIdMap = new Map();
+        cardDb.forEach(card => {
+          if (card.defId) shopDefIdMap.set(card.defId, card.name);
+          shopDefIdMap.set(card.name, card.name);
+        });
+        const enrichedItems = (data.tokenShop.items || []).map(item => ({
+          ...item,
+          name: resolveCardDefId(item.cardDefId || item.name || 'Unknown', shopDefIdMap)
+        }));
         localStorage.setItem('snap_tokenshop', JSON.stringify({
           ...data.tokenShop,
+          items: enrichedItems,
           importedAt: timestamp
         }));
         results.push(`Token Shop: ${data.tokenShop.availableItems} items`);
@@ -3456,13 +3484,34 @@ RESPONSE GUIDELINES:
         results.push(`Rank: ${data.rank.tier} (${data.rank.currentRank})`);
       }
 
-      // Saved Decks
-      if (data.decks) {
-        localStorage.setItem('snap_saved_decks', JSON.stringify({
-          ...data.decks,
-          importedAt: timestamp
+      // Saved Decks — store to snap_decks (same key DeckBuilder reads)
+      if (data.decks && data.decks.decks?.length > 0) {
+        // Build CardDefId→displayName map for card name conversion
+        const cardDb = typeof uniqueCards !== 'undefined' ? uniqueCards : [];
+        const defIdMap = new Map();
+        cardDb.forEach(card => {
+          if (card.defId) defIdMap.set(card.defId, card.name);
+          defIdMap.set(card.name, card.name);
+        });
+
+        // Convert imported decks to DeckBuilder format
+        const importedDecks = data.decks.decks.map(deck => ({
+          id: deck.id || crypto.randomUUID(),
+          name: deck.name || 'Imported Deck',
+          cards: deck.cards.map(cardId => resolveCardDefId(cardId, defIdMap)),
+          createdAt: deck.lastUsed || timestamp,
+          updatedAt: timestamp,
+          imported: true
         }));
-        results.push(`Decks: ${data.decks.totalDecks} saved`);
+
+        // Merge with existing user-created decks (deduplicate by name)
+        const existingDecks = JSON.parse(localStorage.getItem('snap_decks') || '[]');
+        const existingNames = new Set(existingDecks.map(d => d.name));
+        const newDecks = importedDecks.filter(d => !existingNames.has(d.name));
+        const mergedDecks = [...existingDecks, ...newDecks];
+
+        localStorage.setItem('snap_decks', JSON.stringify(mergedDecks));
+        results.push(`Decks: ${newDecks.length} imported (${mergedDecks.length} total)`);
       }
 
       // Store unified player state for easy access by components
@@ -5654,18 +5703,23 @@ RESPONSE GUIDELINES:
       // Calculate affordable token shop items
       const affordableItems = (tokenshop.items || []).filter(item => item.cost <= wallet.tokens);
 
+      // Normalize pity data — parser stores pityCounters/pityThresholds format
+      const pity = rewards.pityCounters || {};
+      const pityMax = rewards.pityThresholds || { s4: 20, s5: 60, spotlightKey: 4 };
+      const hasPityData = pity.s4 !== undefined || pity.s5 !== undefined;
+
       // Calculate pity progress percentages
-      const s4Progress = rewards.series4 ? (rewards.series4.current / rewards.series4.max) * 100 : 0;
-      const s5Progress = rewards.series5 ? (rewards.series5.current / rewards.series5.max) * 100 : 0;
-      const keyProgress = rewards.spotlightKey ? (rewards.spotlightKey.current / rewards.spotlightKey.max) * 100 : 0;
+      const s4Progress = hasPityData ? ((pity.s4 || 0) / pityMax.s4) * 100 : 0;
+      const s5Progress = hasPityData ? ((pity.s5 || 0) / pityMax.s5) * 100 : 0;
+      const keyProgress = hasPityData ? ((pity.spotlightKey || 0) / pityMax.spotlightKey) * 100 : 0;
 
       // Smart key allocation recommendation
       const getKeyRecommendation = () => {
-        if (!rewards.spotlightKey || !rewards.series4) return { action: 'COLLECT_MORE', reason: 'Import game data to get recommendations' };
+        if (!hasPityData) return { action: 'COLLECT_MORE', reason: 'Import game data to get recommendations' };
 
-        const keysPity = rewards.spotlightKey.max - rewards.spotlightKey.current;
-        const s4Pity = rewards.series4.max - rewards.series4.current;
-        const s5Pity = rewards.series5 ? rewards.series5.max - rewards.series5.current : 50;
+        const keysPity = pityMax.spotlightKey - (pity.spotlightKey || 0);
+        const s4Pity = pityMax.s4 - (pity.s4 || 0);
+        const s5Pity = pityMax.s5 - (pity.s5 || 0);
 
         // If close to spotlight key pity, open spotlights
         if (keysPity <= 1) {
@@ -5748,12 +5802,12 @@ RESPONSE GUIDELINES:
             <p className="text-gray-300 text-sm">{recommendation.reason}</p>
 
             {/* Pity Progress Bars */}
-            {rewards.series4 && (
+            {hasPityData && (
               <div className="mt-3 space-y-2">
                 <div>
                   <div className="flex justify-between text-xs text-stitch-muted mb-1">
                     <span>Spotlight Key Pity</span>
-                    <span>{rewards.spotlightKey?.current || 0}/{rewards.spotlightKey?.max || 4}</span>
+                    <span>{pity.spotlightKey || 0}/{pityMax.spotlightKey}</span>
                   </div>
                   <div className="h-2 bg-[#1a1320] rounded-full overflow-hidden">
                     <div className="h-full bg-yellow-500 transition-all" style={{ width: `${keyProgress}%` }}></div>
@@ -5762,17 +5816,17 @@ RESPONSE GUIDELINES:
                 <div>
                   <div className="flex justify-between text-xs text-stitch-muted mb-1">
                     <span>S4 Pity</span>
-                    <span>{rewards.series4?.current || 0}/{rewards.series4?.max || 40}</span>
+                    <span>{pity.s4 || 0}/{pityMax.s4}</span>
                   </div>
                   <div className="h-2 bg-[#1a1320] rounded-full overflow-hidden">
                     <div className="h-full bg-green-500 transition-all" style={{ width: `${s4Progress}%` }}></div>
                   </div>
                 </div>
-                {rewards.series5 && (
+                {pity.s5 !== undefined && (
                   <div>
                     <div className="flex justify-between text-xs text-stitch-muted mb-1">
                       <span>S5 Pity</span>
-                      <span>{rewards.series5?.current || 0}/{rewards.series5?.max || 50}</span>
+                      <span>{pity.s5 || 0}/{pityMax.s5}</span>
                     </div>
                     <div className="h-2 bg-[#1a1320] rounded-full overflow-hidden">
                       <div className="h-full bg-red-500 transition-all" style={{ width: `${s5Progress}%` }}></div>
@@ -7771,7 +7825,8 @@ RESPONSE GUIDELINES:
         collection: !!data.collection,
         stats: !!data.profile,
         cardPerformance: !!data.profile?.cardPerformance,
-        mastery: !!data.mastery
+        mastery: !!data.mastery,
+        decks: !!data.decks
       });
 
       return (
@@ -7895,6 +7950,26 @@ RESPONSE GUIDELINES:
               </div>
             )}
 
+            {/* Decks Preview */}
+            {data.decks && (
+              <div className="preview-section">
+                <label className="import-toggle">
+                  <input
+                    type="checkbox"
+                    checked={selectedImports.decks}
+                    onChange={(e) => setSelectedImports(s => ({...s, decks: e.target.checked}))}
+                  />
+                  <span style={{ fontWeight: 'bold' }}>Saved Decks</span>
+                </label>
+                <div className="preview-stats-grid" style={{ gridTemplateColumns: '1fr' }}>
+                  <div className="preview-stat">
+                    <span className="value">{data.decks.totalDecks}</span>
+                    <span className="label">decks found</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
               <button
                 onClick={() => onConfirm(data, selectedImports)}
@@ -7937,9 +8012,16 @@ RESPONSE GUIDELINES:
 
         const results = {
           collection: null,
+          collectionEnhanced: null,
           profile: null,
           mastery: null,
-          battlePass: null
+          battlePass: null,
+          decks: null,
+          rewards: null,
+          tokenShop: null,
+          missions: null,
+          timeModel: null,
+          rank: null
         };
 
         for (const file of files) {
@@ -7949,22 +8031,48 @@ RESPONSE GUIDELINES:
 
             if (file.name === 'CollectionState.json' || file.name.includes('Collection')) {
               results.collection = await GameDataParser.parseCollection(json);
+              results.collectionEnhanced = GameDataParser.parseCollectionEnhanced(json);
             } else if (file.name === 'ProfileState.json' || file.name.includes('Profile')) {
               results.profile = GameDataParser.parseProfile(json);
             } else if (file.name === 'CharacterMasteryState.json' || file.name.includes('Mastery')) {
               results.mastery = GameDataParser.parseMastery(json);
             } else if (file.name === 'BattlePassState.json' || file.name.includes('BattlePass')) {
               results.battlePass = GameDataParser.parseBattlePass(json);
+            } else if (file.name === 'DeckState.json' || file.name.includes('Deck')) {
+              results.decks = GameDataParser.parseDeckState(json);
+            } else if (file.name === 'RewardState.json' || file.name.includes('Reward')) {
+              results.rewards = GameDataParser.parseRewardState(json);
+            } else if (file.name === 'TokenShopState.json' || file.name.includes('TokenShop')) {
+              results.tokenShop = GameDataParser.parseTokenShopState(json);
+            } else if (file.name === 'MissionState.json' || file.name.includes('Mission')) {
+              results.missions = GameDataParser.parseMissionState(json);
+            } else if (file.name === 'TimeModelState.json' || file.name.includes('TimeModel')) {
+              results.timeModel = GameDataParser.parseTimeModelState(json);
+            } else if (file.name === 'RankState.json' || file.name.includes('Rank')) {
+              results.rank = GameDataParser.parseRankState(json);
             } else {
               // Try to detect file type from content
               if (json?.ServerState?.CardInventory) {
                 results.collection = await GameDataParser.parseCollection(json);
+                results.collectionEnhanced = GameDataParser.parseCollectionEnhanced(json);
               } else if (json?.ServerState?.Account) {
                 results.profile = GameDataParser.parseProfile(json);
               } else if (json?.ServerState?.CharacterMasteryProgress) {
                 results.mastery = GameDataParser.parseMastery(json);
               } else if (json?.ServerState?.BattlePass) {
                 results.battlePass = GameDataParser.parseBattlePass(json);
+              } else if (json?.ServerState?.Decks || json?.ServerState?.DeckList) {
+                results.decks = GameDataParser.parseDeckState(json);
+              } else if (json?.ServerState?.Rewards) {
+                results.rewards = GameDataParser.parseRewardState(json);
+              } else if (json?.ServerState?.TokenShop) {
+                results.tokenShop = GameDataParser.parseTokenShopState(json);
+              } else if (json?.ServerState?.Missions) {
+                results.missions = GameDataParser.parseMissionState(json);
+              } else if (json?.ServerState?.TimeModel) {
+                results.timeModel = GameDataParser.parseTimeModelState(json);
+              } else if (json?.ServerState?.Rank) {
+                results.rank = GameDataParser.parseRankState(json);
               }
             }
           } catch (err) {
@@ -8026,10 +8134,15 @@ RESPONSE GUIDELINES:
               <li><strong>ProfileState.json</strong> - Lifetime stats & card performance</li>
               <li><strong>CharacterMasteryState.json</strong> - Card mastery levels</li>
               <li><strong>BattlePassState.json</strong> - Season pass progress</li>
-              <li><strong>DeckState.json</strong> - Your saved decks (17+ decks supported)</li>
+              <li><strong>DeckState.json</strong> - Your saved decks</li>
+              <li><strong>RewardState.json</strong> - Pity counters & rewards</li>
+              <li><strong>TokenShopState.json</strong> - Token shop data</li>
+              <li><strong>MissionState.json</strong> - Daily/weekly missions</li>
+              <li><strong>TimeModelState.json</strong> - Server time & resets</li>
+              <li><strong>RankState.json</strong> - Competitive rank</li>
             </ul>
             <p style={{ margin: '8px 0 0 0', fontSize: '0.8em', color: '#c75fff' }}>
-              Tip: Select all 5 files and drop them together!
+              Tip: Select all files and drop them together!
             </p>
           </div>
         </div>
@@ -8902,6 +9015,24 @@ RESPONSE GUIDELINES:
           if (unrecognizedCards.length > 0) {
             syncLog.push(`Unrecognized: ${unrecognizedCards.length} cards (may be new releases)`);
           }
+
+          // Store enhanced collection for Hall of Armor (variants, splits, boosters)
+          if (data.collectionEnhanced) {
+            localStorage.setItem('snap_collection_enhanced', JSON.stringify({
+              ...data.collectionEnhanced,
+              importedAt: timestamp
+            }));
+            syncLog.push(`Hall of Armor: ${data.collectionEnhanced.godSplitCount || 0} God Splits`);
+          }
+        }
+
+        // Import Battle Pass
+        if (data.battlePass) {
+          localStorage.setItem('snap_battlepass', JSON.stringify({
+            ...data.battlePass,
+            importedAt: timestamp
+          }));
+          syncLog.push(`Battle Pass: Level ${data.battlePass.level || 0}`);
         }
 
         // Import Profile Stats
@@ -8915,6 +9046,14 @@ RESPONSE GUIDELINES:
           }));
 
           syncLog.push(`Stats: ${data.profile.stats.totalGames.toLocaleString()} games`);
+
+          // Store wallet separately for Economy HQ
+          if (data.profile.currencies) {
+            localStorage.setItem('snap_wallet', JSON.stringify({
+              ...data.profile.currencies,
+              importedAt: timestamp
+            }));
+          }
         }
 
         // Import Card Performance
@@ -8942,6 +9081,70 @@ RESPONSE GUIDELINES:
           }));
 
           syncLog.push(`Mastery: ${data.mastery.totalCards} cards`);
+        }
+
+        // Auto-import supplementary data types (no checkbox needed)
+        if (data.rewards) {
+          localStorage.setItem('snap_rewards', JSON.stringify({ ...data.rewards, importedAt: timestamp }));
+          syncLog.push(`Pity: S4=${data.rewards.pityCounters?.s4 || 0}/20, S5=${data.rewards.pityCounters?.s5 || 0}/60`);
+        }
+        if (data.tokenShop) {
+          const shopDefIdMap = new Map();
+          uniqueCards.forEach(card => {
+            if (card.defId) shopDefIdMap.set(card.defId, card.name);
+            shopDefIdMap.set(card.name, card.name);
+          });
+          const enrichedItems = (data.tokenShop.items || []).map(item => ({
+            ...item,
+            name: resolveCardDefId(item.cardDefId || item.name || 'Unknown', shopDefIdMap)
+          }));
+          localStorage.setItem('snap_tokenshop', JSON.stringify({ ...data.tokenShop, items: enrichedItems, importedAt: timestamp }));
+          syncLog.push(`Token Shop: ${data.tokenShop.availableItems || 0} items`);
+        }
+        if (data.missions) {
+          localStorage.setItem('snap_missions', JSON.stringify({ ...data.missions, importedAt: timestamp }));
+          syncLog.push(`Missions: ${data.missions.dailyCompleted || 0}/? daily`);
+        }
+        if (data.timeModel) {
+          localStorage.setItem('snap_timemodel', JSON.stringify({
+            serverTime: data.timeModel.serverTime?.toISOString?.() || data.timeModel.serverTime,
+            dailyReset: data.timeModel.dailyReset?.toISOString?.() || data.timeModel.dailyReset,
+            weeklyReset: data.timeModel.weeklyReset?.toISOString?.() || data.timeModel.weeklyReset,
+            seasonReset: data.timeModel.seasonReset?.toISOString?.() || data.timeModel.seasonReset,
+            importedAt: timestamp
+          }));
+          syncLog.push('Server Time: synced');
+        }
+        if (data.rank) {
+          localStorage.setItem('snap_rank', JSON.stringify({ ...data.rank, importedAt: timestamp }));
+          syncLog.push(`Rank: ${data.rank.tier || 'Unknown'} (${data.rank.currentRank || 0})`);
+        }
+
+        // Import Decks
+        if (selectedImports.decks && data.decks?.decks?.length > 0) {
+          // Build CardDefId→displayName map
+          const defIdMap = new Map();
+          uniqueCards.forEach(card => {
+            if (card.defId) defIdMap.set(card.defId, card.name);
+            defIdMap.set(card.name, card.name);
+          });
+
+          const importedDecks = data.decks.decks.map(deck => ({
+            id: deck.id || crypto.randomUUID(),
+            name: deck.name || 'Imported Deck',
+            cards: deck.cards.map(cardId => resolveCardDefId(cardId, defIdMap)),
+            createdAt: deck.lastUsed || timestamp,
+            updatedAt: timestamp,
+            imported: true
+          }));
+
+          const existingDecks = JSON.parse(localStorage.getItem('snap_decks') || '[]');
+          const existingNames = new Set(existingDecks.map(d => d.name));
+          const newDecks = importedDecks.filter(d => !existingNames.has(d.name));
+          const mergedDecks = [...existingDecks, ...newDecks];
+
+          localStorage.setItem('snap_decks', JSON.stringify(mergedDecks));
+          syncLog.push(`Decks: ${newDecks.length} imported (${mergedDecks.length} total)`);
         }
 
         // Update sync history
@@ -10694,6 +10897,16 @@ RESPONSE GUIDELINES:
       useEffect(() => { saveToStorage('snap_decks', decks); }, [decks]);
       useEffect(() => { saveToStorage('snap_settings', settings); }, [settings]);
       useEffect(() => { saveToStorage('snap_ai_config', aiConfig); }, [aiConfig]);
+
+      // Reload state from localStorage when game data is imported
+      useEffect(() => {
+        const handleDataUpdated = () => {
+          setCollection(loadFromStorage('snap_collection', { owned: [], lastUpdated: new Date().toISOString() }));
+          setDecks(loadFromStorage('snap_decks', []));
+        };
+        window.addEventListener('snap-data-updated', handleDataUpdated);
+        return () => window.removeEventListener('snap-data-updated', handleDataUpdated);
+      }, []);
 
       // Dynamic document title
       useEffect(() => {
