@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snapapoulous Prime - Silver Age Dashboard Mockup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Permanent+Marker&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+  <script>
+    tailwindcss.config = {
+      theme: {
+        extend: {
+          colors: {
+            'marvel-red': '#E23636',
+            'marvel-blue': '#006EC7',
+            'marvel-gold': '#FFC107',
+            'marvel-black': '#1A1A1A',
+            'aged-paper': '#F2E8CF',
+            'aged-paper-dark': '#E8D9B5',
+            'panel-cream': '#FDF6E3',
+            'win-green': '#2D8B46',
+            'loss-red': '#C41E3A',
+            'ink-black': '#111111',
+          },
+          fontFamily: {
+            'bangers': ['Bangers', 'cursive'],
+            'roboto': ['Roboto Condensed', 'sans-serif'],
+            'marker': ['Permanent Marker', 'cursive'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Roboto Condensed', sans-serif; }
+
+    /* Comic panel borders */
+    .comic-border {
+      border: 3px solid black;
+      box-shadow: 4px 4px 0px 0px rgba(0,0,0,0.8);
+    }
+    .comic-border-tilt-left {
+      border: 3px solid black;
+      box-shadow: 4px 4px 0px 0px rgba(0,0,0,0.8);
+      transform: rotate(-0.5deg);
+    }
+    .comic-border-tilt-right {
+      border: 3px solid black;
+      box-shadow: 4px 4px 0px 0px rgba(0,0,0,0.8);
+      transform: rotate(0.8deg);
+    }
+    .comic-border-heavy {
+      border: 4px solid black;
+      box-shadow: 6px 6px 0px 0px rgba(0,0,0,0.8);
+    }
+
+    /* Halftone dot overlay */
+    .halftone::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, #000 15%, transparent 16%);
+      background-size: 6px 6px;
+      opacity: 0.06;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Kirby Krackle energy pattern */
+    .kirby-krackle::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle, #000 30%, transparent 35%),
+        radial-gradient(circle, #000 20%, transparent 25%);
+      background-size: 20px 20px, 15px 15px;
+      background-position: 0 0, 10px 10px;
+      opacity: 0.12;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Starburst badge */
+    .starburst {
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    }
+
+    /* Comic push button effect */
+    .comic-btn {
+      border: 3px solid black;
+      box-shadow: 4px 4px 0px 0px rgba(0,0,0,0.9);
+      transition: all 0.08s ease;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+    }
+    .comic-btn:active {
+      box-shadow: 0px 0px 0px 0px rgba(0,0,0,0.9);
+      transform: translate(4px, 4px);
+    }
+
+    /* Aged paper texture */
+    .aged-texture {
+      background-color: #F2E8CF;
+      background-image:
+        url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+    }
+
+    /* Dark mode */
+    .dark-mode {
+      background-color: #1A1A1A;
+      color: #F2E8CF;
+    }
+    .dark-mode .comic-border,
+    .dark-mode .comic-border-tilt-left,
+    .dark-mode .comic-border-tilt-right,
+    .dark-mode .comic-border-heavy {
+      border-color: #F2E8CF;
+      box-shadow: 4px 4px 0px 0px rgba(242,232,207,0.4);
+    }
+    .dark-mode .comic-btn {
+      border-color: #F2E8CF;
+      box-shadow: 4px 4px 0px 0px rgba(242,232,207,0.5);
+    }
+    .dark-mode .comic-btn:active {
+      box-shadow: 0px 0px 0px 0px rgba(242,232,207,0.5);
+    }
+    .dark-mode .halftone::after {
+      background-image: radial-gradient(circle, #F2E8CF 15%, transparent 16%);
+      opacity: 0.04;
+    }
+    .dark-mode .kirby-krackle::before {
+      background-image:
+        radial-gradient(circle, #F2E8CF 30%, transparent 35%),
+        radial-gradient(circle, #F2E8CF 20%, transparent 25%);
+      opacity: 0.08;
+    }
+
+    /* Chromatic glitch */
+    @keyframes chromatic-glitch {
+      0%, 100% { text-shadow: -2px 0 #00f0ff, 2px 0 #ff0060; }
+      25% { text-shadow: 2px -1px #00f0ff, -2px 1px #ff0060; }
+      50% { text-shadow: -1px 2px #00f0ff, 1px -2px #ff0060; }
+      75% { text-shadow: 1px 1px #00f0ff, -1px -1px #ff0060; }
+    }
+    .chromatic-glitch {
+      animation: chromatic-glitch 0.3s infinite;
+    }
+
+    @keyframes victory-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .victory-pulse {
+      animation: victory-pulse 1.5s ease-in-out infinite;
+    }
+
+    /* Speed lines */
+    .speed-lines {
+      background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 8px,
+        rgba(0,0,0,0.03) 8px,
+        rgba(0,0,0,0.03) 9px
+      );
+    }
+
+    /* Section label caption box */
+    .caption-box {
+      background: #FFC107;
+      border: 2px solid black;
+      padding: 2px 10px;
+      font-family: 'Bangers', cursive;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      display: inline-block;
+      transform: rotate(-1deg);
+    }
+    .dark-mode .caption-box {
+      border-color: #111;
+    }
+
+    /* Match result border accents */
+    .match-win { border-left: 6px solid #2D8B46; }
+    .match-loss { border-left: 6px solid #C41E3A; }
+
+    /* Scroll */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #E8D9B5; }
+    ::-webkit-scrollbar-thumb { background: #1A1A1A; border-radius: 0; border: 1px solid #E8D9B5; }
+    .dark-mode ::-webkit-scrollbar-track { background: #2a2a2a; }
+    .dark-mode ::-webkit-scrollbar-thumb { background: #F2E8CF; border-color: #2a2a2a; }
+  </style>
+</head>
+
+<body class="aged-texture min-h-screen" id="app-body">
+
+  <!-- ============================================ -->
+  <!-- MODE TOGGLE (top-right corner)               -->
+  <!-- ============================================ -->
+  <button
+    id="mode-toggle"
+    onclick="toggleMode()"
+    class="fixed top-3 right-3 z-50 comic-btn bg-marvel-gold text-ink-black font-bangers text-sm px-3 py-1 rounded-none"
+  >
+    DARK MODE
+  </button>
+
+  <!-- ============================================ -->
+  <!-- HEADER BAR - Classic Marvel Red Band          -->
+  <!-- ============================================ -->
+  <header class="relative bg-marvel-red overflow-hidden halftone kirby-krackle">
+    <div class="relative z-10 max-w-md mx-auto px-4 py-5 flex items-center justify-center gap-4">
+      <!-- Starburst badge -->
+      <div class="starburst bg-marvel-gold w-16 h-16 flex-shrink-0 flex items-center justify-center">
+        <span class="font-bangers text-ink-black text-xs leading-none text-center mt-1">SNAP<br>PRIME</span>
+      </div>
+      <!-- Title -->
+      <div class="text-center">
+        <h1 class="font-bangers text-white text-3xl tracking-wide leading-none" style="text-shadow: 3px 3px 0px rgba(0,0,0,0.6);">
+          SNAPAPOULOUS PRIME
+        </h1>
+        <p class="font-roboto text-white/80 text-xs tracking-widest uppercase mt-1">
+          Your Marvel Snap Tactical Command Center
+        </p>
+      </div>
+    </div>
+    <!-- Bottom jagged edge -->
+    <div class="absolute bottom-0 left-0 right-0 h-2 bg-ink-black"></div>
+  </header>
+
+  <!-- ============================================ -->
+  <!-- MAIN CONTENT                                  -->
+  <!-- ============================================ -->
+  <main class="max-w-md mx-auto px-3 pb-24 pt-4 space-y-5">
+
+    <!-- Section caption -->
+    <div class="flex items-center gap-2">
+      <span class="caption-box">Mission Status</span>
+      <div class="flex-1 h-0.5 bg-black/20"></div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- STAT CARDS GRID                             -->
+    <!-- ========================================== -->
+    <div class="grid grid-cols-2 gap-3">
+
+      <!-- Collection % -->
+      <div class="comic-border-tilt-left bg-panel-cream p-3 relative halftone" id="stat-collection">
+        <div class="relative z-10">
+          <p class="font-roboto text-xs uppercase tracking-wider text-black/50 font-bold">Collection</p>
+          <p class="font-bangers text-4xl text-marvel-blue leading-none mt-1">84%</p>
+          <p class="font-roboto text-xs text-black/60 mt-1">168 / 200 cards</p>
+        </div>
+      </div>
+
+      <!-- Win Rate -->
+      <div class="comic-border-tilt-right bg-panel-cream p-3 relative halftone" id="stat-winrate">
+        <div class="relative z-10">
+          <p class="font-roboto text-xs uppercase tracking-wider text-black/50 font-bold">Win Rate</p>
+          <p class="font-bangers text-4xl text-win-green leading-none mt-1">62.5%</p>
+          <p class="font-roboto text-xs text-black/60 mt-1">50W / 30L</p>
+        </div>
+      </div>
+
+      <!-- Net Cubes -->
+      <div class="comic-border-tilt-right bg-panel-cream p-3 relative halftone" id="stat-cubes">
+        <div class="relative z-10">
+          <p class="font-roboto text-xs uppercase tracking-wider text-black/50 font-bold">Net Cubes</p>
+          <p class="font-bangers text-4xl text-marvel-gold leading-none mt-1" style="text-shadow: 1px 1px 0 rgba(0,0,0,0.3);">+142</p>
+          <p class="font-roboto text-xs text-black/60 mt-1">This season</p>
+        </div>
+      </div>
+
+      <!-- Win Streak -->
+      <div class="comic-border-tilt-left bg-panel-cream p-3 relative kirby-krackle" id="stat-streak">
+        <div class="relative z-10">
+          <p class="font-roboto text-xs uppercase tracking-wider text-black/50 font-bold">Streak</p>
+          <p class="font-bangers text-4xl text-marvel-red leading-none mt-1">5W</p>
+          <p class="font-roboto text-xs text-black/60 mt-1">On fire!</p>
+        </div>
+        <!-- Tiny starburst accent -->
+        <div class="absolute -top-2 -right-2 starburst bg-marvel-red w-8 h-8 flex items-center justify-center z-20">
+          <span class="font-bangers text-white text-[8px]">HOT</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- QUICK MATCH BUTTONS                         -->
+    <!-- ========================================== -->
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <span class="caption-box">Quick Match</span>
+        <div class="flex-1 h-0.5 bg-black/20"></div>
+      </div>
+
+      <!-- Wins row -->
+      <p class="font-bangers text-sm text-win-green uppercase tracking-wider mb-1 ml-1">Victory!</p>
+      <div class="grid grid-cols-4 gap-2 mb-3">
+        <button class="comic-btn bg-win-green text-white font-bangers text-xl py-2 text-center">+1</button>
+        <button class="comic-btn bg-win-green text-white font-bangers text-xl py-2 text-center">+2</button>
+        <button class="comic-btn bg-win-green text-white font-bangers text-xl py-2 text-center">+4</button>
+        <button class="comic-btn bg-win-green text-white font-bangers text-xl py-2 text-center relative kirby-krackle overflow-hidden">
+          <span class="relative z-10">+8</span>
+        </button>
+      </div>
+
+      <!-- Losses row -->
+      <p class="font-bangers text-sm text-loss-red uppercase tracking-wider mb-1 ml-1">Defeat...</p>
+      <div class="grid grid-cols-4 gap-2">
+        <button class="comic-btn bg-loss-red text-white font-bangers text-xl py-2 text-center">-1</button>
+        <button class="comic-btn bg-loss-red text-white font-bangers text-xl py-2 text-center">-2</button>
+        <button class="comic-btn bg-loss-red text-white font-bangers text-xl py-2 text-center">-4</button>
+        <button class="comic-btn bg-loss-red text-white font-bangers text-xl py-2 text-center">-8</button>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- RECENT MATCHES                              -->
+    <!-- ========================================== -->
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <span class="caption-box">Recent Battles</span>
+        <div class="flex-1 h-0.5 bg-black/20"></div>
+      </div>
+
+      <div class="space-y-2">
+
+        <!-- Match 1 - Win -->
+        <div class="comic-border bg-panel-cream match-win p-3 relative halftone">
+          <div class="relative z-10 flex items-center justify-between">
+            <div>
+              <p class="font-bangers text-lg text-win-green leading-none">VICTORY +4</p>
+              <p class="font-roboto text-xs text-black/50 mt-1">Destroy vs. Bounce -- 12 min ago</p>
+            </div>
+            <div class="starburst bg-win-green w-10 h-10 flex items-center justify-center flex-shrink-0">
+              <span class="font-bangers text-white text-sm">W</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Match 2 - Win -->
+        <div class="comic-border bg-panel-cream match-win p-3 relative halftone">
+          <div class="relative z-10 flex items-center justify-between">
+            <div>
+              <p class="font-bangers text-lg text-win-green leading-none">VICTORY +2</p>
+              <p class="font-roboto text-xs text-black/50 mt-1">Destroy vs. High Evo -- 38 min ago</p>
+            </div>
+            <div class="starburst bg-win-green w-10 h-10 flex items-center justify-center flex-shrink-0">
+              <span class="font-bangers text-white text-sm">W</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Match 3 - Loss -->
+        <div class="comic-border bg-panel-cream match-loss p-3 relative halftone">
+          <div class="relative z-10 flex items-center justify-between">
+            <div>
+              <p class="font-bangers text-lg text-loss-red leading-none">DEFEAT -2</p>
+              <p class="font-roboto text-xs text-black/50 mt-1">Destroy vs. Shou-Lao -- 1 hr ago</p>
+            </div>
+            <div class="w-10 h-10 bg-loss-red border-2 border-black flex items-center justify-center flex-shrink-0 rotate-12">
+              <span class="font-bangers text-white text-sm">L</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Match 4 - Win -->
+        <div class="comic-border bg-panel-cream match-win p-3 relative halftone">
+          <div class="relative z-10 flex items-center justify-between">
+            <div>
+              <p class="font-bangers text-lg text-win-green leading-none">VICTORY +8</p>
+              <p class="font-roboto text-xs text-black/50 mt-1">Destroy vs. Discard -- 2 hrs ago</p>
+              <p class="font-marker text-[10px] text-marvel-red mt-0.5">DOUBLE SNAP!</p>
+            </div>
+            <div class="starburst bg-marvel-gold w-12 h-12 flex items-center justify-center flex-shrink-0">
+              <span class="font-bangers text-ink-black text-sm">+8!</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VICTORY SPLASH PREVIEW                      -->
+    <!-- ========================================== -->
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <span class="caption-box bg-marvel-red text-white">Victory Splash State</span>
+        <div class="flex-1 h-0.5 bg-black/20"></div>
+      </div>
+
+      <div class="comic-border-heavy bg-ink-black relative overflow-hidden p-6 text-center kirby-krackle speed-lines">
+        <div class="relative z-10">
+          <!-- Chromatic glitch title -->
+          <p class="font-bangers text-5xl text-white chromatic-glitch victory-pulse leading-none">
+            VICTORY!
+          </p>
+          <p class="font-bangers text-marvel-gold text-2xl mt-2" style="text-shadow: 2px 2px 0 rgba(0,0,0,0.8);">
+            +8 CUBES
+          </p>
+          <p class="font-marker text-marvel-red text-sm mt-2 rotate-[-2deg]">
+            "Excelsior!" -- Snapapoulous
+          </p>
+
+          <!-- Decorative starbursts -->
+          <div class="absolute top-2 left-2 starburst bg-marvel-red w-8 h-8 opacity-60"></div>
+          <div class="absolute top-4 right-6 starburst bg-marvel-gold w-6 h-6 opacity-50"></div>
+          <div class="absolute bottom-3 left-8 starburst bg-marvel-blue w-5 h-5 opacity-40"></div>
+          <div class="absolute bottom-2 right-3 starburst bg-marvel-red w-7 h-7 opacity-50"></div>
+
+          <!-- Cube display row -->
+          <div class="flex justify-center gap-1 mt-4">
+            <div class="w-6 h-6 bg-marvel-gold border-2 border-black transform rotate-12"></div>
+            <div class="w-6 h-6 bg-marvel-gold border-2 border-black transform -rotate-6"></div>
+            <div class="w-6 h-6 bg-marvel-gold border-2 border-black transform rotate-3"></div>
+            <div class="w-6 h-6 bg-marvel-gold border-2 border-black transform -rotate-12"></div>
+            <div class="w-6 h-6 bg-marvel-gold border-2 border-black transform rotate-8"></div>
+            <div class="w-6 h-6 bg-marvel-gold border-2 border-black transform -rotate-2"></div>
+            <div class="w-6 h-6 bg-marvel-gold border-2 border-black transform rotate-15"></div>
+            <div class="w-6 h-6 bg-marvel-gold border-2 border-black transform -rotate-9"></div>
+          </div>
+        </div>
+
+        <!-- Chromatic aberration side strips -->
+        <div class="absolute inset-y-0 left-0 w-1 bg-[#00f0ff] opacity-30"></div>
+        <div class="absolute inset-y-0 right-0 w-1 bg-[#ff0060] opacity-30"></div>
+      </div>
+
+      <p class="font-roboto text-[10px] text-black/40 text-center mt-1 italic">
+        Spider-Verse chromatic glitch effect -- shown on +8 cube victories
+      </p>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- NAV BAR (fixed bottom)                      -->
+    <!-- ========================================== -->
+
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-ink-black border-t-3 border-marvel-red z-40" style="border-top: 3px solid #E23636;">
+    <div class="max-w-md mx-auto flex justify-around py-2">
+      <button class="flex flex-col items-center gap-0.5 px-2 py-1 group">
+        <svg class="w-5 h-5 text-marvel-gold" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+        <span class="font-bangers text-[10px] text-marvel-gold tracking-wider">HOME</span>
+      </button>
+      <button class="flex flex-col items-center gap-0.5 px-2 py-1 group">
+        <svg class="w-5 h-5 text-white/50" fill="currentColor" viewBox="0 0 20 20"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/></svg>
+        <span class="font-bangers text-[10px] text-white/50 tracking-wider">CARDS</span>
+      </button>
+      <button class="flex flex-col items-center gap-0.5 px-2 py-1 group">
+        <svg class="w-5 h-5 text-white/50" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+        <span class="font-bangers text-[10px] text-white/50 tracking-wider">HISTORY</span>
+      </button>
+      <button class="flex flex-col items-center gap-0.5 px-2 py-1 group">
+        <svg class="w-5 h-5 text-white/50" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V8z" clip-rule="evenodd"/></svg>
+        <span class="font-bangers text-[10px] text-white/50 tracking-wider">DECKS</span>
+      </button>
+      <button class="flex flex-col items-center gap-0.5 px-2 py-1 group">
+        <svg class="w-5 h-5 text-white/50" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+        <span class="font-bangers text-[10px] text-white/50 tracking-wider">SETTINGS</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============================================ -->
+  <!-- DARK MODE TOGGLE SCRIPT                       -->
+  <!-- ============================================ -->
+  <script>
+    let isDark = false;
+
+    function toggleMode() {
+      isDark = !isDark;
+      const body = document.getElementById('app-body');
+      const btn = document.getElementById('mode-toggle');
+      const statPanels = document.querySelectorAll('[id^="stat-"]');
+      const matchPanels = document.querySelectorAll('.match-win, .match-loss');
+
+      if (isDark) {
+        body.classList.add('dark-mode');
+        body.classList.remove('aged-texture');
+        body.style.backgroundColor = '#1A1A1A';
+        btn.textContent = 'LIGHT MODE';
+
+        // Darken stat panels
+        statPanels.forEach(p => {
+          p.classList.remove('bg-panel-cream');
+          p.classList.add('bg-[#2a2233]');
+        });
+        matchPanels.forEach(p => {
+          p.classList.remove('bg-panel-cream');
+          p.classList.add('bg-[#2a2233]');
+        });
+      } else {
+        body.classList.remove('dark-mode');
+        body.classList.add('aged-texture');
+        body.style.backgroundColor = '';
+        btn.textContent = 'DARK MODE';
+
+        statPanels.forEach(p => {
+          p.classList.add('bg-panel-cream');
+          p.classList.remove('bg-[#2a2233]');
+        });
+        matchPanels.forEach(p => {
+          p.classList.add('bg-panel-cream');
+          p.classList.remove('bg-[#2a2233]');
+        });
+      }
+    }
+  </script>
+
+</body>
+</html>

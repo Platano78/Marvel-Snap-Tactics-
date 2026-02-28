@@ -25,7 +25,7 @@
   <!-- Google Fonts - Spline Sans (UI) + Inter (fallback) + Permanent Marker (Hero) + Material Symbols -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Caveat:wght@400;700&family=Spline+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
 
   <!-- Service Worker Update Handler - runs early to catch SW updates -->
@@ -154,7 +154,8 @@
             'display': ['Spline Sans', 'Inter', 'system-ui', 'sans-serif'],
             'hero': ['Permanent Marker', 'cursive'],
             'mono': ['SF Mono', 'Menlo', 'Monaco', 'monospace'],
-            'comic': ['Impact', 'Arial Black', 'sans-serif'],
+            'comic': ['Bangers', 'Impact', 'Arial Black', 'sans-serif'],
+            'annotation': ['Caveat', 'cursive'],
           },
           boxShadow: {
             'glass': '0 0 20px rgba(173, 43, 238, 0.15)',
@@ -293,6 +294,8 @@
       --font-ui: 'Spline Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
       --font-hero: 'Permanent Marker', cursive;
+      --font-comic: 'Bangers', 'Impact', 'Arial Black', sans-serif;
+      --font-annotation: 'Caveat', cursive;
     }
 
     /* ============================================
@@ -532,6 +535,100 @@
     }
     .panel-border { border: 3px solid #1A1A1A; box-shadow: 4px 4px 0px #1A1A1A; }
     .halftone { background-image: radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px); background-size: 8px 8px; }
+
+    /* Comic Book Border System */
+    .comic-panel { border: 3px solid #1A1A1A; box-shadow: 4px 4px 0px #1A1A1A; }
+    .comic-panel-accent { border: 3px solid #1A1A1A; box-shadow: 4px 4px 0px var(--cosmic-purple); }
+    .comic-panel-win { border: 3px solid #1A1A1A; box-shadow: 4px 4px 0px #22C55E; }
+    .comic-panel-loss { border: 3px solid #1A1A1A; box-shadow: 4px 4px 0px #ff4444; }
+    .comic-panel-sm { border: 2px solid #1A1A1A; box-shadow: 2px 2px 0px #1A1A1A; }
+    .comic-tilt-left { transform: rotate(-0.5deg); }
+    .comic-tilt-right { transform: rotate(0.8deg); }
+    .comic-btn {
+      box-shadow: 3px 3px 0px #1A1A1A;
+      border: 2px solid #1A1A1A;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+    .comic-btn:active {
+      transform: translate(3px, 3px) !important;
+      box-shadow: 0 0 0 #1A1A1A !important;
+    }
+
+    /* Card Frame System */
+    .card-frame { border: 2.5px solid #1A1A1A; box-shadow: 3px 3px 0px #1A1A1A; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .card-frame:active { transform: scale(0.97); box-shadow: 1px 1px 0px #1A1A1A; }
+    .card-frame-owned { border-color: currentColor; box-shadow: 3px 3px 0px currentColor, 0 0 12px rgba(173,43,238,0.3); }
+    @media (hover: hover) {
+      .card-frame:hover { transform: translateY(-4px) rotate(-1deg); box-shadow: 5px 7px 0px #1A1A1A; z-index: 5; }
+      .card-frame-owned:hover { box-shadow: 5px 7px 0px currentColor, 0 0 20px rgba(173,43,238,0.5); }
+    }
+
+    /* Halftone Cosmic (dark-mode friendly) */
+    .halftone-cosmic { position: relative; }
+    .halftone-cosmic::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(173,43,238,0.06) 1px, transparent 1px);
+      background-size: 8px 8px; pointer-events: none; z-index: 0;
+    }
+    .kirby-krackle { position: relative; }
+    .kirby-krackle::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(173,43,238,0.08) 30%, transparent 35%),
+        radial-gradient(circle, rgba(255,215,0,0.05) 20%, transparent 25%);
+      background-size: 20px 20px, 15px 15px;
+      background-position: 0 0, 10px 10px;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* Comic Starburst */
+    .starburst {
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    }
+
+    /* Thought Bubble */
+    .thought-bubble {
+      position: relative;
+      border: 3px solid #1A1A1A;
+      border-radius: 50%;
+      box-shadow: 4px 4px 0px #1A1A1A;
+    }
+    .thought-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 12px;
+      height: 12px;
+      background: inherit;
+      border: 2px solid #1A1A1A;
+      border-radius: 50%;
+    }
+    .thought-bubble::before {
+      content: '';
+      position: absolute;
+      bottom: -22px;
+      left: 50%;
+      transform: translateX(-50%) translateX(4px);
+      width: 7px;
+      height: 7px;
+      background: inherit;
+      border: 2px solid #1A1A1A;
+      border-radius: 50%;
+    }
+
+    /* Comic Micro-Interactions */
+    @keyframes comic-pop { 0% { scale: 0.8; rotate: -2deg; opacity: 0; } 60% { scale: 1.05; rotate: 1deg; } 100% { scale: 1; rotate: 0; opacity: 1; } }
+    .comic-pop-enter { animation: comic-pop 0.25s ease-out; }
+    @keyframes tab-slide-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .tab-enter { animation: tab-slide-in 0.2s ease-out; }
+    @keyframes stat-bump { 50% { scale: 1.15; } }
+    .stat-bump { animation: stat-bump 0.3s ease-out; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .halftone-cosmic::before, .kirby-krackle::before { display: none; }
+    }
+
     .card-hover { transition: transform 0.15s ease-out, box-shadow 0.15s ease-out; }
     .card-hover:active { transform: scale(0.98); }
     .series-border-1 { border-color: #6B7280; }
@@ -643,12 +740,15 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      font-size: 0.8125rem;
-      font-weight: 700;
+      font-size: 0.9375rem;
+      font-family: var(--font-comic);
+      font-weight: 400;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.08em;
       color: var(--stitch-muted);
       margin-bottom: 0.75rem;
+      border-left: 4px solid var(--cosmic-purple);
+      padding-left: 0.75rem;
     }
     .stitch-section-header .material-symbols-outlined {
       font-size: 18px;
@@ -657,13 +757,14 @@
 
     /* Card art with fallback gradient */
     .card-art {
-      background-size: cover;
-      background-position: center;
+      background-size: 130% !important;
+      background-position: center 30% !important;
       background-repeat: no-repeat;
       background-color: var(--stitch-card);
     }
     .card-art-fallback {
-      background: linear-gradient(135deg, #2a1a33 0%, #3c2348 50%, #2a1a33 100%);
+      background-color: #2a1a33;
+      background-image: linear-gradient(135deg, #2a1a33 0%, #3c2348 50%, #2a1a33 100%);
     }
 
     /* Floating action button */
@@ -3688,13 +3789,16 @@ RESPONSE GUIDELINES:
                 aria-selected={activeTab === tab.id}
                 aria-controls={`panel-${tab.id}`}
                 id={`tab-${tab.id}`}
-                className={`flex flex-col items-center justify-center w-full h-full min-w-[44px] min-h-[44px] transition-colors duration-200 ${
+                className={`relative flex flex-col items-center justify-center w-full h-full min-w-[44px] min-h-[44px] transition-colors duration-200 ${
                   activeTab === tab.id
                     ? 'text-cosmic-purple-text'
                     : 'text-stitch-muted hover:text-white'
                 }`}>
                 <span className="material-symbols-outlined" aria-hidden="true" style={{fontSize: '22px'}}>{tab.icon}</span>
-                <span className="text-[10px] mt-0.5 font-medium font-display tracking-wide">{tab.label}</span>
+                <span className="text-[10px] mt-0.5 font-medium font-comic tracking-wide">{tab.label}</span>
+                {activeTab === tab.id && (
+                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-cosmic-purple" />
+                )}
               </button>
             ))}
           </div>
@@ -3704,7 +3808,7 @@ RESPONSE GUIDELINES:
 
     // Header - Stitch Top Bar Style
     const Header = ({ title, subtitle, onBack }) => (
-      <header className="stitch-topbar sticky top-0 z-40 py-3 px-4 mb-4">
+      <header className="stitch-topbar sticky top-0 z-40 py-3 px-4 mb-4 halftone-cosmic overflow-hidden">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {onBack && (
@@ -3713,7 +3817,7 @@ RESPONSE GUIDELINES:
               </button>
             )}
             <div>
-              <h1 className="text-lg font-display font-bold text-white tracking-wide">{title}</h1>
+              <h1 className="text-lg font-comic text-white tracking-wider">{title}</h1>
               {subtitle && <p className="text-xs text-cosmic-purple-text font-medium">{subtitle}</p>}
             </div>
           </div>
@@ -3795,8 +3899,16 @@ RESPONSE GUIDELINES:
       const streak = getStreak();
 
       return (
-        <div className="px-4 pb-20">
-          <Header title="SNAPAPOULOUS PRIME" />
+        <div className="px-4 pb-20 halftone-cosmic">
+          {/* Hero Banner */}
+          <div className="comic-panel-accent kirby-krackle overflow-hidden relative mb-4 p-5 rounded-lg" style={{background: 'linear-gradient(135deg, #1c1022 0%, #2b1933 100%)'}}>
+            <div className="relative z-10">
+              <h1 className="font-comic text-3xl text-white tracking-wider" style={{textShadow: '0 0 12px rgba(173,43,238,0.5), 2px 2px 0 #1A1A1A'}}>SNAPAPOULOUS PRIME</h1>
+              <p className="text-cosmic-purple-text font-annotation text-lg mt-1">Your Marvel Snap Companion</p>
+            </div>
+            {/* Decorative starburst corner */}
+            <div className="absolute -top-4 -right-4 w-20 h-20 starburst opacity-10" style={{background: '#ffd700'}} />
+          </div>
 
           {/* Player OS: Wallet Widget */}
           {wallet && (
@@ -3934,62 +4046,62 @@ RESPONSE GUIDELINES:
           )}
 
           <div className="grid grid-cols-4 gap-3 mb-4">
-            <div className="stitch-stat">
+            <div className="stitch-stat comic-panel-sm comic-tilt-left">
               <div className="stitch-label mb-1">Collection</div>
-              <div className="text-2xl font-display font-bold text-white">{completionPercent}%</div>
+              <div className="text-2xl font-comic text-white" style={{textShadow: '0 0 8px rgba(173,43,238,0.4)'}}>{completionPercent}%</div>
               <div className="text-xs text-stitch-muted">{ownedInDatabase}/{totalCards}</div>
             </div>
-            <div className="stitch-stat">
+            <div className="stitch-stat comic-panel-sm comic-tilt-right">
               <div className="stitch-label mb-1">Win Rate</div>
-              <div className="text-2xl font-display font-bold text-white">{winRate}%</div>
+              <div className="text-2xl font-comic text-white" style={{textShadow: '0 0 8px rgba(173,43,238,0.4)'}}>{winRate}%</div>
               <div className="text-xs text-stitch-muted">{totalWins}/{totalGames}</div>
             </div>
-            <div className="stitch-stat">
+            <div className="stitch-stat comic-panel-sm comic-tilt-left">
               <div className="stitch-label mb-1">Net Cubes</div>
-              <div className={`text-2xl font-display font-bold ${netCubes >= 0 ? 'text-stitch-green' : 'text-red-500'}`}>
+              <div className={`text-2xl font-comic ${netCubes >= 0 ? 'text-stitch-green' : 'text-red-500'}`} style={{textShadow: '0 0 8px rgba(173,43,238,0.4)'}}>
                 {netCubes >= 0 ? '+' : ''}{netCubes}
               </div>
               <div className="text-xs text-stitch-muted">Today {todayCubes >= 0 ? '+' : ''}{todayCubes}</div>
             </div>
-            <div className="stitch-stat">
+            <div className="stitch-stat comic-panel-sm comic-tilt-right">
               <div className="stitch-label mb-1">Streak</div>
-              <div className={`text-2xl font-display font-bold ${streak.type === 'WIN' ? 'text-stitch-green' : streak.type === 'LOSS' ? 'text-red-500' : 'text-stitch-muted'}`}>
+              <div className={`text-2xl font-comic ${streak.type === 'WIN' ? 'text-stitch-green' : streak.type === 'LOSS' ? 'text-red-500' : 'text-stitch-muted'}`} style={{textShadow: '0 0 8px rgba(173,43,238,0.4)'}}>
                 {streak.count}{streak.type === 'WIN' ? 'W' : streak.type === 'LOSS' ? 'L' : '-'}
               </div>
               <div className="text-xs text-stitch-muted">Current</div>
             </div>
           </div>
-          <div className="stitch-card p-5 mb-4">
-            <div className="stitch-section-header">
+          <div className="stitch-card comic-panel-accent p-5 mb-4 kirby-krackle overflow-hidden">
+            <div className="stitch-section-header relative z-10">
               <span className="material-symbols-outlined" aria-hidden="true">bolt</span>
               Quick Match
             </div>
-            <div className="mb-3" role="group" aria-label="Record win">
-              <div className="text-sm text-stitch-green mb-2 font-bold" id="win-label">VICTORY</div>
+            <div className="mb-3 relative z-10" role="group" aria-label="Record win">
+              <div className="text-sm text-stitch-green mb-2 font-comic tracking-wide" id="win-label">VICTORY</div>
               <div className="flex gap-2" role="group" aria-labelledby="win-label">
                 {[1, 2, 4, 8].map(cubes => (
                   <button key={`win-${cubes}`} onClick={() => onQuickMatch('WIN', cubes)}
                     aria-label={`Record win of ${cubes} cube${cubes > 1 ? 's' : ''}`}
-                    className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-all active:scale-95">
+                    className="flex-1 bg-green-600 hover:bg-green-500 text-white font-comic text-lg py-3 rounded-lg comic-btn">
                     +{cubes}
                   </button>
                 ))}
               </div>
             </div>
-            <div role="group" aria-label="Record loss">
-              <div className="text-sm text-red-500 mb-2 font-bold" id="loss-label">DEFEAT</div>
+            <div className="relative z-10" role="group" aria-label="Record loss">
+              <div className="text-sm text-red-500 mb-2 font-comic tracking-wide" id="loss-label">DEFEAT</div>
               <div className="flex gap-2" role="group" aria-labelledby="loss-label">
                 {[1, 2, 4, 8].map(cubes => (
                   <button key={`loss-${cubes}`} onClick={() => onQuickMatch('LOSS', cubes)}
                     aria-label={`Record loss of ${cubes} cube${cubes > 1 ? 's' : ''}`}
-                    className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl transition-all active:scale-95">
+                    className="flex-1 bg-red-600 hover:bg-red-500 text-white font-comic text-lg py-3 rounded-lg comic-btn">
                     -{cubes}
                   </button>
                 ))}
               </div>
             </div>
           </div>
-          <div className="stitch-card p-5">
+          <div className="stitch-card comic-panel p-5">
             <div className="flex justify-between items-center mb-3">
               <div className="stitch-section-header mb-0">
                 <span className="material-symbols-outlined" aria-hidden="true">history</span>
@@ -3998,12 +4110,16 @@ RESPONSE GUIDELINES:
               <button onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'history' }))} className="text-xs text-cosmic-purple-text hover:text-white transition-colors">View All &rarr;</button>
             </div>
             {matches.length === 0 ? (
-              <p className="text-stitch-muted text-center py-4">No matches recorded yet</p>
+              <div className="stitch-card comic-panel-sm p-8 text-center comic-tilt-right">
+                <span className="material-symbols-outlined text-4xl text-stitch-muted mb-2 block" aria-hidden="true">history</span>
+                <div className="font-comic text-lg text-stitch-muted tracking-wide">No Matches Yet</div>
+                <div className="text-xs text-stitch-muted/60 mt-1 font-annotation text-base">Use the buttons above to log your first match!</div>
+              </div>
             ) : (
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {matches.slice(-5).reverse().map(match => (
-                  <div key={match.id} className={`stitch-list-item flex items-center justify-between border-l-4 ${
-                    match.result === 'WIN' ? 'border-stitch-green' : 'border-red-500'
+                  <div key={match.id} className={`stitch-list-item flex items-center justify-between ${
+                    match.result === 'WIN' ? 'comic-panel-win' : 'comic-panel-loss'
                   }`}>
                     <div className="flex items-center gap-3">
                       <span className={`stitch-badge ${match.result === 'WIN' ? 'bg-stitch-green/20 text-stitch-green' : 'bg-red-500/20 text-red-400'}`}>
@@ -4123,10 +4239,10 @@ RESPONSE GUIDELINES:
 
           {/* Match List */}
           {filteredMatches.length === 0 ? (
-            <div className="stitch-card p-8 text-center">
-              <span className="material-symbols-outlined text-4xl text-stitch-muted mb-2 block">history</span>
-              <div className="text-stitch-muted">No matches recorded yet</div>
-              <div className="text-stitch-muted/60 text-sm mt-1">Log matches from the Dashboard</div>
+            <div className="stitch-card comic-panel-sm p-8 text-center comic-tilt-right">
+              <span className="material-symbols-outlined text-4xl text-stitch-muted mb-2 block" aria-hidden="true">history</span>
+              <div className="font-comic text-lg text-stitch-muted tracking-wide">No Matches Yet</div>
+              <div className="text-stitch-muted/60 text-sm mt-1 font-annotation text-base">Log matches from the Dashboard</div>
             </div>
           ) : (
             <div className="space-y-2">
@@ -4138,8 +4254,8 @@ RESPONSE GUIDELINES:
                 return (
                   <button
                     key={match.id}
-                    className={`w-full text-left stitch-list-item overflow-hidden border-l-4 transition-all cursor-pointer ${
-                      isWin ? 'border-stitch-green' : 'border-red-500'
+                    className={`w-full text-left stitch-list-item overflow-hidden transition-all cursor-pointer ${
+                      isWin ? 'comic-panel-win' : 'comic-panel-loss'
                     }`}
                     onClick={() => toggleExpand(match.id)}
                     aria-expanded={isExpanded}
@@ -4600,6 +4716,9 @@ RESPONSE GUIDELINES:
       const toggleCard = (cardName) => {
         setCollection(prev => {
           const isOwned = prev.owned.includes(cardName);
+          // In browse mode: only add cards. In owned mode: only remove cards.
+          if (viewMode === 'browse' && isOwned) return prev;
+          if (viewMode === 'owned' && !isOwned) return prev;
           return {
             owned: isOwned ? prev.owned.filter(c => c !== cardName) : [...prev.owned, cardName],
             lastUpdated: new Date().toISOString()
@@ -4691,27 +4810,24 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* Card Grid with Art */}
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
             {filteredCards.map(card => {
               const isOwned = collection.owned.includes(card.name);
               const artUrl = getCardArtUrl(card);
               return (
-                <div key={card.name} className={`relative aspect-[3/4] rounded-xl border-2 overflow-hidden transition-all card-hover ${getSeriesBorderClass(card.series)} ${
-                    isOwned ? 'border-opacity-100' : 'border-opacity-40 opacity-50 grayscale'
+                <div key={card.name} className={`relative aspect-[3/4] rounded-lg overflow-hidden card-frame ${getSeriesBorderClass(card.series)} ${
+                    isOwned ? 'card-frame-owned border-opacity-100' : 'border-opacity-40 opacity-50 grayscale'
                   }`}>
                   {/* Card Art Background */}
                   <div className="absolute inset-0 card-art card-art-fallback" style={{ backgroundImage: `url(${artUrl})` }} />
                   {/* Gradient overlay for text readability */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
-                  {/* Cost badge - top left */}
-                  <div className="absolute top-1.5 left-1.5 w-7 h-7 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-lg z-10">{card.cost}</div>
-                  {/* Power badge - top right */}
-                  <div className="absolute top-1.5 right-1.5 w-7 h-7 bg-orange-500 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-lg z-10">{card.power}</div>
+                  {/* Cost/Power badges hidden - card art already includes them */}
 
                   {/* Card name - bottom */}
-                  <div className="absolute bottom-0 left-0 right-0 p-2 z-10">
-                    <div className="text-sm font-bold text-white truncate drop-shadow-lg">{card.name}</div>
+                  <div className="absolute bottom-0 left-0 right-0 p-1.5 z-10">
+                    <div className="text-[11px] font-comic text-white truncate drop-shadow-lg tracking-wide">{card.name}</div>
                   </div>
 
                   {/* Owned checkmark */}
@@ -4749,19 +4865,27 @@ RESPONSE GUIDELINES:
             })}
           </div>
           {filteredCards.length === 0 && (
-            <div className="text-center text-stitch-muted py-8">
-              {viewMode === 'owned'
-                ? (collection.owned.length === 0
-                    ? 'No cards in your collection yet. Use "+ Add Cards" or import your game files!'
-                    : 'No cards match your filters')
-                : 'No more cards to add - you own them all!'}
+            <div className="stitch-card comic-panel-sm p-8 text-center comic-tilt-right">
+              <span className="material-symbols-outlined text-4xl text-stitch-muted mb-2 block" aria-hidden="true">style</span>
+              <div className="font-comic text-lg text-stitch-muted tracking-wide">
+                {viewMode === 'owned'
+                  ? (collection.owned.length === 0 ? 'No Cards Yet' : 'No Matches')
+                  : 'All Collected!'}
+              </div>
+              <div className="text-stitch-muted/60 text-sm mt-1 font-annotation text-base">
+                {viewMode === 'owned'
+                  ? (collection.owned.length === 0
+                      ? 'Use "+ Add Cards" or import your game files!'
+                      : 'No cards match your filters')
+                  : 'You own them all - impressive!'}
+              </div>
             </div>
           )}
 
           {/* Card Detail Modal */}
           {selectedCard && (
             <div className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4" onClick={() => setSelectedCard(null)}>
-              <div className="stitch-card max-w-sm w-full overflow-hidden" onClick={e => e.stopPropagation()}>
+              <div className="stitch-card comic-panel max-w-sm w-full overflow-hidden comic-pop-enter" onClick={e => e.stopPropagation()}>
                 {/* Card Art Header */}
                 <div className="relative aspect-[3/4] max-h-64 overflow-hidden">
                   <div className="absolute inset-0 card-art" style={{ backgroundImage: `url(${getCardArtUrl(selectedCard)})` }} />
@@ -4776,7 +4900,7 @@ RESPONSE GUIDELINES:
                 </div>
                 {/* Card Info */}
                 <div className="p-5 -mt-4 relative z-10">
-                  <h3 className="text-xl font-display font-bold text-white mb-1">{selectedCard.name}</h3>
+                  <h3 className="text-xl font-comic text-white mb-1 tracking-wide">{selectedCard.name}</h3>
                   <div className="flex gap-2 mb-3">
                     <span className={`stitch-badge ${getSeriesColorClass(selectedCard.series)}`}>
                       {getSeriesDisplayName(selectedCard.series)}
@@ -5473,8 +5597,10 @@ RESPONSE GUIDELINES:
           </div>
 
           {sortedCards.length === 0 && (
-            <div className="stitch-card p-6 text-center">
-              <p className="text-stitch-muted">No cards match this filter.</p>
+            <div className="stitch-card comic-panel-sm p-8 text-center comic-tilt-right">
+              <span className="material-symbols-outlined text-4xl text-stitch-muted mb-2 block" aria-hidden="true">search_off</span>
+              <div className="font-comic text-lg text-stitch-muted tracking-wide">No Cards Found</div>
+              <div className="text-stitch-muted/60 text-sm mt-1 font-annotation text-base">Try adjusting your filters</div>
             </div>
           )}
 
@@ -8343,8 +8469,10 @@ RESPONSE GUIDELINES:
             ))}
 
             {sortedCards.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '40px 20px', color: '#9CA3AF' }}>
-                <p>No cards match the current filter.</p>
+              <div className="stitch-card comic-panel-sm p-8 text-center comic-tilt-right">
+                <span className="material-symbols-outlined text-4xl text-stitch-muted mb-2 block" aria-hidden="true">search_off</span>
+                <div className="font-comic text-lg text-stitch-muted tracking-wide">No Cards Found</div>
+                <div className="text-stitch-muted/60 text-sm mt-1 font-annotation text-base">Try adjusting your filters</div>
               </div>
             )}
           </div>
@@ -10202,14 +10330,14 @@ RESPONSE GUIDELINES:
 
       if (!show) return null;
 
-      // Only show full splash for 4+ cubes
+      // Toast splash for low-stakes (< 4 cubes)
       if (cubes < 4) {
         return (
-          <div className="fixed bottom-24 left-4 right-4 z-50 animate-bounce">
-            <div className={`stitch-card p-4 ${isWin ? 'border-l-4 border-green-500' : 'border-l-4 border-mcu-red'} sketch-border`}>
+          <div className="fixed bottom-24 left-4 right-4 z-50 comic-pop-enter">
+            <div className={`stitch-card p-4 font-comic ${isWin ? 'comic-panel-win' : 'comic-panel-loss'}`}>
               <div className="flex items-center justify-between">
-                <span className="font-display font-bold text-lg">{isWin ? 'Victory!' : 'Defeat'}</span>
-                <span className={`font-hero text-2xl ${isWin ? 'text-green-400' : 'text-mcu-red'}`}>
+                <span className="font-comic text-xl tracking-wide">{isWin ? 'Victory!' : 'Defeat'}</span>
+                <span className={`font-comic text-2xl ${isWin ? 'text-green-400' : 'text-mcu-red'}`}>
                   {isWin ? '+' : '-'}{cubes}
                 </span>
               </div>
@@ -10218,30 +10346,59 @@ RESPONSE GUIDELINES:
         );
       }
 
+      // Full comic splash for high-stakes (4+ cubes)
+      const dotColor = isWin ? 'rgba(34,197,94,0.08)' : 'rgba(255,68,68,0.08)';
       return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={onClose}>
-          <div className="text-center">
-            {/* Main Title with Spider-Verse Chromatic Effect */}
-            <h1 className={`font-hero text-6xl md:text-8xl mb-4 ${isMaxStakes ? 'chromatic-glitch' : 'glitch-text'}`}
-                style={{ color: isWin ? '#22C55E' : '#ff4444' }}>
-              {isWin ? 'VICTORY' : 'DEFEAT'}
-            </h1>
-
-            {/* Cube Count Badge with Sketch Border */}
-            <div className={`inline-block px-6 py-3 sketch-border transform rotate-2 ${isWin ? 'bg-spider-yellow' : 'bg-mcu-red'}`}>
-              <span className="font-hero text-3xl text-black">
-                {isWin ? '+' : ''}{cubes} CUBES
-              </span>
-            </div>
-
-            {/* Starburst Effect for 8-cube matches */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}
+          style={{
+            background: `radial-gradient(circle, ${dotColor} 1.5px, transparent 1.5px), rgba(0,0,0,0.85)`,
+            backgroundSize: '10px 10px, 100% 100%'
+          }}>
+          <div className="text-center comic-pop-enter">
+            {/* Starburst glow for max stakes */}
             {isMaxStakes && (
-              <div className="mt-6 animate-pulse">
-                <span className="text-4xl">✨ INCREDIBLE! ✨</span>
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-80 h-80 rounded-full animate-pulse" style={{
+                  background: `radial-gradient(circle, ${isWin ? 'rgba(34,197,94,0.3)' : 'rgba(255,68,68,0.3)'} 0%, transparent 70%)`
+                }} />
               </div>
             )}
 
-            <p className="mt-6 text-stitch-muted text-sm">Tap anywhere to continue</p>
+            {/* Main Title with chromatic comic effect */}
+            <h1 className="font-comic text-7xl md:text-8xl mb-6 relative"
+                style={{
+                  color: isWin ? '#22C55E' : '#ff4444',
+                  transform: isWin ? 'rotate(-2deg)' : 'rotate(3deg)',
+                  textShadow: `3px 3px 0 #1A1A1A, -1px -1px 0 ${isWin ? 'rgba(34,197,94,0.5)' : 'rgba(255,68,68,0.5)'}, 2px -2px 10px ${isWin ? 'rgba(34,197,94,0.3)' : 'rgba(255,68,68,0.3)'}`
+                }}>
+              {isWin ? 'VICTORY' : 'DEFEAT'}
+            </h1>
+
+            {/* Thought-bubble cube badge */}
+            <div className="relative inline-block">
+              <div className={`inline-block px-8 py-4 rounded-full border-3 border-[#1A1A1A] transform rotate-2 ${isWin ? 'bg-mcu-gold' : 'bg-mcu-red'}`}
+                style={{ border: '3px solid #1A1A1A', boxShadow: '6px 6px 0 #1A1A1A' }}>
+                <span className="font-comic text-4xl text-black">
+                  {isWin ? '+' : ''}{cubes} CUBES
+                </span>
+              </div>
+              {/* Thought bubble dots */}
+              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full border-2 border-[#1A1A1A]"
+                style={{ background: isWin ? '#ffd700' : '#ff4444' }} />
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 translate-x-1 w-2.5 h-2.5 rounded-full border-2 border-[#1A1A1A]"
+                style={{ background: isWin ? '#ffd700' : '#ff4444' }} />
+            </div>
+
+            {/* Max stakes starburst badge */}
+            {isMaxStakes && (
+              <div className="mt-10 inline-block">
+                <div className="starburst bg-mcu-gold w-28 h-28 flex items-center justify-center animate-pulse">
+                  <span className="font-comic text-xl text-black" style={{transform: 'rotate(-5deg)'}}>MAX BET!</span>
+                </div>
+              </div>
+            )}
+
+            <p className="mt-10 text-stitch-muted text-sm font-annotation text-lg">Tap anywhere to continue</p>
           </div>
         </div>
       );
@@ -10832,7 +10989,7 @@ RESPONSE GUIDELINES:
             cubes={victorySplash.cubes}
             onClose={() => setVictorySplash({ show: false, result: null, cubes: 0 })}
           />
-          <main id="main-content" tabIndex="-1" role="main" aria-label="App content">
+          <main id="main-content" tabIndex="-1" role="main" aria-label="App content" key={activeTab} className="tab-enter">
             {activeTab === 'dashboard' && (
               <ErrorBoundary>
                 <Dashboard collection={collection} matches={matches} onQuickMatch={handleQuickMatch} />

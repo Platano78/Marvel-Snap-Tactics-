@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snapapoulous Prime - Cosmic Comic Dashboard Mockup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Caveat:wght@400;700&family=Permanent+Marker&family=Spline+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwindcss.config = {
+      theme: {
+        extend: {
+          colors: {
+            'cosmic-purple': '#ad2bee',
+            'cosmic-purple-text': '#c75fff',
+            'cosmic-gold': '#ffd700',
+            'surface-base': '#120818',
+            'surface-1': '#1c1022',
+            'surface-2': '#2b1933',
+          },
+          fontFamily: {
+            'comic': ['Bangers', 'cursive'],
+            'body': ['Spline Sans', 'sans-serif'],
+            'hand': ['Caveat', 'cursive'],
+            'marker': ['Permanent Marker', 'cursive'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Spline Sans', sans-serif;
+      background-color: #120818;
+      color: #e2d6ea;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Halftone pattern overlay */
+    .halftone {
+      background-image: radial-gradient(circle, rgba(173,43,238,0.06) 1px, transparent 1px);
+      background-size: 8px 8px;
+    }
+
+    /* Kirby Krackle pattern */
+    .kirby-krackle {
+      background-image:
+        radial-gradient(circle, rgba(173,43,238,0.08) 30%, transparent 35%),
+        radial-gradient(circle, rgba(255,215,0,0.05) 20%, transparent 25%);
+      background-size: 24px 24px, 36px 36px;
+      background-position: 0 0, 12px 12px;
+    }
+
+    /* Comic border with purple shadow */
+    .comic-border {
+      border: 3px solid #1A1A1A;
+      box-shadow: 4px 4px 0px #ad2bee;
+    }
+
+    /* Glass panel with comic overlay */
+    .cosmic-glass {
+      background: rgba(60, 35, 72, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 3px solid #1A1A1A;
+      box-shadow: 4px 4px 0px #ad2bee;
+    }
+
+    /* Starburst clip path */
+    .starburst {
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    }
+
+    /* Comic stat number glow */
+    .stat-glow {
+      text-shadow: 0 0 10px rgba(173,43,238,0.5), 0 0 20px rgba(173,43,238,0.3);
+    }
+
+    /* Gold glow for special elements */
+    .gold-glow {
+      text-shadow: 0 0 8px rgba(255,215,0,0.4), 0 0 16px rgba(255,215,0,0.2);
+    }
+
+    /* Cosmic gradient header */
+    .cosmic-gradient {
+      background: linear-gradient(135deg, #1c1022 0%, #2b1933 40%, #3d1f4e 70%, #2b1933 100%);
+    }
+
+    /* Quick match button hover */
+    .match-btn {
+      transition: all 0.15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .match-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 16px rgba(173,43,238,0.4), 4px 4px 0px #ad2bee;
+    }
+    .match-btn:active {
+      transform: translateY(0px);
+      box-shadow: 2px 2px 0px #ad2bee;
+    }
+
+    /* Win/Loss border accents */
+    .match-win { border-left: 4px solid #22c55e; }
+    .match-loss { border-left: 4px solid #ef4444; }
+
+    /* Thought bubble */
+    .thought-bubble {
+      position: relative;
+      background: rgba(60, 35, 72, 0.85);
+      border: 2px solid #ad2bee;
+      border-radius: 20px;
+      padding: 12px 16px;
+    }
+    .thought-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -18px;
+      left: 30px;
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-top: 18px solid #ad2bee;
+    }
+    .thought-bubble::before {
+      content: '';
+      position: absolute;
+      bottom: -14px;
+      left: 32px;
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 15px solid rgba(60, 35, 72, 0.85);
+      z-index: 1;
+    }
+
+    /* Spider-Verse starburst radial */
+    .victory-burst {
+      background:
+        conic-gradient(
+          from 0deg,
+          #ad2bee 0deg, transparent 15deg,
+          transparent 30deg, #ad2bee 30deg, transparent 45deg,
+          transparent 60deg, #ad2bee 60deg, transparent 75deg,
+          transparent 90deg, #ad2bee 90deg, transparent 105deg,
+          transparent 120deg, #ad2bee 120deg, transparent 135deg,
+          transparent 150deg, #ad2bee 150deg, transparent 165deg,
+          transparent 180deg, #ad2bee 180deg, transparent 195deg,
+          transparent 210deg, #ad2bee 210deg, transparent 225deg,
+          transparent 240deg, #ad2bee 240deg, transparent 255deg,
+          transparent 270deg, #ad2bee 270deg, transparent 285deg,
+          transparent 300deg, #ad2bee 300deg, transparent 315deg,
+          transparent 330deg, #ad2bee 330deg, transparent 345deg,
+          transparent 360deg
+        );
+      opacity: 0.12;
+    }
+
+    /* Scroll styling */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #120818; }
+    ::-webkit-scrollbar-thumb { background: #ad2bee; border-radius: 3px; }
+
+    /* Pulse animation for streak */
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 8px rgba(255,215,0,0.3); }
+      50% { box-shadow: 0 0 20px rgba(255,215,0,0.6); }
+    }
+    .streak-pulse { animation: pulse-glow 2s ease-in-out infinite; }
+
+    /* Snap badge pop */
+    @keyframes snap-pop {
+      0% { transform: scale(0.8) rotate(-5deg); }
+      50% { transform: scale(1.1) rotate(3deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    .snap-badge { animation: snap-pop 0.4s ease-out; }
+
+    /* Nav active indicator */
+    .nav-active {
+      color: #c75fff;
+      position: relative;
+    }
+    .nav-active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 3px;
+      background: #ad2bee;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body class="halftone">
+
+  <!-- Header -->
+  <header class="cosmic-gradient relative overflow-hidden">
+    <div class="kirby-krackle absolute inset-0 pointer-events-none"></div>
+    <div class="relative z-10 px-4 pt-6 pb-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="font-comic text-3xl tracking-wider text-cosmic-gold gold-glow">
+            SNAPAPOULOUS
+          </h1>
+          <p class="font-hand text-lg text-cosmic-purple-text -mt-1">Prime Edition</p>
+        </div>
+        <div class="starburst w-14 h-14 bg-cosmic-gold flex items-center justify-center snap-badge">
+          <span class="font-comic text-surface-base text-xs leading-none text-center">SNAP<br>IT!</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="px-4 pb-24 max-w-lg mx-auto">
+
+    <!-- Stats Grid -->
+    <section class="mt-5">
+      <h2 class="font-comic text-xl text-cosmic-purple-text tracking-wide mb-3 flex items-center gap-2">
+        <span class="inline-block w-6 h-1 bg-cosmic-purple rounded-full"></span>
+        YOUR STATS
+        <span class="inline-block w-6 h-1 bg-cosmic-purple rounded-full"></span>
+      </h2>
+      <div class="grid grid-cols-2 gap-3">
+
+        <!-- Collection -->
+        <div class="cosmic-glass rounded-xl p-4 relative overflow-hidden">
+          <div class="kirby-krackle absolute inset-0 pointer-events-none rounded-xl"></div>
+          <div class="relative z-10">
+            <p class="font-body text-xs uppercase tracking-widest text-gray-400 mb-1">Collection</p>
+            <p class="font-comic text-4xl text-cosmic-gold stat-glow gold-glow">84%</p>
+            <div class="mt-2 h-2 bg-surface-base rounded-full overflow-hidden border border-gray-700">
+              <div class="h-full bg-gradient-to-r from-cosmic-purple to-cosmic-gold rounded-full" style="width: 84%"></div>
+            </div>
+            <p class="font-hand text-sm text-gray-400 mt-1">168 / 200 cards</p>
+          </div>
+        </div>
+
+        <!-- Win Rate -->
+        <div class="cosmic-glass rounded-xl p-4 relative overflow-hidden">
+          <div class="kirby-krackle absolute inset-0 pointer-events-none rounded-xl"></div>
+          <div class="relative z-10">
+            <p class="font-body text-xs uppercase tracking-widest text-gray-400 mb-1">Win Rate</p>
+            <p class="font-comic text-4xl text-green-400 stat-glow" style="text-shadow: 0 0 10px rgba(34,197,94,0.4);">62.5%</p>
+            <div class="flex items-center gap-1 mt-2">
+              <span class="font-hand text-sm text-green-400">+4.2%</span>
+              <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"/>
+              </svg>
+            </div>
+            <p class="font-hand text-sm text-gray-400 mt-0">this week</p>
+          </div>
+        </div>
+
+        <!-- Net Cubes -->
+        <div class="cosmic-glass rounded-xl p-4 relative overflow-hidden">
+          <div class="kirby-krackle absolute inset-0 pointer-events-none rounded-xl"></div>
+          <div class="relative z-10">
+            <p class="font-body text-xs uppercase tracking-widest text-gray-400 mb-1">Net Cubes</p>
+            <p class="font-comic text-4xl text-cosmic-purple-text stat-glow">+142</p>
+            <div class="flex gap-1 mt-2">
+              <span class="inline-block w-3 h-3 bg-cosmic-gold rounded-sm"></span>
+              <span class="inline-block w-3 h-3 bg-cosmic-gold rounded-sm"></span>
+              <span class="inline-block w-3 h-3 bg-cosmic-gold rounded-sm"></span>
+              <span class="inline-block w-3 h-3 bg-cosmic-gold rounded-sm opacity-40"></span>
+              <span class="inline-block w-3 h-3 bg-cosmic-gold rounded-sm opacity-40"></span>
+            </div>
+            <p class="font-hand text-sm text-gray-400 mt-1">Season total</p>
+          </div>
+        </div>
+
+        <!-- Streak -->
+        <div class="cosmic-glass rounded-xl p-4 relative overflow-hidden streak-pulse">
+          <div class="kirby-krackle absolute inset-0 pointer-events-none rounded-xl"></div>
+          <div class="relative z-10">
+            <p class="font-body text-xs uppercase tracking-widest text-gray-400 mb-1">Streak</p>
+            <div class="flex items-end gap-1">
+              <p class="font-comic text-4xl text-cosmic-gold stat-glow gold-glow">5</p>
+              <span class="font-marker text-lg text-green-400 mb-1">W</span>
+            </div>
+            <div class="mt-2 flex gap-1">
+              <span class="w-4 h-4 rounded-full bg-green-500 border-2 border-green-300 text-[8px] font-bold flex items-center justify-center text-surface-base">W</span>
+              <span class="w-4 h-4 rounded-full bg-green-500 border-2 border-green-300 text-[8px] font-bold flex items-center justify-center text-surface-base">W</span>
+              <span class="w-4 h-4 rounded-full bg-green-500 border-2 border-green-300 text-[8px] font-bold flex items-center justify-center text-surface-base">W</span>
+              <span class="w-4 h-4 rounded-full bg-green-500 border-2 border-green-300 text-[8px] font-bold flex items-center justify-center text-surface-base">W</span>
+              <span class="w-4 h-4 rounded-full bg-green-500 border-2 border-green-300 text-[8px] font-bold flex items-center justify-center text-surface-base">W</span>
+            </div>
+            <p class="font-hand text-sm text-cosmic-gold mt-1">On fire!</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Quick Match Entry -->
+    <section class="mt-6">
+      <h2 class="font-comic text-xl text-cosmic-purple-text tracking-wide mb-3 flex items-center gap-2">
+        <span class="inline-block w-6 h-1 bg-cosmic-purple rounded-full"></span>
+        QUICK MATCH
+        <span class="inline-block w-6 h-1 bg-cosmic-purple rounded-full"></span>
+      </h2>
+
+      <!-- Snap Decision Badge -->
+      <div class="flex justify-center mb-4">
+        <div class="thought-bubble">
+          <p class="font-hand text-base text-cosmic-gold text-center">
+            Did you <span class="font-comic text-cosmic-purple-text text-lg">SNAP</span> or retreat?
+          </p>
+        </div>
+      </div>
+
+      <!-- Win Buttons -->
+      <div class="mb-3">
+        <p class="font-hand text-sm text-green-400 mb-2 tracking-wide uppercase">Victory</p>
+        <div class="grid grid-cols-4 gap-2">
+          <button class="match-btn cosmic-glass rounded-xl py-3 text-center border-green-500/30 hover:border-green-500/60">
+            <span class="font-comic text-2xl text-green-400">+1</span>
+            <span class="block font-hand text-xs text-gray-400">cube</span>
+          </button>
+          <button class="match-btn cosmic-glass rounded-xl py-3 text-center border-green-500/30 hover:border-green-500/60">
+            <span class="font-comic text-2xl text-green-400">+2</span>
+            <span class="block font-hand text-xs text-gray-400">cubes</span>
+          </button>
+          <button class="match-btn cosmic-glass rounded-xl py-3 text-center border-green-500/30 hover:border-green-500/60 relative">
+            <div class="starburst absolute -top-2 -right-2 w-8 h-8 bg-cosmic-gold flex items-center justify-center">
+              <span class="font-comic text-[8px] text-surface-base">SNAP</span>
+            </div>
+            <span class="font-comic text-2xl text-green-400">+4</span>
+            <span class="block font-hand text-xs text-gray-400">cubes</span>
+          </button>
+          <button class="match-btn cosmic-glass rounded-xl py-3 text-center border-green-500/30 hover:border-green-500/60 relative">
+            <div class="starburst absolute -top-2 -right-2 w-8 h-8 bg-cosmic-gold flex items-center justify-center">
+              <span class="font-comic text-[7px] text-surface-base leading-none">BOTH<br>SNAP</span>
+            </div>
+            <span class="font-comic text-2xl text-green-400">+8</span>
+            <span class="block font-hand text-xs text-gray-400">cubes</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loss Buttons -->
+      <div>
+        <p class="font-hand text-sm text-red-400 mb-2 tracking-wide uppercase">Defeat</p>
+        <div class="grid grid-cols-4 gap-2">
+          <button class="match-btn cosmic-glass rounded-xl py-3 text-center border-red-500/20 hover:border-red-500/50">
+            <span class="font-comic text-2xl text-red-400">-1</span>
+            <span class="block font-hand text-xs text-gray-400">cube</span>
+          </button>
+          <button class="match-btn cosmic-glass rounded-xl py-3 text-center border-red-500/20 hover:border-red-500/50">
+            <span class="font-comic text-2xl text-red-400">-2</span>
+            <span class="block font-hand text-xs text-gray-400">cubes</span>
+          </button>
+          <button class="match-btn cosmic-glass rounded-xl py-3 text-center border-red-500/20 hover:border-red-500/50">
+            <span class="font-comic text-2xl text-red-400">-4</span>
+            <span class="block font-hand text-xs text-gray-400">cubes</span>
+          </button>
+          <button class="match-btn cosmic-glass rounded-xl py-3 text-center border-red-500/20 hover:border-red-500/50">
+            <span class="font-comic text-2xl text-red-400">-8</span>
+            <span class="block font-hand text-xs text-gray-400">cubes</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Matches -->
+    <section class="mt-6">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-comic text-xl text-cosmic-purple-text tracking-wide flex items-center gap-2">
+          <span class="inline-block w-6 h-1 bg-cosmic-purple rounded-full"></span>
+          RECENT MATCHES
+        </h2>
+        <a href="#" class="font-hand text-sm text-cosmic-purple-text hover:text-cosmic-gold transition-colors">View All &rarr;</a>
+      </div>
+
+      <div class="space-y-2">
+
+        <!-- Match 1 - Win +4 -->
+        <div class="cosmic-glass rounded-xl p-3 match-win relative overflow-hidden">
+          <div class="halftone absolute inset-0 pointer-events-none"></div>
+          <div class="relative z-10 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="starburst w-10 h-10 bg-green-500 flex items-center justify-center flex-shrink-0">
+                <span class="font-comic text-sm text-surface-base">+4</span>
+              </div>
+              <div>
+                <p class="font-body text-sm font-semibold text-white">Victory</p>
+                <p class="font-hand text-xs text-gray-400">Destroy Deck vs. Bounce</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded-full bg-green-500/20 border border-green-500/40 font-hand text-xs text-green-400">SNAPPED</span>
+              <p class="font-hand text-xs text-gray-500 mt-1">2 min ago</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Match 2 - Win +2 -->
+        <div class="cosmic-glass rounded-xl p-3 match-win relative overflow-hidden">
+          <div class="halftone absolute inset-0 pointer-events-none"></div>
+          <div class="relative z-10 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-green-500/20 border-2 border-green-500/50 flex items-center justify-center flex-shrink-0">
+                <span class="font-comic text-sm text-green-400">+2</span>
+              </div>
+              <div>
+                <p class="font-body text-sm font-semibold text-white">Victory</p>
+                <p class="font-hand text-xs text-gray-400">Shou-Lao Combo vs. High Evo</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-hand text-xs text-gray-500">18 min ago</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Match 3 - Loss -4 -->
+        <div class="cosmic-glass rounded-xl p-3 match-loss relative overflow-hidden">
+          <div class="halftone absolute inset-0 pointer-events-none"></div>
+          <div class="relative z-10 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-red-500/20 border-2 border-red-500/50 flex items-center justify-center flex-shrink-0">
+                <span class="font-comic text-sm text-red-400">-4</span>
+              </div>
+              <div>
+                <p class="font-body text-sm font-semibold text-white">Defeat</p>
+                <p class="font-hand text-xs text-gray-400">Destroy Deck vs. Sera Control</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/40 font-hand text-xs text-red-400">GOT SNAPPED</span>
+              <p class="font-hand text-xs text-gray-500 mt-1">35 min ago</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Match 4 - Win +1 (retreat) -->
+        <div class="cosmic-glass rounded-xl p-3 match-win relative overflow-hidden">
+          <div class="halftone absolute inset-0 pointer-events-none"></div>
+          <div class="relative z-10 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg bg-green-500/20 border-2 border-green-500/50 flex items-center justify-center flex-shrink-0">
+                <span class="font-comic text-sm text-green-400">+1</span>
+              </div>
+              <div>
+                <p class="font-body text-sm font-semibold text-white">Victory</p>
+                <p class="font-hand text-xs text-gray-400">Opponent retreated T5</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-block px-2 py-0.5 rounded-full bg-gray-500/20 border border-gray-500/40 font-hand text-xs text-gray-400">RETREAT</span>
+              <p class="font-hand text-xs text-gray-500 mt-1">1 hr ago</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Victory Splash Preview -->
+    <section class="mt-8 mb-4">
+      <h2 class="font-comic text-xl text-cosmic-purple-text tracking-wide mb-3 flex items-center gap-2">
+        <span class="inline-block w-6 h-1 bg-cosmic-purple rounded-full"></span>
+        VICTORY SPLASH
+        <span class="inline-block w-6 h-1 bg-cosmic-purple rounded-full"></span>
+      </h2>
+
+      <div class="cosmic-glass rounded-2xl p-6 relative overflow-hidden">
+        <!-- Spider-Verse starburst background -->
+        <div class="victory-burst absolute inset-0 pointer-events-none"></div>
+        <div class="kirby-krackle absolute inset-0 pointer-events-none"></div>
+
+        <!-- Content -->
+        <div class="relative z-10 text-center">
+          <!-- Big starburst badge -->
+          <div class="inline-block mb-3">
+            <div class="starburst w-24 h-24 bg-gradient-to-br from-cosmic-gold via-yellow-400 to-cosmic-gold flex items-center justify-center mx-auto">
+              <div class="text-center">
+                <span class="font-comic text-3xl text-surface-base leading-none block">+8</span>
+                <span class="font-hand text-xs text-surface-base block -mt-1">cubes!</span>
+              </div>
+            </div>
+          </div>
+
+          <h3 class="font-comic text-3xl text-cosmic-gold gold-glow tracking-wider">COSMIC VICTORY!</h3>
+          <p class="font-marker text-lg text-green-400 mt-1">Double Snap Domination</p>
+
+          <!-- Thought bubble from Snapapoulous -->
+          <div class="mt-4">
+            <div class="thought-bubble inline-block text-left max-w-[280px]">
+              <p class="font-hand text-base text-gray-200">
+                <span class="text-cosmic-gold font-bold">Snapapoulous says:</span>
+                That Turn 6 Zola into Death play? <span class="text-green-400 font-bold">Chef's kiss.</span> They never saw it coming!
+              </p>
+            </div>
+          </div>
+
+          <!-- Decorative dots -->
+          <div class="flex justify-center gap-2 mt-6">
+            <span class="w-2 h-2 rounded-full bg-cosmic-purple animate-pulse"></span>
+            <span class="w-2 h-2 rounded-full bg-cosmic-gold animate-pulse" style="animation-delay: 0.2s"></span>
+            <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse" style="animation-delay: 0.4s"></span>
+            <span class="w-2 h-2 rounded-full bg-cosmic-purple animate-pulse" style="animation-delay: 0.6s"></span>
+            <span class="w-2 h-2 rounded-full bg-cosmic-gold animate-pulse" style="animation-delay: 0.8s"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-surface-1/95 backdrop-blur-md border-t-2 border-cosmic-purple/30 z-50">
+    <div class="max-w-lg mx-auto flex items-center justify-around py-2 px-2">
+      <button class="nav-active flex flex-col items-center gap-0.5 px-3 py-1 min-w-[56px]">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        <span class="font-hand text-xs">Home</span>
+      </button>
+      <button class="flex flex-col items-center gap-0.5 px-3 py-1 min-w-[56px] text-gray-500 hover:text-cosmic-purple-text transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+        </svg>
+        <span class="font-hand text-xs">Cards</span>
+      </button>
+      <button class="flex flex-col items-center gap-0.5 px-3 py-1 min-w-[56px] text-gray-500 hover:text-cosmic-purple-text transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <span class="font-hand text-xs">Decks</span>
+      </button>
+      <button class="flex flex-col items-center gap-0.5 px-3 py-1 min-w-[56px] text-gray-500 hover:text-cosmic-purple-text transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        <span class="font-hand text-xs">History</span>
+      </button>
+      <button class="flex flex-col items-center gap-0.5 px-3 py-1 min-w-[56px] text-gray-500 hover:text-cosmic-purple-text transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <span class="font-hand text-xs">Settings</span>
+      </button>
+    </div>
+  </nav>
+
+</body>
+</html>
