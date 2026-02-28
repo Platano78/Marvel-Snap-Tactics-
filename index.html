@@ -7706,6 +7706,10 @@ RESPONSE GUIDELINES:
                   results.collection = await GameDataParser.parseCollection(json);
                   // Also parse enhanced collection for Hall of Armor
                   results.collectionEnhanced = GameDataParser.parseCollectionEnhanced(json);
+                  // Decks live inside CollectionState.json, not a separate file
+                  if (!results.decks && json?.ServerState?.Decks) {
+                    results.decks = GameDataParser.parseDeckState(json);
+                  }
                   break;
                 case 'profile':
                   results.profile = GameDataParser.parseProfile(json);
@@ -8032,6 +8036,10 @@ RESPONSE GUIDELINES:
             if (file.name === 'CollectionState.json' || file.name.includes('Collection')) {
               results.collection = await GameDataParser.parseCollection(json);
               results.collectionEnhanced = GameDataParser.parseCollectionEnhanced(json);
+              // Decks live inside CollectionState.json in the actual game
+              if (json?.ServerState?.Decks) {
+                results.decks = GameDataParser.parseDeckState(json);
+              }
             } else if (file.name === 'ProfileState.json' || file.name.includes('Profile')) {
               results.profile = GameDataParser.parseProfile(json);
             } else if (file.name === 'CharacterMasteryState.json' || file.name.includes('Mastery')) {
@@ -8055,6 +8063,9 @@ RESPONSE GUIDELINES:
               if (json?.ServerState?.CardInventory) {
                 results.collection = await GameDataParser.parseCollection(json);
                 results.collectionEnhanced = GameDataParser.parseCollectionEnhanced(json);
+                if (json?.ServerState?.Decks) {
+                  results.decks = GameDataParser.parseDeckState(json);
+                }
               } else if (json?.ServerState?.Account) {
                 results.profile = GameDataParser.parseProfile(json);
               } else if (json?.ServerState?.CharacterMasteryProgress) {
