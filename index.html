@@ -1917,25 +1917,28 @@
     // ==================== DYNAMIC META CONTEXT ====================
     // Embedded defaults (offline fallback), overwritten by data/meta-context.json at startup
     const DEFAULT_META_CONTEXT = {
-      lastUpdated: "January 2026",
-      season: "Dragons Season",
+      lastUpdated: "March 2026",
+      season: "X-Men: Origins of Apocalypse",
       recentOTA: [
-        "Merlin: 3/5 → 3/4 (nerfed)",
-        "Fantomex: 4/4 → 4/5 (buffed)",
-        "Vulture: 3/3 → 3/4 (buffed)",
-        "Iron Lad: 4/6 → 4/7 (buffed)",
-        "Shou-Lao: New card enabling dragon combos"
+        "Star-Lord, Master of the Sun: 4/5 → 4/3 (nerfed)",
+        "Alioth: 6/8 → 6/7 (nerfed)",
+        "Fin Fang Foom: 7/12 → 7/10 (nerfed)",
+        "Rocket and Groot: 3/2 → 3/3 (buffed)",
+        "Jeff the Baby Land Shark: 2/3 → 2/4 (buffed)",
+        "Magus: 3/5 → 2/3 (buffed, cost reduction)",
+        "Sebastian Shaw: 3/4 → 3/5 (buffed)"
       ],
       topArchetypes: [
-        { name: "Shou-Lao Combo", tier: "S", description: "Dragon synergy with Shou-Lao and Draconic cards" },
-        { name: "Destroy", tier: "S", description: "Knull/Death/Deadpool core with Killmonger tech" },
-        { name: "High Evo", tier: "A", description: "High Evolutionary with no-ability cards" },
-        { name: "Bounce", tier: "A", description: "Beast/Falcon with Hitmonkey/Angela payoffs" },
-        { name: "Discard", tier: "A", description: "Apocalypse/MODOK/Hela control" },
-        { name: "Move", tier: "B+", description: "Dagger/Human Torch with Heimdall finisher" }
+        { name: "Shou-Lao On Reveal", tier: "S", description: "Shou-Lao + Werewolf by Night On Reveal builds" },
+        { name: "Star-Lord Ramp", tier: "S", description: "Star-Lord ramp with disruption tech — nerfed but still strong" },
+        { name: "Move", tier: "S", description: "Flexible Move synergy developing huge points" },
+        { name: "Doctor Doom 2099", tier: "A", description: "Hot new archetype performing well" },
+        { name: "Destroy", tier: "A", description: "Knull/Death/Deadpool core, Mister Negative variant" },
+        { name: "Bounce", tier: "A", description: "Beast/Falcon with Hit-Monkey/Angela payoffs" },
+        { name: "Discard", tier: "B+", description: "Apocalypse/MODOK/Hela control" }
       ],
-      hotCards: ["Shou-Lao", "Knull", "Death", "High Evolutionary", "Hela", "Hit-Monkey", "Angela"],
-      techCards: ["Killmonger", "Enchantress", "Shadow King", "Rogue", "Shang-Chi", "Cosmo"]
+      hotCards: ["Shou-Lao", "Star-Lord, Master of the Sun", "Doctor Doom 2099", "En Sabah Nur", "Werewolf by Night", "Jeff the Baby Land Shark"],
+      techCards: ["Spider-Ham", "Cosmo", "Shadow King", "Shang-Chi", "Killmonger", "Enchantress", "Cannonball"]
     };
     let META_CONTEXT = { ...DEFAULT_META_CONTEXT, currentDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) };
 
@@ -7094,6 +7097,49 @@ RESPONSE GUIDELINES:
                 <span>Your system prefers reduced motion. Consider enabling this setting.</span>
               </p>
             )}
+          </div>
+
+          {/* Refresh Game Data */}
+          <div className="stitch-card p-5 mb-4">
+            <div className="stitch-section-header">
+              <span className="material-symbols-outlined" aria-hidden="true">sync</span>
+              Game Data
+            </div>
+            <p className="text-stitch-muted text-sm mb-3">
+              Meta context &amp; spotlight schedule. Last updated: <span className="text-cosmic-purple-text font-medium">{META_CONTEXT.lastUpdated || 'Unknown'}</span> &mdash; {META_CONTEXT.season || 'Unknown season'}
+            </p>
+            <button
+              onClick={async () => {
+                const btn = event.currentTarget;
+                btn.disabled = true;
+                btn.textContent = 'Refreshing...';
+                let updated = 0;
+                try {
+                  const metaRes = await fetch('data/meta-context.json', { cache: 'reload' });
+                  if (metaRes.ok) {
+                    const data = await metaRes.json();
+                    META_CONTEXT = { ...META_CONTEXT, ...data, currentDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) };
+                    updated++;
+                    console.log('[MetaContext] Force-refreshed');
+                  }
+                } catch (e) { console.warn('[MetaContext] Refresh failed:', e.message); }
+                try {
+                  const spotRes = await fetch('data/spotlight-schedule.json', { cache: 'reload' });
+                  if (spotRes.ok) {
+                    updated++;
+                    console.log('[Spotlight] Force-refreshed');
+                  }
+                } catch (e) { console.warn('[Spotlight] Refresh failed:', e.message); }
+                btn.disabled = false;
+                btn.textContent = updated > 0 ? `Updated ${updated} file${updated > 1 ? 's' : ''}!` : 'No updates available';
+                setTimeout(() => { btn.textContent = 'Refresh Game Data'; }, 3000);
+              }}
+              className="w-full bg-[#1a1320] text-white py-3 rounded-lg font-medium hover:bg-stark-surface-2 flex items-center justify-center gap-2 border border-[rgba(173,43,238,0.3)]"
+            >
+              <span className="material-symbols-outlined" style={{fontSize: '18px'}}>refresh</span>
+              Refresh Game Data
+            </button>
+            <p className="text-stitch-muted text-xs mt-2">Pulls latest meta &amp; spotlight data from the server. AI advice and Oracle will use the updated info immediately.</p>
           </div>
 
           {/* Export/Import */}

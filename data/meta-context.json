@@ -1,21 +1,41 @@
 {
-  "lastUpdated": "January 2026",
-  "season": "Dragons Season",
+  "lastUpdated": "March 2026",
+  "season": "X-Men: Origins of Apocalypse",
+  "seasonPassCard": "En Sabah Nur (4-Cost, transforms into Apocalypse, Celestials' Chosen)",
+  "newKeyword": "Objective - Complete a specific in-game task to trigger a powerful one-time effect",
   "recentOTA": [
-    "Merlin: 3/5 → 3/4 (nerfed)",
-    "Fantomex: 4/4 → 4/5 (buffed)",
-    "Vulture: 3/3 → 3/4 (buffed)",
-    "Iron Lad: 4/6 → 4/7 (buffed)",
-    "Shou-Lao: New card enabling dragon combos"
+    "Star-Lord, Master of the Sun: 4/5 → 4/3 (nerfed, was warping the meta)",
+    "Alioth: 6/8 → 6/7 (nerfed)",
+    "Fin Fang Foom: 7/12 → 7/10 (nerfed, was best high-cost card)",
+    "Rocket and Groot: 3/2 → 3/3 (buffed)",
+    "Jeff the Baby Land Shark: 2/3 → 2/4 (buffed)",
+    "Magus: 3/5 → 2/3 (buffed, cost reduction)",
+    "Sebastian Shaw: 3/4 → 3/5 (buffed, Silver Surfer support)",
+    "Chamber: 2/3 → 2/2 (nerfed, Feb 12 OTA)",
+    "Thor: 3/4 → 3/5 (buffed, Feb 12 OTA)",
+    "Groot: 3/3 → 3/4 (buffed, Feb 12 OTA)",
+    "Nightcrawler: 1/2 → 1/3 (buffed, Feb 12 OTA)"
   ],
   "topArchetypes": [
-    {"name": "Shou-Lao Combo", "tier": "S", "description": "Dragon synergy with Shou-Lao and Draconic cards"},
-    {"name": "Destroy", "tier": "S", "description": "Knull/Death/Deadpool core with Killmonger tech"},
-    {"name": "High Evo", "tier": "A", "description": "High Evolutionary with no-ability cards"},
-    {"name": "Bounce", "tier": "A", "description": "Beast/Falcon with Hitmonkey/Angela payoffs"},
-    {"name": "Discard", "tier": "A", "description": "Apocalypse/MODOK/Hela control"},
-    {"name": "Move", "tier": "B+", "description": "Dagger/Human Torch with Heimdall finisher"}
+    {"name": "Shou-Lao On Reveal", "tier": "S", "description": "Shou-Lao + Werewolf by Night On Reveal builds, top of competitive mountain"},
+    {"name": "Star-Lord Ramp", "tier": "S", "description": "Star-Lord ramp with disruption tech (Spider-Ham, Mercury, Cannonball) — nerfed but still strong"},
+    {"name": "Move", "tier": "S", "description": "Flexible Move synergy developing huge points, boosted by recent buffs"},
+    {"name": "Doctor Doom 2099", "tier": "A", "description": "Hot new archetype performing well"},
+    {"name": "Destroy", "tier": "A", "description": "Knull/Death/Deadpool core, Mister Negative variant"},
+    {"name": "Bounce", "tier": "A", "description": "Beast/Falcon with Hit-Monkey/Angela payoffs"},
+    {"name": "Discard", "tier": "B+", "description": "Apocalypse/MODOK/Hela control"}
   ],
-  "hotCards": ["Shou-Lao", "Knull", "Death", "High Evolutionary", "Hela", "Hit-Monkey", "Angela"],
-  "techCards": ["Killmonger", "Enchantress", "Shadow King", "Rogue", "Shang-Chi", "Cosmo"]
+  "hotCards": ["Shou-Lao", "Star-Lord, Master of the Sun", "Doctor Doom 2099", "En Sabah Nur", "Werewolf by Night", "Jeff the Baby Land Shark"],
+  "techCards": ["Spider-Ham", "Cosmo", "Shadow King", "Shang-Chi", "Killmonger", "Enchantress", "Cannonball"],
+  "newSeasonCards": [
+    {"name": "En Sabah Nur", "cost": 4, "note": "Season Pass - Objective: Full front row at each location → transforms into Apocalypse"},
+    {"name": "Isca the Unbeaten", "cost": null, "note": "Super Premium Pass - Doubles Power if losing location"},
+    {"name": "Juggernaut, Horseman of War", "cost": null, "note": "Objective: 6 different Powers among cards → +6 Power"},
+    {"name": "Gambit, Horseman of Death", "cost": null, "note": "Objective: Play 5 Cost of created cards → destroy up to 4 Cost enemy cards"},
+    {"name": "Caliban, Horseman of Pestilence", "cost": null, "note": "Objective: 3+ Cost-4 cards in play → -7 Power to highest-Cost enemy"},
+    {"name": "Selene, Horseman of Famine", "cost": null, "note": "Objective: 3 no-ability cards in play → steal 5 Power"},
+    {"name": "Rama-Tut", "cost": null, "note": "On Reveal: Uses 3 On Reveals from pre-Rama-Tut cards"},
+    {"name": "Sandstorm", "cost": null, "note": "Free Event Pass (Team Clash) - Adds Rocks to hand"},
+    {"name": "Ozymandias", "cost": 5, "note": "Free Event Pass (High Voltage) - Ongoing: Rocks gain +3 Power"}
+  ]
 }

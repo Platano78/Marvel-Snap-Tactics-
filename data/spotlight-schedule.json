@@ -1,67 +1,68 @@
 {
-  "lastUpdated": "2026-01-23",
-  "scheduleVersion": "1.0",
+  "lastUpdated": "2026-03-01",
+  "scheduleVersion": "2.0",
+  "season": "X-Men: Origins of Apocalypse",
   "weeks": [
     {
       "weekNumber": 1,
-      "startDate": "2026-01-20",
-      "endDate": "2026-01-27",
+      "startDate": "2026-03-03",
+      "endDate": "2026-03-10",
       "spotlight": {
-        "mainCard": "Gorr the God Butcher",
+        "mainCard": "Juggernaut, Horseman of War",
         "series": 5,
         "previouslyAvailable": false
       },
       "cacheCards": [
-        { "name": "Caiera", "series": 4 },
-        { "name": "Ajax", "series": 4 },
-        { "name": "Scarlet Spider", "series": 5 }
+        { "name": "Shou-Lao", "series": 5 },
+        { "name": "Doctor Doom 2099", "series": 5 },
+        { "name": "Star-Lord, Master of the Sun", "series": 5 }
       ]
     },
     {
       "weekNumber": 2,
-      "startDate": "2026-01-27",
-      "endDate": "2026-02-03",
+      "startDate": "2026-03-10",
+      "endDate": "2026-03-17",
       "spotlight": {
-        "mainCard": "Hercules",
-        "series": 5,
-        "previouslyAvailable": true
-      },
-      "cacheCards": [
-        { "name": "Wiccan", "series": 4 },
-        { "name": "Kate Bishop", "series": 4 },
-        { "name": "Living Tribunal", "series": 5 }
-      ]
-    },
-    {
-      "weekNumber": 3,
-      "startDate": "2026-02-03",
-      "endDate": "2026-02-10",
-      "spotlight": {
-        "mainCard": "Emperor Hulkling",
+        "mainCard": "Gambit, Horseman of Death",
         "series": 5,
         "previouslyAvailable": false
       },
       "cacheCards": [
-        { "name": "Patriot", "series": 4 },
-        { "name": "Silver Samurai", "series": 4 },
-        { "name": "Alioth", "series": 5 }
+        { "name": "Werewolf by Night", "series": 5 },
+        { "name": "Copycat", "series": 5 },
+        { "name": "Rama-Tut", "series": 5 }
+      ]
+    },
+    {
+      "weekNumber": 3,
+      "startDate": "2026-03-17",
+      "endDate": "2026-03-24",
+      "spotlight": {
+        "mainCard": "Caliban, Horseman of Pestilence",
+        "series": 5,
+        "previouslyAvailable": false
+      },
+      "cacheCards": [
+        { "name": "Jeff the Baby Land Shark", "series": 5 },
+        { "name": "Sebastian Shaw", "series": 5 },
+        { "name": "Selene, Horseman of Famine", "series": 5 }
       ]
     },
     {
       "weekNumber": 4,
-      "startDate": "2026-02-10",
-      "endDate": "2026-02-17",
+      "startDate": "2026-03-24",
+      "endDate": "2026-03-31",
       "spotlight": {
-        "mainCard": "Sage",
+        "mainCard": "Rama-Tut",
         "series": 5,
-        "previouslyAvailable": true
+        "previouslyAvailable": false
       },
       "cacheCards": [
-        { "name": "Copycat", "series": 4 },
-        { "name": "Valentina", "series": 4 },
-        { "name": "Thanos", "series": 5 }
+        { "name": "Magus", "series": 5 },
+        { "name": "Spider-Ham", "series": 5 },
+        { "name": "Alioth", "series": 5 }
       ]
     }
   ],
-  "notes": "Schedule is subject to change. Data from official Marvel Snap announcements."
+  "notes": "Main spotlight cards confirmed from official marvelsnap.com. Cache companion cards are approximate — update from in-game spotlights each Tuesday. Source: https://marvelsnap.com/news/"
 }
