@@ -4526,8 +4526,7 @@ RESPONSE GUIDELINES:
     };
 
     // AI Chat Component
-    const AIChat = ({ collection, matches, aiConfig, setActiveTab }) => {
-      const [messages, setMessages] = useState([]);
+    const AIChat = ({ collection, matches, aiConfig, setActiveTab, messages, setMessages }) => {
       const [input, setInput] = useState('');
       const [isLoading, setIsLoading] = useState(false);
       const [error, setError] = useState(null);
@@ -7572,6 +7571,7 @@ RESPONSE GUIDELINES:
         googleToken: null,
         localEndpoint: 'http://localhost:11434'
       }));
+      const [aiMessages, setAiMessages] = useState([]);
 
       // Card data version - triggers re-render when uniqueCards updates
       const [cardDataVersion, setCardDataVersion] = useState(0);
@@ -7927,7 +7927,7 @@ RESPONSE GUIDELINES:
             )}
             {activeTab === 'ai' && (
               <ErrorBoundary>
-                <AIChat collection={collection} matches={matches} aiConfig={aiConfig} setActiveTab={setActiveTab} />
+                <AIChat collection={collection} matches={matches} aiConfig={aiConfig} setActiveTab={setActiveTab} messages={aiMessages} setMessages={setAiMessages} />
               </ErrorBoundary>
             )}
             {activeTab === 'collection' && (
