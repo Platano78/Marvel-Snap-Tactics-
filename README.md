@@ -41,19 +41,26 @@ Track your collection, log matches, calculate snap decisions, and get tactical a
 - **PC Players:** Drag & drop your Player.log file to auto-import matches
 - Export your match data
 
-### 🔄 Game Data Sync (New in v2.2!)
-- **Direct JSON Import:** Import collection, stats, and card performance from game files
-- **Link Folder (Chrome/Edge):** One-time setup, then sync with a single click
-- **Drag & Drop:** Works in all browsers - drop your game JSON files to import
+### 🔄 Game Data Sync (Updated in v2.4!)
+- **Linked Folder Sync (Chrome/Edge):** One-time setup, then sync with a single click
+- **Single Import Path:** Linked Folder Sync is now the only game-data import flow for cleaner UX
+- **Deep File Coverage:** Imports collection, profile, economy, conquest, and deck-selection state
 - **PC Log Import:** Drag your Player.log file to auto-import match history
 - **QR Code Sync:** Generate a QR code on PC, scan with your phone to sync collection
 - **Full Vault Export:** Backup everything to a single file
 
-### 📊 Analytics Tab (New!)
+### 📊 Analytics Tab (Expanded!)
 - **Lifetime Stats:** See your total games, wins, losses, and win rate from game data
+- **Season Stats:** Track current season rank, Skill Rating, season games, and season best tier
 - **Card Performance:** Track net cubes gained/lost per card
 - **Best/Worst Performers:** Know which cards win (and lose) you the most cubes
 - **Currency Tracking:** View your Credits, Gold, and Collector's Tokens
+
+### 🧾 Deep Data Surfaces (New in v2.4)
+- **Dashboard:** Rank + Skill Rating display, Collection Score widget, Conquest ticket badges, Daily Shop highlight (first 5 offers)
+- **Economy HQ:** Daily shop offers with prices, Collector's Vault (active/next vault with dates), full wallet breakdown including border charges
+- **Profile:** Collection Score, cosmetic counts (avatars, titles, card backs, albums), and Skill Rating in rank display
+- **Analytics:** Dedicated Season Stats section powered by RankLog + Leaderboard data
 
 ### 📋 Deck Builder
 - Create and save up to 20 custom decks
@@ -63,7 +70,7 @@ Track your collection, log matches, calculate snap decisions, and get tactical a
 - Quick-add from your collection
 - Edit or delete saved decks anytime
 
-### 🎲 Deck Simulator (New!)
+### 🎲 Deck Simulator
 - **Opening Hand Test:** See probability of each card in starting hand
 - **Draw by Turn:** Know your odds of drawing key cards by each turn
 - **Curve Analysis:** Check if your deck plays on curve or bricks
@@ -129,11 +136,12 @@ Your collection and match history are stored in your browser's local storage.
 ## 📱 Tips for Best Experience
 
 1. **Install as PWA** - Works better than browser bookmark
-2. **PC Players:** Import your Player.log for accurate match history
-3. **Mobile Players:** Use quick-entry buttons right after each game
-4. **Test decks in the Simulator** - Check curve and combo odds before playing
-5. **Use the calculator before snapping** - Know your odds
-6. **Export your vault regularly** - Keep backups of your data
+2. **Link your game folder once (Chrome/Edge)** - Then use one-click sync for all game-data imports
+3. **PC Players:** Import your Player.log for accurate match history
+4. **Mobile Players:** Use quick-entry buttons right after each game
+5. **Test decks in the Simulator** - Check curve and combo odds before playing
+6. **Use the calculator before snapping** - Know your odds
+7. **Export your vault regularly** - Keep backups of your data
 
 ---
 
@@ -214,11 +222,25 @@ python -m http.server 8000
   - Seeded RNG for reproducible results
 - **7-Tab Navigation:** Added Simulator alongside Calculator
 
+### v2.4 - Phase 7 (Deep Data Audit, March 2026)
+- **Import Simplification:** Removed game-data drag & drop; Linked Folder Sync (Chrome/Edge) is now the sole import path
+- **Import Bug Fixes:** Fixed ShopState lookup (was targeting nonexistent `TokenShopState.json`)
+- **Import Map Cleanup:** Removed `DeckState.json` from import map (decks already sourced from `CollectionState.json`)
+- **New Parser — ShopState.json:** Token shop slots (4 cards + costs), daily shop offers (9 items + prices), Collector's Vault rotation
+- **New Parser — ConquestState.json:** Conquest ticket balances (Bronze, Silver, Gold, Proving Grounds, Infinity, Vibranium)
+- **New Parser — PlayState.json:** Selected deck ID and per-league deck selections
+- **Enhanced Parser — ProfileState.json:** RankLog (rank, trophies, high watermark, season games), Skill Rating, full wallet (credits, gold, tokens, border charges, event tickets)
+- **Enhanced Parser — CollectionState.json:** Collection Score and cosmetic counts (avatars, titles, card backs, albums)
+- **Dashboard Upgrades:** Rank + SR display, Collection Score, conquest badge row, daily shop highlights
+- **Economy HQ Upgrades:** Daily offers with prices, Collector's Vault active/next windows, expanded wallet panel
+- **Analytics Upgrades:** Season Stats (rank, SR, season games, season best tier)
+- **Profile Upgrades:** Collection Score, cosmetics summary, SR in rank display
+
 ---
 
 ## 🎮 About
 
-Built for Marvel Snap players who want to track their progress and make smarter snap decisions. 
+Built for Marvel Snap players who want to track their progress and make smarter snap decisions.
 
 *"Every match is a story. Every snap is a statement."* — Snapapoulous
 
@@ -230,6 +252,6 @@ MIT - Do whatever you want with it.
 
 ---
 
-**Questions?** Open an issue or just figure it out - it's pretty straightforward. 
+**Questions?** Open an issue or just figure it out - it's pretty straightforward.
 
 *Not affiliated with Marvel, Second Dinner, or Nuverse.*
