@@ -2,6 +2,8 @@
 const CACHE_NAME = 'snapapoulous-stitch-v1';
 const FONT_CACHE = 'snap-fonts-v1';
 const ART_CACHE = 'snap-card-art-v1';
+const ART_CACHE_MAX_ENTRIES = 400;
+const ART_CACHE_QUEUE_KEY = '__meta__/art-cache-fifo-queue';
 // Dynamically build asset URLs based on service worker location
 const SW_SCOPE = self.registration ? self.registration.scope : self.location.href.replace(/sw\.js$/, '');
 const OFFLINE_ASSETS = [
@@ -13,6 +15,65 @@ const OFFLINE_ASSETS = [
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png'
 ];
+
+// Persist FIFO metadata in the same cache using a synthetic request key.
+const getArtQueueRequest = () => new Request(`${SW_SCOPE}${ART_CACHE_QUEUE_KEY}`);
+
+const loadArtCacheQueue = async (cache) => {
+  try {
+    const queueResponse = await cache.match(getArtQueueRequest());
+    if (!queueResponse) return [];
+
+    const parsed = await queueResponse.json();
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.filter((item) => typeof item === 'string' && item.length > 0);
+  } catch (error) {
+    console.warn('[SW] Failed to read art cache queue metadata; rebuilding queue:', error);
+    return [];
+  }
+};
+
+const saveArtCacheQueue = async (cache, queue) => {
+  await cache.put(
+    getArtQueueRequest(),
+    new Response(JSON.stringify(queue), {
+      headers: { 'content-type': 'application/json' }
+    })
+  );
+};
+
+const enforceArtCacheFifoLimit = async (cache, request) => {
+  try {
+    const requestUrl = request.url;
+    let queue = await loadArtCacheQueue(cache);
+
+    // Keep insertion order without duplicates.
+    queue = queue.filter((url) => url !== requestUrl);
+    queue.push(requestUrl);
+
+    while (queue.length > ART_CACHE_MAX_ENTRIES) {
+      const oldestUrl = queue.shift();
+      if (!oldestUrl) break;
+      await cache.delete(oldestUrl);
+    }
+
+    await saveArtCacheQueue(cache, queue);
+  } catch (error) {
+    // Best-effort fallback if metadata handling fails unexpectedly.
+    console.warn('[SW] FIFO eviction failed; applying key-order fallback:', error);
+    const keys = await cache.keys();
+    const maxKeysWithMeta = ART_CACHE_MAX_ENTRIES + 1; // +1 for queue metadata entry
+    if (keys.length > maxKeysWithMeta) {
+      const excessCount = keys.length - maxKeysWithMeta;
+      for (let i = 0; i < excessCount; i++) {
+        const key = keys[i];
+        if (key.url.includes(ART_CACHE_QUEUE_KEY)) continue;
+        await cache.delete(key);
+      }
+    }
+  }
+};
 
 // Install event - cache offline assets with error handling
 self.addEventListener('install', (event) => {
@@ -134,15 +195,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache card art images from MarvelSnapZone CDN
+  // Cache card art images from MarvelSnapZone CDN (with FIFO eviction)
   if (url.hostname === 'marvelsnapzone.com' && url.pathname.includes('/cards/')) {
     event.respondWith(
       caches.open(ART_CACHE).then((cache) => {
         return cache.match(event.request).then((cachedResponse) => {
           if (cachedResponse) return cachedResponse;
-          return fetch(event.request).then((networkResponse) => {
+          return fetch(event.request).then(async (networkResponse) => {
             if (networkResponse.ok) {
-              cache.put(event.request, networkResponse.clone());
+              await cache.put(event.request, networkResponse.clone());
+              await enforceArtCacheFifoLimit(cache, event.request);
             }
             return networkResponse;
           }).catch(() => null);
