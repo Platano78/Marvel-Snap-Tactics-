@@ -7109,8 +7109,8 @@ RESPONSE GUIDELINES:
               Meta context &amp; spotlight schedule. Last updated: <span className="text-cosmic-purple-text font-medium">{META_CONTEXT.lastUpdated || 'Unknown'}</span> &mdash; {META_CONTEXT.season || 'Unknown season'}
             </p>
             <button
-              onClick={async () => {
-                const btn = event.currentTarget;
+              onClick={async (e) => {
+                const btn = e.currentTarget;
                 btn.disabled = true;
                 btn.textContent = 'Refreshing...';
                 let updated = 0;
