@@ -1943,7 +1943,7 @@
     let META_CONTEXT = { ...DEFAULT_META_CONTEXT, currentDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) };
 
     // Fire-and-forget fetch of external meta context
-    fetch('data/meta-context.json')
+    fetch('data/meta-context.json', { cache: 'no-cache' })
       .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(data => {
         META_CONTEXT = { ...META_CONTEXT, ...data, currentDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) };
@@ -5478,7 +5478,7 @@ RESPONSE GUIDELINES:
       useEffect(() => {
         const loadData = async () => {
           try {
-            const response = await fetch('data/spotlight-schedule.json');
+            const response = await fetch('data/spotlight-schedule.json', { cache: 'no-cache' });
             const data = await response.json();
             setSchedule(data);
           } catch (err) { console.error('Could not load spotlight schedule:', err); }
