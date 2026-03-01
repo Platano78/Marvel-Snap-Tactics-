@@ -3146,31 +3146,6 @@ RESPONSE GUIDELINES:
       /**
        * Parse PlayState.json — selected deck and league deck selections
        */
-      parsePlayState(json) {
-        try {
-          const selectedDeckRaw = json?.SelectedDeckId;
-          const selectedDeckId = selectedDeckRaw?.Value || selectedDeckRaw || null;
-
-          const leagueDecks = {};
-          const deckByLeague = json?.SelectedDeckByLeagueDefId || {};
-          for (const [league, deckId] of Object.entries(deckByLeague)) {
-            if (league !== '$type' && typeof deckId === 'string') {
-              leagueDecks[league] = deckId;
-            }
-          }
-
-          return {
-            type: 'playState',
-            selectedDeckId,
-            leagueDecks,
-            appVersion: json?.ApplicationVersion || null,
-            parseDate: new Date().toISOString()
-          };
-        } catch (error) {
-          console.error('Error parsing play state:', error);
-          return null;
-        }
-      },
 
       /**
        * Parse MissionState.json for mission tracking
@@ -3724,34 +3699,6 @@ RESPONSE GUIDELINES:
         const totalTickets = Object.values(t).reduce((s, n) => s + n, 0);
         results.push(`Conquest: ${totalTickets} tickets`);
       }
-
-      // Play State (selected deck)
-      if (data.playState) {
-        localStorage.setItem('snap_play_state', JSON.stringify({
-          ...data.playState,
-          importedAt: timestamp
-        }));
-      }
-
-      // Store unified player state for easy access by components
-      const playerState = {
-        collection: data.collection,
-        collectionEnhanced: data.collectionEnhanced,
-        profile: data.profile,
-        mastery: data.mastery,
-        battlePass: data.battlePass,
-        rewards: data.rewards,
-        tokenShop: data.tokenShop,
-        shop: data.shop,
-        missions: data.missions,
-        timeModel: data.timeModel,
-        rank: data.rank,
-        decks: data.decks,
-        conquest: data.conquest,
-        playState: data.playState,
-        lastSync: timestamp
-      };
-      localStorage.setItem('snap_player_state', JSON.stringify(playerState));
 
       return results;
     };
@@ -8033,8 +7980,7 @@ RESPONSE GUIDELINES:
             timeModel: null,     // Server time for accurate countdowns
             rank: null,          // Rank info
             decks: null,         // Saved decks
-            conquest: null,      // Conquest tickets
-            playState: null      // Selected deck, league settings
+            conquest: null       // Conquest tickets
           };
 
           // Map state files to parser methods
@@ -8051,8 +7997,7 @@ RESPONSE GUIDELINES:
             'TimeModelState.json': 'timeModel',
             'RankState.json': 'rank',
             'CompetitiveRankState.json': 'rank',  // Alternative
-            'ConquestState.json': 'conquest',
-            'PlayState.json': 'playState'
+            'ConquestState.json': 'conquest'
           };
 
           // Parse each available file
@@ -8106,9 +8051,6 @@ RESPONSE GUIDELINES:
                   break;
                 case 'conquest':
                   results.conquest = GameDataParser.parseConquestState(json);
-                  break;
-                case 'playState':
-                  results.playState = GameDataParser.parsePlayState(json);
                   break;
               }
             } catch (err) {
@@ -10382,7 +10324,7 @@ RESPONSE GUIDELINES:
     // ==================== MAIN APP ====================
     // Performance mode detection - runs once at app init
     const detectPerformanceMode = () => {
-      const savedMode = localStorage.getItem('snap_perf_mode');
+      const savedMode = localStorage.getItem('snap_performance_mode');
       if (savedMode) {
         document.documentElement.setAttribute('data-perf', savedMode);
         return;
