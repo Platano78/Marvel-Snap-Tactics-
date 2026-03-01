@@ -3807,6 +3807,71 @@ RESPONSE GUIDELINES:
 
     // ==================== COMPONENTS ====================
 
+    // Offline Indicator
+    const OfflineIndicator = () => {
+      const [isOnline, setIsOnline] = React.useState(navigator.onLine);
+
+      React.useEffect(() => {
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+
+        return () => {
+          window.removeEventListener('online', handleOnline);
+          window.removeEventListener('offline', handleOffline);
+        };
+      }, []);
+
+      if (isOnline) return null;
+
+      return (
+        <div className="fixed top-0 left-0 right-0 z-40 bg-red-900 text-white px-4 py-2 text-center text-sm">
+          Offline Mode - Limited functionality
+        </div>
+      );
+    };
+
+    // Install Banner
+    const InstallBanner = () => {
+      const [deferredPrompt, setDeferredPrompt] = React.useState(null);
+      const [showBanner, setShowBanner] = React.useState(false);
+
+      React.useEffect(() => {
+        const handleBeforeInstallPrompt = (e) => {
+          e.preventDefault();
+          setDeferredPrompt(e);
+          setShowBanner(true);
+        };
+
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      }, []);
+
+      const handleInstall = async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          await deferredPrompt.userChoice;
+          setDeferredPrompt(null);
+          setShowBanner(false);
+        }
+      };
+
+      if (!showBanner || !deferredPrompt) return null;
+
+      return (
+        <div className="fixed top-16 left-0 right-0 z-40 bg-cosmic-purple-text text-white px-4 py-3 text-center text-sm">
+          <div className="flex items-center justify-between">
+            <span>Install Snapapoulous Prime as an app</span>
+            <button onClick={handleInstall} className="px-3 py-1 bg-white text-cosmic-purple-text rounded font-bold">
+              Install
+            </button>
+          </div>
+        </div>
+      );
+    };
+
     // Navigation Bar
     const NavBar = ({ activeTab, setActiveTab }) => {
       const primaryTabs = [
@@ -4671,50 +4736,6 @@ RESPONSE GUIDELINES:
       const ownedCards = useMemo(() => {
         const ownedSet = new Set(collection.owned || []);
         return uniqueCards.filter(card => ownedSet.has(card.name));
-      }, [collection.owned]);
-
-      // Calculate pool stats based on YOUR owned cards (aggregates internal series to player-facing pools)
-      const poolStats = useMemo(() => {
-        const stats = {};
-        const ownedSet = new Set(collection.owned || []);
-
-        // Initialize stats for player-facing pools
-        const pools = ['Pool 1', 'Pool 2', 'Pool 3', 'Pool 4', 'Pool 5', 'Spotlight'];
-        pools.forEach(pool => {
-          stats[pool] = { owned: 0, total: 0, percent: 0, color: 'series-1' };
-        });
-
-        // Map pool to color class
-        const poolColors = {
-          'Pool 1': 'series-1',
-          'Pool 2': 'series-4',
-          'Pool 3': 'series-6',
-          'Pool 4': 'series-7',
-          'Pool 5': 'series-8',
-          'Spotlight': 'series-9'
-        };
-        pools.forEach(pool => { stats[pool].color = poolColors[pool]; });
-
-        uniqueCards.forEach(card => {
-          const series = card.series;
-          if (series > 0) {
-            const poolName = getSeriesDisplayName(series);
-            if (stats[poolName]) {
-              stats[poolName].total++;
-              if (ownedSet.has(card.name)) {
-                stats[poolName].owned++;
-              }
-            }
-          }
-        });
-
-        // Calculate percentages
-        Object.keys(stats).forEach(pool => {
-          stats[pool].percent = stats[pool].total > 0 ? Math.round((stats[pool].owned / stats[pool].total) * 100) : 0;
-        });
-
-        // Only return pools that have cards
-        return Object.fromEntries(Object.entries(stats).filter(([_, v]) => v.total > 0));
       }, [collection.owned]);
 
       // Pool stats aggregated by player-facing pool name
