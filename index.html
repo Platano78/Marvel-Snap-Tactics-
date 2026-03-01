@@ -2745,55 +2745,38 @@ RESPONSE GUIDELINES:
         const cards = new Set();
 
         // Ensure full card data is loaded before building defId map
-        // This is critical - fallback data doesn't have defId fields
         const cardData = await CardDataLoader.load();
 
         // Build defId→name lookup map from card database
-        // Game stores CardDefId (e.g., "AntMan") but UI matches by name (e.g., "Ant Man")
         const defIdToName = new Map();
         cardData.forEach(card => {
-          if (card.defId) {
-            defIdToName.set(card.defId, card.name);
-          }
-          // Also map name directly in case some entries use display names
+          if (card.defId) defIdToName.set(card.defId, card.name);
           defIdToName.set(card.name, card.name);
         });
 
         console.log(`[parseCollection] Built defId map with ${defIdToName.size} entries from ${cardData.length} cards`);
 
-        // Helper to recursively find all CardDefId values
-        const findCards = (obj) => {
-          if (!obj || typeof obj !== 'object') return;
-
-          if (obj.CardDefId && typeof obj.CardDefId === 'string') {
-            const cardDefId = obj.CardDefId;
-            // Filter out tokens/created cards (usually have special naming)
-            if (!cardDefId.includes('Token') &&
-                !cardDefId.includes('Stone') &&
-                !cardDefId.includes('Shard') &&
-                !cardDefId.startsWith('_')) {
-              // Convert CardDefId to display name for UI matching
-              // Use resolveCardDefId for fuzzy matching (strips suffixes like Original, V2)
-              const displayName = resolveCardDefId(cardDefId, defIdToName);
-              // resolveCardDefId returns the original cardId if no match found
-              if (defIdToName.has(displayName)) {
-                cards.add(displayName);
-              } else {
-                // Card not in database - log but don't add (might be new card)
-                console.log(`[parseCollection] Unknown CardDefId: ${cardDefId}`);
-              }
+        // Use direct path: ServerState.Cards is the definitive owned cards array
+        // Each entry has CardDefId, RarityDefId, ArtVariantDefId, etc.
+        // Multiple entries per card (one per variant) — we dedupe by display name
+        const ownedCards = json?.ServerState?.Cards || [];
+        if (Array.isArray(ownedCards) && ownedCards.length > 0) {
+          for (const card of ownedCards) {
+            if (!card?.CardDefId || card.Custom) continue;
+            const cardDefId = card.CardDefId;
+            if (cardDefId.includes('Token') || cardDefId.includes('Stone') ||
+                cardDefId.includes('Shard') || cardDefId.startsWith('_')) continue;
+            const displayName = resolveCardDefId(cardDefId, defIdToName);
+            if (defIdToName.has(displayName)) {
+              cards.add(displayName);
+            } else {
+              console.log(`[parseCollection] Unknown CardDefId: ${cardDefId}`);
             }
           }
-
-          // Recurse into arrays and objects
-          if (Array.isArray(obj)) {
-            obj.forEach(findCards);
-          } else {
-            Object.values(obj).forEach(findCards);
-          }
-        };
-
-        findCards(json);
+          console.log(`[parseCollection] Found ${cards.size} unique owned cards from ServerState.Cards (${ownedCards.length} variants)`);
+        } else {
+          console.warn('[parseCollection] ServerState.Cards not found or empty, no owned cards detected');
+        }
 
         return {
           type: 'collection',
@@ -3622,7 +3605,7 @@ RESPONSE GUIDELINES:
 
       // Token Shop (Economy Intelligence) — resolve cardDefId to display names
       if (data.tokenShop) {
-        const cardDb = typeof uniqueCards !== 'undefined' ? uniqueCards : [];
+        const cardDb = CardDataLoader.cache || uniqueCards || [];
         const shopDefIdMap = new Map();
         cardDb.forEach(card => {
           if (card.defId) shopDefIdMap.set(card.defId, card.name);
@@ -3642,7 +3625,7 @@ RESPONSE GUIDELINES:
 
       // Full Shop (daily offers, vault, token shop from ShopState.json)
       if (data.shop) {
-        const cardDb = typeof uniqueCards !== 'undefined' ? uniqueCards : [];
+        const cardDb = CardDataLoader.cache || uniqueCards || [];
         const shopDefIdMap = new Map();
         cardDb.forEach(card => {
           if (card.defId) shopDefIdMap.set(card.defId, card.name);
@@ -3702,8 +3685,9 @@ RESPONSE GUIDELINES:
 
       // Saved Decks — store to snap_decks (same key DeckBuilder reads)
       if (data.decks && data.decks.decks?.length > 0) {
-        // Build CardDefId→displayName map for card name conversion
-        const cardDb = typeof uniqueCards !== 'undefined' ? uniqueCards : [];
+        // Build CardDefId→displayName map — use CardDataLoader.cache (populated by parseCollection)
+        // instead of uniqueCards which may not be updated yet due to async race
+        const cardDb = CardDataLoader.cache || uniqueCards || [];
         const defIdMap = new Map();
         cardDb.forEach(card => {
           if (card.defId) defIdMap.set(card.defId, card.name);
