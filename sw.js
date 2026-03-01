@@ -1,5 +1,5 @@
 // Snapapoulous Prime Service Worker
-const CACHE_NAME = 'snapapoulous-stitch-v1';
+const CACHE_NAME = 'snapapoulous-stitch-v2';
 const FONT_CACHE = 'snap-fonts-v1';
 const ART_CACHE = 'snap-card-art-v1';
 const ART_CACHE_MAX_ENTRIES = 400;
@@ -12,6 +12,7 @@ const OFFLINE_ASSETS = [
   './manifest.json',
   './persona.json',
   './card-data.json',
+  './data/meta-context.json',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png'
 ];
@@ -251,7 +252,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Stale-while-revalidate for card data and persona (ensures fresh data while serving cached)
-  if (event.request.url.includes('card-data.json') || event.request.url.includes('persona.json')) {
+  if (event.request.url.includes('card-data.json') || event.request.url.includes('persona.json') || event.request.url.includes('meta-context.json')) {
     event.respondWith(
       caches.open(CACHE_NAME).then((cache) => {
         return cache.match(event.request).then((cachedResponse) => {

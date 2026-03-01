@@ -1,0 +1,21 @@
+{
+  "lastUpdated": "January 2026",
+  "season": "Dragons Season",
+  "recentOTA": [
+    "Merlin: 3/5 → 3/4 (nerfed)",
+    "Fantomex: 4/4 → 4/5 (buffed)",
+    "Vulture: 3/3 → 3/4 (buffed)",
+    "Iron Lad: 4/6 → 4/7 (buffed)",
+    "Shou-Lao: New card enabling dragon combos"
+  ],
+  "topArchetypes": [
+    {"name": "Shou-Lao Combo", "tier": "S", "description": "Dragon synergy with Shou-Lao and Draconic cards"},
+    {"name": "Destroy", "tier": "S", "description": "Knull/Death/Deadpool core with Killmonger tech"},
+    {"name": "High Evo", "tier": "A", "description": "High Evolutionary with no-ability cards"},
+    {"name": "Bounce", "tier": "A", "description": "Beast/Falcon with Hitmonkey/Angela payoffs"},
+    {"name": "Discard", "tier": "A", "description": "Apocalypse/MODOK/Hela control"},
+    {"name": "Move", "tier": "B+", "description": "Dagger/Human Torch with Heimdall finisher"}
+  ],
+  "hotCards": ["Shou-Lao", "Knull", "Death", "High Evolutionary", "Hela", "Hit-Monkey", "Angela"],
+  "techCards": ["Killmonger", "Enchantress", "Shadow King", "Rogue", "Shang-Chi", "Cosmo"]
+}

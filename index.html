@@ -1915,11 +1915,10 @@
     }).catch(err => console.warn('[uniqueCards] Load error:', err));
 
     // ==================== DYNAMIC META CONTEXT ====================
-    // Phase 3: Centralized meta information - update this with each patch/season
-    const META_CONTEXT = {
-      currentDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-      season: "Dragons Season",
+    // Embedded defaults (offline fallback), overwritten by data/meta-context.json at startup
+    const DEFAULT_META_CONTEXT = {
       lastUpdated: "January 2026",
+      season: "Dragons Season",
       recentOTA: [
         "Merlin: 3/5 → 3/4 (nerfed)",
         "Fantomex: 4/4 → 4/5 (buffed)",
@@ -1938,6 +1937,16 @@
       hotCards: ["Shou-Lao", "Knull", "Death", "High Evolutionary", "Hela", "Hit-Monkey", "Angela"],
       techCards: ["Killmonger", "Enchantress", "Shadow King", "Rogue", "Shang-Chi", "Cosmo"]
     };
+    let META_CONTEXT = { ...DEFAULT_META_CONTEXT, currentDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) };
+
+    // Fire-and-forget fetch of external meta context
+    fetch('data/meta-context.json')
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(data => {
+        META_CONTEXT = { ...META_CONTEXT, ...data, currentDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) };
+        console.log('[MetaContext] Loaded from data/meta-context.json');
+      })
+      .catch(err => console.warn('[MetaContext] Using embedded defaults:', err.message));
 
     // ==================== SNAPAPOULOUS PERSONA ====================
     // Phase 4: Default fallback persona (used if persona.json fails to load)
@@ -4481,14 +4490,15 @@ RESPONSE GUIDELINES:
         return !!(aiConfig.apiKeys && aiConfig.apiKeys[aiConfig.provider]);
       };
 
-      const sendMessage = async () => {
-        if (!input.trim() || isLoading) return;
+      const sendMessage = async (overrideText) => {
+        const text = (overrideText !== undefined ? overrideText : input).trim();
+        if (!text || isLoading) return;
         if (!isConfigured()) {
           setError('Please configure an AI provider in Settings first.');
           return;
         }
 
-        const userMessage = { id: generateId(), role: 'user', content: input.trim() };
+        const userMessage = { id: generateId(), role: 'user', content: text };
         setMessages(prev => [...prev, userMessage]);
         setInput('');
         setIsLoading(true);
@@ -4549,10 +4559,12 @@ RESPONSE GUIDELINES:
       };
 
       const quickPrompts = [
-        "Analyze my win rate",
-        "Best deck for climbing?",
-        "When should I snap?",
-        "Counter Destroy decks"
+        { label: "What deck today?", prompt: "Based on my collection and current rank, what is the best deck I should play right now to climb?" },
+        { label: "OTA impact on my decks", prompt: "How does the latest OTA patch affect my saved decks? Which got stronger or weaker, and what swaps do you recommend?" },
+        { label: "Cards to target next", prompt: "Looking at my collection gaps and the current meta, what cards should I prioritize acquiring next to unlock the strongest archetypes?" },
+        { label: "Help me beat the meta", prompt: "What is the best way to counter the top meta decks right now? Give me tech card suggestions and play tips based on my collection." },
+        { label: "Analyze my win rate", prompt: "Analyze my match history and win rate. What patterns do you see and what should I focus on to improve?" },
+        { label: "When should I snap?", prompt: "Explain the key principles of when to snap and when to retreat. Give me a mental framework I can apply every game." }
       ];
 
       return (
@@ -4606,10 +4618,10 @@ RESPONSE GUIDELINES:
           {messages.length <= 1 && (
             <div className="px-4 py-2">
               <div className="flex flex-wrap gap-2">
-                {quickPrompts.map(prompt => (
-                  <button key={prompt} onClick={() => setInput(prompt)}
+                {quickPrompts.map(qp => (
+                  <button key={qp.label} onClick={() => sendMessage(qp.prompt)}
                     className="bg-[#1a1320] text-gray-300 text-xs px-4 py-2 rounded-full hover:bg-stark-surface-2 touch-target-sm">
-                    {prompt}
+                    {qp.label}
                   </button>
                 ))}
               </div>
@@ -6616,20 +6628,13 @@ RESPONSE GUIDELINES:
               <span className="material-symbols-outlined" aria-hidden="true">apps</span>
               More Features
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'profile' }))}
                 className="stitch-list-item p-3 flex flex-col items-center"
               >
                 <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">person</span>
                 <span className="text-white text-sm">Profile</span>
-              </button>
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'meta' }))}
-                className="stitch-list-item p-3 flex flex-col items-center"
-              >
-                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">leaderboard</span>
-                <span className="text-white text-sm">Meta Tiers</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'dashboard' }))}
@@ -7487,105 +7492,6 @@ RESPONSE GUIDELINES:
       );
     };
 
-    // ==================== META TIER LIST COMPONENT ====================
-    const META_TIER_DATA = {
-      S: [
-        { name: 'Destroy', winRate: 58, playRate: 12, cards: ['Death', 'Knull', 'Carnage', 'Deathlok'] },
-        { name: 'Bounce', winRate: 56, playRate: 9, cards: ['Beast', 'Falcon', 'Angela', 'Kitty Pryde'] },
-      ],
-      A: [
-        { name: 'Discard', winRate: 54, playRate: 8, cards: ['Blade', 'Lady Sif', 'Wolverine', 'Apocalypse'] },
-        { name: 'Move', winRate: 53, playRate: 7, cards: ['Human Torch', 'Multiple Man', 'Iron Fist', 'Heimdall'] },
-        { name: 'High Evo', winRate: 53, playRate: 6, cards: ['Hulk', 'Cyclops', 'Abomination', 'The Thing'] },
-      ],
-      B: [
-        { name: 'Ongoing', winRate: 51, playRate: 5, cards: ['Iron Man', 'Spectrum', 'Onslaught', 'Namor'] },
-        { name: 'Zoo', winRate: 50, playRate: 5, cards: ['Ant-Man', 'Squirrel Girl', 'Blue Marvel', 'Kazar'] },
-      ],
-      C: [
-        { name: 'Control', winRate: 49, playRate: 4, cards: ['Cosmo', 'Enchantress', 'Armor', 'Spider-Woman'] },
-      ]
-    };
-    const META_TIER_COLORS = { S: 'bg-cosmic-purple', A: 'bg-blue-600', B: 'bg-yellow-600', C: 'bg-gray-600' };
-
-    const MetaTierList = () => {
-      const [timeRange, setTimeRange] = useState('week');
-
-      return (
-        <div className="px-4 pb-20">
-          <Header title="META TIER LIST" subtitle="Community Rankings" />
-
-          {/* Time Range Filter */}
-          <div className="flex gap-2 mb-4">
-            {['week', 'month', 'season'].map(range => (
-              <button key={range} className={`stitch-pill ${timeRange === range ? 'active' : ''}`}
-                onClick={() => setTimeRange(range)}>
-                {range === 'week' ? '7 Days' : range === 'month' ? '30 Days' : 'Season'}
-              </button>
-            ))}
-          </div>
-
-          {/* Tier Sections */}
-          {Object.entries(META_TIER_DATA).map(([tier, decks]) => (
-            <div key={tier} className="mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className={`w-8 h-8 rounded-lg ${META_TIER_COLORS[tier]} flex items-center justify-center text-white font-bold text-sm`}>{tier}</span>
-                <span className="stitch-label">{tier === 'S' ? 'Top Tier' : tier === 'A' ? 'Strong' : tier === 'B' ? 'Viable' : 'Niche'}</span>
-              </div>
-              <div className="space-y-2">
-                {decks.map((deck, i) => {
-                  const heroCard = uniqueCards.find(c => c.name === deck.cards[0]);
-                  return (
-                    <div key={i} className={`stitch-list-item p-0 overflow-hidden ${tier === 'S' ? '' : ''}`}>
-                      {tier === 'S' ? (
-                        /* S-Tier: Full hero art banner */
-                        <div className="relative h-32 overflow-hidden">
-                          <div className="absolute inset-0 card-art" style={{ backgroundImage: `url(${getCardArtUrl(heroCard || { name: deck.cards[0] })})` }} />
-                          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-                          <div className="relative z-10 p-4 h-full flex flex-col justify-between">
-                            <div>
-                              <div className="text-lg font-display font-bold text-white">{deck.name}</div>
-                              <div className="flex gap-2 mt-1">
-                                <span className="stitch-badge bg-stitch-green/20 text-stitch-green">{deck.winRate}% WR</span>
-                                <span className="stitch-badge">{deck.playRate}% Play</span>
-                              </div>
-                            </div>
-                            <div className="flex -space-x-1">
-                              {deck.cards.slice(0, 4).map((cardName, j) => {
-                                const c = uniqueCards.find(cc => cc.name === cardName);
-                                return (
-                                  <div key={j} className="w-8 h-10 rounded-lg overflow-hidden border border-white/20 card-art"
-                                    style={{ backgroundImage: `url(${getCardArtUrl(c || { name: cardName })})` }} />
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        /* A/B/C-Tier: Compact list items */
-                        <div className="flex items-center gap-3 p-3">
-                          <div className="w-14 h-16 rounded-lg overflow-hidden flex-shrink-0 card-art"
-                            style={{ backgroundImage: `url(${getCardArtUrl(heroCard || { name: deck.cards[0] })})` }} />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm font-bold text-white">{deck.name}</div>
-                            <div className="flex gap-2 mt-1">
-                              <span className="text-xs text-stitch-green">{deck.winRate}% WR</span>
-                              <span className="text-xs text-stitch-muted">{deck.playRate}% Play</span>
-                            </div>
-                          </div>
-                          <span className="material-symbols-outlined text-stitch-muted" style={{fontSize: '18px'}}>chevron_right</span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    };
-
     const App = () => {
       const [activeTab, setActiveTab] = useState('ai');
       const [collection, setCollection] = useState(() => loadFromStorage('snap_collection', { owned: [], lastUpdated: new Date().toISOString() }));
@@ -7645,8 +7551,7 @@ RESPONSE GUIDELINES:
           settings: 'Settings',
           history: 'Match History',
           oracle: 'Oracle',
-          profile: 'Profile',
-          meta: 'Meta Tier List'
+          profile: 'Profile'
         };
         document.title = (titles[activeTab] || 'AI Advisor') + ' - Snapapoulous Prime';
       }, [activeTab]);
@@ -7766,7 +7671,7 @@ RESPONSE GUIDELINES:
         const tab = params.get('tab');
         const action = params.get('action');
 
-        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'settings', 'oracle', 'history', 'profile', 'meta'].includes(tab)) {
+        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'settings', 'oracle', 'history', 'profile'].includes(tab)) {
           setActiveTab(tab);
         }
 
@@ -7976,11 +7881,6 @@ RESPONSE GUIDELINES:
             {activeTab === 'profile' && (
               <ErrorBoundary>
                 <UserProfile collection={collection} matches={matches} />
-              </ErrorBoundary>
-            )}
-            {activeTab === 'meta' && (
-              <ErrorBoundary>
-                <MetaTierList />
               </ErrorBoundary>
             )}
             {activeTab === 'settings' && (
