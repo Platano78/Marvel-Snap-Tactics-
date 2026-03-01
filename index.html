@@ -2773,8 +2773,10 @@ RESPONSE GUIDELINES:
                 !cardDefId.includes('Shard') &&
                 !cardDefId.startsWith('_')) {
               // Convert CardDefId to display name for UI matching
-              const displayName = defIdToName.get(cardDefId);
-              if (displayName) {
+              // Use resolveCardDefId for fuzzy matching (strips suffixes like Original, V2)
+              const displayName = resolveCardDefId(cardDefId, defIdToName);
+              // resolveCardDefId returns the original cardId if no match found
+              if (defIdToName.has(displayName)) {
                 cards.add(displayName);
               } else {
                 // Card not in database - log but don't add (might be new card)
