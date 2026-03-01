@@ -4714,7 +4714,7 @@ RESPONSE GUIDELINES:
     };
 
     // Collection Component - Player-Centric: Shows YOUR cards, YOUR stats
-    const Collection = ({ collection, setCollection }) => {
+    const Collection = ({ collection, setCollection, cardDataVersion }) => {
       const [search, setSearch] = useState('');
       const [seriesFilter, setSeriesFilter] = useState('all');
       const [viewMode, setViewMode] = useState('owned'); // 'owned' (default) or 'browse' (add cards)
@@ -4738,7 +4738,7 @@ RESPONSE GUIDELINES:
       const ownedCards = useMemo(() => {
         const ownedSet = new Set(collection.owned || []);
         return uniqueCards.filter(card => ownedSet.has(card.name));
-      }, [collection.owned]);
+      }, [collection.owned, cardDataVersion]);
 
       // Pool stats aggregated by player-facing pool name
       const poolStats = useMemo(() => {
@@ -4764,7 +4764,7 @@ RESPONSE GUIDELINES:
         });
 
         return stats;
-      }, [collection.owned]);
+      }, [collection.owned, cardDataVersion]);
 
       // Filter cards based on view mode and filters
       const filteredCards = useMemo(() => {
@@ -4790,7 +4790,7 @@ RESPONSE GUIDELINES:
         }
 
         return cards;
-      }, [viewMode, ownedCards, collection.owned, search, seriesFilter]);
+      }, [viewMode, ownedCards, collection.owned, search, seriesFilter, cardDataVersion]);
 
       const toggleCard = (cardName) => {
         setCollection(prev => {
@@ -5056,6 +5056,9 @@ RESPONSE GUIDELINES:
       const [seriesFilter, setSeriesFilter] = useState('all');
       const [deckToDelete, setDeckToDelete] = useState(null);
 
+      // Case-insensitive set of owned card names for deck ownership checks
+      const deckOwnedSet = useMemo(() => new Set((collection.owned || []).map(c => c.toLowerCase())), [collection.owned]);
+
       // Memoized card lookup map — maps both display names AND defIds for imported deck resolution
       const cardLookup = useMemo(() => {
         const map = new Map();
@@ -5286,7 +5289,7 @@ RESPONSE GUIDELINES:
                         {deck.cards.map(cardName => {
                           const displayName = resolveToDisplayName(cardName);
                           const card = cardLookup.get(displayName);
-                          const owned = collection.owned.includes(displayName);
+                          const owned = deckOwnedSet.has(displayName.toLowerCase());
                           return (
                             <span key={cardName} className={`text-xs px-2 py-1 rounded-full ${owned ? 'bg-[#1c1022] text-white' : 'bg-red-900 text-red-300'}`}>
                               {card?.cost || '?'}/{displayName}
@@ -7932,7 +7935,7 @@ RESPONSE GUIDELINES:
             )}
             {activeTab === 'collection' && (
               <ErrorBoundary>
-                <Collection collection={collection} setCollection={setCollection} />
+                <Collection collection={collection} setCollection={setCollection} cardDataVersion={cardDataVersion} />
               </ErrorBoundary>
             )}
             {activeTab === 'decks' && (
