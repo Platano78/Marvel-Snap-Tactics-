@@ -3000,148 +3000,7 @@ RESPONSE GUIDELINES:
         }
       },
 
-      /**
-       * Parse ShopState.json — the REAL shop file (not TokenShopState.json which doesn't exist)
-       * Extracts: TokenShopVendor (4 slots), DailyOffer (9 items), CollectorsVaultVendor
-       */
-      parseShopState(json) {
-        try {
-          if (!json?.ServerState) return null;
-          const ss = json.ServerState;
-
-          // Token Shop Vendor — 4 card slots
-          const tsv = ss.TokenShopVendor || {};
-          const tokenSlots = ['NewReleaseCard', 'UltimateVariantCard', 'Series4Or5Card', 'MysterySeries3Card'];
-          const tokenShopItems = tokenSlots.map(slotName => {
-            const slot = tsv[slotName] || {};
-            const rewardData = slot.RewardData || {};
-            const card = rewardData.Card || {};
-            return {
-              slot: slotName,
-              cardDefId: card.CardDefId || '',
-              cost: slot.TokenCost || 0,
-              purchased: !!slot.Purchased,
-              nextRefresh: slot.NextRefresh || null
-            };
-          });
-          const tokenShopNextRefresh = tsv.NextRefresh || null;
-
-          // Daily Offer — typically 9 items
-          const dailyOffer = ss.DailyOffer || {};
-          const dailyItems = (dailyOffer.Items || []).map(item => {
-            const reward = item.ItemReward || {};
-            const card = reward.Card || {};
-            return {
-              id: item.Id || '',
-              cardDefId: card.CardDefId || '',
-              artVariantDefId: card.ArtVariantDefId || null,
-              rarityDefId: card.RarityDefId || null,
-              price: item.ItemSalePrice || item.ItemBasePrice || 0,
-              banner: item.BannerDefId || null,
-              nextRefresh: item.NextRefresh || null,
-              maxPurchases: item.MaxItemPurchaseCount || 1
-            };
-          });
-
-          // Collectors Vault
-          const vault = ss.CollectorsVaultVendor || {};
-          const activeVaultDef = vault.ActiveCollectorsVaultDef || {};
-          const nextVaultDef = vault.NextCollectorsVaultDef || {};
-          const collectorsVault = {
-            activeVault: activeVaultDef.CollectorsVaultDefId || null,
-            activeVaultEnd: activeVaultDef.EndDate || null,
-            nextVault: nextVaultDef.CollectorsVaultDefId || null,
-            nextVaultStart: nextVaultDef.StartDate || null,
-            nextRefresh: vault.NextRefresh || null,
-            itemCount: (vault.Items || []).length,
-            hasBeenOpened: vault.CurrentVaultHasBeenOpened || false
-          };
-
-          // Build backward-compatible tokenShop result
-          const tokenShop = {
-            type: 'tokenShop',
-            items: tokenShopItems,
-            totalItems: tokenShopItems.length,
-            availableItems: tokenShopItems.filter(i => !i.purchased).length,
-            nextRefresh: tokenShopNextRefresh,
-            parseDate: new Date().toISOString()
-          };
-
-          return {
-            type: 'shop',
-            tokenShop,
-            dailyOffers: dailyItems,
-            collectorsVault,
-            parseDate: new Date().toISOString()
-          };
-        } catch (error) {
-          console.error('Error parsing shop state:', error);
-          return null;
-        }
-      },
-
-      /**
-       * Legacy fallback parser for CollectorsTokenShopState.json
-       */
-      parseTokenShopState(json) {
-        try {
-          if (!json?.ServerState) return null;
-          const tokenShop = json.ServerState?.TokenShop || json.ServerState?.CollectorsTokenShop || {};
-          const items = tokenShop?.Items || tokenShop?.AvailableItems || [];
-          const refreshTime = tokenShop?.NextRefresh || tokenShop?.RefreshTime || null;
-
-          const parsedItems = (Array.isArray(items) ? items : []).map(item => ({
-            cardDefId: item?.CardDefId || item?.ItemId || 'Unknown',
-            cost: item?.Cost || item?.TokenCost || 0,
-            series: item?.Series || 'Unknown',
-            purchased: item?.Purchased || false
-          }));
-
-          return {
-            type: 'tokenShop',
-            items: parsedItems,
-            totalItems: parsedItems.length,
-            availableItems: parsedItems.filter(i => !i.purchased).length,
-            nextRefresh: refreshTime,
-            parseDate: new Date().toISOString()
-          };
-        } catch (error) {
-          console.error('Error parsing token shop state:', error);
-          return null;
-        }
-      },
-
-      /**
-       * Parse ConquestState.json — ticket balances and current season
-       */
-      parseConquestState(json) {
-        try {
-          if (!json?.ServerState) return null;
-          const ss = json.ServerState;
-          const account = ss.Account || {};
-          const tickets = account.Tickets || {};
-
-          // Remove $type key
-          const ticketBalances = {};
-          for (const [k, v] of Object.entries(tickets)) {
-            if (k !== '$type' && typeof v === 'number') {
-              ticketBalances[k] = v;
-            }
-          }
-
-          const season = ss.CurrentSeason || {};
-
-          return {
-            type: 'conquest',
-            tickets: ticketBalances,
-            seasonId: season.ConquestSeasonDefId || null,
-            parseDate: new Date().toISOString()
-          };
-        } catch (error) {
-          console.error('Error parsing conquest state:', error);
-          return null;
-        }
-      },
+      // Removed: parseShopState, parseTokenShopState, parseConquestState (Economy HQ trimmed)
 
       /**
        * Parse PlayState.json — selected deck and league deck selections
@@ -3578,55 +3437,7 @@ RESPONSE GUIDELINES:
         results.push(`Pity: S4=${pity.s4}/20, S5=${pity.s5}/60`);
       }
 
-      // Token Shop (Economy Intelligence) — resolve cardDefId to display names
-      if (data.tokenShop) {
-        const cardDb = CardDataLoader.cache || uniqueCards || [];
-        const shopDefIdMap = new Map();
-        cardDb.forEach(card => {
-          if (card.defId) shopDefIdMap.set(card.defId, card.name);
-          shopDefIdMap.set(card.name, card.name);
-        });
-        const enrichedItems = (data.tokenShop.items || []).map(item => ({
-          ...item,
-          name: resolveCardDefId(item.cardDefId || item.name || 'Unknown', shopDefIdMap)
-        }));
-        localStorage.setItem('snap_tokenshop', JSON.stringify({
-          ...data.tokenShop,
-          items: enrichedItems,
-          importedAt: timestamp
-        }));
-        results.push(`Token Shop: ${data.tokenShop.availableItems} items`);
-      }
-
-      // Full Shop (daily offers, vault, token shop from ShopState.json)
-      if (data.shop) {
-        const cardDb = CardDataLoader.cache || uniqueCards || [];
-        const shopDefIdMap = new Map();
-        cardDb.forEach(card => {
-          if (card.defId) shopDefIdMap.set(card.defId, card.name);
-          shopDefIdMap.set(card.name, card.name);
-        });
-
-        // Enrich daily offers with card names
-        const enrichedDailyOffers = (data.shop.dailyOffers || []).map(item => ({
-          ...item,
-          name: resolveCardDefId(item.cardDefId || 'Unknown', shopDefIdMap)
-        }));
-
-        // Enrich token shop items with card names
-        const enrichedTokenItems = (data.shop.tokenShop?.items || []).map(item => ({
-          ...item,
-          name: resolveCardDefId(item.cardDefId || 'Unknown', shopDefIdMap)
-        }));
-
-        localStorage.setItem('snap_shop', JSON.stringify({
-          dailyOffers: enrichedDailyOffers,
-          tokenShop: { ...data.shop.tokenShop, items: enrichedTokenItems },
-          collectorsVault: data.shop.collectorsVault,
-          importedAt: timestamp
-        }));
-        results.push(`Shop: ${enrichedDailyOffers.length} daily offers, ${enrichedTokenItems.length} token slots`);
-      }
+      // Removed: tokenShop and shop localStorage writes (Economy HQ trimmed)
 
       // Missions (Mission Tracker)
       if (data.missions) {
@@ -3687,17 +3498,6 @@ RESPONSE GUIDELINES:
 
         localStorage.setItem('snap_decks', JSON.stringify(mergedDecks));
         results.push(`Decks: ${newDecks.length} imported (${mergedDecks.length} total)`);
-      }
-
-      // Conquest tickets
-      if (data.conquest) {
-        localStorage.setItem('snap_conquest', JSON.stringify({
-          ...data.conquest,
-          importedAt: timestamp
-        }));
-        const t = data.conquest.tickets || {};
-        const totalTickets = Object.values(t).reduce((s, n) => s + n, 0);
-        results.push(`Conquest: ${totalTickets} tickets`);
       }
 
       return results;
@@ -3991,7 +3791,7 @@ RESPONSE GUIDELINES:
     // Navigation Bar
     const NavBar = ({ activeTab, setActiveTab }) => {
       const primaryTabs = [
-        { id: 'dashboard', label: 'Home', icon: 'home' },
+        { id: 'ai', label: 'Advisor', icon: 'smart_toy' },
         { id: 'collection', label: 'Cards', icon: 'style' },
         { id: 'decks', label: 'Decks', icon: 'auto_fix_high' },
         { id: 'history', label: 'History', icon: 'history' },
@@ -4050,8 +3850,6 @@ RESPONSE GUIDELINES:
       const [rewards, setRewards] = useState(null);
       const [rank, setRank] = useState(null);
       const [timeModel, setTimeModel] = useState(null);
-      const [conquest, setConquest] = useState(null);
-      const [shop, setShop] = useState(null);
       const [collectionEnhanced, setCollectionEnhanced] = useState(null);
 
       // Load all Player OS data on mount and when data updates
@@ -4062,8 +3860,6 @@ RESPONSE GUIDELINES:
           setRewards(loadFromStorage('snap_rewards', null));
           setRank(loadFromStorage('snap_rank', null));
           setTimeModel(loadFromStorage('snap_timemodel', null));
-          setConquest(loadFromStorage('snap_conquest', null));
-          setShop(loadFromStorage('snap_shop', null));
           setCollectionEnhanced(loadFromStorage('snap_collection_enhanced', null));
         };
         loadPlayerData();
@@ -4170,9 +3966,6 @@ RESPONSE GUIDELINES:
                   <div className="stitch-label">Rank</div>
                   <div className="text-2xl font-display font-bold text-white">{rank.tier}</div>
                   <div className="text-sm text-stitch-muted">Level {rank.currentRank}{rank.skillRating ? ` | SR ${rank.skillRating}` : ''}</div>
-                  {rank.gamesPlayedInSeason > 0 && (
-                    <div className="text-xs text-stitch-muted mt-1">{rank.gamesPlayedInSeason} games this season</div>
-                  )}
                 </div>
               )}
               {timeModel && (
@@ -4193,39 +3986,9 @@ RESPONSE GUIDELINES:
                   )}
                 </div>
               )}
-              {conquest && Object.values(conquest.tickets || {}).some(v => v > 0) && (
-                <div className="stitch-stat border-l-4 border-yellow-500">
-                  <div className="stitch-label">Conquest Tickets</div>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {Object.entries(conquest.tickets || {}).filter(([,v]) => v > 0).map(([tier, count]) => (
-                      <span key={tier} className="text-xs px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300">
-                        {tier}: {count}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
-          {/* Daily Shop Highlight */}
-          {shop?.dailyOffers?.length > 0 && (
-            <div className="stitch-card p-4 mb-4 border-l-4 border-blue-500">
-              <div className="flex items-center justify-between mb-2">
-                <span className="stitch-label">Daily Shop</span>
-                <span className="text-xs text-stitch-muted">{shop.dailyOffers.filter(o => o.banner === 'New').length} new</span>
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {shop.dailyOffers.slice(0, 5).map((offer, i) => (
-                  <div key={i} className="flex-shrink-0 text-center px-2 py-1 rounded bg-surface-2 min-w-[60px]">
-                    <div className="text-xs font-bold text-white truncate" style={{maxWidth: '70px'}}>{offer.name || 'Unknown'}</div>
-                    <div className="text-xs text-yellow-400">{offer.price?.toLocaleString()} g</div>
-                    {offer.banner && <div className="text-[10px] text-cyan-400">{offer.banner}</div>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Player OS: Pity Counters (Spotlight Oracle Preview) */}
           {rewards && (
@@ -5903,299 +5666,7 @@ RESPONSE GUIDELINES:
       );
     };
 
-    // Economy Intelligence Component
-    const EconomyIntelligence = () => {
-      const [wallet, setWallet] = useState(() => loadFromStorage('snap_wallet', { credits: 0, gold: 0, tokens: 0, keys: 0 }));
-      const [tokenshop, setTokenshop] = useState(() => loadFromStorage('snap_tokenshop', { items: [] }));
-      const [rewards, setRewards] = useState(() => loadFromStorage('snap_rewards', {}));
-      const [shop, setShop] = useState(() => loadFromStorage('snap_shop', null));
-
-      // Listen for data updates
-      useEffect(() => {
-        const handleUpdate = () => {
-          setWallet(loadFromStorage('snap_wallet', { credits: 0, gold: 0, tokens: 0, keys: 0 }));
-          setTokenshop(loadFromStorage('snap_tokenshop', { items: [] }));
-          setRewards(loadFromStorage('snap_rewards', {}));
-          setShop(loadFromStorage('snap_shop', null));
-        };
-        window.addEventListener('snap-data-updated', handleUpdate);
-        return () => window.removeEventListener('snap-data-updated', handleUpdate);
-      }, []);
-
-      // Calculate affordable token shop items
-      const affordableItems = (tokenshop.items || []).filter(item => item.cost <= wallet.tokens);
-
-      // Normalize pity data — parser stores pityCounters/pityThresholds format
-      const pity = rewards.pityCounters || {};
-      const pityMax = rewards.pityThresholds || { s4: 20, s5: 60, spotlightKey: 4 };
-      const hasPityData = pity.s4 !== undefined || pity.s5 !== undefined;
-
-      // Calculate pity progress percentages
-      const s4Progress = hasPityData ? ((pity.s4 || 0) / pityMax.s4) * 100 : 0;
-      const s5Progress = hasPityData ? ((pity.s5 || 0) / pityMax.s5) * 100 : 0;
-      const keyProgress = hasPityData ? ((pity.spotlightKey || 0) / pityMax.spotlightKey) * 100 : 0;
-
-      // Smart key allocation recommendation
-      const getKeyRecommendation = () => {
-        if (!hasPityData) return { action: 'COLLECT_MORE', reason: 'Import game data to get recommendations' };
-
-        const keysPity = pityMax.spotlightKey - (pity.spotlightKey || 0);
-        const s4Pity = pityMax.s4 - (pity.s4 || 0);
-        const s5Pity = pityMax.s5 - (pity.s5 || 0);
-
-        // If close to spotlight key pity, open spotlights
-        if (keysPity <= 1) {
-          return { action: 'SPOTLIGHT', reason: `Only ${keysPity} cache away from guaranteed key!`, urgent: true };
-        }
-        // If close to S5 pity, open collector reserves
-        if (s5Pity <= 10) {
-          return { action: 'COLLECTOR', reason: `${s5Pity} caches from guaranteed S5 card`, urgent: s5Pity <= 5 };
-        }
-        // If close to S4 pity, open collector reserves
-        if (s4Pity <= 5) {
-          return { action: 'COLLECTOR', reason: `${s4Pity} reserves from guaranteed S4 card`, urgent: true };
-        }
-        // Default: save for spotlights if have cards you want
-        return { action: 'SAVE', reason: 'Check Oracle tab for upcoming spotlight targets' };
-      };
-
-      const recommendation = getKeyRecommendation();
-
-      // Credit burn optimizer - estimate upgrade availability
-      const UPGRADE_COSTS = {
-        common_uncommon: { credits: 5, boosters: 5, cl: 1 },
-        uncommon_rare: { credits: 25, boosters: 10, cl: 2 },
-        rare_epic: { credits: 100, boosters: 20, cl: 4 },
-        epic_legendary: { credits: 200, boosters: 30, cl: 8 },
-        legendary_ultra: { credits: 300, boosters: 40, cl: 16 },
-        ultra_infinity: { credits: 400, boosters: 50, cl: 32 }
-      };
-
-      // Calculate how many upgrades can be done
-      const cheapestUpgrade = UPGRADE_COSTS.common_uncommon;
-      const maxCheapUpgrades = Math.floor(wallet.credits / cheapestUpgrade.credits);
-
-      return (
-        <div className="px-4 pb-20">
-          <Header title="ECONOMY HQ" />
-
-          {/* Resource Overview */}
-          <div className="stitch-card p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Current Resources</h3>
-            <div className="grid grid-cols-4 gap-2">
-              <div className="bg-[#1a1320] rounded-lg p-2 text-center">
-                <div className="text-2xl">💰</div>
-                <div className="text-white font-bold">{(wallet.credits || 0).toLocaleString()}</div>
-                <div className="text-stitch-muted text-xs">Credits</div>
-              </div>
-              <div className="bg-[#1a1320] rounded-lg p-2 text-center">
-                <div className="text-2xl">🪙</div>
-                <div className="text-yellow-400 font-bold">{(wallet.gold || 0).toLocaleString()}</div>
-                <div className="text-stitch-muted text-xs">Gold</div>
-              </div>
-              <div className="bg-[#1a1320] rounded-lg p-2 text-center">
-                <div className="text-2xl">🎟️</div>
-                <div className="text-purple-400 font-bold">{(wallet.tokens || 0).toLocaleString()}</div>
-                <div className="text-stitch-muted text-xs">Tokens</div>
-              </div>
-              <div className="bg-[#1a1320] rounded-lg p-2 text-center">
-                <div className="text-2xl">🔑</div>
-                <div className="text-mcu-red font-bold">{wallet.keys || 0}</div>
-                <div className="text-stitch-muted text-xs">Keys</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Key Allocation Advisor */}
-          <div className={`stitch-card p-5 mb-4 border-l-4 ${
-            recommendation.urgent ? 'border-mcu-blue' : 'border-mcu-gold'
-          }`}>
-            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-2">Key Allocation Advisor</h3>
-            <div className={`text-lg font-bold mb-1 ${
-              recommendation.action === 'SPOTLIGHT' ? 'text-yellow-400' :
-              recommendation.action === 'COLLECTOR' ? 'text-purple-400' :
-              'text-gray-300'
-            }`}>
-              {recommendation.action === 'SPOTLIGHT' && '🔦 Open Spotlight Caches'}
-              {recommendation.action === 'COLLECTOR' && '📦 Open Collector Reserves'}
-              {recommendation.action === 'SAVE' && '💾 Save Your Keys'}
-              {recommendation.action === 'COLLECT_MORE' && '📊 Need More Data'}
-            </div>
-            <p className="text-gray-300 text-sm">{recommendation.reason}</p>
-
-            {/* Pity Progress Bars */}
-            {hasPityData && (
-              <div className="mt-3 space-y-2">
-                <div>
-                  <div className="flex justify-between text-xs text-stitch-muted mb-1">
-                    <span>Spotlight Key Pity</span>
-                    <span>{pity.spotlightKey || 0}/{pityMax.spotlightKey}</span>
-                  </div>
-                  <div className="h-2 bg-[#1a1320] rounded-full overflow-hidden">
-                    <div className="h-full bg-yellow-500 transition-all" style={{ width: `${keyProgress}%` }}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-xs text-stitch-muted mb-1">
-                    <span>S4 Pity</span>
-                    <span>{pity.s4 || 0}/{pityMax.s4}</span>
-                  </div>
-                  <div className="h-2 bg-[#1a1320] rounded-full overflow-hidden">
-                    <div className="h-full bg-green-500 transition-all" style={{ width: `${s4Progress}%` }}></div>
-                  </div>
-                </div>
-                {pity.s5 !== undefined && (
-                  <div>
-                    <div className="flex justify-between text-xs text-stitch-muted mb-1">
-                      <span>S5 Pity</span>
-                      <span>{pity.s5 || 0}/{pityMax.s5}</span>
-                    </div>
-                    <div className="h-2 bg-[#1a1320] rounded-full overflow-hidden">
-                      <div className="h-full bg-red-500 transition-all" style={{ width: `${s5Progress}%` }}></div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Token Shop Planner */}
-          <div className="stitch-card p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Token Shop</h3>
-            {affordableItems.length > 0 ? (
-              <div className="space-y-2">
-                <p className="text-green-400 text-sm mb-2">You can afford {affordableItems.length} item(s)!</p>
-                {affordableItems.slice(0, 5).map((item, i) => (
-                  <div key={i} className="flex justify-between items-center bg-[#1a1320] rounded p-2">
-                    <span className="text-white">{item.name}</span>
-                    <span className="text-purple-400">{item.cost} tokens</span>
-                  </div>
-                ))}
-              </div>
-            ) : tokenshop.items?.length > 0 ? (
-              <div>
-                <p className="text-stitch-muted text-sm mb-2">Saving up for:</p>
-                {tokenshop.items.slice(0, 3).map((item, i) => (
-                  <div key={i} className="flex justify-between items-center text-sm mb-1">
-                    <span className="text-gray-300">{item.name}</span>
-                    <span className="text-gray-500">{item.cost - wallet.tokens} more needed</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-stitch-muted">Import game data to see token shop items.</p>
-            )}
-          </div>
-
-          {/* Daily Shop Offers */}
-          {shop?.dailyOffers?.length > 0 && (
-            <div className="stitch-card p-5 mb-4">
-              <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Daily Shop</h3>
-              <div className="space-y-2">
-                {shop.dailyOffers.map((offer, i) => (
-                  <div key={i} className="flex justify-between items-center bg-[#1a1320] rounded p-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-white text-sm">{offer.name || 'Unknown'}</span>
-                      {offer.banner && (
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded ${
-                          offer.banner === 'New' ? 'bg-cyan-500/20 text-cyan-400' : 'bg-purple-500/20 text-purple-400'
-                        }`}>{offer.banner}</span>
-                      )}
-                    </div>
-                    <span className="text-yellow-400 text-sm">{offer.price?.toLocaleString()} gold</span>
-                  </div>
-                ))}
-              </div>
-              {shop.dailyOffers[0]?.nextRefresh && (
-                <p className="text-stitch-muted text-xs mt-2">
-                  Refreshes: {new Date(shop.dailyOffers[0].nextRefresh).toLocaleDateString()}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Collector's Vault */}
-          {shop?.collectorsVault?.activeVault && (
-            <div className="stitch-card p-5 mb-4">
-              <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Collector's Vault</h3>
-              <div className="bg-[#1a1320] rounded p-3">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-white font-bold">{shop.collectorsVault.activeVault}</div>
-                    <div className="text-xs text-stitch-muted">
-                      {shop.collectorsVault.hasBeenOpened ? 'Opened' : 'Not opened yet'}
-                    </div>
-                  </div>
-                  {shop.collectorsVault.activeVaultEnd && (
-                    <div className="text-xs text-yellow-400">
-                      Ends: {new Date(shop.collectorsVault.activeVaultEnd).toLocaleDateString()}
-                    </div>
-                  )}
-                </div>
-                {shop.collectorsVault.nextVault && (
-                  <div className="mt-2 pt-2 border-t border-[#2b1933] text-xs text-stitch-muted">
-                    Next: <span className="text-purple-400">{shop.collectorsVault.nextVault}</span>
-                    {shop.collectorsVault.nextVaultStart && (
-                      <span> ({new Date(shop.collectorsVault.nextVaultStart).toLocaleDateString()})</span>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Full Wallet Breakdown */}
-          {wallet.fullWallet && (
-            <div className="stitch-card p-5 mb-4">
-              <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Full Wallet</h3>
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <div className="bg-[#1a1320] rounded p-2 text-center">
-                  <div className="text-yellow-400 font-bold">{wallet.fullWallet.gold?.toLocaleString()}</div>
-                  <div className="text-stitch-muted text-xs">Gold</div>
-                </div>
-                <div className="bg-[#1a1320] rounded p-2 text-center">
-                  <div className="text-blue-400 font-bold">{wallet.fullWallet.credits?.toLocaleString()}</div>
-                  <div className="text-stitch-muted text-xs">Credits</div>
-                </div>
-                <div className="bg-[#1a1320] rounded p-2 text-center">
-                  <div className="text-purple-400 font-bold">{wallet.fullWallet.tokens?.toLocaleString()}</div>
-                  <div className="text-stitch-muted text-xs">Tokens</div>
-                </div>
-              </div>
-              {wallet.fullWallet.totalBorderCharges > 0 && (
-                <div className="mt-2 text-xs text-stitch-muted">
-                  Border Charges: <span className="text-white">{wallet.fullWallet.totalBorderCharges}</span> across {Object.keys(wallet.fullWallet.borderCharges || {}).length} types
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Credit Burn Optimizer */}
-          <div className="stitch-card p-5">
-            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Credit Optimizer</h3>
-            <div className="text-white mb-2">
-              With <span className="text-green-400 font-bold">{wallet.credits?.toLocaleString()}</span> credits, you can do:
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="bg-[#1a1320] rounded p-2">
-                <div className="text-stitch-muted">Common → Uncommon</div>
-                <div className="text-white font-bold">{maxCheapUpgrades}x</div>
-                <div className="text-green-400 text-xs">+{maxCheapUpgrades} CL</div>
-              </div>
-              <div className="bg-[#1a1320] rounded p-2">
-                <div className="text-stitch-muted">Rare → Epic</div>
-                <div className="text-white font-bold">{Math.floor(wallet.credits / 100)}x</div>
-                <div className="text-green-400 text-xs">+{Math.floor(wallet.credits / 100) * 4} CL</div>
-              </div>
-            </div>
-            <p className="text-stitch-muted text-xs mt-2">
-              Check the Plan tab for booster-optimized upgrade suggestions.
-            </p>
-          </div>
-        </div>
-      );
-    };
-
+    // Economy Intelligence Component — REMOVED (trimmed filler feature)
     // Board Snapshot Tool (Danger Room Lite)
     const BoardSnapshot = () => {
       const [lanes, setLanes] = useState([[], [], []]);
@@ -6423,85 +5894,6 @@ RESPONSE GUIDELINES:
             {!selectedCard && (
               <p className="text-gray-500 text-xs text-center mt-3">Tap a card, then choose which lane</p>
             )}
-          </div>
-        </div>
-      );
-    };
-
-    // Calculator Component
-    const Calculator = () => {
-      const [turn, setTurn] = useState(4);
-      const [confidence, setConfidence] = useState(50);
-      const [cardsToDraw, setCardsToDraw] = useState(1);
-      const [copiesInDeck, setCopiesInDeck] = useState(1);
-
-      const cardsSeen = Math.min(12, 3 + turn);
-
-      const hypergeometric = (N, K, n) => {
-        const factorial = (num) => { if (num <= 1) return 1; let r = 1; for (let i = 2; i <= num; i++) r *= i; return r; };
-        const comb = (a, b) => { if (b > a) return 0; if (b === 0 || b === a) return 1; return factorial(a) / (factorial(b) * factorial(a - b)); };
-        return 1 - (comb(N - K, n) / comb(N, n));
-      };
-
-      const drawProbability = hypergeometric(12, copiesInDeck, cardsToDraw) * 100;
-
-      const getRecommendation = () => {
-        const turnRiskFactor = turn <= 3 ? 0.9 : turn <= 5 ? 1.0 : 1.1;
-        const adj = confidence / turnRiskFactor;
-        if (adj >= 70) return { action: 'SNAP', bgColor: 'bg-green-600', animate: true };
-        if (adj >= 45) return { action: 'HOLD', bgColor: 'bg-yellow-600', animate: false };
-        return { action: 'RETREAT', bgColor: 'bg-red-600', animate: false };
-      };
-      const rec = getRecommendation();
-
-      return (
-        <div className="px-4 pb-20">
-          <Header title="SNAP CALCULATOR" />
-          <div className={`stitch-card ${rec.bgColor} p-6 mb-4 text-center ${rec.animate ? 'arc-pulse' : ''}`}>
-            <div className="text-4xl font-hero text-white mb-2 mcu-text-glow">{rec.action}</div>
-            <div className="text-white/80">
-              {rec.action === 'SNAP' && 'The odds favor you. Make your move!'}
-              {rec.action === 'HOLD' && 'Wait for more information.'}
-              {rec.action === 'RETREAT' && 'Live to fight another match.'}
-            </div>
-          </div>
-          <div className="stitch-card p-5 mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-white font-medium">Current Turn</span>
-              <span className="text-mcu-gold font-bold text-xl">{turn}</span>
-            </div>
-            <input type="range" min="1" max="7" value={turn} onChange={(e) => setTurn(parseInt(e.target.value))} className="w-full" />
-            <div className="text-center text-sm text-stitch-muted mt-2">Cards seen: {cardsSeen}/12</div>
-          </div>
-          <div className="stitch-card p-5 mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-white font-medium">Win Confidence</span>
-              <span className={`font-bold text-xl ${confidence >= 70 ? 'text-green-400' : confidence >= 45 ? 'text-yellow-400' : 'text-red-400'}`}>{confidence}%</span>
-            </div>
-            <input type="range" min="0" max="100" value={confidence} onChange={(e) => setConfidence(parseInt(e.target.value))} className="w-full" />
-          </div>
-          <div className="stitch-card p-5">
-            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Draw Probability</h3>
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div>
-                <label htmlFor="cards-to-draw" className="text-sm text-stitch-muted">Cards to Draw</label>
-                <input id="cards-to-draw" type="number" min="1" max="12" value={cardsToDraw}
-                  onChange={(e) => setCardsToDraw(Math.max(1, Math.min(12, parseInt(e.target.value) || 1)))}
-                  className="w-full bg-[#1a1320] text-white rounded px-3 py-2 mt-1 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
-              </div>
-              <div>
-                <label htmlFor="copies-in-deck" className="text-sm text-stitch-muted">Copies in Deck</label>
-                <input id="copies-in-deck" type="number" min="1" max="4" value={copiesInDeck}
-                  onChange={(e) => setCopiesInDeck(Math.max(1, Math.min(4, parseInt(e.target.value) || 1)))}
-                  className="w-full bg-[#1a1320] text-white rounded px-3 py-2 mt-1 border-2 border-[rgba(173,43,238,0.3)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20" />
-              </div>
-            </div>
-            <div className="bg-[#1a1320] rounded-lg p-4 text-center">
-              <div className="text-stitch-muted text-sm mb-1">Probability of drawing at least 1:</div>
-              <div className={`text-3xl font-display font-bold ${drawProbability >= 70 ? 'text-green-400' : drawProbability >= 40 ? 'text-mcu-gold' : 'text-mcu-red'}`}>
-                {drawProbability.toFixed(1)}%
-              </div>
-            </div>
           </div>
         </div>
       );
@@ -7974,13 +7366,10 @@ RESPONSE GUIDELINES:
             mastery: null,
             battlePass: null,
             rewards: null,       // Pity counters for Spotlight Oracle
-            tokenShop: null,     // Token shop for Economy Intelligence
-            shop: null,          // Full shop data (daily offers, vault, token shop)
             missions: null,      // Mission tracking
             timeModel: null,     // Server time for accurate countdowns
             rank: null,          // Rank info
-            decks: null,         // Saved decks
-            conquest: null       // Conquest tickets
+            decks: null          // Saved decks
           };
 
           // Map state files to parser methods
@@ -7991,13 +7380,10 @@ RESPONSE GUIDELINES:
             'BattlePassState.json': 'battlePass',
             'SeasonPassState.json': 'battlePass',  // Alternative filename
             'RewardState.json': 'rewards',
-            'ShopState.json': 'shop',
-            'CollectorsTokenShopState.json': 'tokenShop',  // Legacy alternative
             'MissionState.json': 'missions',
             'TimeModelState.json': 'timeModel',
             'RankState.json': 'rank',
-            'CompetitiveRankState.json': 'rank',  // Alternative
-            'ConquestState.json': 'conquest'
+            'CompetitiveRankState.json': 'rank'  // Alternative
           };
 
           // Parse each available file
@@ -8030,16 +7416,6 @@ RESPONSE GUIDELINES:
                 case 'rewards':
                   results.rewards = GameDataParser.parseRewardState(json);
                   break;
-                case 'shop':
-                  results.shop = GameDataParser.parseShopState(json);
-                  // Also populate tokenShop from shop for backward compat
-                  if (results.shop?.tokenShop) {
-                    results.tokenShop = results.shop.tokenShop;
-                  }
-                  break;
-                case 'tokenShop':
-                  results.tokenShop = GameDataParser.parseTokenShopState(json);
-                  break;
                 case 'missions':
                   results.missions = GameDataParser.parseMissionState(json);
                   break;
@@ -8048,9 +7424,6 @@ RESPONSE GUIDELINES:
                   break;
                 case 'rank':
                   results.rank = GameDataParser.parseRankState(json);
-                  break;
-                case 'conquest':
-                  results.conquest = GameDataParser.parseConquestState(json);
                   break;
               }
             } catch (err) {
@@ -9200,11 +8573,11 @@ RESPONSE GUIDELINES:
                 <span className="text-white text-sm">Meta Tiers</span>
               </button>
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'ai' }))}
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'dashboard' }))}
                 className="stitch-list-item p-3 flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">smart_toy</span>
-                <span className="text-white text-sm">AI Advisor</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">home</span>
+                <span className="text-white text-sm">Dashboard</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'missions' }))}
@@ -9228,13 +8601,6 @@ RESPONSE GUIDELINES:
                 <span className="text-white text-sm">Hall of Armor</span>
               </button>
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'calculator' }))}
-                className="stitch-list-item p-3 flex flex-col items-center"
-              >
-                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">calculate</span>
-                <span className="text-white text-sm">Calculator</span>
-              </button>
-              <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'decks' }))}
                 className="stitch-list-item p-3 flex flex-col items-center"
               >
@@ -9247,13 +8613,6 @@ RESPONSE GUIDELINES:
               >
                 <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">sports_esports</span>
                 <span className="text-white text-sm">Simulator</span>
-              </button>
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'economy' }))}
-                className="stitch-list-item p-3 flex flex-col items-center"
-              >
-                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">account_balance</span>
-                <span className="text-white text-sm">Economy HQ</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'board' }))}
@@ -10708,7 +10067,7 @@ RESPONSE GUIDELINES:
     };
 
     const App = () => {
-      const [activeTab, setActiveTab] = useState('dashboard');
+      const [activeTab, setActiveTab] = useState('ai');
       const [collection, setCollection] = useState(() => loadFromStorage('snap_collection', { owned: [], lastUpdated: new Date().toISOString() }));
       const [matches, setMatches] = useState(() => loadFromStorage('snap_matches', []));
       const [decks, setDecks] = useState(() => loadFromStorage('snap_decks', []));
@@ -10765,19 +10124,17 @@ RESPONSE GUIDELINES:
           ai: 'AI Advisor',
           settings: 'Settings',
           history: 'Match History',
-          calculator: 'Calculator',
           planner: 'Upgrade Planner',
           oracle: 'Oracle',
           armor: 'Hall of Armor',
           missions: 'Missions',
           battlepass: 'Battle Pass',
-          economy: 'Economy',
           board: 'Board Snapshot',
           simulator: 'Simulator',
           profile: 'Profile',
           meta: 'Meta Tier List'
         };
-        document.title = (titles[activeTab] || 'Home') + ' - Snapapoulous Prime';
+        document.title = (titles[activeTab] || 'AI Advisor') + ' - Snapapoulous Prime';
       }, [activeTab]);
 
       // Sync reduced motion setting on load and when settings change
@@ -10895,7 +10252,7 @@ RESPONSE GUIDELINES:
         const tab = params.get('tab');
         const action = params.get('action');
 
-        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'simulator', 'calculator', 'settings', 'oracle', 'armor', 'missions', 'battlepass', 'economy', 'board', 'history', 'planner', 'profile', 'meta'].includes(tab)) {
+        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'simulator', 'settings', 'oracle', 'armor', 'missions', 'battlepass', 'board', 'history', 'planner', 'profile', 'meta'].includes(tab)) {
           setActiveTab(tab);
         }
 
@@ -11031,10 +10388,10 @@ RESPONSE GUIDELINES:
         const handlePopState = (event) => {
           if (event.state?.tab) {
             setActiveTab(event.state.tab);
-          } else if (activeTab !== 'dashboard') {
-            // Navigate back to dashboard instead of closing app
-            setActiveTab('dashboard');
-            window.history.pushState({ tab: 'dashboard' }, '');
+          } else if (activeTab !== 'ai') {
+            // Navigate back to AI Advisor (home) instead of closing app
+            setActiveTab('ai');
+            window.history.pushState({ tab: 'ai' }, '');
           }
         };
 
@@ -11112,11 +10469,6 @@ RESPONSE GUIDELINES:
                 <BattlePassTracker />
               </ErrorBoundary>
             )}
-            {activeTab === 'economy' && (
-              <ErrorBoundary>
-                <EconomyIntelligence />
-              </ErrorBoundary>
-            )}
             {activeTab === 'board' && (
               <ErrorBoundary>
                 <BoardSnapshot />
@@ -11130,11 +10482,6 @@ RESPONSE GUIDELINES:
             {activeTab === 'simulator' && (
               <ErrorBoundary>
                 <Simulator decks={decks} collection={collection} />
-              </ErrorBoundary>
-            )}
-            {activeTab === 'calculator' && (
-              <ErrorBoundary>
-                <Calculator />
               </ErrorBoundary>
             )}
             {activeTab === 'history' && (
