@@ -620,13 +620,48 @@
     /* Comic Micro-Interactions */
     @keyframes comic-pop { 0% { scale: 0.8; rotate: -2deg; opacity: 0; } 60% { scale: 1.05; rotate: 1deg; } 100% { scale: 1; rotate: 0; opacity: 1; } }
     .comic-pop-enter { animation: comic-pop 0.25s ease-out; }
-    @keyframes tab-slide-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .tab-enter { animation: tab-slide-in 0.2s ease-out; }
     @keyframes stat-bump { 50% { scale: 1.15; } }
     .stat-bump { animation: stat-bump 0.3s ease-out; }
 
+    /* Phase 1: Directional Page Transitions */
+    @keyframes slide-left-enter { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slide-right-enter { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
+    .slide-left { animation: slide-left-enter 0.18s ease-out; }
+    .slide-right { animation: slide-right-enter 0.18s ease-out; }
+
+    /* Phase 3: Empty state float animation */
+    @keyframes empty-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    .empty-float { animation: empty-float 3s ease-in-out infinite; }
+
+    /* Phase 4: Skeleton shimmer */
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    .skeleton { background: linear-gradient(90deg, #1c1022 25%, #2b1933 50%, #1c1022 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 0.5rem; }
+    .skeleton-card { aspect-ratio: 3/4; }
+    .skeleton-stat { height: 4rem; }
+    .skeleton-text { height: 1rem; margin-bottom: 0.5rem; }
+    .skeleton-text.w-3\/4 { width: 75%; }
+    .skeleton-text.w-1\/2 { width: 50%; }
+
+    /* Phase 2: Toast animations */
+    @keyframes toast-in { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+    @keyframes toast-out { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(10px); } }
+    .toast-enter { animation: toast-in 0.2s ease-out forwards; }
+    .toast-exit { animation: toast-out 0.2s ease-in forwards; }
+
+    /* Phase 5: Card toggle pulse */
+    @keyframes card-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    .card-pulse { animation: card-pulse 0.2s ease-out; }
+
+    /* Phase 5: Match expand collapse */
+    .match-expand { overflow: hidden; transition: max-height 0.25s ease-out, opacity 0.25s ease-out; }
+
     @media (prefers-reduced-motion: reduce) {
       .halftone-cosmic::before, .kirby-krackle::before { display: none; }
+      .slide-left, .slide-right { animation: none !important; }
+      .empty-float { animation: none !important; }
+      .skeleton { animation: none !important; }
+      .toast-enter, .toast-exit { animation: none !important; }
+      .card-pulse { animation: none !important; }
     }
 
     .card-hover { transition: transform 0.15s ease-out, box-shadow 0.15s ease-out; }
@@ -1127,23 +1162,7 @@
       text-decoration: underline;
     }
 
-    /* Toast notification */
-    .toast {
-      position: fixed;
-      bottom: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #2b1933;
-      color: white;
-      padding: 12px 20px;
-      border-radius: 0.75rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 0 15px rgba(173, 43, 238, 0.2);
-      border: 1px solid rgba(173, 43, 238, 0.3);
-      z-index: 1000;
-      white-space: pre-line;
-      max-width: 90%;
-      text-align: center;
-    }
+    /* Toast notification — now rendered via React ToastProvider */
 
     /* Touch target utilities for accessibility */
     .touch-target {
@@ -3875,8 +3894,44 @@ RESPONSE GUIDELINES:
       );
     };
 
-    // Navigation Bar
+    // Shared Empty State component
+    const EmptyState = ({ icon = 'inbox', title, description, className = '' }) => (
+      <div className={`stitch-card comic-panel-sm p-8 text-center comic-tilt-right empty-float ${className}`.trim()}>
+        <span className="material-symbols-outlined text-4xl text-stitch-muted mb-2 block" aria-hidden="true">{icon}</span>
+        <div className="font-comic text-lg text-stitch-muted tracking-wide">{title}</div>
+        {description && (
+          <div className="text-stitch-muted/60 text-sm mt-1 font-annotation text-base">{description}</div>
+        )}
+      </div>
+    );
+
+    // Shared Skeleton Grid component
+    const SkeletonGrid = ({ count = 6, columns = 'grid-cols-2 sm:grid-cols-3' }) => (
+      <div className={`grid ${columns} gap-3`} aria-hidden="true">
+        {Array.from({ length: count }).map((_, i) => (
+          <div key={i} className="skeleton skeleton-card" />
+        ))}
+      </div>
+    );
+
+    // Phase 1: Directional page transition wrapper
+    const TAB_INDEX = {ai:0, collection:1, decks:2, history:3, settings:4, dashboard:5, oracle:6, profile:7};
+    const PageTransition = ({ activeTab, children }) => {
+      const prevTab = useRef(activeTab);
+      const [direction, setDirection] = useState('slide-left');
+      useEffect(() => {
+        const prev = TAB_INDEX[prevTab.current] ?? 0;
+        const curr = TAB_INDEX[activeTab] ?? 0;
+        setDirection(curr >= prev ? 'slide-left' : 'slide-right');
+        prevTab.current = activeTab;
+      }, [activeTab]);
+      return <div key={activeTab} className={direction}>{children}</div>;
+    };
+
+    // Navigation Bar with sliding indicator
     const NavBar = ({ activeTab, setActiveTab }) => {
+      const navRef = useRef(null);
+      const [indicatorStyle, setIndicatorStyle] = useState({});
       const primaryTabs = [
         { id: 'ai', label: 'Advisor', icon: 'smart_toy' },
         { id: 'collection', label: 'Cards', icon: 'style' },
@@ -3885,9 +3940,26 @@ RESPONSE GUIDELINES:
         { id: 'settings', label: 'More', icon: 'menu' }
       ];
 
+      useEffect(() => {
+        const nav = navRef.current;
+        if (!nav) return;
+        const idx = primaryTabs.findIndex(t => t.id === activeTab);
+        const btn = nav.querySelectorAll('[role="tab"]')[idx >= 0 ? idx : 0];
+        if (btn) {
+          const navRect = nav.getBoundingClientRect();
+          const btnRect = btn.getBoundingClientRect();
+          setIndicatorStyle({
+            transform: `translateX(${btnRect.left - navRect.left + btnRect.width / 2 - 12}px)`,
+            opacity: idx >= 0 ? 1 : 0,
+            transition: 'transform 0.25s ease, opacity 0.2s ease'
+          });
+        }
+      }, [activeTab]);
+
       return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-stitch-border" style={{background: 'rgba(28,16,34,0.95)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)'}} role="navigation" aria-label="Main navigation">
-          <div className="flex justify-around items-center h-16 max-w-lg mx-auto" role="tablist" aria-label="App sections">
+          <div ref={navRef} className="relative flex justify-around items-center h-16 max-w-lg mx-auto" role="tablist" aria-label="App sections">
+            <span className="absolute bottom-1 w-6 h-0.5 rounded-full bg-cosmic-purple" style={indicatorStyle} aria-hidden="true" />
             {primaryTabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 role="tab"
@@ -3901,9 +3973,6 @@ RESPONSE GUIDELINES:
                 }`}>
                 <span className="material-symbols-outlined" aria-hidden="true" style={{fontSize: '22px'}}>{tab.icon}</span>
                 <span className="text-[10px] mt-0.5 font-medium font-comic tracking-wide">{tab.label}</span>
-                {activeTab === tab.id && (
-                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-cosmic-purple" />
-                )}
               </button>
             ))}
           </div>
@@ -4229,11 +4298,11 @@ RESPONSE GUIDELINES:
               <button onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'history' }))} className="text-xs text-cosmic-purple-text hover:text-white transition-colors">View All &rarr;</button>
             </div>
             {matches.length === 0 ? (
-              <div className="stitch-card comic-panel-sm p-8 text-center comic-tilt-right">
-                <span className="material-symbols-outlined text-4xl text-stitch-muted mb-2 block" aria-hidden="true">history</span>
-                <div className="font-comic text-lg text-stitch-muted tracking-wide">No Matches Yet</div>
-                <div className="text-xs text-stitch-muted/60 mt-1 font-annotation text-base">Use the buttons above to log your first match!</div>
-              </div>
+              <EmptyState
+                icon="history"
+                title="No Battles Yet"
+                description="Log your first match using the buttons above"
+              />
             ) : (
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {matches.slice(-5).reverse().map(match => (
@@ -4358,11 +4427,11 @@ RESPONSE GUIDELINES:
 
           {/* Match List */}
           {filteredMatches.length === 0 ? (
-            <div className="stitch-card comic-panel-sm p-8 text-center comic-tilt-right">
-              <span className="material-symbols-outlined text-4xl text-stitch-muted mb-2 block" aria-hidden="true">history</span>
-              <div className="font-comic text-lg text-stitch-muted tracking-wide">No Matches Yet</div>
-              <div className="text-stitch-muted/60 text-sm mt-1 font-annotation text-base">Log matches from the Dashboard</div>
-            </div>
+            <EmptyState
+              icon="sports_esports"
+              title="Your Arena Awaits"
+              description="Start logging matches to track your climb"
+            />
           ) : (
             <div className="space-y-2">
               {filteredMatches.map(match => {
@@ -4663,11 +4732,12 @@ RESPONSE GUIDELINES:
 
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-[#1a1320] p-4 rounded-lg chat-bubble chat-bubble-ai">
+                <div className="bg-[#1a1320] p-4 rounded-lg chat-bubble chat-bubble-ai border border-[rgba(173,43,238,0.35)] shadow-[0_0_24px_rgba(173,43,238,0.35)]">
+                  <p className="text-xs text-[#dca3ff] mb-2 font-medium">Snapapoulous is thinking...</p>
                   <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-mcu-red rounded-full typing-dot"></span>
-                    <span className="w-2 h-2 bg-mcu-red rounded-full typing-dot"></span>
-                    <span className="w-2 h-2 bg-mcu-red rounded-full typing-dot"></span>
+                    <span className="w-2 h-2 bg-cosmic-purple rounded-full typing-dot"></span>
+                    <span className="w-2 h-2 bg-cosmic-purple rounded-full typing-dot"></span>
+                    <span className="w-2 h-2 bg-cosmic-purple rounded-full typing-dot"></span>
                   </div>
                 </div>
               </div>
@@ -4954,21 +5024,21 @@ RESPONSE GUIDELINES:
             })}
           </div>
           {filteredCards.length === 0 && (
-            <div className="stitch-card comic-panel-sm p-8 text-center comic-tilt-right">
-              <span className="material-symbols-outlined text-4xl text-stitch-muted mb-2 block" aria-hidden="true">style</span>
-              <div className="font-comic text-lg text-stitch-muted tracking-wide">
-                {viewMode === 'owned'
-                  ? (collection.owned.length === 0 ? 'No Cards Yet' : 'No Matches')
-                  : 'All Collected!'}
-              </div>
-              <div className="text-stitch-muted/60 text-sm mt-1 font-annotation text-base">
-                {viewMode === 'owned'
+            <EmptyState
+              icon="collections_bookmark"
+              title={
+                viewMode === 'owned'
+                  ? (collection.owned.length === 0 ? 'Assemble Your Collection' : 'No Matches')
+                  : 'All Collected!'
+              }
+              description={
+                viewMode === 'owned'
                   ? (collection.owned.length === 0
-                      ? 'Use "+ Add Cards" or import your game files!'
+                      ? 'Import data or browse cards to start'
                       : 'No cards match your filters')
-                  : 'You own them all - impressive!'}
-              </div>
-            </div>
+                  : 'You own them all - impressive!'
+              }
+            />
           )}
 
           {/* Card Detail Modal */}
@@ -5253,10 +5323,12 @@ RESPONSE GUIDELINES:
               </button>
             </div>
             {decks.length === 0 ? (
-              <div className="text-center text-stitch-muted py-12">
-                <p className="text-lg mb-2">No decks yet</p>
-                <p className="text-sm">Create a deck or import one from MarvelSnapZone</p>
-              </div>
+              <EmptyState
+                icon="auto_fix_high"
+                title="Build Your Arsenal"
+                description="Create your first deck or import one from MarvelSnapZone"
+                className="py-12"
+              />
             ) : (
               <div className="space-y-3">
                 {decks.map(deck => {
@@ -5657,18 +5729,97 @@ RESPONSE GUIDELINES:
     };
 
     // Phase 5: Toast notification helper
-    const showToast = (message) => {
-      const existing = document.querySelector('.toast');
+    const ToastContext = createContext(null);
+    const useToast = () => useContext(ToastContext);
+    const TOAST_VARIANTS = {
+      success: { icon: 'check_circle', className: 'border-green-500/60 bg-green-950/85 text-green-200' },
+      error: { icon: 'error', className: 'border-red-500/60 bg-red-950/85 text-red-200' },
+      info: { icon: 'info', className: 'border-cosmic-purple/60 bg-[#1a1320]/95 text-white' },
+      warning: { icon: 'warning', className: 'border-yellow-500/60 bg-yellow-950/85 text-yellow-200' }
+    };
+    let legacyToastDispatch = null;
+
+    const ToastProvider = ({ children }) => {
+      const [toasts, setToasts] = useState([]);
+
+      const dismiss = useCallback((id) => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+      }, []);
+
+      const toast = useCallback((message, opts = {}) => {
+        const { type = 'info', duration = 3500 } = opts;
+        const id = generateId();
+        setToasts(prev => [...prev, { id, message, type }]);
+        if (duration > 0) {
+          window.setTimeout(() => dismiss(id), duration);
+        }
+        return id;
+      }, [dismiss]);
+
+      useEffect(() => {
+        legacyToastDispatch = toast;
+        return () => {
+          if (legacyToastDispatch === toast) legacyToastDispatch = null;
+        };
+      }, [toast]);
+
+      return (
+        <ToastContext.Provider value={{ toast, dismiss }}>
+          {children}
+          <div className="fixed bottom-20 left-0 right-0 z-[60] flex flex-col items-center gap-2 pointer-events-none" aria-live="polite" aria-atomic="true">
+            {toasts.map(t => {
+              const variant = TOAST_VARIANTS[t.type] || TOAST_VARIANTS.info;
+              return (
+                <div key={t.id} role="status" className={`toast-enter pointer-events-auto min-w-[240px] max-w-sm px-4 py-3 rounded-lg border shadow-lg flex items-start gap-2 ${variant.className}`}>
+                  <span className="material-symbols-outlined text-base leading-none mt-0.5" aria-hidden="true">{variant.icon}</span>
+                  <p className="text-sm leading-snug">{t.message}</p>
+                  <button
+                    onClick={() => dismiss(t.id)}
+                    className="ml-auto text-xs opacity-80 hover:opacity-100"
+                    aria-label="Dismiss notification"
+                  >
+                    x
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </ToastContext.Provider>
+      );
+    };
+
+    const showToast = (message, type = 'info', duration = 3500) => {
+      if (legacyToastDispatch) {
+        legacyToastDispatch(message, { type, duration });
+        return;
+      }
+
+      const existing = document.getElementById('legacy-toast-fallback');
       if (existing) existing.remove();
 
       const toast = document.createElement('div');
-      toast.className = 'toast';
+      toast.id = 'legacy-toast-fallback';
       toast.setAttribute('role', 'alert');
       toast.setAttribute('aria-live', 'polite');
+      toast.className = 'toast-enter';
+      toast.style.position = 'fixed';
+      toast.style.top = '16px';
+      toast.style.right = '16px';
+      toast.style.zIndex = '100';
+      toast.style.padding = '10px 14px';
+      toast.style.borderRadius = '10px';
+      toast.style.border = '1px solid rgba(173,43,238,0.6)';
+      toast.style.background = 'rgba(26,19,32,0.95)';
+      toast.style.color = '#fff';
+      toast.style.boxShadow = '0 8px 24px rgba(0,0,0,0.35)';
       toast.textContent = message;
       document.body.appendChild(toast);
 
-      setTimeout(() => toast.remove(), 3500);
+      window.setTimeout(() => {
+        toast.classList.remove('toast-enter');
+        toast.classList.add('toast-exit');
+      }, Math.max(0, duration - 180));
+      window.setTimeout(() => toast.remove(), duration);
     };
 
     // Phase 5: Linked Folder Sync Component (Chrome/Edge only)
@@ -7770,7 +7921,7 @@ RESPONSE GUIDELINES:
 
           setShowSyncConfirm(false);
           setSyncImportData(null);
-          alert(`Synced ${syncImportData.c.length} cards to your collection!`);
+          showToast(`Synced ${syncImportData.c.length} cards to your collection!`, 'success');
         }
       };
 
@@ -7893,6 +8044,7 @@ RESPONSE GUIDELINES:
         if (window.history.state?.tab !== activeTab) {
           window.history.pushState({ tab: activeTab }, '');
         }
+        window.scrollTo({ top: 0, behavior: 'instant' });
       }, [activeTab]);
 
       // Listen for custom tab navigation events (from Settings quick links)
@@ -7917,7 +8069,8 @@ RESPONSE GUIDELINES:
             cubes={victorySplash.cubes}
             onClose={() => setVictorySplash({ show: false, result: null, cubes: 0 })}
           />
-          <main id="main-content" tabIndex="-1" role="main" aria-label="App content" key={activeTab} className="tab-enter">
+          <main id="main-content" tabIndex="-1" role="main" aria-label="App content">
+            <PageTransition activeTab={activeTab}>
             {activeTab === 'dashboard' && (
               <ErrorBoundary>
                 <Dashboard collection={collection} matches={matches} onQuickMatch={handleQuickMatch} />
@@ -7958,6 +8111,7 @@ RESPONSE GUIDELINES:
                 <Settings settings={settings} setSettings={setSettings} collection={collection} matches={matches} setCollection={setCollection} setMatches={setMatches} aiConfig={aiConfig} setAiConfig={setAiConfig} decks={decks} setDecks={setDecks} />
               </ErrorBoundary>
             )}
+            </PageTransition>
           </main>
           <NavBar activeTab={activeTab} setActiveTab={setActiveTab} />
 
@@ -7974,7 +8128,11 @@ RESPONSE GUIDELINES:
     };
 
     const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    root.render(
+      <ToastProvider>
+        <App />
+      </ToastProvider>
+    );
   </script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 // Snapapoulous Prime Service Worker
-const CACHE_NAME = 'snapapoulous-stitch-v2';
+const CACHE_NAME = 'snapapoulous-stitch-v3';
 const FONT_CACHE = 'snap-fonts-v1';
 const ART_CACHE = 'snap-card-art-v1';
 const ART_CACHE_MAX_ENTRIES = 400;
