@@ -5655,7 +5655,8 @@ RESPONSE GUIDELINES:
     const Collection = ({ collection, setCollection, cardDataVersion }) => {
       const [search, setSearch] = useState('');
       const [seriesFilter, setSeriesFilter] = useState('all');
-      const [viewMode, setViewMode] = useState('owned'); // 'owned' (default) or 'browse' (add cards)
+      const [viewMode, setViewMode] = useState('owned'); // 'owned' | 'all'
+      const [energyFilter, setEnergyFilter] = useState('all'); // 'all' | '0'-'6' (6 = 6+)
       const [editMode, setEditMode] = useState(false); // edit mode for removing cards
       const [selectedCard, setSelectedCard] = useState(null);
       const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, action: null });
@@ -5706,19 +5707,12 @@ RESPONSE GUIDELINES:
 
       // Filter cards based on view mode and filters
       const filteredCards = useMemo(() => {
-        let cards;
-        if (viewMode === 'owned') {
-          // Show only YOUR cards
-          cards = ownedCards;
-        } else {
-          // Browse mode: show cards you DON'T own (for adding)
-          const ownedSet = new Set(collection.owned || []);
-          cards = uniqueCards.filter(card => !ownedSet.has(card.name));
-        }
+        // 'owned' = only your cards; 'all' = all cards in the database
+        let cards = viewMode === 'owned' ? ownedCards : uniqueCards;
 
-        // Apply search filter
+        // Apply search filter (name or ability)
         if (search) {
-          cards = cards.filter(card => card.name.toLowerCase().includes(search.toLowerCase()));
+          cards = cards.filter(card => card.name.toLowerCase().includes(search.toLowerCase()) || (card.ability && card.ability.toLowerCase().includes(search.toLowerCase())));
         }
 
         // Apply pool filter (maps pool name to internal series numbers)
@@ -5727,15 +5721,20 @@ RESPONSE GUIDELINES:
           cards = cards.filter(card => poolSeriesNums.includes(card.series));
         }
 
+        // Apply energy/cost filter
+        if (energyFilter !== 'all') {
+          const e = parseInt(energyFilter, 10);
+          cards = energyFilter === '6'
+            ? cards.filter(card => card.cost >= 6)
+            : cards.filter(card => card.cost === e);
+        }
+
         return cards;
-      }, [viewMode, ownedCards, collection.owned, search, seriesFilter, cardDataVersion]);
+      }, [viewMode, energyFilter, ownedCards, search, seriesFilter, cardDataVersion]);
 
       const toggleCard = (cardName) => {
         setCollection(prev => {
           const isOwned = prev.owned.includes(cardName);
-          // In browse mode: only add cards. In owned mode: only remove cards.
-          if (viewMode === 'browse' && isOwned) return prev;
-          if (viewMode === 'owned' && !isOwned) return prev;
           return {
             owned: isOwned ? prev.owned.filter(c => c !== cardName) : [...prev.owned, cardName],
             lastUpdated: new Date().toISOString()
@@ -5746,8 +5745,8 @@ RESPONSE GUIDELINES:
       // Pool dropdown options - deduplicated by player-facing pool name
       const availablePools = useMemo(() => {
         const allPools = Object.keys(POOL_GROUPS);
-        if (viewMode === 'browse') {
-          // Show pools that have cards in the database
+        if (viewMode === 'all') {
+          // Show pools that have any cards in the database
           return allPools.filter(pool => (poolStats[pool]?.total || 0) > 0);
         }
         // In owned mode, only show pools where you own at least 1 card
@@ -5834,19 +5833,9 @@ RESPONSE GUIDELINES:
             </label>
           </div>
 
-          {/* ── Stitch: Filter pills row ── */}
-          <div className="flex gap-3 px-4 pb-4 overflow-x-auto no-scrollbar">
-            {/* View mode: All Cards / Owned / Missing (browse) */}
-            <button
-              onClick={() => { setViewMode('owned'); setSeriesFilter('all'); setEditMode(false); }}
-              className="flex h-9 shrink-0 items-center justify-center gap-x-1 rounded-full px-4 text-sm font-medium"
-              style={{ background: viewMode === 'owned' && seriesFilter === 'all' ? '#ad2bee' : '#3c2348', color: '#ffffff' }}
-              aria-pressed={viewMode === 'owned' && seriesFilter === 'all'}>
-              All Cards
-              {viewMode === 'owned' && seriesFilter === 'all' && (
-                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>expand_more</span>
-              )}
-            </button>
+          {/* ── Stitch: View-mode + Pool filter pills row ── */}
+          <div className="flex gap-3 px-4 pb-2 overflow-x-auto no-scrollbar">
+            {/* View mode: Owned / All */}
             <button
               onClick={() => { setViewMode('owned'); setSeriesFilter('all'); setEditMode(false); }}
               className="flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium"
@@ -5855,11 +5844,11 @@ RESPONSE GUIDELINES:
               Owned ({ownedCount})
             </button>
             <button
-              onClick={() => { setViewMode('browse'); setSeriesFilter('all'); setEditMode(false); }}
+              onClick={() => { setViewMode('all'); setSeriesFilter('all'); setEditMode(false); }}
               className="flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium"
-              style={{ background: viewMode === 'browse' ? '#ad2bee' : '#3c2348', color: '#ffffff' }}
-              aria-pressed={viewMode === 'browse'}>
-              Missing ({totalCards - ownedCount})
+              style={{ background: viewMode === 'all' ? '#ad2bee' : '#3c2348', color: '#ffffff' }}
+              aria-pressed={viewMode === 'all'}>
+              All Cards ({totalCards})
             </button>
             {/* Pool filter pills */}
             {availablePools.map(pool => (
@@ -5873,10 +5862,30 @@ RESPONSE GUIDELINES:
             ))}
           </div>
 
+          {/* ── Energy cost filter row ── */}
+          <div className="px-4 pb-4">
+            <div className="flex h-11 w-full items-center justify-between rounded-full bg-[#3c2348] p-1" role="group" aria-label="Filter by energy cost">
+              {['all', '0', '1', '2', '3', '4', '5', '6'].map(e => (
+                <button
+                  key={e}
+                  onClick={() => setEnergyFilter(e)}
+                  aria-pressed={energyFilter === e}
+                  className={`flex-1 flex h-full items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                    energyFilter === e
+                      ? 'bg-[#ad2bee] text-white'
+                      : 'text-[#b792c9] hover:text-white'
+                  }`}
+                >
+                  {e === 'all' ? 'All' : e === '6' ? '6+' : e}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* ── Stitch: Section header + Edit Grid toggle ── */}
           <div className="flex items-center justify-between px-4 py-2">
             <h3 className="text-white text-lg font-bold">
-              {viewMode === 'owned' ? `My Cards (${filteredCards.length})` : `Add Cards (${filteredCards.length})`}
+              {viewMode === 'owned' ? `My Cards (${filteredCards.length})` : `All Cards (${filteredCards.length})`}
             </h3>
             {viewMode === 'owned' && (
               <button
@@ -5919,28 +5928,8 @@ RESPONSE GUIDELINES:
                     <p className="text-center text-[10px] font-bold text-white drop-shadow-lg truncate">{card.name}</p>
                   </div>
 
-                  {/* Owned indicator: green check (in browse mode, confirms already owned) */}
-                  {isOwned && viewMode === 'browse' && (
-                    <div className="absolute inset-0 bg-black/20 rounded-lg flex items-start justify-end p-1 pointer-events-none">
-                      <span className="material-symbols-outlined bg-black/60 rounded-full text-lg" style={{ color: '#0bda76', fontSize: '20px' }}>check_circle</span>
-                    </div>
-                  )}
-
-                  {/* Missing card: lock overlay */}
-                  {!isOwned && viewMode === 'browse' && (
-                    <>
-                      <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                        <span className="material-symbols-outlined text-white/50 text-2xl" aria-hidden="true">lock</span>
-                      </div>
-                      <div className="absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center z-20 pointer-events-none"
-                           style={{ background: '#ad2bee' }}>
-                        <span className="text-white text-xs font-bold">+</span>
-                      </div>
-                    </>
-                  )}
-
                   {/* Edit mode: remove badge */}
-                  {editMode && viewMode === 'owned' && (
+                  {editMode && isOwned && (
                     <div className="absolute top-1 right-1 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center z-20 animate-pulse pointer-events-none">
                       <span className="text-white text-xs font-bold">✕</span>
                     </div>
@@ -5949,16 +5938,14 @@ RESPONSE GUIDELINES:
                   {/* Click target */}
                   <button
                     onClick={() => {
-                      if (editMode && viewMode === 'owned') {
-                        toggleCard(card.name);
-                      } else if (viewMode === 'browse' && !isOwned) {
+                      if (editMode && isOwned) {
                         toggleCard(card.name);
                       } else {
                         setSelectedCard(card);
                       }
                     }}
                     className="absolute inset-0 z-10 rounded-lg"
-                    aria-label={`${card.name}, ${card.cost} cost, ${card.power} power${isOwned ? ', owned' : ', missing'}${editMode ? ', tap to remove' : ''}`}
+                    aria-label={`${card.name}, ${card.cost} cost, ${card.power} power${isOwned ? ', owned' : ', not owned'}${editMode && isOwned ? ', tap to remove' : ''}`}
                   />
                 </div>
               );
@@ -5969,18 +5956,10 @@ RESPONSE GUIDELINES:
           {filteredCards.length === 0 && (
             <EmptyState
               icon="collections_bookmark"
-              title={
-                viewMode === 'owned'
-                  ? (collection.owned.length === 0 ? 'Assemble Your Collection' : 'No Matches')
-                  : 'All Collected!'
-              }
-              description={
-                viewMode === 'owned'
-                  ? (collection.owned.length === 0
-                      ? 'Import data or browse cards to start'
-                      : 'No cards match your filters')
-                  : 'You own them all - impressive!'
-              }
+              title={viewMode === 'owned' && collection.owned.length === 0 ? 'Assemble Your Collection' : 'No Matches'}
+              description={viewMode === 'owned' && collection.owned.length === 0
+                ? 'Import data or use the Card Database to discover cards'
+                : 'No cards match your filters'}
             />
           )}
 
@@ -6013,7 +5992,7 @@ RESPONSE GUIDELINES:
     // ==================== CARD DATABASE COMPONENT (Stitch 02) ====================
     // Informational card browser — shows ALL cards (owned or not) with ability text inline.
     // Primary reference: 02_card_database.html
-    const CardDatabase = ({ collection, cardDataVersion }) => {
+    const CardDatabase = ({ collection, setCollection, cardDataVersion }) => {
       const [search, setSearch] = useState('');
       const [energyFilter, setEnergyFilter] = useState('all'); // 'all' | 0-6 (6 = 6+)
       const [seriesFilter, setSeriesFilter] = useState('all');
@@ -6064,6 +6043,16 @@ RESPONSE GUIDELINES:
       }, [search, energyFilter, seriesFilter, cardDataVersion]);
 
       const ownedSet = React.useMemo(() => new Set(collection.owned || []), [collection.owned]);
+
+      const toggleCard = (cardName) => {
+        setCollection(prev => {
+          const isOwned = prev.owned.includes(cardName);
+          return {
+            owned: isOwned ? prev.owned.filter(c => c !== cardName) : [...prev.owned, cardName],
+            lastUpdated: new Date().toISOString()
+          };
+        });
+      };
 
       // Border style based on series (mirrors Stitch rarity tiers)
       const getCardBorderStyle = (card) => {
@@ -6202,8 +6191,8 @@ RESPONSE GUIDELINES:
               card={selectedCard}
               isOwned={ownedSet.has(selectedCard.name)}
               onClose={() => setSelectedCard(null)}
-              onToggleOwned={() => setSelectedCard(null)}
-              editMode={false}
+              onToggleOwned={() => { toggleCard(selectedCard.name); setSelectedCard(null); }}
+              editMode={true}
             />
           )}
         </div>
@@ -10387,7 +10376,7 @@ RESPONSE GUIDELINES:
             )}
             {activeTab === 'database' && (
               <ErrorBoundary>
-                <CardDatabase collection={collection} cardDataVersion={cardDataVersion} />
+                <CardDatabase collection={collection} setCollection={setCollection} cardDataVersion={cardDataVersion} />
               </ErrorBoundary>
             )}
             {activeTab === 'decks' && (
