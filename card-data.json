@@ -3430,5 +3430,37 @@
     "power": 1,
     "ability": "Ongoing: +4 Power if you\u2019ve discarded a card. +4 Power if one of your cards has been destroyed.",
     "series": 10
+  },
+  {
+    "name": "Archangel Horseman of Death",
+    "defId": "ArchangelHorseman",
+    "cost": 2,
+    "power": 3,
+    "ability": "Objective: Your cards are destroyed 4 times \u2192 Resurrect one here with +4 Power. (0/4)",
+    "series": 5
+  },
+  {
+    "name": "Caliban, Horseman of Pestilence",
+    "defId": "CalibanHorseman",
+    "cost": 3,
+    "power": 4,
+    "ability": "Objective: Have 3 cards that are 4-Cost or higher in play \u2192 Afflict the highest-Cost enemy card with -7 Power. (0/3)",
+    "series": 5
+  },
+  {
+    "name": "Gambit Horseman of Death",
+    "defId": "GambitHorseman",
+    "cost": 3,
+    "power": 3,
+    "ability": "Objective: Play 6 total Cost of created cards \u2192 Randomly destroy up to 4 total Cost of enemy cards. (0/6)",
+    "series": 5
+  },
+  {
+    "name": "Wolverine Horseman of War",
+    "defId": "WolverineHorseman",
+    "cost": 4,
+    "power": 3,
+    "ability": "Objective: This has 5 or more Power \u2192 Give one of your cards at each location +3 Power. (3/5)",
+    "series": 5
   }
 ]

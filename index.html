@@ -3389,16 +3389,17 @@ RESPONSE GUIDELINES:
       const timestamp = new Date().toISOString();
       const results = [];
 
-      // Collection (basic card list)
+      // Collection (basic card list) — authoritative overwrite from game file.
+      // Previously union-merged with localStorage, which never removed stale entries
+      // (e.g. Shou-Lao stuck as owned after manual toggles or past buggy imports).
       if (data.collection) {
-        const existing = JSON.parse(localStorage.getItem('snap_collection') || '{"owned":[]}');
-        const merged = [...new Set([...existing.owned, ...data.collection.cards])];
+        const authoritative = [...new Set(data.collection.cards)];
         localStorage.setItem('snap_collection', JSON.stringify({
-          owned: merged,
+          owned: authoritative,
           lastUpdated: timestamp,
           source: 'LinkedFolder'
         }));
-        results.push(`Collection: ${merged.length} cards`);
+        results.push(`Collection: ${authoritative.length} cards`);
       }
 
       // Enhanced Collection (Hall of Armor - variants, splits, boosters)
