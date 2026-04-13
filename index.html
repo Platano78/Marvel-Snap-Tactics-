@@ -6013,18 +6013,11 @@ RESPONSE GUIDELINES:
     // ==================== CARD DATABASE COMPONENT (Stitch 02) ====================
     // Informational card browser — shows ALL cards (owned or not) with ability text inline.
     // Primary reference: 02_card_database.html
-    const CardDatabase = ({ collection }) => {
+    const CardDatabase = ({ collection, cardDataVersion }) => {
       const [search, setSearch] = useState('');
       const [energyFilter, setEnergyFilter] = useState('all'); // 'all' | 0-6 (6 = 6+)
       const [seriesFilter, setSeriesFilter] = useState('all');
       const [selectedCard, setSelectedCard] = useState(null);
-      const [cardDataVersion, setCardDataVersion] = useState(0);
-
-      // Subscribe to card data updates
-      React.useEffect(() => {
-        const unsub = CardDataLoader.subscribe(() => setCardDataVersion(v => v + 1));
-        return unsub;
-      }, []);
 
       const allCards = uniqueCards;
 
@@ -10394,7 +10387,7 @@ RESPONSE GUIDELINES:
             )}
             {activeTab === 'database' && (
               <ErrorBoundary>
-                <CardDatabase collection={collection} />
+                <CardDatabase collection={collection} cardDataVersion={cardDataVersion} />
               </ErrorBoundary>
             )}
             {activeTab === 'decks' && (
