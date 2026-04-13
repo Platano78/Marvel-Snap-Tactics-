@@ -1624,16 +1624,33 @@
     };
 
     // ==================== CARD ART URL HELPER ====================
-    // Generate card art URL from card name or defId
+    // Generate card art URL from card name.
+    // IMPORTANT: always derive slug from card.name, NOT card.defId.
+    // marvelsnapzone.com slugs match the display name (e.g. "Mister Fantastic"),
+    // while defId values use abbreviated forms ("MrFantastic") that produce 404s.
     const CARD_ART_CDN = 'https://marvelsnapzone.com/wp-content/themes/blocksy-child/assets/media/cards/';
     const CARD_ART_VERSION = 787;
+
+    // Manual overrides for cards whose name-based slug still doesn't match the CDN.
+    // Key = card.name exactly as it appears in card-data.json.
+    const SLUG_OVERRIDES = {
+      // None required currently — all known 404s are fixed by using card.name.
+      // Add entries here if new cards have mismatched CDN slugs, e.g.:
+      // 'Some Card': 'actual-cdn-slug',
+    };
+
     const getCardArtUrl = (card) => {
       if (card.art) return card.art;
-      // Build slug from defId or name: "Iron Man" -> "iron-man", "AmericaChavez" -> "america-chavez"
-      const slug = (card.defId || card.name)
-        .replace(/([a-z])([A-Z])/g, '$1-$2')  // camelCase -> camel-Case
+      const cardName = card.name || '';
+      if (SLUG_OVERRIDES[cardName]) {
+        return `${CARD_ART_CDN}${SLUG_OVERRIDES[cardName]}.webp?v=${CARD_ART_VERSION}`;
+      }
+      // Build slug from display name: "Iron Man" -> "iron-man", "Spider-Man 2099" -> "spider-man-2099"
+      // Deliberately use card.name (not card.defId) — CDN slugs match display names.
+      const slug = cardName
+        .replace(/([a-z])([A-Z])/g, '$1-$2')  // camelCase -> camel-case (for any camel names)
         .replace(/\s+/g, '-')                   // spaces -> hyphens
-        .replace(/[^a-zA-Z0-9-]/g, '')          // remove special chars
+        .replace(/[^a-zA-Z0-9-]/g, '')          // remove periods, apostrophes, ampersands, etc.
         .toLowerCase();
       return `${CARD_ART_CDN}${slug}.webp?v=${CARD_ART_VERSION}`;
     };
@@ -5906,27 +5923,28 @@ RESPONSE GUIDELINES:
               return (
                 <div key={card.name}
                      className={`relative group${!isOwned ? ' opacity-50 grayscale' : ''}`}>
-                  {/* Card art image — Stitch uses img; fall back to bg-image div when no src */}
-                  {artUrl ? (
-                    <img
-                      src={artUrl}
-                      alt={card.name}
-                      className={`w-full aspect-[3/4] object-cover rounded-lg border-2 shadow-lg${
-                        isOwned ? ' border-[#ad2bee] shadow-[#ad2bee]/20' : ' border-gray-600'
-                      }`}
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className={`w-full aspect-[3/4] rounded-lg border-2 card-art card-art-fallback${
+                  {/* Card art — fallback always rendered behind img; gradient + name layered on top */}
+                  <div className="relative w-full aspect-[3/4]">
+                    {/* Fallback gradient background (always present, covered by img on success) */}
+                    <div className={`absolute inset-0 rounded-lg border-2 card-art card-art-fallback${
                       isOwned ? ' border-[#ad2bee]' : ' border-gray-600'
-                    }`}
-                         style={{ backgroundImage: `url(${artUrl})` }} />
-                  )}
-
-                  {/* Gradient + name overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent rounded-lg pointer-events-none" />
-                  <div className="absolute bottom-0 left-0 right-0 px-1.5 pb-1.5 z-10 pointer-events-none">
-                    <p className="text-center text-[10px] font-bold text-white drop-shadow-lg truncate">{card.name}</p>
+                    }`} />
+                    {artUrl && (
+                      <img
+                        src={artUrl}
+                        alt={card.name}
+                        className={`absolute inset-0 w-full h-full object-cover rounded-lg border-2 shadow-lg${
+                          isOwned ? ' border-[#ad2bee] shadow-[#ad2bee]/20' : ' border-gray-600'
+                        }`}
+                        loading="lazy"
+                        onError={e => { e.currentTarget.style.display='none'; }}
+                      />
+                    )}
+                    {/* Gradient + name overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent rounded-lg pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 right-0 px-1.5 pb-1.5 z-10 pointer-events-none">
+                      <p className="text-center text-[10px] font-bold text-white drop-shadow-lg truncate">{card.name}</p>
+                    </div>
                   </div>
 
                   {/* Edit mode: remove badge */}
@@ -6585,13 +6603,13 @@ RESPONSE GUIDELINES:
                       onClick={() => toggleCardInDeck(cardName)}
                       className="relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer group holo-glow"
                       aria-label={`Remove ${cardName} from deck`}>
-                      {/* Card art */}
-                      {artUrl ? (
+                      {/* Card art — fallback div always present behind img */}
+                      <div className="absolute inset-0 card-art card-art-fallback rounded-lg" style={{ zIndex: 0 }} />
+                      {artUrl && (
                         <img src={artUrl} alt={cardName}
-                          className="absolute inset-0 w-full h-full object-cover rounded-lg" />
-                      ) : (
-                        <div className="absolute inset-0 card-art card-art-fallback rounded-lg"
-                             style={{ backgroundImage: `url(${artUrl})` }} />
+                          className="absolute inset-0 w-full h-full object-cover rounded-lg"
+                          style={{ zIndex: 1 }}
+                          onError={e => { e.currentTarget.style.display='none'; }} />
                       )}
                       {/* Gradient overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent rounded-lg" />
@@ -6737,13 +6755,14 @@ RESPONSE GUIDELINES:
                            boxShadow: isSelected ? '0 0 14px rgba(173,43,238,0.5)' : 'none',
                            opacity: isOwned || isSelected ? 1 : 0.55,
                          }}>
-                      {artUrl ? (
+                      {/* Fallback always rendered behind img */}
+                      <div className="absolute inset-0 card-art card-art-fallback" style={{ zIndex: 0 }} />
+                      {artUrl && (
                         <img src={artUrl} alt={card.name}
-                          className="w-full h-full object-cover"
-                          loading="lazy" />
-                      ) : (
-                        <div className="w-full h-full card-art card-art-fallback"
-                             style={{ backgroundImage: `url(${artUrl})` }} />
+                          className="absolute inset-0 w-full h-full object-cover"
+                          loading="lazy"
+                          style={{ zIndex: 1 }}
+                          onError={e => { e.currentTarget.style.display='none'; }} />
                       )}
                       {/* Selected checkmark */}
                       {isSelected && (
