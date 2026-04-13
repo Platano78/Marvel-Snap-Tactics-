@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Snapapoulous Prime Dashboard</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&amp;family=Kalam:wght@700&amp;family=Permanent+Marker&amp;family=Roboto+Condensed:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#ed1d24", // Classic Marvel Red
+              "background-light": "#fdfaf0", // Newsprint off-white
+              "background-dark": "#1a1a1a",
+              "comic-yellow": "#ffde00",
+              "comic-blue": "#2d8cf0",
+              "comic-purple": "#a255ff",
+              "comic-green": "#28a745"
+            },
+            fontFamily: {
+              display: ["Bangers", "cursive"],
+              marker: ["Permanent Marker", "cursive"],
+              body: ["Roboto Condensed", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "4px",
+            },
+          },
+        },
+      };
+    </script>
+<style>.halftone {
+    background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
+    background-size: 4px 4px;
+    opacity: 0.1
+    }
+.comic-border {
+    border: 3px solid black;
+    box-shadow: 6px 6px 0 0 rgba(0, 0, 0, 1)
+    }
+.kirby-krackle {
+    background-image: radial-gradient(circle, #000 20%, transparent 20%), radial-gradient(circle, #000 20%, transparent 20%);
+    background-position: 0 0, 10px 10px;
+    background-size: 20px 20px
+    }
+.inner-shadow {
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5)
+    }
+body {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuC6Tk7DSALZv6iBy1TuCQWd76WFPg-m37whVGclPXp3eCqrKBjWXzxxTnBKsNI54jDQxmcfUI_a3hSngiMcvAhWb6OefOSFdJ2c-hy1Ne2BlvIPAXjBmbPUObru1DaI-tKGHzZQ0V6NJFm0NO3j-U8hMIRbxvfkftcdOTJ7CDW87aoC_l2OLPWuyCIfBuO7g5XKmGOLJzxB1RNocAyJpO3qT9Cb7zzm6S_VzvcL4k6QcKQGOm9YV30MpKz9MxW9jqfsaZRcqx2M2mIV)
+    }</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 min-h-screen font-body selection:bg-primary selection:text-white">
+<header class="bg-primary py-4 px-6 comic-border mb-8 flex justify-center items-center relative overflow-hidden">
+<div class="absolute inset-0 halftone text-black pointer-events-none"></div>
+<h1 class="font-display text-5xl md:text-7xl tracking-wider text-white italic uppercase drop-shadow-[4px_4px_0px_rgba(0,0,0,1)] relative z-10">
+            SNAPAPOULOUS PRIME
+        </h1>
+</header>
+<main class="max-w-7xl mx-auto px-4 pb-24">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+<div class="bg-white dark:bg-zinc-900 comic-border p-5 relative overflow-hidden transform -rotate-1 group hover:rotate-0 transition-transform duration-200">
+<div class="absolute inset-0 halftone text-primary"></div>
+<div class="relative z-10">
+<span class="font-display text-primary text-lg uppercase tracking-widest">Collection</span>
+<div class="flex items-end gap-2 mt-2">
+<span class="font-display text-6xl text-black dark:text-white">0%</span>
+<span class="font-marker text-xl text-gray-500 mb-2">0/351 cards</span>
+</div>
+</div>
+<div class="absolute top-2 right-2 border-2 border-black rounded-full w-8 h-8 flex items-center justify-center bg-comic-yellow">
+<span class="material-icons text-sm text-black">layers</span>
+</div>
+</div>
+<div class="bg-white dark:bg-zinc-900 comic-border p-5 relative overflow-hidden transform rotate-1 group hover:rotate-0 transition-transform duration-200">
+<div class="absolute inset-0 halftone text-comic-yellow"></div>
+<div class="relative z-10">
+<span class="font-display text-yellow-600 text-lg uppercase tracking-widest">Win Rate</span>
+<div class="flex items-end gap-2 mt-2">
+<span class="font-display text-6xl text-black dark:text-white">0%</span>
+<span class="font-marker text-xl text-gray-500 mb-2">0/0 games</span>
+</div>
+</div>
+<div class="absolute top-2 right-2 border-2 border-black rounded-full w-8 h-8 flex items-center justify-center bg-comic-blue">
+<span class="material-icons text-sm text-white">emoji_events</span>
+</div>
+</div>
+<div class="bg-white dark:bg-zinc-900 comic-border p-5 relative overflow-hidden transform -rotate-1 group hover:rotate-0 transition-transform duration-200">
+<div class="absolute inset-0 halftone text-comic-blue"></div>
+<div class="relative z-10">
+<span class="font-display text-comic-blue text-lg uppercase tracking-widest">Net Cubes</span>
+<div class="flex items-end gap-2 mt-2">
+<span class="font-display text-6xl text-comic-green">+0</span>
+<span class="font-marker text-xl text-gray-500 mb-2">Today: +0</span>
+</div>
+</div>
+<div class="absolute top-2 right-2 border-2 border-black rounded-full w-8 h-8 flex items-center justify-center bg-comic-purple">
+<span class="material-icons text-sm text-white">inventory_2</span>
+</div>
+</div>
+<div class="bg-white dark:bg-zinc-900 comic-border p-5 relative overflow-hidden transform rotate-1 group hover:rotate-0 transition-transform duration-200">
+<div class="absolute inset-0 halftone text-comic-purple"></div>
+<div class="relative z-10">
+<span class="font-display text-comic-purple text-lg uppercase tracking-widest">Streak</span>
+<div class="flex items-end gap-2 mt-2">
+<span class="font-display text-6xl text-black dark:text-white">0-</span>
+<span class="font-marker text-xl text-gray-500 mb-2">Current</span>
+</div>
+</div>
+<div class="absolute top-2 right-2 border-2 border-black rounded-full w-8 h-8 flex items-center justify-center bg-primary">
+<span class="material-icons text-sm text-white">bolt</span>
+</div>
+</div>
+</div>
+<section class="mb-12">
+<div class="bg-zinc-800 dark:bg-black p-8 comic-border relative overflow-hidden">
+<div class="absolute inset-0 opacity-10 pointer-events-none kirby-krackle"></div>
+<h2 class="font-display text-4xl text-comic-yellow mb-8 uppercase italic tracking-wider drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]">Quick Match</h2>
+<div class="mb-8">
+<p class="font-marker text-comic-green text-xl mb-4 uppercase">Victory!</p>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<button class="bg-comic-green hover:bg-green-600 text-white font-display text-4xl py-6 rounded transform transition hover:scale-105 active:scale-95 border-b-8 border-r-8 border-green-800 flex items-center justify-center">
+                            +1
+                        </button>
+<button class="bg-comic-green hover:bg-green-600 text-white font-display text-4xl py-6 rounded transform transition hover:scale-105 active:scale-95 border-b-8 border-r-8 border-green-800 flex items-center justify-center">
+                            +2
+                        </button>
+<button class="bg-comic-green hover:bg-green-600 text-white font-display text-4xl py-6 rounded transform transition hover:scale-105 active:scale-95 border-b-8 border-r-8 border-green-800 flex items-center justify-center">
+                            +4
+                        </button>
+<button class="bg-comic-green hover:bg-green-600 text-white font-display text-4xl py-6 rounded transform transition hover:scale-105 active:scale-95 border-b-8 border-r-8 border-green-800 flex items-center justify-center">
+                            +8
+                        </button>
+</div>
+</div>
+<div>
+<p class="font-marker text-primary text-xl mb-4 uppercase">Defeat...</p>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<button class="bg-primary hover:bg-red-700 text-white font-display text-4xl py-6 rounded transform transition hover:scale-105 active:scale-95 border-b-8 border-r-8 border-red-900 flex items-center justify-center">
+                            -1
+                        </button>
+<button class="bg-primary hover:bg-red-700 text-white font-display text-4xl py-6 rounded transform transition hover:scale-105 active:scale-95 border-b-8 border-r-8 border-red-900 flex items-center justify-center">
+                            -2
+                        </button>
+<button class="bg-primary hover:bg-red-700 text-white font-display text-4xl py-6 rounded transform transition hover:scale-105 active:scale-95 border-b-8 border-r-8 border-red-900 flex items-center justify-center">
+                            -4
+                        </button>
+<button class="bg-primary hover:bg-red-700 text-white font-display text-4xl py-6 rounded transform transition hover:scale-105 active:scale-95 border-b-8 border-r-8 border-red-900 flex items-center justify-center">
+                            -8
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<section>
+<div class="bg-white dark:bg-zinc-900 comic-border p-8 min-h-[300px] flex flex-col items-center justify-center relative">
+<div class="absolute inset-0 halftone text-gray-200 dark:text-zinc-800"></div>
+<div class="absolute top-0 left-0 bg-black text-white px-6 py-1 font-display uppercase tracking-widest text-lg transform -translate-y-1/2 translate-x-4">
+                    Recent Logs
+                </div>
+<div class="text-center relative z-10">
+<span class="material-icons text-6xl text-gray-300 mb-4">history</span>
+<p class="font-marker text-gray-400 text-2xl">NO MATCHES RECORDED YET...</p>
+<p class="font-body text-gray-500 italic mt-2">Go out there and snap 'em, tiger!</p>
+</div>
+</div>
+</section>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 bg-zinc-900 border-t-4 border-primary z-50">
+<div class="max-w-4xl mx-auto flex justify-around items-center py-2 px-4">
+<a class="flex flex-col items-center group" href="#">
+<div class="w-10 h-10 flex items-center justify-center bg-primary rounded-full mb-1 group-hover:scale-110 transition-transform">
+<span class="material-icons text-white">bolt</span>
+</div>
+<span class="text-[10px] font-display uppercase text-primary">Home</span>
+</a>
+<a class="flex flex-col items-center group" href="#">
+<div class="w-10 h-10 flex items-center justify-center bg-zinc-700 rounded-full mb-1 group-hover:scale-110 transition-transform">
+<span class="material-icons text-white">smart_toy</span>
+</div>
+<span class="text-[10px] font-display uppercase text-gray-400">AI</span>
+</a>
+<a class="flex flex-col items-center group" href="#">
+<div class="w-10 h-10 flex items-center justify-center bg-zinc-700 rounded-full mb-1 group-hover:scale-110 transition-transform">
+<span class="material-icons text-white">style</span>
+</div>
+<span class="text-[10px] font-display uppercase text-gray-400">Cards</span>
+</a>
+<a class="flex flex-col items-center group" href="#">
+<div class="w-10 h-10 flex items-center justify-center bg-zinc-700 rounded-full mb-1 group-hover:scale-110 transition-transform">
+<span class="material-icons text-white">content_paste</span>
+</div>
+<span class="text-[10px] font-display uppercase text-gray-400">Decks</span>
+</a>
+<a class="flex flex-col items-center group" href="#">
+<div class="w-10 h-10 flex items-center justify-center bg-zinc-700 rounded-full mb-1 group-hover:scale-110 transition-transform">
+<span class="material-icons text-white">casino</span>
+</div>
+<span class="text-[10px] font-display uppercase text-gray-400">Sim</span>
+</a>
+<a class="flex flex-col items-center group" href="#">
+<div class="w-10 h-10 flex items-center justify-center bg-zinc-700 rounded-full mb-1 group-hover:scale-110 transition-transform">
+<span class="material-icons text-white">track_changes</span>
+</div>
+<span class="text-[10px] font-display uppercase text-gray-400">Calc</span>
+</a>
+<a class="flex flex-col items-center group" href="#">
+<div class="w-10 h-10 flex items-center justify-center bg-zinc-700 rounded-full mb-1 group-hover:scale-110 transition-transform">
+<span class="material-icons text-white">menu</span>
+</div>
+<span class="text-[10px] font-display uppercase text-gray-400">More</span>
+</a>
+</div>
+</nav>
+
+</body></html>

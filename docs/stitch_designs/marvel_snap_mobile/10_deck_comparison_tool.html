@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Deck Comparison Tool</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ad2bee",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#1c1022",
+                        "surface": "#2a1a35",
+                        "accent-blue": "#3b82f6",
+                        "accent-green": "#10b981"
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Spline Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glow-separator {
+            box-shadow: 0 0 15px rgba(173, 43, 238, 0.3);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<!-- TopAppBar -->
+<div class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-white/10">
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="flex size-10 shrink-0 items-center justify-center cursor-pointer hover:bg-white/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-tight flex-1 text-center">Deck Comparison</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="flex cursor-pointer items-center justify-center rounded-full size-10 hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-2xl">share</span>
+</button>
+</div>
+</div>
+<div class="flex px-4 justify-between">
+<a class="flex flex-col items-center justify-center border-b-[3px] border-primary pb-3 pt-4 flex-1 text-primary" href="#">
+<p class="text-sm font-bold leading-normal tracking-wide">Live Comparison</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-transparent text-slate-400 pb-3 pt-4 flex-1" href="#">
+<p class="text-sm font-bold leading-normal tracking-wide">History</p>
+</a>
+</div>
+</div>
+<main class="flex-1 p-4 space-y-6">
+<!-- Deck Selection Headers -->
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-3">
+<div class="relative aspect-[3/4] w-full bg-surface rounded-xl overflow-hidden border border-primary/30 group">
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
+<img alt="Deck A Cover" class="w-full h-full object-cover" data-alt="Abstract purple cosmic nebula background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgtieKL7C_bcVQziPFf3jA4ZoffQ2I0t8LXYo7-F4DhpsXpLx4eTlq0TsRLSt2i3hPgKM0PFRUHy6rBOVGV1XCLbTKd15T3moTYfMMxS2OINgXiopytaxArdnT5Q-PareqjP69zzxWJoTqpC2TPAtFTe1pv5STsi036mmZh9suRr_XZ4EOZQNFFt4VB5NgyadT1okmtPdhjdoGp87fHHpWH8iO5qlD5CfmDbLKvrLxNcHGniorCVD5emXLcEBC23r1eK2H039nJTnK"/>
+<div class="absolute bottom-3 left-3 z-20">
+<p class="text-xs font-bold text-primary uppercase tracking-widest">Deck A</p>
+<h4 class="text-white font-bold text-lg">Sera Control</h4>
+</div>
+</div>
+</div>
+<div class="space-y-3">
+<div class="relative aspect-[3/4] w-full bg-surface rounded-xl overflow-hidden border border-accent-blue/30 group">
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
+<img alt="Deck B Cover" class="w-full h-full object-cover" data-alt="Abstract blue cosmic nebula background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5XJnML-9V0E6j03tV8jmrCsbP-XKKS52tUeRldo6phZNFCYC1H-m5RxacJSFsO_8nF8ETnDUfrR6fqozTYnLbD-NTxDdZHbRVctdhvoufhpIJpHxsXn6Wj4c4tk9mUwu3lbSpzO84ueH4_v3IuvQQORY3owXrTGCZuoK6L4ak2eKto9LUDUmIdOMHxZMUbVJ8BYx5qDJR39gpdyj2McYaXScPff0xFPtDseXcScyUbkkD2FVtfVFUB-SkRnuvHpCnIDDXGYofHJBv"/>
+<div class="absolute bottom-3 left-3 z-20">
+<p class="text-xs font-bold text-accent-blue uppercase tracking-widest">Deck B</p>
+<h4 class="text-white font-bold text-lg">Discard Hela</h4>
+</div>
+</div>
+</div>
+</div>
+<!-- Key Performance Metrics -->
+<div class="space-y-4">
+<h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 px-1">Performance Metrics</h3>
+<div class="grid grid-cols-2 gap-3">
+<!-- Win Rate Card -->
+<div class="flex flex-col gap-2 rounded-xl p-4 bg-surface/50 border border-white/5">
+<p class="text-slate-400 text-xs font-medium uppercase">Win Rate</p>
+<div class="flex items-end justify-between">
+<div class="flex flex-col">
+<span class="text-primary text-xl font-bold">58.4%</span>
+<span class="text-accent-blue text-xl font-bold">54.2%</span>
+</div>
+<span class="material-symbols-outlined text-primary mb-1">trending_up</span>
+</div>
+</div>
+<!-- Avg Cubes Card -->
+<div class="flex flex-col gap-2 rounded-xl p-4 bg-surface/50 border border-white/5">
+<p class="text-slate-400 text-xs font-medium uppercase">Avg. Cubes</p>
+<div class="flex items-end justify-between">
+<div class="flex flex-col">
+<span class="text-primary text-xl font-bold">+0.85</span>
+<span class="text-accent-blue text-xl font-bold">+0.62</span>
+</div>
+<span class="material-symbols-outlined text-primary mb-1">hexagon</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Energy Curve Visualization -->
+<div class="bg-surface/50 rounded-xl p-4 border border-white/5">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-sm font-bold uppercase tracking-widest text-slate-400">Energy Curve</h3>
+<div class="flex gap-4">
+<div class="flex items-center gap-1.5">
+<div class="size-2 rounded-full bg-primary"></div>
+<span class="text-[10px] text-slate-400">A</span>
+</div>
+<div class="flex items-center gap-1.5">
+<div class="size-2 rounded-full bg-accent-blue"></div>
+<span class="text-[10px] text-slate-400">B</span>
+</div>
+</div>
+</div>
+<div class="flex items-end justify-between h-24 px-2">
+<!-- Bars 1-6 -->
+<div class="flex flex-col items-center gap-1 flex-1">
+<div class="w-2 flex flex-col-reverse gap-0.5">
+<div class="bg-primary h-8 w-full rounded-t-sm"></div>
+<div class="bg-accent-blue h-12 w-full rounded-t-sm"></div>
+</div>
+<span class="text-[10px] text-slate-500">1</span>
+</div>
+<div class="flex flex-col items-center gap-1 flex-1">
+<div class="w-2 flex flex-col-reverse gap-0.5">
+<div class="bg-primary h-14 w-full rounded-t-sm"></div>
+<div class="bg-accent-blue h-6 w-full rounded-t-sm"></div>
+</div>
+<span class="text-[10px] text-slate-500">2</span>
+</div>
+<div class="flex flex-col items-center gap-1 flex-1">
+<div class="w-2 flex flex-col-reverse gap-0.5">
+<div class="bg-primary h-10 w-full rounded-t-sm"></div>
+<div class="bg-accent-blue h-10 w-full rounded-t-sm"></div>
+</div>
+<span class="text-[10px] text-slate-500">3</span>
+</div>
+<div class="flex flex-col items-center gap-1 flex-1">
+<div class="w-2 flex flex-col-reverse gap-0.5">
+<div class="bg-primary h-12 w-full rounded-t-sm"></div>
+<div class="bg-accent-blue h-4 w-full rounded-t-sm"></div>
+</div>
+<span class="text-[10px] text-slate-500">4</span>
+</div>
+<div class="flex flex-col items-center gap-1 flex-1">
+<div class="w-2 flex flex-col-reverse gap-0.5">
+<div class="bg-primary h-16 w-full rounded-t-sm"></div>
+<div class="bg-accent-blue h-8 w-full rounded-t-sm"></div>
+</div>
+<span class="text-[10px] text-slate-500">5</span>
+</div>
+<div class="flex flex-col items-center gap-1 flex-1">
+<div class="w-2 flex flex-col-reverse gap-0.5">
+<div class="bg-primary h-4 w-full rounded-t-sm"></div>
+<div class="bg-accent-blue h-14 w-full rounded-t-sm"></div>
+</div>
+<span class="text-[10px] text-slate-500">6+</span>
+</div>
+</div>
+</div>
+<!-- Card Comparison Table -->
+<div class="space-y-4">
+<h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 px-1">Card Overlap</h3>
+<div class="rounded-xl overflow-hidden border border-white/10 bg-surface/30">
+<table class="w-full text-left text-sm">
+<thead class="bg-white/5 text-slate-400 uppercase text-[10px] font-bold">
+<tr>
+<th class="p-3">Card Name</th>
+<th class="p-3 text-center">A</th>
+<th class="p-3 text-center">B</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5">
+<tr>
+<td class="p-3 font-medium">Killmonger</td>
+<td class="p-3 text-center"><span class="material-symbols-outlined text-accent-green text-lg">check_circle</span></td>
+<td class="p-3 text-center"><span class="material-symbols-outlined text-slate-600 text-lg">circle</span></td>
+</tr>
+<tr>
+<td class="p-3 font-medium">Shang-Chi</td>
+<td class="p-3 text-center"><span class="material-symbols-outlined text-accent-green text-lg">check_circle</span></td>
+<td class="p-3 text-center"><span class="material-symbols-outlined text-accent-green text-lg">check_circle</span></td>
+</tr>
+<tr>
+<td class="p-3 font-medium">Hela</td>
+<td class="p-3 text-center"><span class="material-symbols-outlined text-slate-600 text-lg">circle</span></td>
+<td class="p-3 text-center"><span class="material-symbols-outlined text-accent-green text-lg">check_circle</span></td>
+</tr>
+<tr>
+<td class="p-3 font-medium">Sera</td>
+<td class="p-3 text-center"><span class="material-symbols-outlined text-accent-green text-lg">check_circle</span></td>
+<td class="p-3 text-center"><span class="material-symbols-outlined text-slate-600 text-lg">circle</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Verdict Section -->
+<div class="mt-8 p-5 rounded-2xl bg-gradient-to-br from-primary/20 via-primary/5 to-accent-blue/20 border border-primary/40 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-3 opacity-10">
+<span class="material-symbols-outlined text-6xl">stars</span>
+</div>
+<div class="relative z-10">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary">verified</span>
+<h3 class="font-bold text-lg">Meta Verdict</h3>
+</div>
+<p class="text-sm text-slate-300 leading-relaxed">
+<span class="font-bold text-white">Sera Control</span> is currently outperforming Discard Hela in the Infinite rank bracket. Its higher flexibility against <span class="text-primary font-bold">Destroy</span> and <span class="text-primary font-bold">Zoo</span> decks makes it a more reliable choice for climbing this season.
+                    </p>
+<button class="mt-4 w-full py-3 bg-primary hover:bg-primary/90 rounded-xl font-bold text-white transition-all shadow-lg shadow-primary/20">
+                        Equip Sera Control
+                    </button>
+</div>
+</div>
+</main>
+<!-- Bottom Tab Bar Placeholder -->
+<div class="h-20 bg-background-dark border-t border-white/5 flex items-center justify-around px-6">
+<div class="flex flex-col items-center text-slate-500">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] mt-1">Collection</span>
+</div>
+<div class="flex flex-col items-center text-primary">
+<span class="material-symbols-outlined">compare_arrows</span>
+<span class="text-[10px] mt-1">Compare</span>
+</div>
+<div class="flex flex-col items-center text-slate-500">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="text-[10px] mt-1">Meta</span>
+</div>
+<div class="flex flex-col items-center text-slate-500">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] mt-1">Profile</span>
+</div>
+</div>
+</div>
+</body></html>

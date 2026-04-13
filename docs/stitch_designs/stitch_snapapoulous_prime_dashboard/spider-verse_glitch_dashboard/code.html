@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spider-Verse Glitch Dashboard | Snapapoulous Prime</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;700;900&amp;family=Permanent+Marker&amp;family=Caveat:wght@400;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0da6f2",
+                        "secondary": "#ff00ff",
+                        "accent-yellow": "#fef08a",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#101c22",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"],
+                        "marker": ["Permanent Marker", "cursive"],
+                        "handwriting": ["Caveat", "cursive"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .glitch-text {
+            text-shadow: 2px 0 #ff00ff, -2px 0 #0da6f2;
+        }
+        .halftone {
+            background-image: radial-gradient(#ccc 10%, transparent 11%);
+            background-size: 10px 10px;
+        }
+        .sketch-border {
+            border: 3px solid #111;
+            box-shadow: 6px 6px 0px 0px #111;
+        }
+        .rotate-neg { transform: rotate(-1.2deg); }
+        .rotate-pos { transform: rotate(1.5deg); }
+        .thought-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid #fef08a;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-[#111618] selection:bg-primary/30">
+<div class="flex min-h-screen">
+<!-- SideNavBar -->
+<aside class="w-72 border-r-4 border-black bg-white dark:bg-background-dark p-6 flex flex-col gap-8 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 halftone opacity-20 pointer-events-none"></div>
+<div class="flex gap-3 items-center relative z-10">
+<div class="size-12 rounded-full border-2 border-black bg-primary flex items-center justify-center overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Comic style user avatar" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBK4eUGeSLJLs5OdjXuww_2rkPUz44yJfixLL0f4CA7W3Ux20iDOupUFwUcR_FJ8omMS7RBEO7kETvzfEfj5I-CGonbnb3tncnUdv-wVIEWzaA-cjEp-ksuLSwp_ye9dxfXLQxRlokX3qqQjTUqrQKZha3Nj-zxviufD9RdwstTaXaKEvQASLdCohZxZPBoDqzk6oAd4UlyeKfFUR2O4ttgKUTLBLb9DhtvedCYFYxKiX3kdutwiOCKFTj4maIZ4cdpd5chPeV7cldm')"></div>
+</div>
+<div class="flex flex-col">
+<h1 class="font-marker text-lg leading-none tracking-wider">SNAPAPOULOUS</h1>
+<p class="font-handwriting text-primary font-bold">V.1.0 - GLITCH MODE</p>
+</div>
+</div>
+<nav class="flex flex-col gap-4 relative z-10">
+<div class="flex items-center gap-3 px-4 py-3 rounded-full bg-primary text-white shadow-[4px_4px_0px_0px_#000] cursor-pointer">
+<span class="material-symbols-outlined fill-1">dashboard</span>
+<p class="font-bold text-sm tracking-wide">MULTIVERSE STATS</p>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-full hover:bg-secondary/10 border-2 border-transparent hover:border-black transition-all cursor-pointer">
+<span class="material-symbols-outlined">style</span>
+<p class="font-bold text-sm tracking-wide">DECK LIBRARY</p>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-full hover:bg-secondary/10 border-2 border-transparent hover:border-black transition-all cursor-pointer">
+<span class="material-symbols-outlined">monitoring</span>
+<p class="font-bold text-sm tracking-wide text-secondary">MATCH TRACKER</p>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-full hover:bg-secondary/10 border-2 border-transparent hover:border-black transition-all cursor-pointer">
+<span class="material-symbols-outlined">inventory_2</span>
+<p class="font-bold text-sm tracking-wide">CUBE VAULT</p>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 rounded-full hover:bg-secondary/10 border-2 border-transparent hover:border-black transition-all cursor-pointer mt-auto">
+<span class="material-symbols-outlined">settings</span>
+<p class="font-bold text-sm tracking-wide uppercase">Settings</p>
+</div>
+</nav>
+<button class="mt-auto group relative w-full font-marker text-2xl py-4 bg-primary text-white border-4 border-black shadow-[6px_6px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#000] transition-all">
+                SNAP!
+                <div class="absolute -top-2 -right-2 bg-secondary text-xs px-2 py-1 font-display font-black rotate-12">x8 CUBES</div>
+</button>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 p-8 relative overflow-y-auto">
+<!-- Background Halftones -->
+<div class="fixed bottom-0 right-0 w-64 h-64 halftone opacity-10 pointer-events-none"></div>
+<!-- PageHeading -->
+<div class="flex flex-wrap justify-between items-start mb-12 relative z-10">
+<div class="flex flex-col gap-1">
+<div class="relative inline-block">
+<h2 class="font-marker text-6xl tracking-tighter glitch-text uppercase -rotate-1">SNAPAPOULOUS PRIME</h2>
+<div class="absolute -right-12 -top-4 font-handwriting bg-accent-yellow px-4 py-1 text-black sketch-border rotate-12 text-xl font-bold">
+                            DIMENSION-616
+                        </div>
+</div>
+<p class="font-display font-black text-secondary/70 mt-2 tracking-[0.2em] text-xs">MATCH TRACKER // ANOMALY DETECTED</p>
+</div>
+<button class="flex items-center gap-2 bg-white px-6 py-3 border-4 border-black shadow-[4px_4px_0px_0px_#000] font-black uppercase hover:bg-primary hover:text-white transition-colors">
+<span class="material-symbols-outlined">sync</span>
+                    SYNC DATA
+                </button>
+</div>
+<!-- Stats -->
+<div class="grid grid-cols-3 gap-8 mb-12 relative z-10">
+<div class="bg-white p-6 sketch-border rotate-neg relative">
+<p class="font-black text-xs uppercase tracking-widest text-gray-500 mb-1">Current Win Streak</p>
+<p class="font-marker text-4xl">5 GAMES</p>
+<div class="flex items-center gap-1 text-green-600 font-bold mt-2">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>+2.4% vs Multiverse</span>
+</div>
+<!-- Thought Bubble -->
+<div class="absolute -top-16 -right-4 w-48 bg-accent-yellow p-3 text-sm font-handwriting font-bold shadow-lg thought-bubble border-2 border-black rotate-3">
+                        "Five in a row? Who are you, Peter B. Parker?"
+                    </div>
+</div>
+<div class="bg-white p-6 sketch-border rotate-pos">
+<p class="font-black text-xs uppercase tracking-widest text-gray-500 mb-1">Total Cubes</p>
+<p class="font-marker text-4xl text-primary">+42</p>
+<div class="flex items-center gap-1 text-green-600 font-bold mt-2">
+<span class="material-symbols-outlined text-sm">stars</span>
+<span>CLIMBING FAST</span>
+</div>
+</div>
+<div class="bg-white p-6 sketch-border -rotate-1">
+<p class="font-black text-xs uppercase tracking-widest text-gray-500 mb-1">Win Rate</p>
+<p class="font-marker text-4xl text-secondary">68.2%</p>
+<p class="font-handwriting text-gray-400 mt-2 font-bold italic">Top 1% in this timeline</p>
+</div>
+</div>
+<!-- SectionHeader -->
+<div class="flex items-center gap-4 mb-6">
+<h3 class="font-marker text-3xl uppercase tracking-tight">Live Match Tracker</h3>
+<div class="h-1 flex-1 bg-black rounded-full opacity-10"></div>
+<div class="flex gap-2">
+<div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+<div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+</div>
+</div>
+<!-- Cards / Match Feed -->
+<div class="flex flex-col gap-10 max-w-5xl relative z-10">
+<!-- Main Active Match Card -->
+<div class="@container relative">
+<div class="flex flex-col @xl:flex-row bg-white sketch-border overflow-hidden rotate-pos">
+<div class="w-full @xl:w-1/3 h-64 bg-center bg-no-repeat bg-cover border-b-4 @xl:border-b-0 @xl:border-r-4 border-black" data-alt="Marvel Snap match lane display" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAaX-C0LexCWOrYG3v3o9z8RkeS0JmK0htiimv4iWW3gYqWuM4tZmUwNMw6lpZI2-hf-lT-hFuh5hE1Em-fEvRnryjvOlwkap1tTOfeAjLqpltTdDSe8SYQChk6pqs8Xcc8XGtVOZRgCi_JE5fSVFMCNnDkV-mwNEDjfK3a8B3HmOFZt5Y1S1HQ1Q74gs-elGVNhuIonepUWdAqZ4MOvZeaHTjA0nL1Zh_CbbEb0a3MvOML6yGgYpd0QT_7AAWorHXoMq7Rl4pB53Tq');">
+<div class="bg-black/80 text-white p-2 font-marker text-xs uppercase">Location: The Raft</div>
+</div>
+<div class="flex-1 p-8 flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div>
+<p class="font-black text-secondary text-sm tracking-tighter italic">DIMENSION GLITCH ACTIVE</p>
+<h4 class="font-marker text-3xl mt-1 uppercase">OPPONENT: KINGPIN_99</h4>
+</div>
+<div class="bg-accent-yellow px-4 py-2 border-2 border-black font-black rotate-6 shadow-[2px_2px_0_0_#000]">
+                                    TURN 5/6
+                                </div>
+</div>
+<div class="mt-6 flex flex-col gap-4">
+<div class="grid grid-cols-3 gap-2">
+<div class="p-3 bg-background-light border-2 border-black rounded shadow-[2px_2px_0_0_#000]">
+<p class="text-[10px] font-black uppercase text-gray-500">Lane 1</p>
+<p class="font-marker text-xl text-primary">14 PWR</p>
+</div>
+<div class="p-3 bg-background-light border-2 border-black rounded shadow-[2px_2px_0_0_#000]">
+<p class="text-[10px] font-black uppercase text-gray-500">Lane 2</p>
+<p class="font-marker text-xl text-secondary">22 PWR</p>
+</div>
+<div class="p-3 bg-background-light border-2 border-black rounded shadow-[2px_2px_0_0_#000]">
+<p class="text-[10px] font-black uppercase text-gray-500">Lane 3</p>
+<p class="font-marker text-xl">8 PWR</p>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center mt-6">
+<p class="font-handwriting text-xl text-gray-600">Odds: 82% Chance of winning Lane 2</p>
+<button class="bg-primary text-white font-black px-8 py-3 rounded-full border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:bg-secondary hover:shadow-[2px_2px_0px_0px_#000] transition-all uppercase text-sm">
+                                    View Predicted Deck
+                                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Cube Tracker Panel (Custom Component) -->
+<div class="bg-white sketch-border p-6 rotate-neg flex items-center justify-between">
+<div class="flex flex-col gap-1">
+<h4 class="font-marker text-2xl uppercase">Quick Cube Tracker</h4>
+<p class="font-handwriting text-lg">Did you snap yet? Don't be a hero.</p>
+</div>
+<div class="flex gap-4">
+<button class="size-16 rounded-full border-4 border-black bg-white flex items-center justify-center font-marker text-2xl hover:bg-accent-yellow transition-colors shadow-[4px_4px_0px_0px_#000]">+1</button>
+<button class="size-16 rounded-full border-4 border-black bg-white flex items-center justify-center font-marker text-2xl hover:bg-accent-yellow transition-colors shadow-[4px_4px_0px_0px_#000]">+2</button>
+<button class="size-16 rounded-full border-4 border-black bg-primary text-white flex items-center justify-center font-marker text-2xl hover:bg-secondary transition-colors shadow-[4px_4px_0px_0px_#000]">+4</button>
+<button class="size-16 rounded-full border-4 border-black bg-black text-white flex items-center justify-center font-marker text-2xl hover:bg-red-600 transition-colors shadow-[4px_4px_0px_0px_#000]">+8</button>
+</div>
+</div>
+<!-- Recent History (Compact Cards) -->
+<div class="grid grid-cols-2 gap-6">
+<div class="bg-white/50 p-4 sketch-border -rotate-2 opacity-80 flex gap-4 items-center">
+<div class="size-12 bg-red-500 rounded-full border-2 border-black flex items-center justify-center font-marker text-white">-4</div>
+<div>
+<p class="font-black text-xs uppercase">Vs Electro-Shock</p>
+<p class="font-handwriting font-bold text-gray-500 italic">"Rough landing..."</p>
+</div>
+</div>
+<div class="bg-white/50 p-4 sketch-border rotate-1 opacity-80 flex gap-4 items-center">
+<div class="size-12 bg-green-500 rounded-full border-2 border-black flex items-center justify-center font-marker text-white">+2</div>
+<div>
+<p class="font-black text-xs uppercase">Vs Gwen-Stacy-9</p>
+<p class="font-handwriting font-bold text-gray-500 italic">"Easy as pie."</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

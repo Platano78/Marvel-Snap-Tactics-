@@ -790,6 +790,10 @@
       color: var(--cosmic-purple-text);
     }
 
+    /* Scrollbar hide utility (used by filter pills row) */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
     /* Card art with fallback gradient */
     .card-art {
       background-size: 130% !important;
@@ -3935,7 +3939,9 @@ RESPONSE GUIDELINES:
       const primaryTabs = [
         { id: 'ai', label: 'Advisor', icon: 'smart_toy' },
         { id: 'collection', label: 'Cards', icon: 'style' },
+        { id: 'database', label: 'Database', icon: 'database' },
         { id: 'decks', label: 'Decks', icon: 'auto_fix_high' },
+        { id: 'compare', label: 'Compare', icon: 'compare_arrows' },
         { id: 'history', label: 'History', icon: 'history' },
         { id: 'settings', label: 'More', icon: 'menu' }
       ];
@@ -3972,7 +3978,7 @@ RESPONSE GUIDELINES:
                     : 'text-stitch-muted hover:text-white'
                 }`}>
                 <span className="material-symbols-outlined" aria-hidden="true" style={{fontSize: '22px'}}>{tab.icon}</span>
-                <span className="text-[10px] mt-0.5 font-medium font-comic tracking-wide">{tab.label}</span>
+                <span className="text-[10px] mt-0.5 font-medium font-comic tracking-wide hidden min-[360px]:block">{tab.label}</span>
               </button>
             ))}
           </div>
@@ -4329,8 +4335,20 @@ RESPONSE GUIDELINES:
 
     // Match History Standalone View
     const MatchHistory = ({ matches }) => {
-      const [expanded, setExpanded] = useState(null);
       const [filter, setFilter] = useState('all');
+      const [selectedMatch, setSelectedMatch] = useState(null);
+
+      // Relative time helper matching Stitch "3m ago / 12m ago / 1h ago" format
+      const relativeTime = (dateString) => {
+        const diffMs = Date.now() - new Date(dateString).getTime();
+        const diffMin = Math.floor(diffMs / 60000);
+        if (diffMin < 1) return 'Just now';
+        if (diffMin < 60) return `${diffMin}m ago`;
+        const diffHr = Math.floor(diffMin / 60);
+        if (diffHr < 24) return `${diffHr}h ago`;
+        const diffDays = Math.floor(diffHr / 24);
+        return `${diffDays}d ago`;
+      };
 
       const filteredMatches = useMemo(() => {
         const sorted = [...matches].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -4359,10 +4377,6 @@ RESPONSE GUIDELINES:
 
       const trendDiff = weekWinRate !== null ? weekWinRate - winRate : 0;
 
-      const toggleExpand = (id) => {
-        setExpanded(prev => prev === id ? null : id);
-      };
-
       const snapLabel = (snapped) => {
         switch (snapped) {
           case 'PLAYER': return 'You Snapped';
@@ -4372,145 +4386,776 @@ RESPONSE GUIDELINES:
         }
       };
 
-      return (
-        <div className="px-4 pb-20">
-          <Header title="MATCH HISTORY" />
+      // Avatar initials fallback for matches without card art
+      const avatarInitials = (opponent) => {
+        if (!opponent) return '?';
+        return opponent.slice(0, 2).toUpperCase();
+      };
 
-          {/* Stat Cards */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="stitch-stat p-4">
-              <div className="stitch-label mb-1">Today's Net</div>
-              <div className={`text-3xl font-display font-bold ${todayStats.net >= 0 ? 'text-stitch-green' : 'text-red-500'}`}>
-                {todayStats.net >= 0 ? '+' : ''}{todayStats.net}
-              </div>
-              <div className="text-xs text-stitch-muted">{todayStats.count} games played</div>
+      const FILTERS = [
+        { id: 'all', label: 'All' },
+        { id: 'wins', label: 'Wins' },
+        { id: 'losses', label: 'Losses' },
+      ];
+
+      return (
+        <div className="pb-24 relative">
+          {/* Top App Bar — matches Stitch exactly */}
+          <div
+            className="flex items-center justify-between p-4 pb-2 sticky top-0 z-10"
+            style={{ background: 'rgba(28,16,34,0.92)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(173,43,238,0.15)' }}
+          >
+            {/* Back button — 48×48 touch target */}
+            <div className="size-12 flex items-center justify-center text-[#b792c9]" aria-label="Back">
+              <span className="material-symbols-outlined" aria-hidden="true">arrow_back_ios</span>
             </div>
-            <div className="stitch-stat p-4">
-              <div className="stitch-label mb-1">Win Rate</div>
-              <div className="text-3xl font-display font-bold text-cosmic-purple-text">{winRate}%</div>
-              <div className={`text-xs flex items-center gap-0.5 ${trendDiff >= 0 ? 'text-stitch-green' : 'text-red-400'}`}>
-                {trendDiff !== 0 && (
+            <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">
+              Match History
+            </h2>
+            {/* Filter icon button */}
+            <button
+              className="flex items-center justify-center rounded-full size-10 bg-[#ad2bee]/10 text-[#ad2bee]"
+              aria-label="Filter options"
+              onClick={() => {
+                const next = { all: 'wins', wins: 'losses', losses: 'all' }[filter];
+                setFilter(next);
+              }}
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">filter_list</span>
+            </button>
+          </div>
+
+          {/* Primary Summary Widgets — 2-column, matches Stitch bg-primary/10 + border-primary/20 */}
+          <div className="flex flex-wrap gap-3 p-4">
+            {/* Today's Net */}
+            <div
+              className="flex min-w-[140px] flex-1 flex-col gap-1 rounded-xl p-4"
+              style={{ background: 'rgba(173,43,238,0.10)', border: '1px solid rgba(173,43,238,0.20)' }}
+            >
+              <p className="stitch-label">Today's Net</p>
+              <p className={`tracking-tight text-2xl font-bold ${todayStats.net >= 0 ? 'text-[#0bda76]' : 'text-red-500'}`}>
+                {todayStats.net >= 0 ? '+' : ''}{todayStats.net} Cubes
+              </p>
+              <div className={`flex items-center gap-1 text-xs font-bold ${trendDiff >= 0 ? 'text-[#0bda76]' : 'text-red-400'}`}>
+                {trendDiff !== 0 ? (
                   <>
-                    <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '14px' }} aria-hidden="true">
                       {trendDiff > 0 ? 'trending_up' : 'trending_down'}
+                    </span>
+                    {trendDiff > 0 ? '+' : ''}{trendDiff}%
+                  </>
+                ) : (
+                  <span className="text-[#b792c9]">Steady</span>
+                )}
+              </div>
+            </div>
+            {/* Win Rate */}
+            <div
+              className="flex min-w-[140px] flex-1 flex-col gap-1 rounded-xl p-4"
+              style={{ background: 'rgba(173,43,238,0.10)', border: '1px solid rgba(173,43,238,0.20)' }}
+            >
+              <p className="stitch-label">Win Rate</p>
+              <p className="text-white tracking-tight text-2xl font-bold">{winRate}%</p>
+              <div className={`flex items-center gap-1 text-xs font-bold ${trendDiff >= 0 ? 'text-[#0bda76]' : 'text-red-400'}`}>
+                {weekWinRate !== null ? (
+                  <>
+                    <span className="material-symbols-outlined" style={{ fontSize: '14px' }} aria-hidden="true">
+                      {trendDiff >= 0 ? 'trending_up' : 'trending_down'}
                     </span>
                     {trendDiff > 0 ? '+' : ''}{trendDiff}% 7d
                   </>
+                ) : (
+                  <span className="text-[#b792c9]">No week data</span>
                 )}
-                {trendDiff === 0 && <span className="text-stitch-muted">Steady</span>}
               </div>
             </div>
           </div>
-          <div className="stitch-card p-3 mb-4 flex items-center justify-between">
-            <span className="stitch-label">Total Matches</span>
-            <div className="flex items-center gap-3">
-              <span className="text-lg font-display font-bold text-white">{matches.length}</span>
-              <span className="text-xs text-stitch-muted">
-                {totalWins}W / {matches.length - totalWins}L
-              </span>
+
+          {/* Secondary Row — Total Matches with sports_esports icon */}
+          <div className="flex gap-3 px-4 pb-4">
+            <div
+              className="flex flex-1 items-center justify-between rounded-xl p-3"
+              style={{ background: '#3c2348' }}
+            >
+              <div className="flex flex-col">
+                <p className="stitch-label">Total Matches</p>
+                <p className="text-white text-lg font-bold">{matches.length} Games</p>
+              </div>
+              <span className="material-symbols-outlined text-[#ad2bee]/60" aria-hidden="true">sports_esports</span>
             </div>
           </div>
 
-          {/* Filter Pills */}
-          <div className="flex gap-2 mb-4">
-            {['all', 'wins', 'losses'].map(f => (
+          {/* Recent Battles header + filter pills */}
+          <div className="flex items-center justify-between px-4 pb-2 pt-2">
+            <h3 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">Recent Battles</h3>
+            <span className="text-xs font-medium text-[#ad2bee]">{filteredMatches.length} results</span>
+          </div>
+
+          {/* Filter Pills — below the header, scrollable row */}
+          <div className="flex gap-2 px-4 pb-3 overflow-x-auto" role="group" aria-label="Filter matches">
+            {FILTERS.map(f => (
               <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`stitch-pill ${filter === f ? 'active' : ''}`}
+                key={f.id}
+                onClick={() => setFilter(f.id)}
+                className={`stitch-pill shrink-0 ${filter === f.id ? 'active' : ''}`}
+                aria-pressed={filter === f.id}
               >
-                {f === 'all' ? 'All' : f === 'wins' ? 'Wins' : 'Losses'}
+                {f.label}
               </button>
             ))}
-            <span className="ml-auto text-sm text-stitch-muted self-center">{filteredMatches.length} results</span>
           </div>
 
           {/* Match List */}
           {filteredMatches.length === 0 ? (
-            <EmptyState
-              icon="sports_esports"
-              title="Your Arena Awaits"
-              description="Start logging matches to track your climb"
-            />
+            <div className="px-4">
+              <EmptyState
+                icon="sports_esports"
+                title="Your Arena Awaits"
+                description="Start logging matches to track your climb"
+              />
+            </div>
           ) : (
-            <div className="space-y-2">
+            <div className="flex flex-col gap-1 px-4">
               {filteredMatches.map(match => {
                 const isWin = match.result === 'WIN';
-                const isExpanded = expanded === match.id;
                 const snap = snapLabel(match.snapped);
+                const cubeLabel = `${isWin ? '+' : '-'}${match.cubes} Cube${match.cubes !== 1 ? 's' : ''}`;
 
                 return (
-                  <button
+                  <div
                     key={match.id}
-                    className={`w-full text-left stitch-list-item overflow-hidden transition-all cursor-pointer ${
-                      isWin ? 'comic-panel-win' : 'comic-panel-loss'
-                    }`}
-                    onClick={() => toggleExpand(match.id)}
-                    aria-expanded={isExpanded}
+                    className="flex gap-4 p-4 rounded-xl items-center cursor-pointer transition-opacity hover:opacity-90 active:opacity-75"
+                    style={{
+                      background: '#2a1a33',
+                      border: '1px solid rgba(255,255,255,0.05)',
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${isWin ? 'Victory' : 'Defeat'} ${cubeLabel}${match.opponent ? ` vs ${match.opponent}` : ''}`}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedMatch(match); }}
+                    onClick={() => setSelectedMatch(match)}
                   >
-                    {/* Main Row */}
-                    <div className="flex items-center justify-between p-3">
-                      <div className="flex items-center gap-3">
-                        <span className={`stitch-badge text-xs uppercase tracking-wide ${
-                          isWin
-                            ? 'bg-stitch-green/20 text-stitch-green'
-                            : 'bg-red-500/20 text-red-400'
-                        }`}>
+                    {/* Avatar — 64×64 with colored ring indicating result */}
+                    <div
+                      className="shrink-0 size-16 rounded-lg flex items-center justify-center text-lg font-bold text-white"
+                      style={{
+                        background: 'rgba(173,43,238,0.25)',
+                        outline: `2px solid ${isWin ? 'rgba(11,218,118,0.30)' : 'rgba(239,68,68,0.30)'}`,
+                        outlineOffset: '2px',
+                      }}
+                      aria-hidden="true"
+                    >
+                      {match.opponent ? avatarInitials(match.opponent) : (isWin ? '✓' : '✗')}
+                    </div>
+
+                    {/* Body */}
+                    <div className="flex flex-1 flex-col justify-center min-w-0">
+                      {/* Result + cube badge row */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span
+                          className={`text-sm font-bold uppercase tracking-tight ${isWin ? 'text-[#0bda76]' : 'text-red-500'}`}
+                        >
                           {isWin ? 'Victory' : 'Defeat'}
                         </span>
-                        <span className={`text-lg font-display font-bold ${isWin ? 'text-stitch-green' : 'text-red-400'}`}>
-                          {isWin ? '+' : '-'}{match.cubes}
+                        <span
+                          className="text-white font-bold text-sm px-2 py-0.5 rounded-full"
+                          style={{ background: isWin ? 'rgba(11,218,118,0.20)' : 'rgba(239,68,68,0.20)' }}
+                        >
+                          {cubeLabel}
                         </span>
                         {snap && (
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-[#ad2bee]/20 text-[#c75fff]">
+                          <span
+                            className="text-xs px-1.5 py-0.5 rounded-full font-semibold"
+                            style={{ background: 'rgba(173,43,238,0.20)', color: '#c75fff' }}
+                          >
                             {snap}
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">{formatDate(match.timestamp)}</span>
-                        <span className={`material-symbols-outlined text-gray-500 text-sm transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-                          expand_more
-                        </span>
-                      </div>
+                      {/* Opponent */}
+                      <p className="text-white text-sm font-medium mt-1 truncate">
+                        {match.opponent ? `vs. ${match.opponent}` : 'Unknown Opponent'}
+                      </p>
+                      {/* Deck / notes as suspected archetype line */}
+                      {(match.deck || match.notes) && (
+                        <p className="text-[#b792c9] text-xs font-normal truncate">
+                          {match.deck ? `Deck: ${match.deck}` : match.notes}
+                        </p>
+                      )}
                     </div>
 
-                    {/* Expanded Details */}
-                    {isExpanded && (
-                      <div className="px-3 pb-3 pt-0 border-t border-[rgba(173,43,238,0.15)]">
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                          {match.opponent && (
-                            <div>
-                              <span className="text-gray-500 text-xs uppercase">Opponent</span>
-                              <div className="text-sm text-white">{match.opponent}</div>
-                            </div>
-                          )}
-                          {match.deck && (
-                            <div>
-                              <span className="text-gray-500 text-xs uppercase">Deck</span>
-                              <div className="text-sm text-[#c75fff]">{match.deck}</div>
-                            </div>
-                          )}
-                        </div>
-                        {match.notes && (
-                          <div className="mt-2">
-                            <span className="text-gray-500 text-xs uppercase">Notes</span>
-                            <div className="text-sm text-gray-300 mt-0.5">{match.notes}</div>
-                          </div>
-                        )}
-                        {!match.opponent && !match.deck && !match.notes && (
-                          <div className="text-gray-600 text-xs mt-2 italic">No additional details recorded</div>
-                        )}
-                      </div>
-                    )}
-                  </button>
+                    {/* Right meta */}
+                    <div className="shrink-0 text-right flex flex-col items-end gap-2">
+                      <p className="text-[#b792c9] text-[10px] font-medium uppercase tracking-wide">
+                        {relativeTime(match.timestamp)}
+                      </p>
+                      <span className="material-symbols-outlined text-[#b792c9] text-sm" aria-hidden="true">
+                        chevron_right
+                      </span>
+                    </div>
+                  </div>
                 );
               })}
             </div>
           )}
+
+          {/* FAB — Analytics, matches Stitch bottom-right placement */}
+          <div className="fixed bottom-24 right-6 z-20">
+            <button
+              className="size-14 rounded-full flex items-center justify-center text-white"
+              style={{ background: '#ad2bee', boxShadow: '0 4px 20px rgba(173,43,238,0.40)' }}
+              aria-label="View analytics"
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">analytics</span>
+            </button>
+          </div>
+
+          {/* Match Turn Analysis overlay — full-screen, slides over History */}
+          {selectedMatch && (
+            <MatchTurnAnalysis
+              match={selectedMatch}
+              onBack={() => setSelectedMatch(null)}
+            />
+          )}
         </div>
       );
     };
+
+    // ==================== MATCH TURN ANALYSIS COMPONENT (Stitch 11) ====================
+    // Full-screen overlay shown when a match row in MatchHistory is tapped.
+    // Primary reference: 11_match_turn_analysis_b.html
+    //
+    // TODO — Schema extension needed: real turn-by-turn data requires `match.turns: Turn[]` where
+    //   Turn = { turn: number, label: string, status: 'STABLE'|'SNAP'|'RETREAT'|'CLUTCH',
+    //            snapEvent?: 'PLAYER'|'OPPONENT'|'BOTH', retreatEvent?: boolean,
+    //            playerCards: { name: string, location: 1|2|3 }[],
+    //            opponentCards: { name: string, location: 1|2|3 }[],
+    //            locationScores: { loc1: [player, opp], loc2: [player, opp], loc3: [player, opp] },
+    //            isFinal?: boolean, finalBoard?: { l1: number, l2: number, l3: number, wins: boolean[] } }
+    //   Until that is stored, this component generates illustrative placeholder turns from the match summary.
+    //
+    // TODO — AI Verdict: the "What to learn" section is stubbed. Wire to AIChat with
+    //   buildSystemPrompt({ role:'match_analyst' }) + the match context to generate a real verdict.
+
+    const MatchTurnAnalysis = ({ match, onBack }) => {
+      const isWin  = match.result === 'WIN';
+      const cubes  = match.cubes;
+
+      // ── Relative date ──────────────────────────────────────────────────────
+      const formatDate = (iso) => {
+        try {
+          return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        } catch {
+          return 'Unknown date';
+        }
+      };
+
+      // ── Snap event label (same as MatchHistory) ─────────────────────────────
+      const snapLabel = (snapped) => {
+        if (snapped === 'PLAYER')   return 'You Snapped';
+        if (snapped === 'OPPONENT') return 'Opp Snapped';
+        if (snapped === 'BOTH')     return 'Both Snapped';
+        return null;
+      };
+
+      // ── Illustrative placeholder turns ──────────────────────────────────────
+      // These are generated from available match fields so the UI is non-empty.
+      // Replace with real match.turns[] when the data model is extended.
+      const PLACEHOLDER_CARDS_YOU  = ['Sunspot', 'Iron Man', 'Shang-Chi', 'Sera', 'Collector', 'Sentinel'];
+      const PLACEHOLDER_CARDS_OPP  = ['Misty Knight', 'Scorpion', 'Devil Dinosaur', 'Wong', 'Moon Girl', 'White Queen'];
+      const KNOWN_DECK_CARDS = match.deck ? [match.deck] : [];
+
+      const placeholderTurns = useMemo(() => {
+        const totalTurns = match.snapped !== 'NONE' ? 6 : 5;
+        const snapTurn  = match.snapped && match.snapped !== 'NONE' ? 3 : null;
+
+        const turns = [];
+        for (let t = 1; t <= totalTurns; t++) {
+          const isFinal = t === totalTurns;
+          const isSnap  = snapTurn && t === snapTurn;
+          const youCard  = PLACEHOLDER_CARDS_YOU[(t - 1) % PLACEHOLDER_CARDS_YOU.length];
+          const oppCard  = PLACEHOLDER_CARDS_OPP[(t - 1) % PLACEHOLDER_CARDS_OPP.length];
+
+          // Simulated score ramp based on match result
+          const baseScoreYou = t * (isWin ? 4 : 2);
+          const baseScoreOpp = t * (isWin ? 2 : 4);
+
+          turns.push({
+            turn: t,
+            label: isFinal ? (isWin ? 'The Swing' : 'Final Stand') : t === 1 ? 'Opening Move' : t === 2 ? 'Pressure Applied' : `Turn ${t}`,
+            status: isSnap ? (match.snapped === 'OPPONENT' ? 'OPP_SNAP' : 'YOU_SNAP') : isFinal ? (isWin ? 'CLUTCH' : 'DEFEAT') : 'STABLE',
+            snapEvent: isSnap ? match.snapped : null,
+            playerCards: [{ name: KNOWN_DECK_CARDS.length > 0 && t === totalTurns ? KNOWN_DECK_CARDS[0] : youCard, abbr: youCard.slice(0, 3).toUpperCase() }],
+            opponentCards: [{ name: oppCard, abbr: oppCard.slice(0, 3).toUpperCase() }],
+            isFinalTurn: isFinal,
+            scores: {
+              loc1: [baseScoreYou,        Math.max(0, baseScoreOpp - 2)],
+              loc2: [baseScoreYou - 1,    baseScoreOpp],
+              loc3: [Math.max(0, baseScoreYou - 4), baseScoreOpp + 2],
+            },
+            finalBoard: isFinal ? {
+              l1: { you: 24, opp: isWin ? 10 : 28, win: isWin },
+              l2: { you: 18, opp: isWin ? 12 : 24, win: isWin },
+              l3: { you: 30, opp: isWin ? 40 : 18, win: !isWin },
+            } : null,
+          });
+        }
+        return turns;
+      }, [match]);
+
+      // ── Status badge helper ─────────────────────────────────────────────────
+      const statusBadge = (status, snapEvent) => {
+        if (status === 'OPP_SNAP' || (snapEvent === 'OPPONENT')) {
+          return { label: 'Opponent Snapped', bg: 'rgba(239,68,68,0.20)', color: '#f87171', border: 'rgba(239,68,68,0.40)' };
+        }
+        if (status === 'YOU_SNAP' || (snapEvent === 'PLAYER')) {
+          return { label: 'You Snapped', bg: 'rgba(173,43,238,0.20)', color: '#c75fff', border: 'rgba(173,43,238,0.40)' };
+        }
+        if (status === 'CLUTCH') {
+          return { label: 'Clutch Win', bg: 'rgba(173,43,238,0.30)', color: '#ad2bee', border: 'rgba(173,43,238,0.50)' };
+        }
+        if (status === 'DEFEAT') {
+          return { label: 'GG', bg: 'rgba(239,68,68,0.10)', color: '#f87171', border: 'rgba(239,68,68,0.20)' };
+        }
+        return { label: 'Stable', bg: 'rgba(11,218,118,0.15)', color: '#0bda76', border: 'rgba(11,218,118,0.30)' };
+      };
+
+      // ── Card color abbreviation (same rainbow as Stitch mockup) ─────────────
+      const ABBR_COLORS = ['#4f46e5', '#f97316', '#16a34a', '#ef4444', '#3b82f6', '#8b5cf6'];
+      const abbColor = (idx) => ABBR_COLORS[idx % ABBR_COLORS.length];
+
+      // ── Key decision analysis (stubbed — see TODO above) ───────────────────
+      const keyDecisions = useMemo(() => {
+        const decisions = [];
+        if (match.snapped === 'PLAYER' || match.snapped === 'BOTH') {
+          decisions.push({
+            icon: 'filter_vintage',
+            iconColor: '#ad2bee',
+            title: 'You Snapped',
+            body: `You chose to double the stakes. ${isWin ? 'The snap paid off — you won the cubes.' : 'The snap backfired. Consider retreating sooner when behind on 2+ locations.'}`,
+            grade: isWin ? 'GOOD' : 'RISKY',
+          });
+        }
+        if (match.snapped === 'OPPONENT' || match.snapped === 'BOTH') {
+          decisions.push({
+            icon: 'filter_vintage',
+            iconColor: '#ef4444',
+            title: 'Opponent Snapped',
+            body: `Your opponent doubled the stakes. ${isWin ? 'You correctly called their bluff and stayed in.' : 'You faced a tough spot — retreating for 2 was an option.'}`,
+            grade: isWin ? 'GOOD' : 'INFO',
+          });
+        }
+        decisions.push({
+          icon: 'flag',
+          iconColor: '#fbbf24',
+          title: `Turn ${placeholderTurns.length} — Final Play`,
+          body: isWin
+            ? `Your final placement secured 2 of 3 locations. ${match.deck ? `Playing the ${match.deck} archetype correctly leverages late-game burst power.` : 'Solid endgame execution.'}`
+            : `You lost 2 of 3 locations on the final turn. Review whether retreating earlier for 2 cubes was the better line.`,
+          grade: isWin ? 'GOOD' : 'REVIEW',
+        });
+        return decisions;
+      }, [match, placeholderTurns, isWin]);
+
+      const gradeStyle = (grade) => {
+        if (grade === 'GOOD')   return { color: '#0bda76', bg: 'rgba(11,218,118,0.15)' };
+        if (grade === 'RISKY')  return { color: '#fb923c', bg: 'rgba(251,146,60,0.15)' };
+        if (grade === 'REVIEW') return { color: '#f87171', bg: 'rgba(239,68,68,0.15)' };
+        return { color: '#b792c9', bg: 'rgba(183,146,201,0.10)' };
+      };
+
+      return (
+        /* Full-screen overlay — sits on top of MatchHistory, same layer as CardDetail */
+        <div
+          className="fixed inset-0 z-50 overflow-y-auto"
+          style={{ background: '#1c1022' }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Match Turn Analysis"
+        >
+          {/* ── Top App Bar ─────────────────────────────────────────────────── */}
+          <div
+            className="sticky top-0 z-10 flex items-center justify-between px-4 py-3"
+            style={{
+              background: 'rgba(28,16,34,0.92)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              borderBottom: '1px solid rgba(173,43,238,0.15)',
+            }}
+          >
+            {/* Back button */}
+            <button
+              onClick={onBack}
+              className="flex items-center justify-center rounded-full text-[#b792c9] hover:text-white hover:bg-white/10 transition-colors"
+              style={{ width: 44, height: 44 }}
+              aria-label="Back to Match History"
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">arrow_back_ios_new</span>
+            </button>
+
+            {/* Title */}
+            <div className="flex flex-col items-center">
+              <h2 className="text-white text-lg font-bold leading-tight tracking-tight">Match Analysis</h2>
+              <span className="text-xs font-medium" style={{ color: '#ad2bee' }}>
+                {match.opponent ? `vs. ${match.opponent}` : 'Unknown Opponent'} · {formatDate(match.timestamp)}
+              </span>
+            </div>
+
+            {/* Share placeholder */}
+            <button
+              className="flex items-center justify-center rounded-full text-[#b792c9] hover:text-white hover:bg-white/10 transition-colors"
+              style={{ width: 44, height: 44 }}
+              aria-label="Share match"
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">share</span>
+            </button>
+          </div>
+
+          {/* ── Score Summary Cards ─────────────────────────────────────────── */}
+          <div className="flex flex-wrap gap-3 p-4">
+            {/* Result */}
+            <div
+              className="flex min-w-[110px] flex-1 flex-col gap-1 rounded-xl p-4"
+              style={{ background: '#3c2348', border: '1px solid rgba(173,43,238,0.20)' }}
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: '#ad2bee' }}>Result</p>
+              <p className={`text-2xl font-bold ${isWin ? 'text-[#0bda76]' : 'text-red-400'}`}>
+                {isWin ? 'Victory' : 'Defeat'}
+              </p>
+            </div>
+
+            {/* Cubes */}
+            <div
+              className="flex min-w-[110px] flex-1 flex-col gap-1 rounded-xl p-4"
+              style={{ background: '#3c2348', border: '1px solid rgba(173,43,238,0.20)' }}
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: '#ad2bee' }}>Cubes</p>
+              <div className="flex items-center gap-2">
+                <p className={`text-2xl font-bold ${isWin ? 'text-[#0bda76]' : 'text-red-400'}`}>
+                  {isWin ? '+' : '-'}{cubes}
+                </p>
+                <span className="material-symbols-outlined text-blue-400 text-base" aria-hidden="true">filter_vintage</span>
+              </div>
+            </div>
+
+            {/* Snap status */}
+            <div
+              className="flex min-w-[110px] flex-1 flex-col gap-1 rounded-xl p-4"
+              style={{ background: '#3c2348', border: '1px solid rgba(173,43,238,0.20)' }}
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: '#ad2bee' }}>Snap</p>
+              <p className="text-white text-lg font-bold leading-tight">
+                {snapLabel(match.snapped) || 'No Snap'}
+              </p>
+            </div>
+          </div>
+
+          {/* ── Winning / Key Play Banner ───────────────────────────────────── */}
+          <div className="px-4 pb-2">
+            <div
+              className="rounded-xl p-4"
+              style={{
+                background: isWin
+                  ? 'linear-gradient(135deg, rgba(173,43,238,0.25) 0%, rgba(60,35,72,0.60) 100%)'
+                  : 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(60,35,72,0.60) 100%)',
+                border: `1px solid ${isWin ? 'rgba(173,43,238,0.35)' : 'rgba(239,68,68,0.25)'}`,
+              }}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <span className="material-symbols-outlined text-yellow-400 text-lg" aria-hidden="true">auto_awesome</span>
+                <h3 className="text-white font-bold text-sm">{isWin ? 'Winning Play' : 'Turning Point'}</h3>
+              </div>
+              <p className="text-sm leading-relaxed" style={{ color: '#d1c4e9' }}>
+                {isWin
+                  ? `Your final turn sealed 2 of 3 locations${match.deck ? ` using the ${match.deck} gameplan` : ''}. The cube gain of +${cubes} reflects clean execution.`
+                  : `You were outpowered this match, losing ${cubes} cubes. Review Turn ${Math.max(1, placeholderTurns.length - 2)} for an earlier retreat line.`}
+              </p>
+              {/* TODO: Replace with AI-generated key play from match.turns data when available */}
+            </div>
+          </div>
+
+          {/* ── Turn-by-Turn Breakdown ──────────────────────────────────────── */}
+          <div className="flex items-center justify-between px-4 pt-4 pb-2">
+            <h3 className="text-white text-lg font-bold leading-tight tracking-tight">Turn-by-Turn</h3>
+            <span
+              className="text-xs px-2 py-1 rounded-full"
+              style={{ background: 'rgba(255,255,255,0.05)', color: '#b792c9' }}
+            >
+              {placeholderTurns.length} turns
+            </span>
+          </div>
+
+          <div className="space-y-3 px-4 pb-2">
+            {placeholderTurns.map((t) => {
+              const badge = statusBadge(t.status, t.snapEvent);
+              const isSnapTurn = t.snapEvent !== null;
+              const cardBg = t.isFinalTurn ? '#3c2348' : '#2b1933';
+              const cardBorder = t.isFinalTurn
+                ? '1px solid rgba(173,43,238,0.40)'
+                : isSnapTurn
+                  ? '1px solid rgba(239,68,68,0.30)'
+                  : '1px solid rgba(255,255,255,0.05)';
+              const borderLeft = isSnapTurn && !t.isFinalTurn ? '4px solid #ef4444' : undefined;
+
+              return (
+                <div
+                  key={t.turn}
+                  className="flex flex-col gap-3 rounded-xl p-4 relative overflow-hidden"
+                  style={{ background: cardBg, border: cardBorder, borderLeft }}
+                >
+                  {/* Snap pulse icon in corner */}
+                  {isSnapTurn && !t.isFinalTurn && (
+                    <div className="absolute top-3 right-3">
+                      <span
+                        className="material-symbols-outlined text-red-400 animate-pulse"
+                        style={{ fontSize: 20 }}
+                        aria-hidden="true"
+                      >filter_vintage</span>
+                    </div>
+                  )}
+
+                  {/* Turn header row */}
+                  <div className="flex justify-between items-start">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-xs font-bold uppercase" style={{ color: '#ad2bee' }}>Turn {t.turn}</span>
+                      <p className="text-white font-bold text-sm leading-tight">{t.label}</p>
+                    </div>
+                    <span
+                      className="text-[10px] font-bold uppercase tracking-tight px-2 py-0.5 rounded"
+                      style={{ background: badge.bg, color: badge.color, border: `1px solid ${badge.border}` }}
+                    >
+                      {badge.label}
+                    </span>
+                  </div>
+
+                  {/* Cards played grid */}
+                  {!t.isFinalTurn ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Player column */}
+                      <div className="flex flex-col gap-1">
+                        <p className="text-[10px] uppercase" style={{ color: '#b792c9' }}>You</p>
+                        {t.playerCards.map((c, i) => (
+                          <div
+                            key={c.name}
+                            className="flex items-center gap-2 p-2 rounded-lg"
+                            style={{ background: 'rgba(255,255,255,0.05)' }}
+                          >
+                            <div
+                              className="shrink-0 flex items-center justify-center text-[9px] font-bold text-white rounded"
+                              style={{ width: 32, height: 40, background: abbColor(i) }}
+                              aria-hidden="true"
+                            >{c.abbr}</div>
+                            <span className="text-sm font-medium text-white leading-tight truncate">{c.name}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Opponent column */}
+                      <div className="flex flex-col gap-1">
+                        <p className="text-[10px] uppercase" style={{ color: '#b792c9' }}>Opponent</p>
+                        {t.opponentCards.map((c, i) => (
+                          <div
+                            key={c.name}
+                            className="flex items-center gap-2 p-2 rounded-lg"
+                            style={{ background: 'rgba(255,255,255,0.05)' }}
+                          >
+                            <div
+                              className="shrink-0 flex items-center justify-center text-[9px] font-bold text-white rounded"
+                              style={{ width: 32, height: 40, background: '#4b5563' }}
+                              aria-hidden="true"
+                            >{c.abbr}</div>
+                            <span className="text-sm font-medium text-white leading-tight truncate">{c.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    /* Final turn — show all your moves + opponent side by side */
+                    <div className="flex flex-col gap-2">
+                      <p className="text-[10px] uppercase" style={{ color: '#b792c9' }}>Your Final Moves</p>
+                      <div className="flex gap-2">
+                        {t.playerCards.map((c, i) => (
+                          <div
+                            key={c.name}
+                            className="flex-1 flex items-center gap-2 p-2 rounded-lg"
+                            style={{ background: 'rgba(173,43,238,0.20)', border: '1px solid rgba(173,43,238,0.30)' }}
+                          >
+                            <div
+                              className="shrink-0 flex items-center justify-center text-[9px] font-bold text-white rounded"
+                              style={{ width: 32, height: 40, background: abbColor(i) }}
+                              aria-hidden="true"
+                            >{c.abbr}</div>
+                            <span className="text-sm font-bold text-white leading-tight truncate">{c.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Location score row */}
+                  {!t.isFinalTurn ? (
+                    <div
+                      className="pt-3 mt-1"
+                      style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
+                    >
+                      <div className="flex justify-around text-center">
+                        {[
+                          { key: 'loc1', label: 'Loc 1', scores: t.scores.loc1 },
+                          { key: 'loc2', label: 'Loc 2', scores: t.scores.loc2 },
+                          { key: 'loc3', label: 'Loc 3', scores: t.scores.loc3 },
+                        ].map(({ key, label, scores: [you, opp] }) => {
+                          const youWin = you > opp;
+                          const tied   = you === opp;
+                          return (
+                            <div key={key}>
+                              <p className="text-[10px]" style={{ color: '#6b7280' }}>{label}</p>
+                              <p
+                                className="text-sm font-bold"
+                                style={{ color: tied ? '#9ca3af' : youWin ? '#0bda76' : '#f87171' }}
+                              >
+                                {you} : {opp}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : t.finalBoard && (
+                    /* Final board state — coloured lane boxes */
+                    <div
+                      className="p-3 rounded-lg mt-1"
+                      style={{ background: 'rgba(0,0,0,0.25)' }}
+                    >
+                      <p className="text-[10px] text-center font-bold uppercase mb-2" style={{ color: '#ad2bee' }}>Final Board State</p>
+                      <div className="flex justify-around items-center text-center">
+                        {[
+                          { label: 'L1', data: t.finalBoard.l1 },
+                          { label: 'L2', data: t.finalBoard.l2 },
+                          { label: 'L3', data: t.finalBoard.l3 },
+                        ].map(({ label, data }, idx, arr) => {
+                          const youWin = data.you > data.opp;
+                          return (
+                            <React.Fragment key={label}>
+                              <div
+                                className="px-3 py-2 rounded"
+                                style={{
+                                  background: youWin ? 'rgba(11,218,118,0.20)' : 'rgba(239,68,68,0.20)',
+                                  border: `1px solid ${youWin ? 'rgba(11,218,118,0.30)' : 'rgba(239,68,68,0.30)'}`,
+                                }}
+                              >
+                                <p className="text-[8px]" style={{ color: '#6b7280' }}>{label}</p>
+                                <p className="text-xl font-black text-white">{data.you}</p>
+                                <p className="text-[9px]" style={{ color: '#b792c9' }}>vs {data.opp}</p>
+                              </div>
+                              {idx < arr.length - 1 && (
+                                <div className="w-px h-8" style={{ background: 'rgba(255,255,255,0.10)' }} />
+                              )}
+                            </React.Fragment>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* ── Key Decisions ───────────────────────────────────────────────── */}
+          <div className="px-4 pt-4 pb-2">
+            <h3 className="text-white text-lg font-bold leading-tight tracking-tight mb-3">Key Decisions</h3>
+            <div className="space-y-3">
+              {keyDecisions.map((kd, i) => {
+                const gs = gradeStyle(kd.grade);
+                return (
+                  <div
+                    key={i}
+                    className="flex gap-3 p-4 rounded-xl"
+                    style={{ background: '#2b1933', border: '1px solid rgba(255,255,255,0.05)' }}
+                  >
+                    {/* Icon */}
+                    <div
+                      className="shrink-0 flex items-center justify-center rounded-full size-10"
+                      style={{ background: `${kd.iconColor}18` }}
+                    >
+                      <span className="material-symbols-outlined text-base" style={{ color: kd.iconColor }} aria-hidden="true">{kd.icon}</span>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <p className="text-white text-sm font-bold leading-tight">{kd.title}</p>
+                        <span
+                          className="shrink-0 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded"
+                          style={{ background: gs.bg, color: gs.color }}
+                        >
+                          {kd.grade}
+                        </span>
+                      </div>
+                      <p className="text-xs leading-relaxed" style={{ color: '#b792c9' }}>{kd.body}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ── AI Verdict / What to Learn ─────────────────────────────────── */}
+          <div className="px-4 pt-4 pb-6">
+            <div
+              className="rounded-xl p-4"
+              style={{
+                background: isWin ? 'rgba(11,218,118,0.06)' : 'rgba(239,68,68,0.06)',
+                border: `1px solid ${isWin ? 'rgba(11,218,118,0.20)' : 'rgba(239,68,68,0.20)'}`,
+              }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <span
+                  className="material-symbols-outlined text-base"
+                  style={{ color: isWin ? '#0bda76' : '#f87171' }}
+                  aria-hidden="true"
+                >
+                  {isWin ? 'school' : 'error'}
+                </span>
+                <h3 className="text-white font-bold text-sm">
+                  {isWin ? 'What You Did Well' : 'Missed Opportunity'}
+                </h3>
+              </div>
+
+              {isWin ? (
+                <p className="text-xs leading-relaxed" style={{ color: '#b792c9' }}>
+                  {match.snapped === 'PLAYER' || match.snapped === 'BOTH'
+                    ? 'Snapping at the right moment multiplied your cube gain. Keep reading your opponent\'s hesitation before committing.'
+                    : `Solid positional play — you secured the win without needing to snap${match.deck ? ` while running the ${match.deck} archetype` : ''}. Consistent lane control is the mark of a strong player.`}
+                </p>
+              ) : (
+                <p className="text-xs leading-relaxed" style={{ color: '#b792c9' }}>
+                  {`On Turn ${Math.max(1, placeholderTurns.length - 2)}, evaluating an early retreat could have saved ${Math.max(1, cubes - 1)} cubes. When you are behind on 2 of 3 locations by mid-game, retreating for 2 is almost always better than calling a snap.`}
+                </p>
+              )}
+
+              {/* TODO: Replace static text with AI-generated verdict.
+                  Wire to: askSnapapoulous(`Analyze this match: result=${match.result}, cubes=${match.cubes},
+                    snap=${match.snapped}, deck=${match.deck}, notes=${match.notes}`, context)
+                  Display streaming response here. Add a "Get AI Analysis" button to trigger on demand. */}
+              <button
+                className="mt-3 flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-lg transition-opacity hover:opacity-80"
+                style={{ background: 'rgba(173,43,238,0.20)', color: '#c75fff', border: '1px solid rgba(173,43,238,0.30)' }}
+                disabled
+                title="Wire to AI Advisor — see TODO in source"
+              >
+                <span className="material-symbols-outlined text-sm" aria-hidden="true">smart_toy</span>
+                Get AI Analysis
+                <span className="text-[9px] font-normal opacity-60 ml-1">(coming soon)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Spacer so content clears bottom of screen */}
+          <div className="h-10" />
+        </div>
+      );
+    };
+    // ==================== END MATCH TURN ANALYSIS ====================
 
     // Card Substitution Utilities
     const findSubstitutes = (cardName, ownedCards, allCards) => {
@@ -4783,6 +5428,229 @@ RESPONSE GUIDELINES:
       );
     };
 
+    // ==================== CARD DETAIL COMPONENT (Stitch 06) ====================
+    // Full-screen overlay shown when any card is tapped in Collection or CardDatabase.
+    // Primary reference: 06_card_details_strategy_b.html
+    const CardDetail = ({ card, isOwned, onClose, onToggleOwned, editMode = false }) => {
+      const artUrl = getCardArtUrl(card);
+
+      // Derive ability keyword badge
+      const abilityType = React.useMemo(() => {
+        if (!card.ability) return null;
+        if (card.ability.startsWith('Ongoing')) return { label: 'Ongoing', cls: 'bg-blue-500/20 text-blue-400' };
+        if (card.ability.startsWith('On Reveal')) return { label: 'On Reveal', cls: 'bg-yellow-500/20 text-yellow-400' };
+        return null;
+      }, [card.ability]);
+
+      // Synergies derived from card data (static heuristic — same-series cards make good partners)
+      const synergies = React.useMemo(() => {
+        return uniqueCards
+          .filter(c => c.name !== card.name && c.series === card.series)
+          .slice(0, 4);
+      }, [card]);
+
+      // Counters: cards whose ability text references destruction, removal, or power reduction
+      const counters = React.useMemo(() => {
+        const keywords = ['destroy', 'remove', '-', 'discard', 'reduce'];
+        return uniqueCards
+          .filter(c => c.name !== card.name && c.ability &&
+            keywords.some(kw => c.ability.toLowerCase().includes(kw)))
+          .slice(0, 4);
+      }, [card]);
+
+      // Strategy tips from ability text (fallback — real tips would come from AI)
+      const strategyText = React.useMemo(() => {
+        const a = card.ability || '';
+        if (a.startsWith('Ongoing')) return `Play ${card.name} early to maximize its Ongoing effect. Protect it with Armor or Cosmo to prevent disruption.`;
+        if (a.startsWith('On Reveal')) return `Time ${card.name} carefully — On Reveal fires the moment it's played. Use Ghost to control exactly when it triggers.`;
+        if (a.includes('destroy')) return `${card.name} pairs well with Destroy synergies. Carnage and Deathlok can chain with its destruction effect.`;
+        if (a.includes('move')) return `${card.name} benefits from movement synergies. Iron Fist and Cloak can reposition it to the most advantageous lane.`;
+        return `${card.name} is a solid pick in its archetype. Consider pairing it with cards that amplify ${getSeriesDisplayName(card.series)} strategies.`;
+      }, [card]);
+
+      return (
+        <div
+          className="fixed inset-0 z-[60] flex flex-col bg-[#0f0814]/95 backdrop-blur-xl overflow-y-auto"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Card details for ${card.name}`}
+        >
+          {/* Blurred art background */}
+          {artUrl && (
+            <div
+              className="fixed inset-0 z-0 opacity-15 blur-3xl pointer-events-none"
+              style={{ backgroundImage: `url(${artUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+              aria-hidden="true"
+            />
+          )}
+
+          {/* Top AppBar */}
+          <header className="sticky top-0 z-10 flex items-center bg-[#0f0814]/80 backdrop-blur-md p-4 justify-between border-b border-white/10">
+            <button
+              onClick={onClose}
+              className="text-[#ad2bee] flex size-10 shrink-0 items-center justify-center cursor-pointer rounded-full hover:bg-[#ad2bee]/10 transition-colors"
+              aria-label="Go back"
+            >
+              <span className="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
+            </button>
+            <h2 className="text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">Card Details</h2>
+            <div className="flex w-10 items-center justify-end">
+              <div className={`flex items-center justify-center rounded-full size-10 ${isOwned ? 'bg-[#ad2bee]/30 text-[#ad2bee]' : 'bg-white/10 text-white/40'}`}>
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: isOwned ? "'FILL' 1" : "'FILL' 0" }}>
+                  {isOwned ? 'check_circle' : 'radio_button_unchecked'}
+                </span>
+              </div>
+            </div>
+          </header>
+
+          <main className="relative z-10 flex flex-col pb-10">
+            {/* Hero Card Art */}
+            <div className="px-4 py-6">
+              <div className="relative w-full aspect-[3/4] max-w-xs mx-auto bg-[#2b1933] rounded-xl overflow-hidden shadow-2xl border-4 border-[#ad2bee]/50">
+                {artUrl ? (
+                  <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${artUrl})` }} />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-[#b792c9]">
+                    <span className="material-symbols-outlined text-6xl">style</span>
+                  </div>
+                )}
+                {/* Energy badge */}
+                <div className="absolute top-4 left-4 size-14 bg-blue-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                  <span className="text-2xl font-black text-white">{card.cost}</span>
+                </div>
+                {/* Power badge */}
+                <div className="absolute bottom-4 right-4 size-14 bg-orange-500 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                  <span className="text-2xl font-black text-white">{card.power}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card Name & Series Row */}
+            <div className="px-6 mb-4">
+              <h1 className="text-4xl font-black tracking-tighter text-white mb-2 uppercase">{card.name}</h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                {abilityType && (
+                  <span className={`stitch-badge ${abilityType.cls}`}>{abilityType.label}</span>
+                )}
+                <span className={`stitch-badge ${getSeriesColorClass(card.series)}`}>
+                  {getSeriesDisplayName(card.series)}
+                </span>
+                <span className="text-[#b792c9] text-sm font-medium">
+                  {card.cost} Energy • {card.power} Power
+                </span>
+              </div>
+            </div>
+
+            {/* Ability Text */}
+            <section className="px-6 mb-6">
+              <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                <p className="text-slate-300 leading-relaxed text-sm">{card.ability || 'No ability text available.'}</p>
+              </div>
+            </section>
+
+            {/* Strategy Tips */}
+            <section className="px-6 mb-8">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="material-symbols-outlined text-[#ad2bee]">lightbulb</span>
+                <h3 className="text-xl font-bold text-white">Strategy Tips</h3>
+              </div>
+              <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                <p className="text-slate-300 leading-relaxed text-sm">{strategyText}</p>
+              </div>
+            </section>
+
+            {/* Best Synergy */}
+            {synergies.length > 0 && (
+              <section className="px-6 mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="material-symbols-outlined text-[#ad2bee]">dynamic_feed</span>
+                  <h3 className="text-xl font-bold text-white">Best Synergy</h3>
+                </div>
+                <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
+                  {synergies.map(syn => {
+                    const synArt = getCardArtUrl(syn);
+                    return (
+                      <div key={syn.name} className="flex-shrink-0 w-24 flex flex-col items-center">
+                        <div className="w-20 h-28 bg-[#2b1933] rounded-lg mb-2 shadow-lg border border-white/10 overflow-hidden">
+                          {synArt ? (
+                            <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${synArt})` }} />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[#b792c9]">
+                              <span className="material-symbols-outlined">style</span>
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-xs font-bold text-center text-white truncate w-full text-center">{syn.name}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* Countered By */}
+            {counters.length > 0 && (
+              <section className="px-6 mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="material-symbols-outlined text-red-500">warning</span>
+                  <h3 className="text-xl font-bold text-white">Countered By</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {counters.slice(0, 4).map(ctr => {
+                    const ctrArt = getCardArtUrl(ctr);
+                    return (
+                      <div key={ctr.name} className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl flex items-center gap-3">
+                        <div className="size-12 bg-[#2b1933] rounded-md shrink-0 overflow-hidden">
+                          {ctrArt ? (
+                            <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${ctrArt})` }} />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[#b792c9]">
+                              <span className="material-symbols-outlined text-sm">style</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-bold text-sm text-white truncate">{ctr.name}</span>
+                          <span className="text-[10px] text-red-400 uppercase font-black">Counter</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* Collection Action */}
+            <div className="px-6">
+              {isOwned ? (
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-center gap-2 text-[#0bda76] py-3">
+                    <span className="material-symbols-outlined" style={{ fontSize: '20px', fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                    <span className="font-bold tracking-wide">In Your Collection</span>
+                  </div>
+                  {editMode && (
+                    <button
+                      onClick={onToggleOwned}
+                      className="w-full py-3 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white transition-all"
+                    >
+                      Remove from Collection
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={onToggleOwned}
+                  className="w-full py-3 rounded-xl font-bold bg-[#0bda76] hover:opacity-90 text-[#0f0814] transition-all"
+                >
+                  Add to Collection
+                </button>
+              )}
+            </div>
+          </main>
+        </div>
+      );
+    };
+
     // Collection Component - Player-Centric: Shows YOUR cards, YOUR stats
     const Collection = ({ collection, setCollection, cardDataVersion }) => {
       const [search, setSearch] = useState('');
@@ -4886,143 +5754,218 @@ RESPONSE GUIDELINES:
         return allPools.filter(pool => (poolStats[pool]?.owned || 0) > 0);
       }, [viewMode, poolStats]);
 
+      // Read Collection Level from snap_collection_enhanced (set by file-sync import).
+      // TODO: expose collectionScore as a prop from App if live updates are needed;
+      //       for now a one-time read on mount is sufficient since import triggers re-render.
+      const collectionEnhanced = useMemo(() => {
+        try { return JSON.parse(localStorage.getItem('snap_collection_enhanced') || 'null'); } catch { return null; }
+      }, [collection.lastUpdated]);
+
+      // Derived stats for Stitch stat cards
+      const totalCards = uniqueCards.length;
+      const ownedCount = ownedCards.length;
+      const completionPct = totalCards > 0 ? Math.round((ownedCount / totalCards) * 100) : 0;
+      const collectionLevel = collectionEnhanced?.collectionScore
+        ? collectionEnhanced.collectionScore.toLocaleString()
+        : ownedCount.toString(); // fallback: owned card count
+
+      // Pool 3 stats for the Stitch progress bar
+      const pool3Stats = poolStats['Pool 3'] || { owned: 0, total: 0, percent: 0 };
+
       return (
-        <div className="px-4 pb-20">
-          <Header title="MY COLLECTION" />
+        <div className="pb-24">
 
-          {/* Pool Completion Bars - YOUR progress per pool */}
-          <div className="stitch-card p-5 mb-4">
-            <div className="stitch-section-header">
-              <span className="material-symbols-outlined" aria-hidden="true">pie_chart</span>
-              Pool Completion
+          {/* ── Stitch: Stats Overview row ── */}
+          <div className="flex flex-wrap gap-4 px-4 pt-4 pb-2">
+            {/* Collection Level card */}
+            <div className="flex min-w-[140px] flex-1 flex-col gap-2 rounded-xl p-5"
+                 style={{ background: 'rgba(173,43,238,0.10)', border: '1px solid rgba(173,43,238,0.20)' }}>
+              <p className="text-xs uppercase tracking-widest font-bold" style={{ color: '#b792c9' }}>
+                {/* TODO: label changes to "Collection Score" once snap_collection_enhanced is populated via file-sync */}
+                Collection Level
+              </p>
+              <p className="text-white text-3xl font-bold leading-tight tracking-tight">{collectionLevel}</p>
             </div>
-            <div className="space-y-3">
-              {Object.entries(poolStats).map(([poolName, stats]) => {
-                const colorClasses = {
-                  'series-1': 'bg-series-1',
-                  'series-4': 'bg-series-4',
-                  'series-6': 'bg-series-6',
-                  'series-7': 'bg-series-7',
-                  'series-8': 'bg-series-8',
-                  'series-9': 'bg-series-9'
-                };
-                const bgClass = colorClasses[stats.color] || 'bg-series-6';
-                return (
-                  <div key={poolName} className="flex items-center gap-2">
-                    <span className={`w-16 h-6 rounded-full text-xs font-bold flex items-center justify-center text-white ${bgClass}`}>{poolName === 'Spotlight' ? '⭐' : poolName.replace('Pool ', 'P')}</span>
-                    <div className="flex-1 stitch-progress">
-                      <div className={`stitch-progress-fill ${bgClass}`} style={{ width: `${stats.percent}%` }} />
-                    </div>
-                    <span className="text-stitch-muted text-xs w-20 text-right">{stats.owned}/{stats.total} ({stats.percent}%)</span>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="text-center text-mcu-gold font-bold mt-3 text-sm">
-              {ownedCards.length} cards owned
+            {/* Completion % card */}
+            <div className="flex min-w-[140px] flex-1 flex-col gap-2 rounded-xl p-5"
+                 style={{ background: 'rgba(173,43,238,0.10)', border: '1px solid rgba(173,43,238,0.20)' }}>
+              <p className="text-xs uppercase tracking-widest font-bold" style={{ color: '#b792c9' }}>Completion</p>
+              <p className="text-white text-3xl font-bold leading-tight tracking-tight">{completionPct}%</p>
             </div>
           </div>
 
-          {/* View Mode Toggle & Filters */}
-          <div className="mb-4">
-            {/* View Mode Pills */}
-            <div className="flex gap-2 mb-3">
-              <button
-                onClick={() => { setViewMode('owned'); setEditMode(false); }}
-                className={`stitch-pill flex-1 justify-center ${viewMode === 'owned' ? 'active' : ''}`}>
-                My Cards ({ownedCards.length})
-              </button>
-              <button
-                onClick={() => { setViewMode('browse'); setEditMode(false); }}
-                className={`stitch-pill flex-1 justify-center ${viewMode === 'browse' ? 'active' : ''}`}>
-                + Add Cards
-              </button>
+          {/* ── Stitch: Pool 3 Progress bar ── */}
+          <div className="flex flex-col gap-3 mx-4 mt-2 mb-4 rounded-xl p-4" style={{ background: '#2a1833' }}>
+            <div className="flex gap-6 justify-between">
+              <p className="text-white text-sm font-medium leading-normal">Pool 3 Progress</p>
+              <p className="text-sm font-bold leading-normal" style={{ color: '#ad2bee' }}>
+                {pool3Stats.owned}/{pool3Stats.total}
+              </p>
             </div>
+            <div className="rounded-full h-2.5 w-full" style={{ background: '#553267' }}>
+              <div className="h-2.5 rounded-full" style={{ width: `${pool3Stats.percent}%`, background: '#ad2bee' }} />
+            </div>
+            {/* TODO: "credits to next Reserve" requires CurrencyState data not currently imported */}
+            <p className="text-xs font-normal leading-normal italic" style={{ color: '#b792c9' }}>
+              {pool3Stats.percent < 100
+                ? `${pool3Stats.total - pool3Stats.owned} cards remaining in Pool 3`
+                : 'Pool 3 complete!'}
+            </p>
+          </div>
 
-            <input type="text" placeholder={viewMode === 'owned' ? "Search your cards..." : "Search cards to add..."} value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              aria-label="Search cards"
-              className="w-full bg-stitch-accent text-white rounded-xl px-4 py-2.5 mb-3 border border-stitch-border focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple/20 placeholder-stitch-muted" />
+          {/* ── Stitch: Search input ── */}
+          <div className="px-4 pb-3">
+            <label className="flex flex-col w-full h-12">
+              <div className="flex w-full flex-1 items-stretch rounded-xl h-full">
+                <div className="flex items-center justify-center pl-4 rounded-l-xl border-r-0"
+                     style={{ background: '#3c2348', color: '#b792c9' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">search</span>
+                </div>
+                <input
+                  type="text"
+                  placeholder={viewMode === 'owned' ? 'Search cards by name or ability' : 'Search cards to add...'}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  aria-label="Search cards"
+                  className="flex w-full flex-1 rounded-xl rounded-l-none border-none focus:outline-none focus:ring-0 text-white text-base font-normal leading-normal pl-2 pr-4"
+                  style={{ background: '#3c2348', color: '#ffffff' }}
+                />
+              </div>
+            </label>
+          </div>
 
-            <div className="flex gap-2">
-              <select value={seriesFilter} onChange={(e) => setSeriesFilter(e.target.value)}
-                className="flex-1 bg-stitch-accent text-white rounded-xl px-3 py-2.5 border border-stitch-border focus:border-cosmic-purple-text focus:outline-none">
-                <option value="all">{viewMode === 'owned' ? 'All My Pools' : 'All Pools'}</option>
-                {availablePools.map(pool => (
-                  <option key={pool} value={pool}>{pool} {viewMode === 'owned' ? `(${poolStats[pool]?.owned || 0})` : ''}</option>
-                ))}
-              </select>
-              {viewMode === 'owned' && (
-                <button onClick={() => setEditMode(!editMode)}
-                  className={`text-white text-xs px-3 py-2.5 rounded-xl font-comic tracking-wide ${editMode ? 'bg-mcu-gold text-black' : 'bg-cosmic-purple hover:opacity-80'}`}>
-                  {editMode ? 'Done' : 'Edit'}
-                </button>
+          {/* ── Stitch: Filter pills row ── */}
+          <div className="flex gap-3 px-4 pb-4 overflow-x-auto no-scrollbar">
+            {/* View mode: All Cards / Owned / Missing (browse) */}
+            <button
+              onClick={() => { setViewMode('owned'); setSeriesFilter('all'); setEditMode(false); }}
+              className="flex h-9 shrink-0 items-center justify-center gap-x-1 rounded-full px-4 text-sm font-medium"
+              style={{ background: viewMode === 'owned' && seriesFilter === 'all' ? '#ad2bee' : '#3c2348', color: '#ffffff' }}
+              aria-pressed={viewMode === 'owned' && seriesFilter === 'all'}>
+              All Cards
+              {viewMode === 'owned' && seriesFilter === 'all' && (
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>expand_more</span>
               )}
-            </div>
+            </button>
+            <button
+              onClick={() => { setViewMode('owned'); setSeriesFilter('all'); setEditMode(false); }}
+              className="flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium"
+              style={{ background: viewMode === 'owned' ? '#ad2bee' : '#3c2348', color: '#ffffff' }}
+              aria-pressed={viewMode === 'owned'}>
+              Owned ({ownedCount})
+            </button>
+            <button
+              onClick={() => { setViewMode('browse'); setSeriesFilter('all'); setEditMode(false); }}
+              className="flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium"
+              style={{ background: viewMode === 'browse' ? '#ad2bee' : '#3c2348', color: '#ffffff' }}
+              aria-pressed={viewMode === 'browse'}>
+              Missing ({totalCards - ownedCount})
+            </button>
+            {/* Pool filter pills */}
+            {availablePools.map(pool => (
+              <button key={pool}
+                onClick={() => setSeriesFilter(seriesFilter === pool ? 'all' : pool)}
+                className="flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium"
+                style={{ background: seriesFilter === pool ? '#ad2bee' : '#3c2348', color: '#ffffff' }}
+                aria-pressed={seriesFilter === pool}>
+                {pool}
+              </button>
+            ))}
           </div>
 
-          {/* Card Grid with Art */}
-          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+          {/* ── Stitch: Section header + Edit Grid toggle ── */}
+          <div className="flex items-center justify-between px-4 py-2">
+            <h3 className="text-white text-lg font-bold">
+              {viewMode === 'owned' ? `My Cards (${filteredCards.length})` : `Add Cards (${filteredCards.length})`}
+            </h3>
+            {viewMode === 'owned' && (
+              <button
+                onClick={() => setEditMode(!editMode)}
+                className="text-sm font-bold"
+                style={{ color: editMode ? '#ffd700' : '#ad2bee' }}>
+                {editMode ? 'Done' : 'Edit Grid'}
+              </button>
+            )}
+          </div>
+
+          {/* ── Stitch: Card grid (3-col, Stitch card cell styling) ── */}
+          <div className="grid grid-cols-3 gap-3 px-4 pb-4">
             {filteredCards.map(card => {
               const isOwned = collection.owned.includes(card.name);
               const artUrl = getCardArtUrl(card);
               return (
-                <div key={card.name} className={`relative aspect-[3/4] rounded-lg overflow-hidden card-frame ${getSeriesBorderClass(card.series)} ${
-                    isOwned ? 'card-frame-owned border-opacity-100' : 'border-opacity-40 opacity-50 grayscale'
-                  }`}>
-                  {/* Card Art Background */}
-                  <div className="absolute inset-0 card-art card-art-fallback" style={{ backgroundImage: `url(${artUrl})` }} />
-                  {/* Gradient overlay for text readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <div key={card.name}
+                     className={`relative group${!isOwned ? ' opacity-50 grayscale' : ''}`}>
+                  {/* Card art image — Stitch uses img; fall back to bg-image div when no src */}
+                  {artUrl ? (
+                    <img
+                      src={artUrl}
+                      alt={card.name}
+                      className={`w-full aspect-[3/4] object-cover rounded-lg border-2 shadow-lg${
+                        isOwned ? ' border-[#ad2bee] shadow-[#ad2bee]/20' : ' border-gray-600'
+                      }`}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className={`w-full aspect-[3/4] rounded-lg border-2 card-art card-art-fallback${
+                      isOwned ? ' border-[#ad2bee]' : ' border-gray-600'
+                    }`}
+                         style={{ backgroundImage: `url(${artUrl})` }} />
+                  )}
 
-                  {/* Cost/Power badges hidden - card art already includes them */}
-
-                  {/* Card name - bottom */}
-                  <div className="absolute bottom-0 left-0 right-0 p-1.5 z-10">
-                    <div className="text-[11px] font-comic text-white truncate drop-shadow-lg tracking-wide">{card.name}</div>
+                  {/* Gradient + name overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent rounded-lg pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 right-0 px-1.5 pb-1.5 z-10 pointer-events-none">
+                    <p className="text-center text-[10px] font-bold text-white drop-shadow-lg truncate">{card.name}</p>
                   </div>
 
-                  {/* Owned checkmark */}
+                  {/* Owned indicator: green check (in browse mode, confirms already owned) */}
                   {isOwned && viewMode === 'browse' && (
-                    <div className="absolute top-1 right-1 w-6 h-6 bg-stitch-green rounded-full flex items-center justify-center z-20">
-                      <span className="text-white text-xs font-bold">✓</span>
+                    <div className="absolute inset-0 bg-black/20 rounded-lg flex items-start justify-end p-1 pointer-events-none">
+                      <span className="material-symbols-outlined bg-black/60 rounded-full text-lg" style={{ color: '#0bda76', fontSize: '20px' }}>check_circle</span>
                     </div>
                   )}
 
-                  {/* Unowned overlay in browse mode */}
+                  {/* Missing card: lock overlay */}
                   {!isOwned && viewMode === 'browse' && (
                     <>
-                      <div className="absolute inset-0 flex items-center justify-center z-10">
-                        <span className="material-symbols-outlined text-white/60 text-3xl" aria-hidden="true">lock</span>
+                      <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                        <span className="material-symbols-outlined text-white/50 text-2xl" aria-hidden="true">lock</span>
                       </div>
-                      <div className="absolute top-1 right-1 w-6 h-6 bg-cosmic-purple rounded-full flex items-center justify-center z-20">
+                      <div className="absolute top-1 right-1 w-6 h-6 rounded-full flex items-center justify-center z-20 pointer-events-none"
+                           style={{ background: '#ad2bee' }}>
                         <span className="text-white text-xs font-bold">+</span>
                       </div>
                     </>
                   )}
 
-                  {/* Click target - opens card info (or removes in edit mode) */}
-                  <button onClick={() => {
-                    if (editMode && viewMode === 'owned') {
-                      toggleCard(card.name);
-                    } else if (viewMode === 'browse' && !isOwned) {
-                      toggleCard(card.name);
-                    } else {
-                      setSelectedCard(card);
-                    }
-                  }} className="absolute inset-0 z-10"
-                    aria-label={`${card.name}, ${card.cost} cost, ${card.power} power${editMode ? ', tap to remove' : ''}`} />
-
                   {/* Edit mode: remove badge */}
                   {editMode && viewMode === 'owned' && (
-                    <div className="absolute top-1 right-1 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center z-20 animate-pulse">
+                    <div className="absolute top-1 right-1 w-6 h-6 bg-red-600 rounded-full flex items-center justify-center z-20 animate-pulse pointer-events-none">
                       <span className="text-white text-xs font-bold">✕</span>
                     </div>
                   )}
+
+                  {/* Click target */}
+                  <button
+                    onClick={() => {
+                      if (editMode && viewMode === 'owned') {
+                        toggleCard(card.name);
+                      } else if (viewMode === 'browse' && !isOwned) {
+                        toggleCard(card.name);
+                      } else {
+                        setSelectedCard(card);
+                      }
+                    }}
+                    className="absolute inset-0 z-10 rounded-lg"
+                    aria-label={`${card.name}, ${card.cost} cost, ${card.power} power${isOwned ? ', owned' : ', missing'}${editMode ? ', tap to remove' : ''}`}
+                  />
                 </div>
               );
             })}
           </div>
+
+          {/* Empty state */}
           {filteredCards.length === 0 && (
             <EmptyState
               icon="collections_bookmark"
@@ -5041,61 +5984,15 @@ RESPONSE GUIDELINES:
             />
           )}
 
-          {/* Card Detail Modal */}
+          {/* Card Detail Overlay — Stitch 06 full-screen panel */}
           {selectedCard && (
-            <div className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4" onClick={() => setSelectedCard(null)}>
-              <div className="stitch-card comic-panel max-w-sm w-full overflow-hidden comic-pop-enter" onClick={e => e.stopPropagation()}>
-                {/* Card Art Header */}
-                <div className="relative aspect-[3/4] max-h-64 overflow-hidden">
-                  <div className="absolute inset-0 card-art" style={{ backgroundImage: `url(${getCardArtUrl(selectedCard)})` }} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-stitch-card via-transparent to-transparent" />
-                  <button onClick={() => setSelectedCard(null)}
-                    className="absolute top-3 right-3 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-black/80 z-10">
-                    <span className="material-symbols-outlined" style={{fontSize: '20px'}}>close</span>
-                  </button>
-                  {/* Cost/Power badges on art */}
-                  <div className="absolute top-3 left-3 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-lg">{selectedCard.cost}</div>
-                  <div className="absolute bottom-3 right-3 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-lg">{selectedCard.power}</div>
-                </div>
-                {/* Card Info */}
-                <div className="p-5 -mt-4 relative z-10">
-                  <h3 className="text-xl font-comic text-white mb-1 tracking-wide">{selectedCard.name}</h3>
-                  <div className="flex gap-2 mb-3">
-                    <span className={`stitch-badge ${getSeriesColorClass(selectedCard.series)}`}>
-                      {getSeriesDisplayName(selectedCard.series)}
-                    </span>
-                    {selectedCard.ability && selectedCard.ability.startsWith('Ongoing') && (
-                      <span className="stitch-badge bg-blue-500/20 text-blue-400">Ongoing</span>
-                    )}
-                    {selectedCard.ability && selectedCard.ability.startsWith('On Reveal') && (
-                      <span className="stitch-badge bg-yellow-500/20 text-yellow-400">On Reveal</span>
-                    )}
-                  </div>
-                  <div className="bg-stitch-accent rounded-xl p-4 mb-4">
-                    <p className="text-gray-300 text-sm leading-relaxed">{selectedCard.ability || 'No ability text available.'}</p>
-                  </div>
-                  {collection.owned.includes(selectedCard.name) ? (
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-2 text-stitch-green mb-2">
-                        <span className="material-symbols-outlined" style={{fontSize: '18px'}}>check_circle</span>
-                        <span className="font-comic tracking-wide">In Your Collection</span>
-                      </div>
-                      {editMode && (
-                        <button onClick={() => { toggleCard(selectedCard.name); setSelectedCard(null); }}
-                          className="w-full py-3 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white comic-btn transition-all">
-                          Remove from Collection
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <button onClick={() => { toggleCard(selectedCard.name); setSelectedCard(null); }}
-                      className="w-full py-3 rounded-xl font-bold bg-stitch-green hover:opacity-90 text-white comic-btn transition-all">
-                      Add to Collection
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
+            <CardDetail
+              card={selectedCard}
+              isOwned={collection.owned.includes(selectedCard.name)}
+              onClose={() => setSelectedCard(null)}
+              onToggleOwned={() => { toggleCard(selectedCard.name); setSelectedCard(null); }}
+              editMode={editMode}
+            />
           )}
 
           {/* Clear Collection Confirmation Dialog */}
@@ -5109,6 +6006,213 @@ RESPONSE GUIDELINES:
             onConfirm={confirmClearCollection}
             onCancel={() => setConfirmDialog({ isOpen: false, action: null })}
           />
+        </div>
+      );
+    };
+
+    // ==================== CARD DATABASE COMPONENT (Stitch 02) ====================
+    // Informational card browser — shows ALL cards (owned or not) with ability text inline.
+    // Primary reference: 02_card_database.html
+    const CardDatabase = ({ collection }) => {
+      const [search, setSearch] = useState('');
+      const [energyFilter, setEnergyFilter] = useState('all'); // 'all' | 0-6 (6 = 6+)
+      const [seriesFilter, setSeriesFilter] = useState('all');
+      const [selectedCard, setSelectedCard] = useState(null);
+      const [cardDataVersion, setCardDataVersion] = useState(0);
+
+      // Subscribe to card data updates
+      React.useEffect(() => {
+        const unsub = CardDataLoader.subscribe(() => setCardDataVersion(v => v + 1));
+        return unsub;
+      }, []);
+
+      const allCards = uniqueCards;
+
+      // Series filter chips derived from card data
+      const seriesOptions = React.useMemo(() => {
+        const seen = new Set();
+        const opts = [{ id: 'all', label: 'All Series' }];
+        allCards.forEach(c => {
+          const disp = getSeriesDisplayName(c.series);
+          if (!seen.has(disp)) { seen.add(disp); opts.push({ id: String(c.series), label: disp }); }
+        });
+        return opts;
+      }, [cardDataVersion]);
+
+      const filteredCards = React.useMemo(() => {
+        let cards = allCards;
+
+        // Energy filter
+        if (energyFilter !== 'all') {
+          const e = parseInt(energyFilter, 10);
+          if (energyFilter === '6') {
+            cards = cards.filter(c => c.cost >= 6);
+          } else {
+            cards = cards.filter(c => c.cost === e);
+          }
+        }
+
+        // Series filter
+        if (seriesFilter !== 'all') {
+          const s = parseInt(seriesFilter, 10);
+          cards = cards.filter(c => c.series === s);
+        }
+
+        // Text search (name or ability)
+        if (search.trim()) {
+          const q = search.toLowerCase();
+          cards = cards.filter(c =>
+            c.name.toLowerCase().includes(q) ||
+            (c.ability && c.ability.toLowerCase().includes(q))
+          );
+        }
+
+        return cards;
+      }, [search, energyFilter, seriesFilter, cardDataVersion]);
+
+      const ownedSet = React.useMemo(() => new Set(collection.owned || []), [collection.owned]);
+
+      // Border style based on series (mirrors Stitch rarity tiers)
+      const getCardBorderStyle = (card) => {
+        if (card.series >= 5) return 'border-[#9d4edd] shadow-[0_0_15px_rgba(157,78,221,0.3)]';
+        if (card.series === 4) return 'border-[#ff9a00] shadow-[0_0_15px_rgba(255,154,0,0.3)]';
+        if (card.series === 3) return 'border-[#8B5CF6] shadow-[0_0_12px_rgba(139,92,246,0.25)]';
+        return 'border-white/20';
+      };
+
+      return (
+        <div className="flex flex-col min-h-screen pb-20">
+          {/* Header */}
+          <div className="flex items-center bg-[#1c1022] p-4 pb-2 justify-between sticky top-0 z-20 border-b border-white/10">
+            <div className="flex size-10 items-center justify-center rounded-full bg-[#3c2348]">
+              <span className="material-symbols-outlined text-[#ad2bee]">search</span>
+            </div>
+            <h2 className="text-white text-xl font-bold leading-tight tracking-tight flex-1 text-center">Card Database</h2>
+            <div className="flex size-10 items-center justify-center">
+              <span className="text-[#b792c9] text-xs font-bold">{filteredCards.length}</span>
+            </div>
+          </div>
+
+          {/* Search bar */}
+          <div className="px-4 pt-3 pb-2">
+            <label className="flex flex-col">
+              <div className="flex w-full flex-1 items-stretch rounded-xl h-11">
+                <div className="text-[#b792c9] flex bg-[#3c2348] items-center justify-center pl-4 rounded-l-xl">
+                  <span className="material-symbols-outlined text-xl">search</span>
+                </div>
+                <input
+                  type="search"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Search by name or ability..."
+                  aria-label="Search cards"
+                  className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-none border-none bg-[#3c2348] h-full placeholder:text-[#b792c9] px-3 rounded-l-none border-l-0 text-sm"
+                />
+              </div>
+            </label>
+          </div>
+
+          {/* Filter chips — series */}
+          <div className="flex gap-2 px-4 py-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+            {seriesOptions.map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => setSeriesFilter(opt.id)}
+                className={`flex h-8 shrink-0 items-center justify-center rounded-full px-4 text-xs font-semibold transition-colors ${
+                  seriesFilter === opt.id
+                    ? 'bg-[#ad2bee] text-white'
+                    : 'bg-[#3c2348] text-[#b792c9] hover:bg-[#553267]'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Energy selector */}
+          <div className="px-4 py-2">
+            <div className="flex h-11 w-full items-center justify-between rounded-full bg-[#3c2348] p-1" role="group" aria-label="Filter by energy cost">
+              {['all', '0', '1', '2', '3', '4', '5', '6'].map(e => (
+                <button
+                  key={e}
+                  onClick={() => setEnergyFilter(e)}
+                  aria-pressed={energyFilter === e}
+                  className={`flex-1 flex h-full items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                    energyFilter === e
+                      ? 'bg-[#ad2bee] text-white'
+                      : 'text-[#b792c9] hover:text-white'
+                  }`}
+                >
+                  {e === 'all' ? 'All' : e === '6' ? '6+' : e}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Card grid */}
+          <div className="flex-1 px-4 pb-4">
+            {filteredCards.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-[#b792c9]">
+                <span className="material-symbols-outlined text-5xl mb-3">search_off</span>
+                <p className="font-bold text-lg mb-1">No cards found</p>
+                <p className="text-sm">Try a different search or filter</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-2">
+                {filteredCards.map(card => {
+                  const artUrl = getCardArtUrl(card);
+                  const owned = ownedSet.has(card.name);
+                  const borderCls = getCardBorderStyle(card);
+                  return (
+                    <button
+                      key={card.name}
+                      onClick={() => setSelectedCard(card)}
+                      className={`group relative aspect-[3/4] rounded-xl overflow-hidden border-2 ${borderCls} transition-transform active:scale-95 text-left`}
+                      aria-label={`${card.name}, ${card.cost} energy, ${card.power} power${owned ? ', in collection' : ''}`}
+                    >
+                      {/* Art */}
+                      {artUrl ? (
+                        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${artUrl})` }} />
+                      ) : (
+                        <div className="absolute inset-0 bg-[#2b1933] flex items-center justify-center text-[#b792c9]">
+                          <span className="material-symbols-outlined text-4xl">style</span>
+                        </div>
+                      )}
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                      {/* Energy badge */}
+                      <div className="absolute top-2 left-2 flex items-center justify-center h-7 w-7 rounded-full bg-blue-600 border border-white/20 text-[12px] font-bold text-white">
+                        {card.cost}
+                      </div>
+                      {/* Power badge */}
+                      <div className="absolute top-2 right-2 flex items-center justify-center h-7 w-7 rounded-full bg-orange-500 border border-white/20 text-[12px] font-bold text-white">
+                        {card.power}
+                      </div>
+                      {/* Owned indicator */}
+                      {owned && (
+                        <div className="absolute bottom-7 right-2">
+                          <span className="material-symbols-outlined text-[#0bda76] text-base bg-black/60 rounded-full" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                        </div>
+                      )}
+                      {/* Name */}
+                      <p className="absolute bottom-2 left-2 right-2 text-white text-xs font-bold truncate">{card.name}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Card Detail overlay */}
+          {selectedCard && (
+            <CardDetail
+              card={selectedCard}
+              isOwned={ownedSet.has(selectedCard.name)}
+              onClose={() => setSelectedCard(null)}
+              onToggleOwned={() => setSelectedCard(null)}
+              editMode={false}
+            />
+          )}
         </div>
       );
     };
@@ -5430,115 +6534,916 @@ RESPONSE GUIDELINES:
         );
       }
 
-      // Create/Edit View
+      // Create/Edit View — Stitch 09_deck_builder layout
+      const deckStats = selectedCards.length > 0 ? getDeckStats(selectedCards) : null;
+
+      // Energy distribution curve (costs 1-6, index 0=1 cost ... 5=6+)
+      const curveData = deckStats ? deckStats.curve.slice(1) : [0, 0, 0, 0, 0, 0];
+      const curveMax = Math.max(...curveData, 1);
+
       return (
-        <div className="px-4 pb-20">
-          <Header title={editingDeck ? 'EDIT DECK' : 'CREATE DECK'} />
-          <button onClick={() => setView('list')} className="text-mcu-blue mb-4">&larr; Back to Decks</button>
+        <div className="flex flex-col min-h-screen" style={{ background: '#1c1022' }}>
 
-          <div className="stitch-card p-5 mb-4">
-            <input type="text" placeholder="Deck name..."
-              value={deckName} onChange={(e) => setDeckName(e.target.value)}
-              aria-label="Deck name"
-              className="w-full bg-stark-surface text-white rounded-lg px-4 py-3 mb-3 border border-mcu-blue/30 focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 text-lg font-display" />
-            <div className="flex justify-between items-center">
-              <span className="text-stitch-muted">Cards: <span className={selectedCards.length === 12 ? 'text-green-500' : 'text-yellow-500'}>{selectedCards.length}/12</span></span>
-              <button onClick={saveDeck} disabled={selectedCards.length !== 12 || !deckName.trim()}
-                className="bg-mcu-blue text-white px-4 py-2 rounded-lg hover:shadow-glow-blue transition-all duration-200 disabled:opacity-50">
-                Save Deck
-              </button>
+          {/* ── Stitch: Top App Bar ── */}
+          <div className="flex items-center justify-between px-4 py-3 sticky top-0 z-50"
+               style={{ background: 'rgba(28,16,34,0.92)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(85,50,103,0.5)' }}>
+            {/* Back / Close */}
+            <button onClick={() => setView('list')}
+              className="flex size-10 shrink-0 items-center justify-center rounded-full"
+              style={{ background: '#3c2348' }}
+              aria-label="Back to deck list">
+              <span className="material-symbols-outlined" style={{ color: '#ffffff', fontSize: '22px' }} aria-hidden="true">arrow_back</span>
+            </button>
+
+            {/* Title + status */}
+            <div className="flex flex-col items-center flex-1 px-3">
+              {/* Editable deck name inline */}
+              <input
+                type="text"
+                value={deckName}
+                onChange={(e) => setDeckName(e.target.value)}
+                placeholder="New Deck"
+                aria-label="Deck name"
+                className="bg-transparent text-white text-lg font-bold leading-tight tracking-tight text-center w-full focus:outline-none focus:ring-0 border-none placeholder-white/40"
+                style={{ caretColor: '#ad2bee' }}
+              />
+              <span className="text-[11px] font-bold uppercase tracking-widest"
+                    style={{ color: selectedCards.length === 12 ? '#0bda76' : '#ad2bee' }}>
+                {selectedCards.length === 12
+                  ? 'Ready to Save'
+                  : `Incomplete (${selectedCards.length}/12)`}
+              </span>
             </div>
+
+            {/* Save button */}
+            <button
+              onClick={saveDeck}
+              disabled={selectedCards.length !== 12 || !deckName.trim()}
+              className="flex size-10 shrink-0 items-center justify-center rounded-full disabled:opacity-40 transition-opacity"
+              style={{ background: '#ad2bee' }}
+              aria-label="Save deck">
+              <span className="material-symbols-outlined" style={{ color: '#ffffff', fontSize: '20px' }} aria-hidden="true">save</span>
+            </button>
           </div>
 
-          {/* Selected Cards - 4x3 Grid with Art */}
-          <div className="stitch-card p-5 mb-4">
-            <div className="flex justify-between items-center mb-3">
-              <div className="stitch-section-header mb-0">
-                <span className="material-symbols-outlined" aria-hidden="true">grid_view</span>
-                Deck Slots
+          {/* ── Scrollable body ── */}
+          <div className="flex-1 overflow-y-auto pb-40">
+
+            {/* ── Stitch: Deck Grid (4 cols, 12 slots) ── */}
+            <div className="p-4 pt-3">
+              <div className="grid grid-cols-4 gap-2">
+                {Array.from({ length: 12 }).map((_, i) => {
+                  const cardName = selectedCards[i];
+                  const card = cardName ? cardLookup.get(cardName) || null : null;
+                  const artUrl = card ? getCardArtUrl(card) : null;
+                  return cardName ? (
+                    <button
+                      key={cardName}
+                      onClick={() => toggleCardInDeck(cardName)}
+                      className="relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer group holo-glow"
+                      aria-label={`Remove ${cardName} from deck`}>
+                      {/* Card art */}
+                      {artUrl ? (
+                        <img src={artUrl} alt={cardName}
+                          className="absolute inset-0 w-full h-full object-cover rounded-lg" />
+                      ) : (
+                        <div className="absolute inset-0 card-art card-art-fallback rounded-lg"
+                             style={{ backgroundImage: `url(${artUrl})` }} />
+                      )}
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent rounded-lg" />
+                      {/* Cost badge */}
+                      <span className="absolute top-1 left-1 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white shadow z-10">
+                        {card?.cost ?? '?'}
+                      </span>
+                      {/* Remove indicator on hover/touch */}
+                      <span className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500/90 flex items-center justify-center text-[11px] text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                            aria-hidden="true">&times;</span>
+                      {/* Card name */}
+                      <span className="absolute bottom-1 left-0.5 right-0.5 text-[9px] text-white text-center leading-tight truncate font-bold drop-shadow-lg z-10">
+                        {cardName}
+                      </span>
+                    </button>
+                  ) : (
+                    <div key={`empty-${i}`}
+                      className="card-slot flex items-center justify-center opacity-40"
+                      aria-label={`Empty slot ${i + 1}`}>
+                      <span className="material-symbols-outlined" style={{ color: '#ad2bee', fontSize: '22px' }} aria-hidden="true">add</span>
+                    </div>
+                  );
+                })}
               </div>
-              <span className="stitch-badge">{selectedCards.length}/12</span>
             </div>
-            <div className="grid grid-cols-4 gap-2">
-              {Array.from({ length: 12 }).map((_, i) => {
-                const cardName = selectedCards[i];
-                const card = cardName ? cardLookup.get(cardName) || null : null;
-                return cardName ? (
-                  <button key={cardName} onClick={() => toggleCardInDeck(cardName)}
-                    className="relative aspect-[3/4] rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-150 group border-2 border-cosmic-purple/40 holo-glow">
-                    <div className="absolute inset-0 card-art" style={{ backgroundImage: `url(${getCardArtUrl(card || { name: cardName })})` }} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                    <span className="absolute top-1 left-1 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white shadow">
-                      {card?.cost ?? '?'}
-                    </span>
-                    <span className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500/80 flex items-center justify-center text-[9px] text-white opacity-0 group-hover:opacity-100 transition-opacity">&times;</span>
-                    <span className="absolute bottom-1 left-1 right-1 text-[10px] text-white text-center leading-tight truncate font-bold drop-shadow-lg">{cardName}</span>
-                  </button>
-                ) : (
-                  <div key={`empty-${i}`} className="card-slot flex items-center justify-center border-stitch-border" aria-label={`Empty slot ${i + 1}`}>
-                    <span className="material-symbols-outlined text-stitch-muted/30" style={{fontSize: '20px'}}>add</span>
+
+            {/* ── Stitch: Stats Bar ── */}
+            <div className="mx-4 mb-3 rounded-xl flex items-center justify-between px-4 py-2.5"
+                 style={{ background: 'rgba(173,43,238,0.10)', border: '1px solid rgba(173,43,238,0.20)' }}>
+              {/* Stats */}
+              <div className="flex gap-5">
+                <div className="flex flex-col">
+                  <span className="stitch-label">Avg Energy</span>
+                  <span className="text-sm font-bold text-white">
+                    {deckStats ? deckStats.avgCost : '--'}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="stitch-label">Total Power</span>
+                  <span className="text-sm font-bold text-white">
+                    {deckStats ? deckStats.totalPower : '--'}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="stitch-label">Cards</span>
+                  <span className={`text-sm font-bold ${selectedCards.length === 12 ? 'text-[#0bda76]' : 'text-[#ffd700]'}`}>
+                    {selectedCards.length}/12
+                  </span>
+                </div>
+              </div>
+              {/* Energy curve mini-chart (costs 1-6+) */}
+              <div className="flex gap-0.5 h-8 items-end" aria-label="Energy curve chart" role="img">
+                {curveData.map((count, idx) => {
+                  const heightPct = Math.round((count / curveMax) * 100);
+                  const opacity = count === 0 ? '0.15'
+                    : heightPct >= 80 ? '1'
+                    : heightPct >= 50 ? '0.80'
+                    : heightPct >= 30 ? '0.60'
+                    : '0.40';
+                  return (
+                    <div key={idx} className="flex flex-col items-center gap-0.5">
+                      <div
+                        className="w-3 rounded-t-sm transition-all duration-300"
+                        style={{
+                          height: `${Math.max(heightPct, 8)}%`,
+                          background: `rgba(173,43,238,${opacity})`,
+                          minHeight: '3px',
+                        }}
+                        title={`Cost ${idx + 1}${idx === 5 ? '+' : ''}: ${count}`}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ── Stitch: Search + Filter pills (sticky below top bar) ── */}
+            <div className="px-4 pb-3 sticky top-[65px] z-40"
+                 style={{ background: 'rgba(28,16,34,0.95)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+              {/* Search input */}
+              <label className="flex flex-col w-full h-10 mb-3">
+                <div className="flex w-full flex-1 items-stretch rounded-xl h-full"
+                     style={{ background: '#3c2348' }}>
+                  <div className="flex items-center justify-center pl-4 rounded-l-xl"
+                       style={{ color: '#b792c9' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">search</span>
                   </div>
-                );
-              })}
-            </div>
-            <div className="mt-3 pt-3 border-t border-stitch-border">
-              <div className="flex justify-around text-center">
-                <div>
-                  <div className="stitch-label">Cards</div>
-                  <div className={`text-sm font-bold ${selectedCards.length === 12 ? 'text-stitch-green' : 'text-mcu-gold'}`}>{selectedCards.length}/12</div>
+                  <input
+                    type="text"
+                    placeholder="Search collection..."
+                    value={searchCard}
+                    onChange={(e) => setSearchCard(e.target.value)}
+                    aria-label="Search cards to add to deck"
+                    className="flex w-full flex-1 rounded-xl rounded-l-none border-none focus:outline-none focus:ring-0 text-white text-sm font-normal px-2"
+                    style={{ background: 'transparent', caretColor: '#ad2bee' }}
+                  />
                 </div>
-                <div>
-                  <div className="stitch-label">Avg Energy</div>
-                  <div className="text-sm font-bold text-cosmic-purple-text">{selectedCards.length > 0 ? getDeckStats(selectedCards).avgCost : '--'}</div>
-                </div>
-                <div>
-                  <div className="stitch-label">Total Power</div>
-                  <div className="text-sm font-bold text-orange-400">{selectedCards.length > 0 ? getDeckStats(selectedCards).totalPower : '--'}</div>
-                </div>
+              </label>
+
+              {/* Filter pills */}
+              <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                <button
+                  onClick={() => setSeriesFilter('all')}
+                  className="flex h-8 shrink-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors"
+                  style={{ background: seriesFilter === 'all' ? '#ad2bee' : '#3c2348', color: '#ffffff' }}
+                  aria-pressed={seriesFilter === 'all'}>
+                  All
+                </button>
+                {Object.keys(POOL_GROUPS).map(pool => (
+                  <button key={pool}
+                    onClick={() => setSeriesFilter(seriesFilter === pool ? 'all' : pool)}
+                    className="flex h-8 shrink-0 items-center justify-center rounded-full px-4 text-xs font-medium transition-colors"
+                    style={{ background: seriesFilter === pool ? '#ad2bee' : '#3c2348', color: '#ffffff' }}
+                    aria-pressed={seriesFilter === pool}>
+                    {pool}
+                  </button>
+                ))}
               </div>
             </div>
-          </div>
 
-          {/* Card Picker */}
-          <div className="stitch-card p-5">
-            <div className="flex gap-2 mb-3">
-              <input type="text" placeholder="Search cards..."
-                value={searchCard} onChange={(e) => setSearchCard(e.target.value)}
-                aria-label="Search cards to add"
-                className="flex-1 bg-stitch-accent text-white rounded-xl px-4 py-2.5 border border-stitch-border focus:border-cosmic-purple-text focus:outline-none placeholder-stitch-muted" />
-              <select value={seriesFilter} onChange={(e) => setSeriesFilter(e.target.value)}
-                className="bg-stitch-accent text-white rounded-xl px-3 py-2.5 border border-stitch-border focus:border-cosmic-purple-text focus:outline-none">
-                <option value="all">All</option>
-                {Object.keys(POOL_GROUPS).map(pool => (
-                  <option key={pool} value={pool}>{pool}</option>
-                ))}
-              </select>
-            </div>
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-96 overflow-y-auto">
+            {/* ── Stitch: Card Browser (3-col grid) ── */}
+            <div className="grid grid-cols-3 gap-3 px-4 pb-4">
               {filteredCards.map(card => {
                 const isSelected = selectedCards.includes(card.name);
                 const isOwned = collection.owned.includes(card.name);
+                const artUrl = getCardArtUrl(card);
                 return (
-                  <button key={card.name} onClick={() => toggleCardInDeck(card.name)}
+                  <button
+                    key={card.name}
+                    onClick={() => toggleCardInDeck(card.name)}
                     disabled={!isSelected && selectedCards.length >= 12}
-                    className={`relative p-2 rounded-lg border-2 transition-all ${
-                      isSelected ? 'border-mcu-blue bg-stark-surface-2' :
-                      isOwned ? 'border-[rgba(173,43,238,0.3)] bg-[#1a1320] hover:border-mcu-blue' :
-                      'border-[rgba(173,43,238,0.2)] bg-[#120818] opacity-60'
-                    } disabled:opacity-30`}>
-                    <div className="absolute top-0 left-0 w-4 h-4 bg-mcu-blue rounded-br flex items-center justify-center text-xs text-white">{card.cost}</div>
-                    <div className="absolute top-0 right-0 w-4 h-4 bg-mcu-red rounded-bl flex items-center justify-center text-xs text-white">{card.power}</div>
-                    <div className="mt-4 text-xs text-white text-center truncate">{card.name}</div>
-                    {isSelected && (
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs">✓</span>
-                      </div>
-                    )}
+                    className="flex flex-col gap-1 cursor-pointer disabled:opacity-30 text-left"
+                    aria-label={`${card.name}, cost ${card.cost}, power ${card.power}${isSelected ? ', in deck — tap to remove' : isOwned ? ', owned — tap to add' : ', not owned'}`}
+                    aria-pressed={isSelected}>
+                    {/* Card art */}
+                    <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden"
+                         style={{
+                           border: isSelected
+                             ? '2px solid #ad2bee'
+                             : isOwned
+                               ? '1px solid rgba(255,255,255,0.15)'
+                               : '1px solid rgba(255,255,255,0.06)',
+                           boxShadow: isSelected ? '0 0 14px rgba(173,43,238,0.5)' : 'none',
+                           opacity: isOwned || isSelected ? 1 : 0.55,
+                         }}>
+                      {artUrl ? (
+                        <img src={artUrl} alt={card.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy" />
+                      ) : (
+                        <div className="w-full h-full card-art card-art-fallback"
+                             style={{ backgroundImage: `url(${artUrl})` }} />
+                      )}
+                      {/* Selected checkmark */}
+                      {isSelected && (
+                        <div className="absolute inset-0 bg-black/20 flex items-start justify-end p-1">
+                          <span className="material-symbols-outlined rounded-full bg-black/60 text-lg"
+                                style={{ color: '#0bda76', fontSize: '18px' }} aria-hidden="true">check_circle</span>
+                        </div>
+                      )}
+                      {/* Not owned lock */}
+                      {!isOwned && !isSelected && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-white/40" style={{ fontSize: '24px' }} aria-hidden="true">lock</span>
+                        </div>
+                      )}
+                    </div>
+                    {/* Cost / Power row */}
+                    <div className="flex justify-between px-0.5">
+                      <span className="text-[10px] font-bold bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center text-white leading-none">
+                        {card.cost}
+                      </span>
+                      <span className="text-[10px] font-bold bg-orange-600 rounded-full w-4 h-4 flex items-center justify-center text-white leading-none">
+                        {card.power}
+                      </span>
+                    </div>
                   </button>
                 );
               })}
+
+              {filteredCards.length === 0 && (
+                <div className="col-span-3 py-12 text-center" style={{ color: '#b792c9' }}>
+                  <span className="material-symbols-outlined block text-4xl mb-2" aria-hidden="true">search_off</span>
+                  <p className="text-sm">No cards match your search</p>
+                </div>
+              )}
             </div>
           </div>
+
+          {/* ── Stitch: Floating Bottom Actions (fixed above NavBar) ── */}
+          <div className="fixed bottom-16 left-0 right-0 px-6 pb-4 pt-10 z-40 pointer-events-none"
+               style={{ background: 'linear-gradient(to top, rgba(28,16,34,1) 0%, rgba(28,16,34,0.85) 65%, transparent 100%)' }}>
+            <div className="flex gap-3 pointer-events-auto">
+              {/* Smart Auto-fill: pick highest-power owned cards to fill remaining slots */}
+              <button
+                onClick={() => {
+                  if (selectedCards.length >= 12) return;
+                  const ownedSet = new Set(collection.owned);
+                  const remaining = 12 - selectedCards.length;
+                  const candidates = uniqueCards
+                    .filter(c => ownedSet.has(c.name) && !selectedCards.includes(c.name))
+                    .sort((a, b) => b.power - a.power)
+                    .slice(0, remaining)
+                    .map(c => c.name);
+                  setSelectedCards(prev => [...prev, ...candidates]);
+                }}
+                disabled={selectedCards.length >= 12}
+                className="flex-1 h-12 rounded-full flex items-center justify-center gap-2 font-bold text-sm disabled:opacity-40 transition-opacity"
+                style={{ background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.12)' }}
+                aria-label="Smart auto-fill remaining slots with owned cards">
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">auto_fix_high</span>
+                <span>Smart Auto-fill</span>
+              </button>
+              {/* Clear deck */}
+              <button
+                onClick={() => setSelectedCards([])}
+                disabled={selectedCards.length === 0}
+                className="flex-1 h-12 rounded-full flex items-center justify-center gap-2 font-bold text-sm disabled:opacity-40 transition-opacity"
+                style={{ background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.12)' }}
+                aria-label="Clear all cards from deck">
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">delete_sweep</span>
+                <span>Clear</span>
+              </button>
+              {/* Save deck */}
+              <button
+                onClick={saveDeck}
+                disabled={selectedCards.length !== 12 || !deckName.trim()}
+                className="flex-1 h-12 rounded-full flex items-center justify-center gap-2 font-bold text-sm text-white disabled:opacity-40 transition-all"
+                style={{ background: '#ad2bee', boxShadow: '0 4px 20px rgba(173,43,238,0.45)' }}
+                aria-label="Save deck">
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">save</span>
+                <span>Save Deck</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // ==================== META TIER LIST ====================
+    // TODO: Replace TIER_STUB_DATA with real tier data from data/meta-context.json
+    //       when the meta-context API includes per-deck win rates, avg cubes, and sample card lists.
+    //       Field shape expected: { name, archetype, winRate, avgCubes, popularity, sampleCards: string[], tag }
+    const TIER_STUB_DATA = [
+      // Tier S — Powerhouse Decks
+      {
+        tier: 'S', name: 'Shou-Lao On Reveal', archetype: 'On Reveal',
+        winRate: 57.8, avgCubes: 0.71, popularity: 18.4,
+        sampleCards: ['Shou-Lao', 'Werewolf by Night', 'Odin', 'Wong', 'White Tiger'],
+        tag: 'Top Performer'
+      },
+      {
+        tier: 'S', name: 'Star-Lord Ramp', archetype: 'Ramp/Control',
+        winRate: 56.3, avgCubes: 0.65, popularity: 14.2,
+        sampleCards: ['Star-Lord', 'En Sabah Nur', 'Alioth', 'Magus', 'Doctor Doom 2099'],
+        tag: 'Rising'
+      },
+      {
+        tier: 'S', name: 'Move', archetype: 'Move',
+        winRate: 55.1, avgCubes: 0.58, popularity: 11.7,
+        sampleCards: ['Human Torch', 'Dagger', 'Ghost Spider', 'Jeff', 'Heimdall'],
+        tag: null
+      },
+      // Tier A — Solid Choices
+      {
+        tier: 'A', name: 'Doctor Doom 2099', archetype: 'Disruption',
+        winRate: 53.4, avgCubes: 0.49, popularity: 9.8,
+        sampleCards: ['Doctor Doom 2099', 'Cannonball', 'Cosmo', 'Shang-Chi', 'Silver Surfer'],
+        tag: 'Hot Pick'
+      },
+      {
+        tier: 'A', name: 'Destroy', archetype: 'Destroy',
+        winRate: 52.7, avgCubes: 0.44, popularity: 12.1,
+        sampleCards: ['Knull', 'Death', 'Deadpool', 'Carnage', 'Venom'],
+        tag: null
+      },
+      {
+        tier: 'A', name: 'Bounce', archetype: 'Bounce',
+        winRate: 51.9, avgCubes: 0.39, popularity: 8.6,
+        sampleCards: ['Beast', 'Falcon', 'Hit-Monkey', 'Angela', 'Cannonball'],
+        tag: null
+      },
+      // Tier B — Viable Picks
+      {
+        tier: 'B', name: 'Discard', archetype: 'Discard',
+        winRate: 49.8, avgCubes: 0.21, popularity: 7.3,
+        sampleCards: ['Apocalypse', 'MODOK', 'Hela', 'Lady Sif', 'Swarm'],
+        tag: null
+      },
+      {
+        tier: 'B', name: 'Surfer Control', archetype: 'Control',
+        winRate: 49.2, avgCubes: 0.18, popularity: 5.9,
+        sampleCards: ['Silver Surfer', 'Mister Fantastic', 'Cyclops', 'Brood', 'Wolfsbane'],
+        tag: null
+      },
+      // Tier C — Niche/Inconsistent
+      {
+        tier: 'C', name: 'High Evolutionary', archetype: 'Ongoing',
+        winRate: 47.1, avgCubes: -0.05, popularity: 6.2,
+        sampleCards: ['High Evolutionary', 'Cyclops', 'Shocker', 'Abomination', 'Hulk'],
+        tag: null
+      }
+    ];
+
+    const TIER_CONFIG = {
+      S: { label: 'S', title: 'Powerhouse Decks', color: '#ad2bee', bg: 'rgba(173,43,238,0.15)', border: 'rgba(173,43,238,0.4)', glow: '0 0 14px rgba(173,43,238,0.35)' },
+      A: { label: 'A', title: 'Solid Choices',    color: '#3b82f6', bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.3)',  glow: null },
+      B: { label: 'B', title: 'Viable Picks',     color: '#22c55e', bg: 'rgba(34,197,94,0.10)',  border: 'rgba(34,197,94,0.25)', glow: null },
+      C: { label: 'C', title: 'Niche / Risky',    color: '#f59e0b', bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.25)', glow: null },
+      D: { label: 'D', title: 'Off-Meta',          color: '#6b7280', bg: 'rgba(107,114,128,0.10)',border: 'rgba(107,114,128,0.25)',glow: null }
+    };
+
+    const MetaTierList = () => {
+      const [activeBracket, setActiveBracket] = useState('Infinite');
+      const [timeFilter, setTimeFilter] = useState('Last 7 Days');
+      const [sortBy, setSortBy] = useState('tier');
+      const [expandedDeck, setExpandedDeck] = useState(null);
+
+      const brackets = ['Ranked', 'Infinite', 'Conquest', 'Global'];
+      const timeFilters = ['Last 24h', 'Last 7 Days', 'Last 30 Days'];
+
+      // Group archetypes by tier, using META_CONTEXT to keep live data in sync
+      // Merge stub data with any live tier overrides from META_CONTEXT.topArchetypes
+      const mergedData = React.useMemo(() => {
+        const liveMap = {};
+        (META_CONTEXT.topArchetypes || []).forEach(a => { liveMap[a.name] = a.tier; });
+        return TIER_STUB_DATA.map(d => ({
+          ...d,
+          tier: liveMap[d.name] || d.tier
+        }));
+      }, []);
+
+      const grouped = React.useMemo(() => {
+        const g = {};
+        mergedData.forEach(deck => {
+          const t = deck.tier;
+          if (!g[t]) g[t] = [];
+          g[t].push(deck);
+        });
+        if (sortBy === 'winRate') {
+          Object.keys(g).forEach(t => g[t].sort((a, b) => b.winRate - a.winRate));
+        } else if (sortBy === 'popularity') {
+          Object.keys(g).forEach(t => g[t].sort((a, b) => b.popularity - a.popularity));
+        }
+        return g;
+      }, [mergedData, sortBy]);
+
+      const tierOrder = ['S', 'A', 'B', 'C', 'D'];
+      const lastUpdated = META_CONTEXT.lastUpdated || 'Recently';
+
+      const toggleDeck = (key) => setExpandedDeck(prev => prev === key ? null : key);
+
+      return (
+        <div className="px-4 pb-20">
+          {/* Header */}
+          <Header title="META TIER LIST" subtitle={`Last updated: ${lastUpdated} \u2022 ${META_CONTEXT.season || 'Current Season'}`} />
+
+          {/* Bracket tabs */}
+          <div className="flex gap-1 mb-3 overflow-x-auto no-scrollbar" role="tablist" aria-label="Game bracket">
+            {brackets.map(b => (
+              <button
+                key={b}
+                role="tab"
+                aria-selected={activeBracket === b}
+                onClick={() => setActiveBracket(b)}
+                className="shrink-0 px-4 py-2 rounded-full text-xs font-bold font-display transition-all duration-150 min-h-[36px]"
+                style={activeBracket === b
+                  ? { background: '#ad2bee', color: '#fff', boxShadow: '0 0 8px rgba(173,43,238,0.4)' }
+                  : { background: 'rgba(173,43,238,0.1)', color: '#b792c9', border: '1px solid rgba(173,43,238,0.2)' }}
+              >{b}</button>
+            ))}
+          </div>
+
+          {/* Filter chips row */}
+          <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
+            {timeFilters.map(f => (
+              <button
+                key={f}
+                onClick={() => setTimeFilter(f)}
+                className="shrink-0 flex items-center gap-1 h-9 px-3 rounded-full text-xs font-medium transition-all duration-150 min-h-[36px]"
+                style={timeFilter === f
+                  ? { background: '#ad2bee', color: '#fff' }
+                  : { background: 'rgba(173,43,238,0.1)', color: '#b792c9', border: '1px solid rgba(173,43,238,0.2)' }}
+              >
+                {f}
+                <span className="material-symbols-outlined" style={{ fontSize: '14px' }} aria-hidden="true">expand_more</span>
+              </button>
+            ))}
+            {/* Sort */}
+            <button
+              onClick={() => setSortBy(s => s === 'tier' ? 'winRate' : s === 'winRate' ? 'popularity' : 'tier')}
+              className="shrink-0 flex items-center gap-1 h-9 px-3 rounded-full text-xs font-medium transition-all duration-150 min-h-[36px]"
+              style={{ background: 'rgba(173,43,238,0.1)', color: '#b792c9', border: '1px solid rgba(173,43,238,0.2)' }}
+              aria-label={`Sort by ${sortBy}`}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '14px' }} aria-hidden="true">sort</span>
+              {sortBy === 'tier' ? 'By Tier' : sortBy === 'winRate' ? 'Win Rate' : 'Popularity'}
+            </button>
+          </div>
+
+          {/* Tier sections */}
+          {tierOrder.map(tierKey => {
+            const decks = grouped[tierKey];
+            if (!decks || decks.length === 0) return null;
+            const cfg = TIER_CONFIG[tierKey];
+            const isS = tierKey === 'S';
+            return (
+              <section key={tierKey} className="mb-6" aria-label={`Tier ${tierKey}: ${cfg.title}`}>
+                {/* Tier heading */}
+                <div className="flex items-center gap-2 mb-3">
+                  <span
+                    className="flex items-center justify-center w-8 h-8 rounded font-bold text-lg italic text-white shrink-0"
+                    style={{ background: cfg.color }}
+                    aria-label={`Tier ${tierKey}`}
+                  >{cfg.label}</span>
+                  <h2 className="text-white text-lg font-bold font-display">{cfg.title}</h2>
+                  <span className="text-xs ml-auto" style={{ color: '#b792c9' }}>{decks.length} deck{decks.length !== 1 ? 's' : ''}</span>
+                </div>
+
+                {/* S-tier: large card layout */}
+                {isS ? (
+                  <div className="space-y-4">
+                    {decks.map((deck, i) => {
+                      const key = `${tierKey}-${i}`;
+                      const isExpanded = expandedDeck === key;
+                      return (
+                        <article
+                          key={key}
+                          className="rounded-xl overflow-hidden"
+                          style={{ background: '#2a1833', border: `1px solid ${cfg.border}`, boxShadow: cfg.glow }}
+                        >
+                          {/* Colored top accent bar */}
+                          <div style={{ height: '4px', background: `linear-gradient(90deg, ${cfg.color}, transparent)` }} />
+                          <div className="p-4">
+                            <div className="flex justify-between items-start mb-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h3 className="text-white text-base font-bold font-display truncate">{deck.name}</h3>
+                                  {deck.tag && (
+                                    <span
+                                      className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded text-white shrink-0"
+                                      style={{ background: cfg.color }}
+                                    >{deck.tag}</span>
+                                  )}
+                                </div>
+                                <span
+                                  className="text-[11px] font-medium px-2 py-0.5 rounded-full mt-1 inline-block"
+                                  style={{ background: `${cfg.color}22`, color: cfg.color, border: `1px solid ${cfg.border}` }}
+                                >{deck.archetype}</span>
+                              </div>
+                              <button
+                                onClick={() => toggleDeck(key)}
+                                className="flex items-center justify-center rounded-full w-10 h-10 shrink-0 ml-2 text-white transition-all duration-150"
+                                style={{ background: cfg.color, minWidth: '40px', minHeight: '40px' }}
+                                aria-expanded={isExpanded}
+                                aria-label={isExpanded ? 'Collapse deck details' : 'Expand deck details'}
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">
+                                  {isExpanded ? 'expand_less' : 'expand_more'}
+                                </span>
+                              </button>
+                            </div>
+
+                            {/* Stats row */}
+                            <div className="flex gap-3 mt-3 flex-wrap">
+                              <span
+                                className="text-xs font-bold px-2 py-1 rounded-full"
+                                style={{ background: `${cfg.color}18`, color: cfg.color, border: `1px solid ${cfg.border}` }}
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: '12px', verticalAlign: 'middle' }} aria-hidden="true">trending_up</span>
+                                {' '}Win Rate: {deck.winRate.toFixed(1)}%
+                              </span>
+                              <span
+                                className="text-xs font-bold px-2 py-1 rounded-full"
+                                style={{ background: 'rgba(255,215,0,0.1)', color: '#ffd700', border: '1px solid rgba(255,215,0,0.25)' }}
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: '12px', verticalAlign: 'middle' }} aria-hidden="true">diamond</span>
+                                {' '}Avg Cubes: {deck.avgCubes >= 0 ? '+' : ''}{deck.avgCubes.toFixed(2)}
+                              </span>
+                              <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'rgba(173,43,238,0.08)', color: '#b792c9', border: '1px solid rgba(173,43,238,0.15)' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: '12px', verticalAlign: 'middle' }} aria-hidden="true">bar_chart</span>
+                                {' '}{deck.popularity.toFixed(1)}% played
+                              </span>
+                            </div>
+
+                            {/* Expandable sample cards */}
+                            {isExpanded && (
+                              <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(173,43,238,0.15)' }}>
+                                <p className="text-xs mb-2" style={{ color: '#b792c9' }}>Sample cards</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {deck.sampleCards.map((card, ci) => (
+                                    <span
+                                      key={ci}
+                                      className="text-xs px-2 py-1 rounded-lg text-white font-medium"
+                                      style={{ background: 'rgba(173,43,238,0.18)', border: '1px solid rgba(173,43,238,0.25)' }}
+                                    >{card}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  /* A/B/C/D: compact list layout */
+                  <div className="space-y-2">
+                    {decks.map((deck, i) => {
+                      const key = `${tierKey}-${i}`;
+                      const isExpanded = expandedDeck === key;
+                      return (
+                        <article key={key}>
+                          <button
+                            className="w-full text-left rounded-xl p-3 transition-all duration-150"
+                            style={{ background: '#2a1833', border: `1px solid rgba(255,255,255,0.07)` }}
+                            onClick={() => toggleDeck(key)}
+                            aria-expanded={isExpanded}
+                          >
+                            <div className="flex items-center gap-3">
+                              {/* Mini tier badge */}
+                              <span
+                                className="flex items-center justify-center w-7 h-7 rounded text-xs font-bold italic text-white shrink-0"
+                                style={{ background: cfg.color }}
+                              >{cfg.label}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-white text-sm font-bold font-display truncate">{deck.name}</span>
+                                  {deck.tag && (
+                                    <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded text-white shrink-0"
+                                      style={{ background: cfg.color }}>{deck.tag}</span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="text-xs" style={{ color: '#b792c9' }}>Win Rate: {deck.winRate.toFixed(1)}%</span>
+                                  <span className="text-xs" style={{ color: '#ffd700' }}>
+                                    <span className="material-symbols-outlined" style={{ fontSize: '11px', verticalAlign: 'middle' }} aria-hidden="true">diamond</span>
+                                    {' '}{deck.avgCubes >= 0 ? '+' : ''}{deck.avgCubes.toFixed(2)}
+                                  </span>
+                                </div>
+                              </div>
+                              <span className="material-symbols-outlined shrink-0" style={{ color: 'rgba(255,255,255,0.25)', fontSize: '20px' }} aria-hidden="true">
+                                {isExpanded ? 'expand_less' : 'chevron_right'}
+                              </span>
+                            </div>
+                            {isExpanded && (
+                              <div className="mt-3 pt-3 text-left" style={{ borderTop: '1px solid rgba(173,43,238,0.12)' }}>
+                                <p className="text-xs mb-2" style={{ color: '#b792c9' }}>Sample cards</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {deck.sampleCards.map((card, ci) => (
+                                    <span key={ci}
+                                      className="text-xs px-2 py-1 rounded-lg text-white font-medium"
+                                      style={{ background: 'rgba(173,43,238,0.18)', border: '1px solid rgba(173,43,238,0.2)' }}
+                                    >{card}</span>
+                                  ))}
+                                </div>
+                                <div className="flex items-center gap-1 mt-2">
+                                  <span className="material-symbols-outlined text-xs" style={{ fontSize: '13px', color: '#b792c9' }} aria-hidden="true">bar_chart</span>
+                                  <span className="text-xs" style={{ color: '#b792c9' }}>{deck.popularity.toFixed(1)}% of games played</span>
+                                </div>
+                              </div>
+                            )}
+                          </button>
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            );
+          })}
+
+          {/* Footer note */}
+          <p className="text-center text-xs pb-4" style={{ color: 'rgba(183,146,201,0.6)' }}>
+            Data sourced from meta-context.json &bull; Win rates reflect Infinite ladder
+          </p>
+        </div>
+      );
+    };
+
+    // ==================== ORACLE VIEW WRAPPER ====================
+    // Combines Spotlight Oracle (economy engine) + Meta Tier List as sub-tabs
+    // ==================== WEEKLY META SNAPSHOT ====================
+    // Stitch design: 04_weekly_meta_snapshot.html
+    // Data source: META_CONTEXT (embedded defaults + optional data/meta-context.json override)
+    // TODO: wire a dedicated `weeklySnapshot` key in data/meta-context.json for real per-week
+    //       figures (playrate deltas, chart path, exact week identifier). Until then, data is
+    //       derived from META_CONTEXT.topArchetypes / recentOTA / hotCards / techCards.
+    const WeeklyMetaSnapshot = () => {
+      // Derive week label from META_CONTEXT.lastUpdated or today
+      const weekLabel = (() => {
+        const now = new Date();
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        const weekNum = Math.ceil(((now - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);
+        return `Week ${weekNum}, ${now.getFullYear()}`;
+      })();
+
+      // Rising: top 2 S-tier archetypes treated as trending up
+      // TODO: replace with weeklySnapshot.rising[] from data/meta-context.json
+      const rising = (META_CONTEXT.topArchetypes || [])
+        .filter(a => a.tier === 'S')
+        .slice(0, 2)
+        .map((a, i) => ({ name: a.name, delta: i === 0 ? '+12.4%' : '+8.1%', description: a.description }));
+
+      // Falling: B+ / lower archetypes treated as trending down
+      // TODO: replace with weeklySnapshot.falling[] from data/meta-context.json
+      const falling = (META_CONTEXT.topArchetypes || [])
+        .filter(a => a.tier === 'B+' || a.tier === 'B' || a.tier === 'C')
+        .slice(0, 2)
+        .map((a, i) => ({ name: a.name, delta: i === 0 ? '-15.2%' : '-9.7%', description: a.description }));
+
+      // OTA changes
+      const otaChanges = META_CONTEXT.recentOTA || [];
+
+      // Quick stats derived from archetype list
+      const sTierCount   = (META_CONTEXT.topArchetypes || []).filter(a => a.tier === 'S').length;
+      const aTierCount   = (META_CONTEXT.topArchetypes || []).filter(a => a.tier === 'A').length;
+      const hotCardCount = (META_CONTEXT.hotCards || []).length;
+      const techCardCount = (META_CONTEXT.techCards || []).length;
+
+      // SVG sparkline path — static shape matching Stitch design
+      // TODO: replace with real daily playrate data from weeklySnapshot.chartPoints[]
+      const sparklinePath = "M0 109C18 109 18 21 36 21C54 21 54 41 72 41C90 41 90 93 108 93C127 93 127 33 145 33C163 33 163 101 181 101C199 101 199 61 217 61C236 61 236 45 254 45C272 45 272 121 290 121C308 121 308 149 326 149C344 149 344 1 363 1C381 1 381 81 399 81C417 81 417 129 435 129C453 129 453 25 472 25";
+      const sparklineFill = "M0 109C18 109 18 21 36 21C54 21 54 41 72 41C90 41 90 93 108 93C127 93 127 33 145 33C163 33 163 101 181 101C199 101 199 61 217 61C236 61 236 45 254 45C272 45 272 121 290 121C308 121 308 149 326 149C344 149 344 1 363 1C381 1 381 81 399 81C417 81 417 129 435 129C453 129 453 25 472 25V149H0V109Z";
+      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="THIS WEEK'S META" subtitle={`${META_CONTEXT.season || 'Current Season'} \u2022 ${weekLabel}`} />
+
+          {/* Archetype Popularity Chart */}
+          <div className="stitch-card p-4 mb-4">
+            <p className="text-stitch-muted text-sm font-medium mb-1">Archetype Popularity (Last 7 Days)</p>
+            <div className="flex items-baseline justify-between mb-3">
+              <p className="text-white text-2xl font-bold tracking-tight">Meta Power Shift</p>
+              <div className="flex items-center gap-1 bg-green-900/30 px-2 py-1 rounded-lg">
+                <span className="material-symbols-outlined text-[#0bda76]" style={{ fontSize: '16px' }} aria-hidden="true">trending_up</span>
+                <span className="text-[#0bda76] text-xs font-bold">+5.4%</span>
+              </div>
+            </div>
+            {/* SVG Sparkline — matches Stitch design */}
+            <div style={{ minHeight: '140px' }}>
+              <svg width="100%" height="148" viewBox="-3 0 478 150" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d={sparklineFill} fill="url(#wms_gradient)" />
+                <path d={sparklinePath} stroke="#ad2bee" strokeWidth="3" strokeLinecap="round" />
+                <defs>
+                  <linearGradient id="wms_gradient" x1="236" y1="1" x2="236" y2="149" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#ad2bee" stopOpacity="0.3" />
+                    <stop offset="1" stopColor="#ad2bee" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="flex justify-between px-1 mt-1">
+                {days.map(d => (
+                  <span key={d} className="text-stitch-muted" style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{d}</span>
+                ))}
+              </div>
+            </div>
+            {/* Chart legend chips */}
+            <div className="flex gap-2 mt-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+              {[
+                { label: (META_CONTEXT.topArchetypes[0] || {}).name || 'Top Archetype', color: '#ad2bee' },
+                { label: (META_CONTEXT.topArchetypes[1] || {}).name || '2nd Archetype', color: '#3b82f6' },
+                { label: (META_CONTEXT.topArchetypes[2] || {}).name || '3rd Archetype', color: '#f97316' },
+              ].map(item => (
+                <div key={item.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full shrink-0 border" style={{ background: '#2b1933', borderColor: '#553267' }}>
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: item.color }} />
+                  <span className="text-white text-xs font-bold">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Weekly Analysis banner */}
+          <div className="mb-4 p-4 rounded-xl border" style={{ background: 'rgba(173,43,238,0.07)', borderColor: 'rgba(173,43,238,0.25)' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="material-symbols-outlined text-[#ad2bee]" style={{ fontSize: '20px' }} aria-hidden="true">psychology</span>
+              <h3 className="text-white font-bold text-sm">Weekly Analysis</h3>
+            </div>
+            <p className="text-slate-300 text-sm leading-relaxed">
+              {`The meta this week centers on `}
+              <strong>{(META_CONTEXT.topArchetypes[0] || {}).name || 'top archetypes'}</strong>
+              {` dominating queue. Tech options like `}
+              <strong>{(META_CONTEXT.techCards || ['Cosmo', 'Shang-Chi']).slice(0, 2).join(' and ')}</strong>
+              {` are seeing increased play as counters. Monitor `}
+              <strong>{(META_CONTEXT.hotCards || ['key cards']).slice(0, 2).join(' and ')}</strong>
+              {` for the biggest swing plays of the week.`}
+            </p>
+          </div>
+
+          {/* Quick Stats Row */}
+          <div className="grid grid-cols-4 gap-2 mb-6">
+            {[
+              { icon: 'military_tech', label: 'S-Tier', value: sTierCount, color: '#ad2bee' },
+              { icon: 'workspace_premium', label: 'A-Tier', value: aTierCount, color: '#3b82f6' },
+              { icon: 'local_fire_department', label: 'Hot Cards', value: hotCardCount, color: '#f97316' },
+              { icon: 'shield', label: 'Tech Cards', value: techCardCount, color: '#0bda76' },
+            ].map(stat => (
+              <div key={stat.label} className="stitch-card p-3 text-center">
+                <span className="material-symbols-outlined" style={{ fontSize: '20px', color: stat.color }} aria-hidden="true">{stat.icon}</span>
+                <div className="text-white font-bold text-xl mt-1">{stat.value}</div>
+                <div className="text-stitch-muted text-xs">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Rising Stars */}
+          <h3 className="text-white text-base font-bold tracking-tight px-0 pb-2 pt-2 flex items-center gap-2">
+            <span className="material-symbols-outlined text-green-400" style={{ fontSize: '20px' }} aria-hidden="true">trending_up</span>
+            Rising Stars
+          </h3>
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {(rising.length > 0 ? rising : [{ name: 'No data', delta: '', description: '' }]).map((item, i) => (
+              <div key={i} className="stitch-card p-4 flex flex-col gap-2">
+                <div className="w-10 h-10 rounded-xl border-2 flex items-center justify-center shrink-0" style={{ borderColor: '#ad2bee', background: 'rgba(173,43,238,0.12)' }}>
+                  <span className="material-symbols-outlined text-[#ad2bee]" style={{ fontSize: '20px' }} aria-hidden="true">auto_awesome</span>
+                </div>
+                <div>
+                  <h4 className="text-white font-bold text-sm leading-snug">{item.name}</h4>
+                  {item.delta && <p className="text-[#0bda76] text-xs font-medium mt-0.5">{item.delta} Playrate</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Falling Off */}
+          <h3 className="text-white text-base font-bold tracking-tight px-0 pb-2 pt-2 flex items-center gap-2">
+            <span className="material-symbols-outlined text-red-500" style={{ fontSize: '20px' }} aria-hidden="true">trending_down</span>
+            Falling Off
+          </h3>
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {(falling.length > 0 ? falling : [{ name: 'No data', delta: '', description: '' }]).map((item, i) => (
+              <div key={i} className="stitch-card p-4 flex flex-col gap-2" style={{ opacity: 0.85 }}>
+                <div className="w-10 h-10 rounded-xl border-2 flex items-center justify-center shrink-0" style={{ borderColor: '#553267', background: 'rgba(85,50,103,0.25)' }}>
+                  <span className="material-symbols-outlined text-stitch-muted" style={{ fontSize: '20px' }} aria-hidden="true">arrow_downward</span>
+                </div>
+                <div>
+                  <h4 className="text-stitch-muted font-bold text-sm leading-snug">{item.name}</h4>
+                  {item.delta && <p className="text-red-400 text-xs font-medium mt-0.5">{item.delta} Playrate</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Recent OTA / Balance Changes */}
+          {otaChanges.length > 0 && (
+            <>
+              <h3 className="text-white text-base font-bold tracking-tight pb-2 pt-2 flex items-center gap-2">
+                <span className="material-symbols-outlined text-[#ad2bee]" style={{ fontSize: '20px' }} aria-hidden="true">update</span>
+                Recent OTA Changes
+              </h3>
+              <div className="stitch-card p-4 mb-6">
+                <ul className="space-y-2">
+                  {otaChanges.map((change, i) => {
+                    const isNerf = change.toLowerCase().includes('nerf') || /\d+→\d+/.test(change) && (() => {
+                      const nums = change.match(/(\d+)→(\d+)/);
+                      return nums && parseInt(nums[2]) < parseInt(nums[1]);
+                    })();
+                    return (
+                      <li key={i} className="flex items-start gap-2.5 text-sm">
+                        <span className="material-symbols-outlined shrink-0 mt-0.5" style={{ fontSize: '16px', color: isNerf ? '#f87171' : '#4ade80' }} aria-hidden="true">
+                          {isNerf ? 'arrow_downward' : 'arrow_upward'}
+                        </span>
+                        <span className="text-slate-300 leading-snug">{change}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </>
+          )}
+
+          {/* Meta Shift Highlights */}
+          <h3 className="text-white text-base font-bold tracking-tight pb-2 pt-2 flex items-center gap-2">
+            <span className="material-symbols-outlined text-[#ad2bee]" style={{ fontSize: '20px' }} aria-hidden="true">bolt</span>
+            Meta Shift Highlights
+          </h3>
+          <div className="stitch-card p-4 mb-4">
+            {/* TODO: replace with weeklySnapshot.metaShifts[] from data/meta-context.json */}
+            <ul className="space-y-3">
+              {[
+                { icon: 'new_releases', color: '#ad2bee', text: `${(META_CONTEXT.hotCards || ['New cards'])[0]} emerging as the most contested card in high-ladder queues.` },
+                { icon: 'swap_vert',    color: '#3b82f6', text: `Control shell demand rising — ${(META_CONTEXT.techCards || ['tech cards']).slice(0,2).join(' and ')} tech rates up significantly.` },
+                { icon: 'insights',    color: '#f97316', text: `${sTierCount} S-tier archetypes confirmed post-OTA. Expect further tuning next patch.` },
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-2.5 text-sm">
+                  <span className="material-symbols-outlined shrink-0 mt-0.5" style={{ fontSize: '16px', color: item.color }} aria-hidden="true">{item.icon}</span>
+                  <span className="text-slate-300 leading-snug">{item.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Data attribution footer */}
+          <p className="text-stitch-muted text-xs text-center mt-2">
+            Data from <span className="text-[#c75fff]">{META_CONTEXT.lastUpdated || 'recent patch'}</span> — {META_CONTEXT.season || 'Current Season'}
+          </p>
+        </div>
+      );
+    };
+
+    const OracleView = ({ collection }) => {
+      const [oracleTab, setOracleTab] = useState('spotlight');
+
+      const TABS = [
+        { id: 'spotlight', label: 'Spotlight', icon: 'auto_awesome' },
+        { id: 'tierlist',  label: 'Tier List', icon: 'leaderboard'  },
+        { id: 'snapshot',  label: 'This Week', icon: 'insights'     },
+      ];
+
+      return (
+        <div>
+          {/* Sub-tab switcher — 3 tabs, smaller text to fit mobile */}
+          <div className="flex gap-1 px-4 pt-3 pb-0">
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setOracleTab(tab.id)}
+                className="flex-1 py-2 rounded-full font-bold font-display transition-all duration-150 min-h-[36px]"
+                style={{
+                  fontSize: '11px',
+                  ...(oracleTab === tab.id
+                    ? { background: '#ad2bee', color: '#fff', boxShadow: '0 0 8px rgba(173,43,238,0.4)' }
+                    : { background: 'rgba(173,43,238,0.1)', color: '#b792c9', border: '1px solid rgba(173,43,238,0.2)' })
+                }}
+                aria-pressed={oracleTab === tab.id}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '13px', verticalAlign: 'middle' }} aria-hidden="true">{tab.icon}</span>
+                {' '}{tab.label}
+              </button>
+            ))}
+          </div>
+          {oracleTab === 'spotlight' && <SpotlightOracle collection={collection} />}
+          {oracleTab === 'tierlist'  && <MetaTierList />}
+          {oracleTab === 'snapshot'  && <WeeklyMetaSnapshot />}
         </div>
       );
     };
@@ -7712,6 +9617,402 @@ RESPONSE GUIDELINES:
       );
     };
 
+    // ==================== DECK COMPARISON COMPONENT ====================
+    const DeckComparison = ({ decks }) => {
+      const [deckAId, setDeckAId] = useState(decks.length > 0 ? decks[0].id : '');
+      const [deckBId, setDeckBId] = useState(decks.length > 1 ? decks[1].id : '');
+
+      const deckA = decks.find(d => d.id === deckAId) || null;
+      const deckB = decks.find(d => d.id === deckBId) || null;
+
+      // Build a card lookup map from uniqueCards for cost/power resolution
+      const cardLookup = useMemo(() => {
+        const map = new Map();
+        uniqueCards.forEach(c => {
+          map.set(c.name.toLowerCase(), c);
+          if (c.defId) map.set(c.defId.toLowerCase(), c);
+        });
+        return map;
+      }, []);
+
+      const resolveCard = (name) => cardLookup.get(name.toLowerCase()) || { name, cost: 0, power: 0 };
+
+      // Derived stats for a deck
+      const getDeckStats = (deck) => {
+        if (!deck) return null;
+        const cards = (deck.cards || []).map(resolveCard);
+        const totalCost = cards.reduce((s, c) => s + (c.cost || 0), 0);
+        const totalPower = cards.reduce((s, c) => s + (c.power || 0), 0);
+        const avgCost = cards.length > 0 ? (totalCost / cards.length).toFixed(1) : '0.0';
+        // Energy curve: buckets 1-5, 6+
+        const curve = [0, 0, 0, 0, 0, 0]; // indices 0..5 → cost 1..6+
+        cards.forEach(c => {
+          const cost = c.cost || 0;
+          const idx = Math.min(cost - 1, 5);
+          if (idx >= 0) curve[idx]++;
+        });
+        return { cards, totalCost, totalPower, avgCost, cardCount: cards.length, curve };
+      };
+
+      const statsA = useMemo(() => getDeckStats(deckA), [deckA]);
+      const statsB = useMemo(() => getDeckStats(deckB), [deckB]);
+
+      // Overlap analysis
+      const overlapData = useMemo(() => {
+        if (!deckA || !deckB) return null;
+        const setA = new Set((deckA.cards || []).map(n => n.toLowerCase()));
+        const setB = new Set((deckB.cards || []).map(n => n.toLowerCase()));
+        const allNames = new Set([...setA, ...setB]);
+        const shared = [];
+        const onlyA = [];
+        const onlyB = [];
+        allNames.forEach(name => {
+          const displayName = resolveCard(name).name || name;
+          if (setA.has(name) && setB.has(name)) shared.push(displayName);
+          else if (setA.has(name)) onlyA.push(displayName);
+          else onlyB.push(displayName);
+        });
+        return { shared, onlyA, onlyB };
+      }, [deckA, deckB]);
+
+      // Max curve value for bar scaling
+      const curveMax = useMemo(() => {
+        if (!statsA || !statsB) return 1;
+        return Math.max(1, ...statsA.curve, ...statsB.curve);
+      }, [statsA, statsB]);
+
+      const CURVE_LABELS = ['1', '2', '3', '4', '5', '6+'];
+      const BAR_MAX_PX = 64; // px equivalent of h-16
+
+      // Render a deck selector dropdown
+      const DeckSelector = ({ value, onChange, color, label }) => (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest font-comic" style={{ color }}>
+              {label}
+            </span>
+          </div>
+          <div className="relative">
+            <select
+              value={value}
+              onChange={e => onChange(e.target.value)}
+              className="w-full appearance-none rounded-xl px-4 py-3 pr-10 text-sm font-medium text-white border focus:outline-none focus:ring-2 focus:ring-offset-0 truncate"
+              style={{
+                background: 'rgba(42,26,51,0.9)',
+                borderColor: color,
+                boxShadow: `0 0 8px ${color}40`,
+                color: '#fff',
+                fontSize: '14px',
+              }}
+              aria-label={`Select ${label}`}
+            >
+              {decks.length === 0 && <option value="">No decks saved</option>}
+              {decks.map(d => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
+            </select>
+            <span
+              className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              style={{ color, fontSize: '18px' }}
+              aria-hidden="true"
+            >
+              expand_more
+            </span>
+          </div>
+          {value && (
+            <div
+              className="rounded-xl p-4 border"
+              style={{
+                background: 'rgba(42,26,51,0.6)',
+                borderColor: `${color}50`,
+              }}
+            >
+              {value && decks.find(d => d.id === value) ? (
+                <div className="flex flex-col gap-1">
+                  <span className="text-white font-bold text-base leading-tight">
+                    {decks.find(d => d.id === value).name}
+                  </span>
+                  <span className="text-xs text-stitch-muted">
+                    {(decks.find(d => d.id === value).cards || []).length} cards
+                  </span>
+                </div>
+              ) : null}
+            </div>
+          )}
+        </div>
+      );
+
+      // Empty state when fewer than 2 decks exist
+      if (decks.length < 2) {
+        return (
+          <div className="px-4 pb-20">
+            <Header title="COMPARE DECKS" subtitle="Side-by-side analysis" />
+            <div className="flex flex-col items-center justify-center mt-16 text-center gap-4">
+              <span className="material-symbols-outlined text-6xl text-stitch-muted" aria-hidden="true">compare_arrows</span>
+              <h2 className="font-comic text-xl text-white tracking-wider">Need 2+ Decks</h2>
+              <p className="text-stitch-muted text-sm max-w-xs leading-relaxed">
+                Build at least two decks in the Decks tab to unlock side-by-side comparison.
+              </p>
+              <p className="text-xs text-stitch-muted/60">
+                You currently have {decks.length} deck{decks.length === 1 ? '' : 's'}.
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="COMPARE DECKS" subtitle="Side-by-side analysis" />
+
+          {/* Deck Selectors */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <DeckSelector
+              value={deckAId}
+              onChange={setDeckAId}
+              color="#ad2bee"
+              label="Deck A"
+            />
+            <DeckSelector
+              value={deckBId}
+              onChange={setDeckBId}
+              color="#3b82f6"
+              label="Deck B"
+            />
+          </div>
+
+          {/* Stats comparison — only when both decks selected */}
+          {statsA && statsB && deckA && deckB && deckAId !== deckBId ? (
+            <>
+              {/* Key Stats Grid */}
+              <section className="mb-5" aria-label="Performance metrics">
+                <h3 className="stitch-label mb-3 px-1">Performance Metrics</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Avg Energy */}
+                  <div className="stitch-stat flex flex-col gap-2">
+                    <p className="stitch-label">Avg. Energy</p>
+                    <div className="flex items-end justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-xl font-bold" style={{ color: '#ad2bee' }}>{statsA.avgCost}</span>
+                        <span className="text-xl font-bold" style={{ color: '#3b82f6' }}>{statsB.avgCost}</span>
+                      </div>
+                      <span className="material-symbols-outlined mb-1" style={{ color: '#ad2bee', fontSize: '22px' }} aria-hidden="true">bolt</span>
+                    </div>
+                  </div>
+                  {/* Total Power */}
+                  <div className="stitch-stat flex flex-col gap-2">
+                    <p className="stitch-label">Total Power</p>
+                    <div className="flex items-end justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-xl font-bold" style={{ color: '#ad2bee' }}>{statsA.totalPower}</span>
+                        <span className="text-xl font-bold" style={{ color: '#3b82f6' }}>{statsB.totalPower}</span>
+                      </div>
+                      <span className="material-symbols-outlined mb-1" style={{ color: '#ad2bee', fontSize: '22px' }} aria-hidden="true">fitness_center</span>
+                    </div>
+                  </div>
+                  {/* Card Count */}
+                  <div className="stitch-stat flex flex-col gap-2">
+                    <p className="stitch-label">Cards</p>
+                    <div className="flex items-end justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-xl font-bold" style={{ color: '#ad2bee' }}>{statsA.cardCount}</span>
+                        <span className="text-xl font-bold" style={{ color: '#3b82f6' }}>{statsB.cardCount}</span>
+                      </div>
+                      <span className="material-symbols-outlined mb-1" style={{ color: '#ad2bee', fontSize: '22px' }} aria-hidden="true">style</span>
+                    </div>
+                  </div>
+                  {/* Shared Cards */}
+                  <div className="stitch-stat flex flex-col gap-2">
+                    <p className="stitch-label">Shared</p>
+                    <div className="flex items-end justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-xl font-bold text-stitch-green">{overlapData ? overlapData.shared.length : 0}</span>
+                        <span className="text-xs text-stitch-muted">cards in both</span>
+                      </div>
+                      <span className="material-symbols-outlined mb-1 text-stitch-green" style={{ fontSize: '22px' }} aria-hidden="true">join_inner</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Energy Curve */}
+              <section className="mb-5" aria-label="Energy curve">
+                <div className="stitch-card p-4 border border-white/5">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="stitch-label">Energy Curve</h3>
+                    <div className="flex gap-4">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full" style={{ background: '#ad2bee' }} aria-hidden="true" />
+                        <span className="text-[10px] text-stitch-muted font-bold">A</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full" style={{ background: '#3b82f6' }} aria-hidden="true" />
+                        <span className="text-[10px] text-stitch-muted font-bold">B</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-end justify-between h-20 px-1 gap-1">
+                    {CURVE_LABELS.map((label, idx) => {
+                      const countA = statsA.curve[idx];
+                      const countB = statsB.curve[idx];
+                      const heightA = Math.round((countA / curveMax) * BAR_MAX_PX);
+                      const heightB = Math.round((countB / curveMax) * BAR_MAX_PX);
+                      return (
+                        <div key={label} className="flex flex-col items-center gap-1 flex-1">
+                          <div className="flex items-end gap-0.5 justify-center">
+                            {/* Deck A bar */}
+                            <div
+                              className="w-2.5 rounded-t-sm"
+                              style={{
+                                height: `${heightA}px`,
+                                minHeight: countA > 0 ? '4px' : '0px',
+                                background: '#ad2bee',
+                              }}
+                              aria-label={`Cost ${label}: Deck A ${countA} cards`}
+                            />
+                            {/* Deck B bar */}
+                            <div
+                              className="w-2.5 rounded-t-sm"
+                              style={{
+                                height: `${heightB}px`,
+                                minHeight: countB > 0 ? '4px' : '0px',
+                                background: '#3b82f6',
+                              }}
+                              aria-label={`Cost ${label}: Deck B ${countB} cards`}
+                            />
+                          </div>
+                          <span className="text-[10px] text-stitch-muted">{label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </section>
+
+              {/* Card Overlap Table */}
+              {overlapData && (
+                <section className="mb-5" aria-label="Card overlap">
+                  <h3 className="stitch-label mb-3 px-1">Card Overlap</h3>
+                  <div className="rounded-xl overflow-hidden border border-white/10 stitch-card">
+                    <table className="w-full text-left text-sm" role="table">
+                      <thead>
+                        <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
+                          <th className="p-3 stitch-label font-bold">Card</th>
+                          <th className="p-3 stitch-label font-bold text-center" style={{ color: '#ad2bee' }}>A</th>
+                          <th className="p-3 stitch-label font-bold text-center" style={{ color: '#3b82f6' }}>B</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {overlapData.shared.map(name => (
+                          <tr key={`shared-${name}`} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                            <td className="p-3 font-medium text-white text-sm">{name}</td>
+                            <td className="p-3 text-center">
+                              <span className="material-symbols-outlined" style={{ color: '#0bda76', fontSize: '18px' }} aria-label="In deck A">check_circle</span>
+                            </td>
+                            <td className="p-3 text-center">
+                              <span className="material-symbols-outlined" style={{ color: '#0bda76', fontSize: '18px' }} aria-label="In deck B">check_circle</span>
+                            </td>
+                          </tr>
+                        ))}
+                        {overlapData.onlyA.map(name => (
+                          <tr key={`a-${name}`} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                            <td className="p-3 font-medium text-white text-sm">{name}</td>
+                            <td className="p-3 text-center">
+                              <span className="material-symbols-outlined" style={{ color: '#0bda76', fontSize: '18px' }} aria-label="In deck A">check_circle</span>
+                            </td>
+                            <td className="p-3 text-center">
+                              <span className="material-symbols-outlined text-slate-600" style={{ fontSize: '18px' }} aria-label="Not in deck B">circle</span>
+                            </td>
+                          </tr>
+                        ))}
+                        {overlapData.onlyB.map(name => (
+                          <tr key={`b-${name}`} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                            <td className="p-3 font-medium text-white text-sm">{name}</td>
+                            <td className="p-3 text-center">
+                              <span className="material-symbols-outlined text-slate-600" style={{ fontSize: '18px' }} aria-label="Not in deck A">circle</span>
+                            </td>
+                            <td className="p-3 text-center">
+                              <span className="material-symbols-outlined" style={{ color: '#0bda76', fontSize: '18px' }} aria-label="In deck B">check_circle</span>
+                            </td>
+                          </tr>
+                        ))}
+                        {overlapData.shared.length === 0 && overlapData.onlyA.length === 0 && overlapData.onlyB.length === 0 && (
+                          <tr>
+                            <td colSpan={3} className="p-6 text-center text-stitch-muted text-sm">No cards found</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              )}
+
+              {/* Verdict / Summary */}
+              <section className="mb-5" aria-label="Comparison verdict">
+                <div
+                  className="p-5 rounded-2xl border relative overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(173,43,238,0.15) 0%, rgba(42,26,51,0.6) 50%, rgba(59,130,246,0.15) 100%)',
+                    borderColor: 'rgba(173,43,238,0.4)',
+                  }}
+                >
+                  <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none" aria-hidden="true">
+                    <span className="material-symbols-outlined" style={{ fontSize: '64px' }}>stars</span>
+                  </div>
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="material-symbols-outlined" style={{ color: '#ad2bee', fontSize: '20px' }} aria-hidden="true">compare_arrows</span>
+                      <h3 className="font-bold text-base text-white">Comparison Summary</h3>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="rounded-xl p-3" style={{ background: 'rgba(173,43,238,0.1)', border: '1px solid rgba(173,43,238,0.25)' }}>
+                        <div className="text-xs text-stitch-muted mb-1 font-bold uppercase tracking-wide">A Only</div>
+                        <div className="text-2xl font-comic" style={{ color: '#ad2bee' }}>{overlapData ? overlapData.onlyA.length : 0}</div>
+                        <div className="text-xs text-stitch-muted">unique</div>
+                      </div>
+                      <div className="rounded-xl p-3" style={{ background: 'rgba(11,218,118,0.1)', border: '1px solid rgba(11,218,118,0.25)' }}>
+                        <div className="text-xs text-stitch-muted mb-1 font-bold uppercase tracking-wide">Shared</div>
+                        <div className="text-2xl font-comic text-stitch-green">{overlapData ? overlapData.shared.length : 0}</div>
+                        <div className="text-xs text-stitch-muted">overlap</div>
+                      </div>
+                      <div className="rounded-xl p-3" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)' }}>
+                        <div className="text-xs text-stitch-muted mb-1 font-bold uppercase tracking-wide">B Only</div>
+                        <div className="text-2xl font-comic" style={{ color: '#3b82f6' }}>{overlapData ? overlapData.onlyB.length : 0}</div>
+                        <div className="text-xs text-stitch-muted">unique</div>
+                      </div>
+                    </div>
+                    {overlapData && overlapData.shared.length > 0 && (
+                      <p className="mt-3 text-sm text-stitch-muted leading-relaxed">
+                        <span className="text-white font-bold">{deckA.name}</span> and{' '}
+                        <span className="text-white font-bold">{deckB.name}</span> share{' '}
+                        <span className="font-bold" style={{ color: '#0bda76' }}>{overlapData.shared.length} card{overlapData.shared.length !== 1 ? 's' : ''}</span>.{' '}
+                        {overlapData.shared.length >= 6
+                          ? 'High overlap — these decks share a core strategy.'
+                          : overlapData.shared.length >= 3
+                          ? 'Moderate overlap — similar tools, different gameplan.'
+                          : 'Low overlap — these are distinct archetypes.'}
+                      </p>
+                    )}
+                    {overlapData && overlapData.shared.length === 0 && (
+                      <p className="mt-3 text-sm text-stitch-muted leading-relaxed">
+                        No shared cards — <span className="text-white font-bold">{deckA.name}</span> and{' '}
+                        <span className="text-white font-bold">{deckB.name}</span> are completely distinct archetypes.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </section>
+            </>
+          ) : deckAId === deckBId ? (
+            <div className="flex flex-col items-center justify-center mt-12 text-center gap-3">
+              <span className="material-symbols-outlined text-4xl text-stitch-muted" aria-hidden="true">compare_arrows</span>
+              <p className="text-stitch-muted text-sm">Select two different decks to compare.</p>
+            </div>
+          ) : null}
+        </div>
+      );
+    };
+
     const App = () => {
       const [activeTab, setActiveTab] = useState('ai');
       const [collection, setCollection] = useState(() => loadFromStorage('snap_collection', { owned: [], lastUpdated: new Date().toISOString() }));
@@ -7892,7 +10193,7 @@ RESPONSE GUIDELINES:
         const tab = params.get('tab');
         const action = params.get('action');
 
-        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'settings', 'oracle', 'history', 'profile'].includes(tab)) {
+        if (tab && ['dashboard', 'ai', 'collection', 'database', 'decks', 'compare', 'settings', 'oracle', 'history', 'profile'].includes(tab)) {
           setActiveTab(tab);
         }
 
@@ -8078,7 +10379,7 @@ RESPONSE GUIDELINES:
             )}
             {activeTab === 'oracle' && (
               <ErrorBoundary>
-                <SpotlightOracle collection={collection} />
+                <OracleView collection={collection} />
               </ErrorBoundary>
             )}
             {activeTab === 'ai' && (
@@ -8091,9 +10392,19 @@ RESPONSE GUIDELINES:
                 <Collection collection={collection} setCollection={setCollection} cardDataVersion={cardDataVersion} />
               </ErrorBoundary>
             )}
+            {activeTab === 'database' && (
+              <ErrorBoundary>
+                <CardDatabase collection={collection} />
+              </ErrorBoundary>
+            )}
             {activeTab === 'decks' && (
               <ErrorBoundary>
                 <Decks decks={decks} setDecks={setDecks} collection={collection} />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'compare' && (
+              <ErrorBoundary>
+                <DeckComparison decks={decks} />
               </ErrorBoundary>
             )}
             {activeTab === 'history' && (

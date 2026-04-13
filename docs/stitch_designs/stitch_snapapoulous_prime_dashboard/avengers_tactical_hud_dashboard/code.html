@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Avengers Tactical HUD Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00aaff",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0a0c0e",
+                        "iron-red": "#ff3b3b",
+                        "stark-dark": "#121d24",
+                        "glass-border": "rgba(0, 170, 255, 0.2)",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background: radial-gradient(circle at center, #121d24 0%, #0a0c0e 100%);
+            background-attachment: fixed;
+        }
+        .hud-grid {
+            background-image: linear-gradient(rgba(0, 170, 255, 0.05) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 170, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .glass-panel {
+            background: rgba(18, 29, 36, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 170, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 170, 255, 0.1);
+        }
+        .arc-glow {
+            box-shadow: 0 0 15px #00aaff, 0 0 30px rgba(0, 170, 255, 0.4);
+        }
+        .scanline {
+            width: 100%;
+            height: 2px;
+            background: rgba(0, 170, 255, 0.1);
+            position: absolute;
+            z-index: 10;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="font-display text-white selection:bg-primary/30">
+<div class="relative min-h-screen w-full flex flex-col bg-background-dark overflow-x-hidden hud-grid">
+<!-- Header / TopNavBar -->
+<header class="sticky top-0 z-50 w-full border-b border-white/10 bg-background-dark/80 backdrop-blur-md px-6 lg:px-20">
+<div class="max-w-[1440px] mx-auto flex items-center justify-between h-16">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M47.2426 24L24 47.2426L0.757355 24L24 0.757355L47.2426 24ZM12.2426 21H35.7574L24 9.24264L12.2426 21Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-lg font-black tracking-widest text-white uppercase italic">Avengers HUD</h2>
+</div>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-xs font-bold tracking-[0.2em] text-primary hover:text-white transition-colors" href="#">DASHBOARD</a>
+<a class="text-xs font-bold tracking-[0.2em] text-white/60 hover:text-white transition-colors" href="#">DECK ANALYTICS</a>
+<a class="text-xs font-bold tracking-[0.2em] text-white/60 hover:text-white transition-colors" href="#">DATABASE</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden sm:flex bg-stark-dark/50 border border-white/10 rounded-lg px-3 py-1.5 items-center gap-2">
+<span class="material-symbols-outlined text-primary text-sm">wifi</span>
+<span class="text-[10px] font-bold text-primary tracking-tighter">SYSTEM: OPTIMIZED</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-white/60 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-white/60 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-10 h-10 rounded-full border-2 border-primary/50 bg-cover bg-center" data-alt="User profile avatar with futuristic circular border" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAg0sMB9PGO0oiY3LusxT585az37ssF7peBTGgYvMDxs7RP1aV4Vr_brTtYcQ-HDiXQmkoQpbRgIl_d8AO0wU3MYWVwLbq0zZ1HmlCMSFgjE9OadQROQkq7oNFoC92E1LF2YBVYqZRp7I8koXohiBns8AEYNlWZ-KQ3wySOWsQTnXhAbzX1VbMZZ_yIhLQncGbs9kJya4k-dwdJFGrviQwmT567fWwCPRbEFvBwNQ4dojRmcqlZqaZBzThOxk9oD1E38Q3RCzlX06k5')"></div>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 max-w-[1440px] mx-auto w-full px-6 lg:px-20 py-8 space-y-8">
+<!-- Headline Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-l-4 border-primary pl-6">
+<div>
+<p class="text-primary text-xs font-bold tracking-[0.3em] uppercase mb-1">Tactical Overview</p>
+<h1 class="text-3xl md:text-4xl font-black text-white tracking-tight uppercase">Operational Performance Dashboard</h1>
+</div>
+<div class="text-right">
+<p class="text-white/40 text-[10px] font-mono">ENCRYPTED STREAM // ID: 616-AVNG</p>
+<p class="text-primary font-mono text-sm tracking-widest">RANK: INFINITE [1,242]</p>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left Column: Central Hub -->
+<div class="lg:col-span-8 space-y-6">
+<!-- Glass Chart Panel -->
+<div class="glass-panel rounded-xl p-6 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-20 pointer-events-none">
+<span class="material-symbols-outlined text-8xl text-primary">monitoring</span>
+</div>
+<div class="flex items-center justify-between mb-8 relative z-10">
+<div>
+<h3 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                                    CUBE PERFORMANCE TRENDS
+                                    <span class="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded">LIVE</span>
+</h3>
+<p class="text-sm text-white/50">Performance metrics over the last 24 mission cycles</p>
+</div>
+<div class="text-right">
+<span class="text-4xl font-black text-primary leading-none">+42</span>
+<p class="text-[10px] text-primary/70 font-bold tracking-widest">NET CUBES</p>
+</div>
+</div>
+<!-- Chart Component -->
+<div class="w-full h-64 relative mb-4">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 1000 250">
+<defs>
+<lineargradient id="glowGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="rgba(0, 170, 255, 0.4)"></stop>
+<stop offset="100%" stop-color="rgba(0, 170, 255, 0)"></stop>
+</lineargradient>
+<filter id="glow">
+<fegaussianblur result="blur" stddeviation="3"></fegaussianblur>
+<fecomposite in="SourceGraphic" in2="blur" operator="over"></fecomposite>
+</filter>
+</defs>
+<path d="M0,180 Q100,200 200,120 T400,140 T600,60 T800,100 T1000,40 V250 H0 Z" fill="url(#glowGradient)"></path>
+<path d="M0,180 Q100,200 200,120 T400,140 T600,60 T800,100 T1000,40" fill="none" filter="url(#glow)" stroke="#00aaff" stroke-width="4"></path>
+<circle cx="200" cy="120" fill="#00aaff" r="4"></circle>
+<circle cx="600" cy="60" fill="#00aaff" r="4"></circle>
+<circle cx="1000" cy="40" fill="#00aaff" r="4"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-between pointer-events-none opacity-20">
+<div class="h-full border-r border-dashed border-white/50 w-px"></div>
+<div class="h-full border-r border-dashed border-white/50 w-px"></div>
+<div class="h-full border-r border-dashed border-white/50 w-px"></div>
+<div class="h-full border-r border-dashed border-white/50 w-px"></div>
+</div>
+</div>
+<div class="flex justify-between text-[10px] font-bold text-white/30 tracking-widest uppercase px-2">
+<span>00:00</span>
+<span>06:00</span>
+<span>12:00</span>
+<span>18:00</span>
+<span>23:59</span>
+</div>
+</div>
+<!-- Stats Row -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<div class="glass-panel rounded-xl p-5 border-l-4 border-primary">
+<p class="text-white/50 text-[10px] font-bold tracking-[0.2em] mb-1">WIN RATE</p>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-black text-white">64.2%</span>
+<span class="text-xs font-bold text-primary">+2.1%</span>
+</div>
+</div>
+<div class="glass-panel rounded-xl p-5 border-l-4 border-primary">
+<p class="text-white/50 text-[10px] font-bold tracking-[0.2em] mb-1">AVG CUBES</p>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-black text-white">1.8</span>
+<span class="text-xs font-bold text-primary">+0.4</span>
+</div>
+</div>
+<div class="glass-panel rounded-xl p-5 border-l-4 border-iron-red/50">
+<p class="text-white/50 text-[10px] font-bold tracking-[0.2em] mb-1">MATCHES</p>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-black text-white">124</span>
+<span class="text-xs font-bold text-iron-red">+12</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Deck Analysis -->
+<div class="lg:col-span-4 space-y-6">
+<div class="glass-panel rounded-xl flex flex-col h-full">
+<div class="p-6 border-b border-white/10 flex justify-between items-center">
+<h2 class="text-sm font-black tracking-widest uppercase flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg">shield</span>
+                                Active Deck: V4.Assemble
+                            </h2>
+<button class="text-primary hover:text-white">
+<span class="material-symbols-outlined">edit_square</span>
+</button>
+</div>
+<div class="p-6 space-y-4 flex-1 overflow-y-auto max-h-[400px]">
+<!-- Deck Card Item -->
+<div class="flex items-center gap-4 p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 hover:border-primary/30 transition-all cursor-pointer group">
+<div class="w-10 h-14 rounded bg-cover bg-center border border-white/20" data-alt="Iron Man card thumbnail" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuARvzDQRASicbYsK2qvi_oivFxTBRtXpqxyqrF2WTVowdXRXOS-Y74IM0SnVIjLCC9rxm5ie1B8Si8wtJ4_iIIJsf4dZHNuDmcD3hYGYMtegAcqfWYfLo7xq8pSiMEXnthYRvZSb8X-xj-wD4-UpmfSNYYa8JquVLPz0ESDY2f2f-cQ_gm4y5CKweJkgF5QpvC3usu5_lCqTtseD8MENsWvftAJnD3jVL7DxmKLtMoeSlP1JODEHPyBOOd9EidvCXWBFPeqMlOqIT6D')"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="text-xs font-bold uppercase">Iron Man</h4>
+<span class="text-[10px] font-mono text-primary">5/0</span>
+</div>
+<div class="w-full bg-white/10 h-1 mt-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[85%]"></div>
+</div>
+<p class="text-[9px] text-white/40 mt-1 uppercase font-bold">Play Rate: 85%</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 hover:border-primary/30 transition-all cursor-pointer group">
+<div class="w-10 h-14 rounded bg-cover bg-center border border-white/20" data-alt="Captain America card thumbnail" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB2Wj8e5PG5P27E0fNDVKTljqWwj35t6aEoA2V-uasZOnaJYiyIDEGqM5PN-jwmTKp35TlHIIQqzQnMcb_vYZw6LxoSqiwWe2ALkTOFltJ2gfhoRC52gn4_7a3CHmt-JCp9JuSY3YmczWB6_u0IXVyJIdoyaRNRdz6E6zArxjuXz6dXIQwvb6bl_2npUG3Q7E4CC7TAw6bws1ChbZLCnFd2oNU9ymCjSZ9Usgk0DRITdtVRQuxMMKL0NmYt1Bu5m5FMz0sa8gj4rE5_')"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="text-xs font-bold uppercase">Captain America</h4>
+<span class="text-[10px] font-mono text-primary">3/3</span>
+</div>
+<div class="w-full bg-white/10 h-1 mt-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[62%]"></div>
+</div>
+<p class="text-[9px] text-white/40 mt-1 uppercase font-bold">Play Rate: 62%</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 hover:border-primary/30 transition-all cursor-pointer group">
+<div class="w-10 h-14 rounded bg-cover bg-center border border-white/20" data-alt="Thor card thumbnail" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBx3TFxvzQDmXbeniYstyagvVLrAiPTWZDJC4v_H5iTJjSNrC5EJV5MQnRI-pYnOTS9E5dTeqkybdbdUWP_5dBz-Z0mj3dePWugQtHBBTkqkP5v3O6cqgJWKvIB61t20jq3IlCOdFx_hYCrgphaVq578zORqVAnZfWdRaOQOsnjrHrV3UtpTjdF3UoGdWZBKdwdeXaiKBrHNvI_IjQ-bz7ZREI1srDbLpi-Aol8bwY4lDoSSVMkrL9VziV9dYiUnp2HxYa_jsE9raN_')"></div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="text-xs font-bold uppercase">Thor</h4>
+<span class="text-[10px] font-mono text-primary">3/4</span>
+</div>
+<div class="w-full bg-white/10 h-1 mt-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[45%]"></div>
+</div>
+<p class="text-[9px] text-white/40 mt-1 uppercase font-bold">Play Rate: 45%</p>
+</div>
+</div>
+</div>
+<!-- Big SNAP Button -->
+<div class="p-6 mt-auto">
+<button class="w-full py-4 bg-primary text-white font-black italic tracking-[0.3em] uppercase rounded-lg arc-glow hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4 relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full hover:translate-x-full transition-transform duration-1000"></div>
+<span class="material-symbols-outlined">bolt</span>
+                                EXECUTE SNAP
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Match Log Section -->
+<div class="glass-panel rounded-xl overflow-hidden">
+<div class="px-6 py-4 bg-white/5 border-b border-white/10 flex justify-between items-center">
+<h2 class="text-xs font-black tracking-widest uppercase">Tactical Engagement Log</h2>
+<span class="text-[10px] font-mono text-white/40">LAST 5 MATCHES</span>
+</div>
+<div class="divide-y divide-white/10">
+<div class="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-primary/20 flex items-center justify-center border border-primary/40">
+<span class="material-symbols-outlined text-primary">celebration</span>
+</div>
+<div>
+<h4 class="text-sm font-bold uppercase">VICTORY</h4>
+<p class="text-[10px] text-white/40">Opponent: Stark_Fanboy // Round 6 Retreat</p>
+</div>
+</div>
+<div class="text-right">
+<span class="text-primary font-black text-xl">+4</span>
+<p class="text-[9px] text-primary/60 font-bold uppercase">CUBES</p>
+</div>
+</div>
+<div class="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-iron-red/20 flex items-center justify-center border border-iron-red/40">
+<span class="material-symbols-outlined text-iron-red">close</span>
+</div>
+<div>
+<h4 class="text-sm font-bold uppercase text-iron-red">DEFEAT</h4>
+<p class="text-[10px] text-white/40">Opponent: Thanos_Snaps // Final Turn Loss</p>
+</div>
+</div>
+<div class="text-right">
+<span class="text-iron-red font-black text-xl">-1</span>
+<p class="text-[9px] text-iron-red/60 font-bold uppercase">CUBES</p>
+</div>
+</div>
+<div class="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-primary/20 flex items-center justify-center border border-primary/40">
+<span class="material-symbols-outlined text-primary">celebration</span>
+</div>
+<div>
+<h4 class="text-sm font-bold uppercase">VICTORY</h4>
+<p class="text-[10px] text-white/40">Opponent: DrDoom_Enjoyer // 8 Cube Win</p>
+</div>
+</div>
+<div class="text-right">
+<span class="text-primary font-black text-xl">+8</span>
+<p class="text-[9px] text-primary/60 font-bold uppercase">CUBES</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="mt-auto border-t border-white/10 px-6 lg:px-20 py-6 bg-background-dark/50">
+<div class="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<div class="flex items-center gap-6">
+<p class="text-[10px] font-bold text-white/30 tracking-widest uppercase">© STARK INDUSTRIES HUD v2.4.0</p>
+<div class="h-4 w-px bg-white/10 hidden md:block"></div>
+<div class="flex items-center gap-4">
+<span class="text-[10px] font-bold text-primary tracking-widest uppercase">SERVERS: STABLE</span>
+<span class="text-[10px] font-bold text-white/30 tracking-widest uppercase">LATENCY: 12ms</span>
+</div>
+</div>
+<div class="flex gap-4">
+<button class="bg-white/5 hover:bg-white/10 text-white/60 px-4 py-1.5 rounded-lg text-[10px] font-bold border border-white/5 uppercase tracking-widest transition-all">Export Log</button>
+<button class="bg-white/5 hover:bg-white/10 text-white/60 px-4 py-1.5 rounded-lg text-[10px] font-bold border border-white/5 uppercase tracking-widest transition-all">Support HUD</button>
+</div>
+</div>
+</footer>
+</div>
+</body></html>

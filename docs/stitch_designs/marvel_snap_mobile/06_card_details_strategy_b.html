@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ad2bee",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#1c1022",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Background Blur Art -->
+<div class="fixed inset-0 z-0 opacity-20 blur-3xl" data-alt="Blurred comic book action illustration background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAsxzcMqta4pbo9KdUuHsQMfhNn929lafJdSW6RrQWXmsxcD18Hdm08s3IVMeyI6IheL0sl9-yS5hqAbFOBbDLgJTbBZQApxWjl_v3cv8pmgCOXDbrbMa4BuHbA6db8Ty5c3Gnozr_rSv-zCY5PJrOz7fNH3QN-IU1MhQ-7QUIjkEEgbXUUNGi3y3tgZpUCVcn4Nc2uBTDgkfkdmuUF5ommpi2QuUSA_0muFUR2VDv09hn8cpO4m2zdomV5wE37b6zgW7D0MSCkTeGj"); background-size: cover; background-position: center;'>
+</div>
+<!-- Top AppBar -->
+<header class="sticky top-0 z-50 flex items-center bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md p-4 justify-between border-b border-white/10">
+<div class="text-primary flex size-10 shrink-0 items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">Card Details</h2>
+<div class="flex w-10 items-center justify-end">
+<button class="flex cursor-pointer items-center justify-center rounded-full size-10 bg-primary/20 text-primary">
+<span class="material-symbols-outlined fill-1">favorite</span>
+</button>
+</div>
+</header>
+<main class="relative z-10 flex flex-col pb-10">
+<!-- Hero Card Art Section -->
+<div class="@container px-4 py-6">
+<div class="relative w-full aspect-[3/4] max-w-sm mx-auto bg-slate-800 rounded-xl overflow-hidden shadow-2xl border-4 border-primary/50 group">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Marvel Shang-Chi character card illustration" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCgBKL_0zCnnMF9mFo9BVx9Gj9iyUr8xhjK1vPn9rthFksUHkc4xwP6rTTuDiMSHlxCwosSToPa5IoZKpqOLI9FxDqv108S1XOc3apK_8dX01pN6a6KSdDpfoJs7fHCchSQc5eABofOnYPDMZSzbGheUf2LvuzNmo21CoMzkm-jenTnLvDZwU_LvWz028QPobzCZFC4EaZxuBn059MhLGoVn_JeUzC2rj327nDW55ZNfEem2Ra3VxbY5Sky9766vNkYRB_JvhGL-tXw");'>
+</div>
+<!-- Energy & Power Badges -->
+<div class="absolute top-4 left-4 size-14 bg-blue-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+<span class="text-2xl font-black text-white">4</span>
+</div>
+<div class="absolute bottom-4 right-4 size-14 bg-orange-500 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+<span class="text-2xl font-black text-white">3</span>
+</div>
+</div>
+</div>
+<!-- Card Name and Basic Info -->
+<div class="px-6 mb-6">
+<h1 class="text-4xl font-black tracking-tighter text-slate-900 dark:text-white mb-1 uppercase">Shang-Chi</h1>
+<div class="flex items-center gap-2">
+<span class="bg-primary px-3 py-1 rounded-full text-xs font-bold text-white tracking-widest uppercase">On Reveal</span>
+<span class="text-slate-500 dark:text-slate-400 text-sm font-medium">Series 2 • Pool 2</span>
+</div>
+</div>
+<!-- Strategy Section -->
+<section class="px-6 mb-8">
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-primary">lightbulb</span>
+<h3 class="text-xl font-bold">Strategy Tips</h3>
+</div>
+<div class="bg-white/50 dark:bg-white/5 p-4 rounded-xl border border-white/10">
+<p class="text-slate-700 dark:text-slate-300 leading-relaxed">
+                        Wait until the final turn to reveal Shang-Chi. He is most effective when your opponent has priority and has played a 9+ power card in a lane you need to win. Use Zabu to reduce his cost for a turn 6 combo.
+                    </p>
+</div>
+</section>
+<!-- Best Synergy Section -->
+<section class="px-6 mb-8">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">dynamic_feed</span>
+<h3 class="text-xl font-bold">Best Synergy</h3>
+</div>
+<span class="text-primary text-sm font-bold">See All</span>
+</div>
+<div class="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+<div class="flex-shrink-0 w-24 flex flex-col items-center">
+<div class="w-20 h-28 bg-slate-700 rounded-lg mb-2 shadow-lg border border-white/10 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Zabu Marvel Snap card thumbnail" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDt_uPM5Mleq860bInSvlmA-8LY4ihz39zmvrWPa4ha5K8oQEYorHIT6jW2rap1LmR0ncPH_dhlKqijYzcGgvn784ljql-t5dQ61rdqwicquC1Eyi3p_XUXCQ5j40fq53D72ZjmUZwUtvjjF6qmg1nofQA4p-kb-jDg2oqU56nkooK-mZHUy4HGTVScSTmA87w_y7HyIc-BxdwrKAM5eWy_RqCmnx3tuxukrTkb3lAE3byciS_6cTlEaoia5kMbKILVuteSDg203ZdR");'></div>
+</div>
+<span class="text-xs font-bold text-center">Zabu</span>
+</div>
+<div class="flex-shrink-0 w-24 flex flex-col items-center">
+<div class="w-20 h-28 bg-slate-700 rounded-lg mb-2 shadow-lg border border-white/10 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Ghost Marvel Snap card thumbnail" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDaehaslP7kVppAfAQlFwNL_ZETIbwBC-6Zj0bnzLY_b0yI0DUEj6Vh7XwCYGWZQak7YUgVnjjFbCoFBTbFVJFu0MsO7l22b0y7kTYAeO_pRcKwzpQl8WkRKyx6ECN3uYFD7TA5Zf7fN7WMkS_ImopMRRClcDAw32neK0EYRigLqlpazEiG0xOYi5EjOqdieoBVTQta1X-eD4FOU2mwteBHmyMf-tmJ3WMDQVQ50c0G0Hd7hDinW1FX9qPjLpehcBg_eexW3GROjOsf");'></div>
+</div>
+<span class="text-xs font-bold text-center">Ghost</span>
+</div>
+<div class="flex-shrink-0 w-24 flex flex-col items-center">
+<div class="w-20 h-28 bg-slate-700 rounded-lg mb-2 shadow-lg border border-white/10 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Sera Marvel Snap card thumbnail" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCjLoNkyRTGy_GgjlZngFJ0VacD83XsWLERPTsHVtFaHihhi43YWnLhCmWtR7SmtXUkCpJI4D_-JGWqqrJl_yEk6cMovZIhP5pXT-iRaxC0Uu3GJZHi64wStr8UVltM6-MERmVXrd_6anPyS5fVlZJjPR5LXjZLrbhbPDAhRVQ2NU9v8FZdY9Mh5u0uRp2OxTXFazAqrHX1pFwpYoIVu-MztvagikSO5r3kOcpOYii5pO--uW-V180IkuirC1Aq_H4SLI7uXcTGO9lt");'></div>
+</div>
+<span class="text-xs font-bold text-center">Sera</span>
+</div>
+<div class="flex-shrink-0 w-24 flex flex-col items-center">
+<div class="w-20 h-28 bg-slate-700 rounded-lg mb-2 shadow-lg border border-white/10 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Enchantress Marvel Snap card thumbnail" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDyDPehI40r45MagF3M7jZBYyZpz1OpFYHDX0YfXKvFVFM-Py-zXSzhzELQew3OTfrlkbjGoediWycwzrDkUPszyQWfAg20_P71coG7Wg_bOMblMwVimb-hAC9r0-ameFro1Je0GQkF1n80Kb7fd3bDeVQfK0Dc7Fe0p1zqNFLAjAMwjnvEKU1503KnOCyxX162M1LPTfxizQTWtfLKyJ3Uw_G1kVp11OatuTkZkdrIJaSBueDdFARBXLKQoQblh0XQB979rQEkBJ0r");'></div>
+</div>
+<span class="text-xs font-bold text-center">Enchantress</span>
+</div>
+</div>
+</section>
+<!-- Countered By Section -->
+<section class="px-6 mb-8">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-red-500">warning</span>
+<h3 class="text-xl font-bold">Countered By</h3>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-red-500/10 border border-red-500/20 p-3 rounded-xl flex items-center gap-3">
+<div class="size-12 bg-slate-800 rounded-md shrink-0 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Armor card" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCEpM7_mfBF-OmUvIog0XUVCMEHE88fnyAw2KZ7mw4P_p-EqxHRPQ3yeNogQmGlBs8YU-B_3-pkBNn5GWezDVVFtR3wZyhznjAExu82JqIAuwGNHD7xKYckIrMcmIKX-o4JHYJwhN0rOJ9t6HVD3woI0EN5VqhxcXJb09M0BJNE_r6fn83dOtqTamx2KHddXUYuEAtKECQ2PxcgNfkoroLUAugEmXmS1wqYGa0fJPHiZUxvYBRJOH_JhP0jXbnmJFu3JF1AOdc8yOjs");'></div>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-sm">Armor</span>
+<span class="text-[10px] text-red-500/80 uppercase font-black">Protect</span>
+</div>
+</div>
+<div class="bg-red-500/10 border border-red-500/20 p-3 rounded-xl flex items-center gap-3">
+<div class="size-12 bg-slate-800 rounded-md shrink-0 overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Cosmo card" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCgBXjBKGFZlQUhhoaHzFQtzLirGaqAe_-pa5RRkjzzqkzGuSycBJa0BscnZxdYHqHGmhtjYSgaebgbb7rWa8SxBh74seILZoQ8tu-EP1mC3AmkS6y0RPNwwhyDNZ7lv4pJccKP3p9EAmf5BrH9EjEHnKM2zzYRZlODrt8NVSpsSK0lVisX71MIQ5x0oY80Zbe6zjemanHzJvBZgSJxgj2XX_Nye7IfMb6HOuGFOuAPYGpMb4MbwNb_iAz8RuqqFjRy6HmiL-hrvst3");'></div>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-sm">Cosmo</span>
+<span class="text-[10px] text-red-500/80 uppercase font-black">Block</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Top Meta Decks -->
+<section class="px-6">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">analytics</span>
+<h3 class="text-xl font-bold">Top Meta Decks</h3>
+</div>
+</div>
+<div class="space-y-4">
+<!-- Deck Card 1 -->
+<div class="bg-white/50 dark:bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-bold text-lg">Sera Control</h4>
+<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
+<span>Win Rate: 58.4%</span>
+<span>•</span>
+<span>Tier S</span>
+</div>
+</div>
+<button class="bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-bold">COPY CODE</button>
+</div>
+<div class="flex -space-x-2 overflow-hidden">
+<div class="size-8 rounded-full border-2 border-background-dark bg-slate-700"></div>
+<div class="size-8 rounded-full border-2 border-background-dark bg-slate-700"></div>
+<div class="size-8 rounded-full border-2 border-background-dark bg-slate-700"></div>
+<div class="size-8 rounded-full border-2 border-background-dark bg-slate-700"></div>
+<div class="size-8 rounded-full border-2 border-background-dark bg-slate-700"></div>
+<div class="size-8 rounded-full border-2 border-background-dark bg-slate-700"></div>
+<div class="size-8 rounded-full border-2 border-background-dark bg-primary flex items-center justify-center text-[10px] font-bold">+5</div>
+</div>
+</div>
+<!-- Deck Card 2 -->
+<div class="bg-white/50 dark:bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-3">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="font-bold text-lg">Zabu Darkhawk</h4>
+<div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
+<span>Win Rate: 56.1%</span>
+<span>•</span>
+<span>Tier A</span>
+</div>
+</div>
+<button class="bg-primary/20 text-primary px-3 py-1 rounded-full text-xs font-bold">COPY CODE</button>
+</div>
+<div class="flex -space-x-2 overflow-hidden">
+<div class="size-8 rounded-full border-2 border-background-dark bg-slate-700"></div>
+<div class="size-8 rounded-full border-2 border-background-dark bg-slate-700"></div>
+<div class="size-8 rounded-full border-2 border-background-dark bg-slate-700"></div>
+<div class="size-8 rounded-full border-2 border-background-dark bg-slate-700"></div>
+<div class="size-8 rounded-full border-2 border-background-dark bg-slate-700"></div>
+<div class="size-8 rounded-full border-2 border-background-dark bg-slate-700"></div>
+<div class="size-8 rounded-full border-2 border-background-dark bg-primary flex items-center justify-center text-[10px] font-bold">+5</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Spacer for iOS -->
+<div class="h-20"></div>
+</div>
+</body></html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>User Profile &amp; Stats</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ad2bee",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#120818",
+                        "card-dark": "#24132e",
+                        "accent-purple": "#3c2348",
+                        "neon-cyan": "#00f3ff",
+                        "infinite-gold": "#ffd700"
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body { font-family: 'Spline Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel { background: rgba(60, 35, 72, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(173, 43, 238, 0.3); }
+        .rank-glow { filter: drop-shadow(0 0 15px rgba(173, 43, 238, 0.6)); }
+        .cosmic-bg {
+            background: radial-gradient(circle at top right, #3c2348, #120818);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display text-white">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-dark overflow-x-hidden max-w-[430px] mx-auto shadow-2xl cosmic-bg">
+<div class="sticky top-0 z-50 flex items-center bg-background-dark/80 backdrop-blur-md p-4 justify-between border-b border-white/5">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-gradient-to-tr from-primary to-neon-cyan p-[2px]">
+<div class="w-full h-full rounded-full bg-background-dark flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-primary text-2xl">account_circle</span>
+</div>
+</div>
+<div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-tight">CosmicVoyager</h2>
+<span class="text-[10px] text-neon-cyan font-bold uppercase tracking-widest">Season Pass Level 74</span>
+</div>
+</div>
+<button class="flex items-center justify-center rounded-full size-10 bg-white/5 text-white hover:bg-white/10">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="relative flex flex-col items-center py-8 px-4 overflow-hidden">
+<div class="absolute inset-0 opacity-20 pointer-events-none">
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary rounded-full blur-[100px]"></div>
+</div>
+<div class="rank-glow mb-4">
+<div class="relative size-32 flex items-center justify-center">
+<div class="absolute inset-0 border-4 border-infinite-gold rounded-full rotate-45 opacity-50"></div>
+<div class="z-10 bg-gradient-to-b from-infinite-gold to-yellow-600 p-6 rounded-2xl shadow-2xl transform -rotate-3">
+<span class="material-symbols-outlined text-6xl text-background-dark" style="font-variation-settings: 'FILL' 1">all_inclusive</span>
+</div>
+</div>
+</div>
+<h1 class="text-3xl font-black text-white tracking-tighter italic">INFINITE</h1>
+<div class="flex items-center gap-2 mt-1">
+<span class="text-infinite-gold font-bold">Rank 114</span>
+<span class="text-white/40">•</span>
+<span class="text-white/60 text-sm font-medium">Top 2% Globally</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 px-4 mb-6">
+<div class="glass-panel rounded-2xl p-4 flex flex-col justify-between h-24">
+<p class="text-[10px] text-primary font-bold uppercase tracking-widest">Collection Level</p>
+<div class="flex items-end justify-between">
+<span class="text-2xl font-black text-white">8,452</span>
+<span class="material-symbols-outlined text-neon-cyan">layers</span>
+</div>
+</div>
+<div class="glass-panel rounded-2xl p-4 flex flex-col justify-between h-24">
+<p class="text-[10px] text-primary font-bold uppercase tracking-widest">Win Rate</p>
+<div class="flex items-end justify-between">
+<span class="text-2xl font-black text-white">58.4%</span>
+<span class="material-symbols-outlined text-green-400">trending_up</span>
+</div>
+</div>
+<div class="glass-panel rounded-2xl p-4 flex flex-col justify-between h-24">
+<p class="text-[10px] text-primary font-bold uppercase tracking-widest">Total Cubes</p>
+<div class="flex items-end justify-between">
+<span class="text-2xl font-black text-white">+1,240</span>
+<span class="material-symbols-outlined text-blue-400">filter_vintage</span>
+</div>
+</div>
+<div class="glass-panel rounded-2xl p-4 flex flex-col justify-between h-24">
+<p class="text-[10px] text-primary font-bold uppercase tracking-widest">Highest Rank</p>
+<div class="flex items-end justify-between">
+<span class="text-2xl font-black text-white italic">INF</span>
+<span class="material-symbols-outlined text-infinite-gold">workspace_premium</span>
+</div>
+</div>
+</div>
+<div class="px-4 mb-8">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-lg font-bold text-white tracking-tight italic">FAVORITE DECKS</h3>
+<span class="text-xs text-primary font-bold uppercase">View All</span>
+</div>
+<div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
+<div class="flex-shrink-0 w-64 glass-panel rounded-2xl overflow-hidden border-l-4 border-l-primary">
+<div class="p-4">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-bold text-white">Sera Control</h4>
+<span class="bg-primary/20 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold">Tier 1</span>
+</div>
+<div class="flex -space-x-2 mb-4">
+<div class="size-8 rounded-lg bg-indigo-600 border-2 border-card-dark flex items-center justify-center text-[8px] font-bold uppercase">Sera</div>
+<div class="size-8 rounded-lg bg-red-600 border-2 border-card-dark flex items-center justify-center text-[8px] font-bold uppercase">Sha</div>
+<div class="size-8 rounded-lg bg-blue-500 border-2 border-card-dark flex items-center justify-center text-[8px] font-bold uppercase">Enc</div>
+<div class="size-8 rounded-lg bg-gray-500 border-2 border-card-dark flex items-center justify-center text-[8px] font-bold uppercase">+9</div>
+</div>
+<div class="flex justify-between items-center text-[10px] font-bold text-white/40 uppercase">
+<span>Win: 62%</span>
+<span>Avg Cubes: +0.8</span>
+</div>
+</div>
+</div>
+<div class="flex-shrink-0 w-64 glass-panel rounded-2xl overflow-hidden border-l-4 border-l-neon-cyan">
+<div class="p-4">
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-bold text-white">Electro Ramp</h4>
+<span class="bg-neon-cyan/20 text-neon-cyan text-[10px] px-2 py-0.5 rounded-full font-bold">Tier 2</span>
+</div>
+<div class="flex -space-x-2 mb-4">
+<div class="size-8 rounded-lg bg-yellow-600 border-2 border-card-dark flex items-center justify-center text-[8px] font-bold uppercase">Ele</div>
+<div class="size-8 rounded-lg bg-purple-900 border-2 border-card-dark flex items-center justify-center text-[8px] font-bold uppercase">Gal</div>
+<div class="size-8 rounded-lg bg-green-700 border-2 border-card-dark flex items-center justify-center text-[8px] font-bold uppercase">Kno</div>
+<div class="size-8 rounded-lg bg-gray-500 border-2 border-card-dark flex items-center justify-center text-[8px] font-bold uppercase">+9</div>
+</div>
+<div class="flex justify-between items-center text-[10px] font-bold text-white/40 uppercase">
+<span>Win: 54%</span>
+<span>Avg Cubes: +1.2</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="px-4 pb-12">
+<h3 class="text-lg font-bold text-white tracking-tight italic mb-4">RECENT ACHIEVEMENTS</h3>
+<div class="space-y-3">
+<div class="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+<div class="size-12 rounded-full bg-infinite-gold/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-infinite-gold">workspace_premium</span>
+</div>
+<div class="flex-1">
+<h5 class="text-sm font-bold text-white">Season Finisher</h5>
+<p class="text-xs text-white/60">Reach Infinite rank in 3 consecutive seasons.</p>
+</div>
+<span class="text-[10px] font-bold text-primary italic uppercase shrink-0">Completed</span>
+</div>
+<div class="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 opacity-60">
+<div class="size-12 rounded-full bg-neon-cyan/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-neon-cyan">bolt</span>
+</div>
+<div class="flex-1">
+<h5 class="text-sm font-bold text-white">Power Play</h5>
+<p class="text-xs text-white/60">Win a location with over 100 power.</p>
+</div>
+<div class="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
+<div class="w-3/4 h-full bg-neon-cyan"></div>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 opacity-60">
+<div class="size-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary">auto_awesome</span>
+</div>
+<div class="flex-1">
+<h5 class="text-sm font-bold text-white">Ink Finish</h5>
+<p class="text-xs text-white/60">Unlock your first Ink card split variant.</p>
+</div>
+<span class="text-[10px] font-bold text-white/40 italic uppercase shrink-0">2/5 Locked</span>
+</div>
+</div>
+</div>
+<div class="h-20 shrink-0"></div>
+<div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-background-dark/90 backdrop-blur-xl border-t border-white/10 px-6 py-3 flex justify-between items-center z-50">
+<div class="flex flex-col items-center gap-1 opacity-40">
+<span class="material-symbols-outlined">style</span>
+<span class="text-[10px] font-bold uppercase">Decks</span>
+</div>
+<div class="flex flex-col items-center gap-1 opacity-40">
+<span class="material-symbols-outlined">query_stats</span>
+<span class="text-[10px] font-bold uppercase">Meta</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary">
+<div class="relative">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">person</span>
+<div class="absolute -top-1 -right-1 size-2 bg-primary rounded-full"></div>
+</div>
+<span class="text-[10px] font-bold uppercase">Profile</span>
+</div>
+<div class="flex flex-col items-center gap-1 opacity-40">
+<span class="material-symbols-outlined">history</span>
+<span class="text-[10px] font-bold uppercase">History</span>
+</div>
+</div>
+</div>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+
+</body></html>

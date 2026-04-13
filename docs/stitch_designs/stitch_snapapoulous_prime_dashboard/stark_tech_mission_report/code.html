@@ -1,0 +1,259 @@
+<html class="dark"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#258cf4",
+            "background-light": "#f5f7f8",
+            "background-dark": "#0a0a0c",
+            "stark-accent": "#0bda5b",
+            "stark-alert": "#fa6238",
+          },
+          fontFamily: {
+            "display": ["Space Grotesk"]
+          },
+          borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background-image: 
+        radial-gradient(circle at 50% 50%, #1a2a3a 0%, #0a0a0c 100%),
+        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      background-size: 100% 100%, 100% 2px, 3px 100%;
+    }
+    .hud-border {
+      border: 1px solid rgba(37, 140, 244, 0.3);
+      box-shadow: 0 0 15px rgba(37, 140, 244, 0.1);
+    }
+    .glass-morphism {
+      background: rgba(16, 25, 34, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(37, 140, 244, 0.2);
+    }
+    .glow-text {
+      text-shadow: 0 0 8px rgba(37, 140, 244, 0.6);
+    }
+    .arc-glow {
+      box-shadow: inset 0 0 20px rgba(37, 140, 244, 0.4), 0 0 10px rgba(37, 140, 244, 0.2);
+    }
+    .hologram-tilt {
+      transform: perspective(1000px) rotateX(10deg);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-white min-h-screen flex flex-col selection:bg-primary/30">
+<!-- HUD Overlay Corners -->
+<div class="fixed top-0 left-0 w-24 h-24 border-t-2 border-l-2 border-primary/40 m-4 pointer-events-none"></div>
+<div class="fixed top-0 right-0 w-24 h-24 border-t-2 border-r-2 border-primary/40 m-4 pointer-events-none"></div>
+<div class="fixed bottom-0 left-0 w-24 h-24 border-b-2 border-l-2 border-primary/40 m-4 pointer-events-none"></div>
+<div class="fixed bottom-0 right-0 w-24 h-24 border-b-2 border-r-2 border-primary/40 m-4 pointer-events-none"></div>
+<!-- Main Layout Container -->
+<div class="relative flex flex-col flex-1">
+<!-- Top Nav Bar -->
+<header class="flex items-center justify-between px-10 py-6 border-b border-primary/20 glass-morphism">
+<div class="flex items-center gap-4">
+<div class="size-8 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M36.7273 44C33.9891 44 31.6043 39.8386 30.3636 33.69C29.123 39.8386 26.7382 44 24 44C21.2618 44 18.877 39.8386 17.6364 33.69C16.3957 39.8386 14.0109 44 11.2727 44C7.25611 44 4 35.0457 4 24C4 12.9543 7.25611 4 11.2727 4C14.0109 4 16.3957 8.16144 17.6364 14.31C18.877 8.16144 21.2618 4 24 4C26.7382 4 29.123 8.16144 30.3636 14.31C31.6043 8.16144 33.9891 4 36.7273 4C40.7439 4 44 12.9543 44 24C44 35.0457 40.7439 44 36.7273 44Z" fill="currentColor"></path>
+</svg>
+</div>
+<div class="flex flex-col">
+<h2 class="text-primary text-xl font-bold leading-tight tracking-[0.2em] uppercase glow-text">Stark Mission HUD</h2>
+<span class="text-[10px] text-primary/60 tracking-widest font-mono">ENCRYPTION: AES-256 | CORE: ONLINE</span>
+</div>
+</div>
+<div class="flex items-center gap-12">
+<nav class="flex items-center gap-10">
+<a class="text-primary/70 hover:text-primary transition-colors text-xs font-bold tracking-widest uppercase" href="#">Reports</a>
+<a class="text-primary/70 hover:text-primary transition-colors text-xs font-bold tracking-widest uppercase" href="#">Tactical</a>
+<a class="text-primary/70 hover:text-primary transition-colors text-xs font-bold tracking-widest uppercase" href="#">Archives</a>
+</nav>
+<div class="flex gap-3">
+<button class="flex items-center justify-center rounded-lg size-10 bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-all">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<button class="flex items-center justify-center rounded-lg size-10 bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-all">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</div>
+<div class="h-10 w-10 rounded-full border-2 border-primary/50 p-0.5 arc-glow">
+<div class="w-full h-full rounded-full bg-cover bg-center" data-alt="Futuristic portrait of Tony Stark avatar" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAqxABkY9qsj0jtCqcZp-KEPIRFkSKVf9emkiadTRxXrZ5Z27JOgxWGDQMtEVwHRkorIuEu85u_psLTG1Qcp0v5M2Gw-afTrWVlsxfux4cpe512oK5cAmbKi820CG0HXjnnc0CWHftMadb-hOLFQv0vQcQf1t7wKrrRlUOa1swpRNt9DgrsBgZ7pxLVcQ_xCNvs7Ahpw0ea7MdTjrXjpT5v4-XmaOocjlZCDgaitSNykmerVaTi1Z-x-MCRUvzVATdqIdwpmo61d8OS');"></div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col max-w-[1200px] mx-auto w-full px-6 py-8 gap-8 overflow-y-auto">
+<!-- Headline & Status -->
+<section class="flex flex-col items-center">
+<div class="relative inline-block">
+<h1 class="text-white tracking-[0.4em] text-5xl font-black leading-tight text-center uppercase glow-text">Mission Complete</h1>
+<div class="absolute -bottom-2 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent"></div>
+</div>
+<p class="text-primary/80 text-sm font-medium tracking-[0.3em] mt-4 uppercase flex items-center gap-2">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+          Synchronizing tactical data...
+        </p>
+</section>
+<!-- Tactical Overview Stats -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="glass-morphism rounded-xl p-6 flex flex-col gap-2 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-2 opacity-10">
+<span class="material-symbols-outlined text-4xl">inventory_2</span>
+</div>
+<p class="text-primary/60 text-xs font-bold tracking-widest uppercase">Cubes Collected</p>
+<div class="flex items-baseline gap-2">
+<p class="text-white text-4xl font-black glow-text tracking-tighter">+8</p>
+<span class="text-stark-accent text-sm font-bold tracking-widest">+100% EFFICIENCY</span>
+</div>
+<div class="w-full h-1 bg-primary/10 rounded-full mt-2">
+<div class="h-full bg-primary w-full rounded-full shadow-[0_0_8px_#258cf4]"></div>
+</div>
+</div>
+<div class="glass-morphism rounded-xl p-6 flex flex-col gap-2 relative overflow-hidden border-primary/40">
+<div class="absolute top-0 right-0 p-2 opacity-10">
+<span class="material-symbols-outlined text-4xl">bolt</span>
+</div>
+<p class="text-primary/60 text-xs font-bold tracking-widest uppercase">Final Power</p>
+<div class="flex items-baseline gap-2">
+<p class="text-white text-4xl font-black glow-text tracking-tighter">142</p>
+<span class="text-stark-accent text-sm font-bold tracking-widest">▲ 12% FROM AVG</span>
+</div>
+<div class="w-full h-1 bg-primary/10 rounded-full mt-2">
+<div class="h-full bg-primary w-[72%] rounded-full shadow-[0_0_8px_#258cf4]"></div>
+</div>
+</div>
+<div class="glass-morphism rounded-xl p-6 flex flex-col gap-2 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-2 opacity-10">
+<span class="material-symbols-outlined text-4xl">auto_awesome</span>
+</div>
+<p class="text-primary/60 text-xs font-bold tracking-widest uppercase">Collection XP</p>
+<div class="flex items-baseline gap-2">
+<p class="text-white text-4xl font-black glow-text tracking-tighter">+50</p>
+<span class="text-stark-alert text-sm font-bold tracking-widest">STABLE PROGRESS</span>
+</div>
+<div class="w-full h-1 bg-primary/10 rounded-full mt-2">
+<div class="h-full bg-primary w-[45%] rounded-full shadow-[0_0_8px_#258cf4]"></div>
+</div>
+</div>
+</section>
+<!-- Holographic Board Simulation -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between px-2">
+<h2 class="text-white text-sm font-bold tracking-[0.2em] uppercase flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg">view_in_ar</span>
+            Battlefield Reconstruction
+          </h2>
+<span class="text-primary/40 text-[10px] font-mono">SIMULATION ID: STK-8829-B</span>
+</div>
+<div class="relative glass-morphism rounded-2xl p-10 hologram-tilt border-primary/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+<div class="grid grid-cols-3 gap-8 h-64">
+<!-- Location 1 -->
+<div class="flex flex-col items-center justify-center border border-primary/20 bg-primary/5 rounded-lg relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent"></div>
+<p class="text-[10px] text-primary/40 font-mono absolute top-2">LOC_01</p>
+<h3 class="text-xl font-black text-white glow-text mb-4 uppercase tracking-tighter">Baxter Bldg</h3>
+<div class="flex justify-between w-full px-6">
+<div class="flex flex-col items-center">
+<span class="text-[10px] text-primary/60 uppercase font-bold">You</span>
+<span class="text-3xl font-black text-primary">28</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="text-[10px] text-stark-alert/60 uppercase font-bold">Opp</span>
+<span class="text-3xl font-black text-stark-alert">14</span>
+</div>
+</div>
+<div class="mt-4 px-3 py-1 bg-primary/20 rounded border border-primary/50 text-[10px] font-bold text-primary uppercase tracking-widest">WINNING</div>
+</div>
+<!-- Location 2 -->
+<div class="flex flex-col items-center justify-center border border-primary/40 bg-primary/10 rounded-lg relative overflow-hidden ring-2 ring-primary/20">
+<div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent"></div>
+<p class="text-[10px] text-primary/40 font-mono absolute top-2">LOC_02</p>
+<h3 class="text-xl font-black text-white glow-text mb-4 uppercase tracking-tighter">The Hub</h3>
+<div class="flex justify-between w-full px-6">
+<div class="flex flex-col items-center">
+<span class="text-[10px] text-primary/60 uppercase font-bold">You</span>
+<span class="text-3xl font-black text-primary">12</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="text-[10px] text-stark-alert/60 uppercase font-bold">Opp</span>
+<span class="text-3xl font-black text-stark-alert">12</span>
+</div>
+</div>
+<div class="mt-4 px-3 py-1 bg-white/5 rounded border border-white/20 text-[10px] font-bold text-white/60 uppercase tracking-widest">TIED</div>
+</div>
+<!-- Location 3 -->
+<div class="flex flex-col items-center justify-center border border-primary/20 bg-primary/5 rounded-lg relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent"></div>
+<p class="text-[10px] text-primary/40 font-mono absolute top-2">LOC_03</p>
+<h3 class="text-xl font-black text-white glow-text mb-4 uppercase tracking-tighter">Vormir</h3>
+<div class="flex justify-between w-full px-6">
+<div class="flex flex-col items-center">
+<span class="text-[10px] text-primary/60 uppercase font-bold">You</span>
+<span class="text-3xl font-black text-primary">102</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="text-[10px] text-stark-alert/60 uppercase font-bold">Opp</span>
+<span class="text-3xl font-black text-stark-alert">42</span>
+</div>
+</div>
+<div class="mt-4 px-3 py-1 bg-primary/20 rounded border border-primary/50 text-[10px] font-bold text-primary uppercase tracking-widest">WINNING</div>
+</div>
+</div>
+<!-- Scanline effect overlay -->
+<div class="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.5)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,4px_100%]"></div>
+</div>
+</section>
+<!-- Action Footer -->
+<footer class="flex items-center justify-between gap-6 pb-12 mt-4">
+<div class="flex flex-col">
+<p class="text-[10px] font-mono text-primary/40 uppercase">Jarvis Analysis Log:</p>
+<p class="text-xs text-primary/80 font-medium">Synergy levels optimized. Snap probability was 84.2%. Match archived.</p>
+</div>
+<div class="flex gap-4">
+<button class="flex items-center gap-3 px-8 py-3 bg-transparent border border-primary/40 text-primary text-xs font-bold tracking-[0.2em] uppercase hover:bg-primary/10 transition-all rounded">
+<span class="material-symbols-outlined text-sm">query_stats</span>
+            Deep Analysis
+          </button>
+<button class="flex items-center gap-3 px-12 py-3 bg-primary border border-primary text-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-primary/80 transition-all rounded shadow-[0_0_20px_rgba(37,140,244,0.4)]">
+<span class="material-symbols-outlined text-sm">play_arrow</span>
+            Next Mission
+          </button>
+</div>
+</footer>
+</main>
+<!-- Side Data Strip -->
+<div class="fixed right-6 top-1/2 -translate-y-1/2 flex flex-col gap-8 items-center py-10 px-2 glass-morphism rounded-full border-primary/20">
+<div class="flex flex-col items-center gap-1">
+<div class="size-1 bg-primary rounded-full animate-pulse"></div>
+<div class="w-px h-8 bg-gradient-to-b from-primary/50 to-transparent"></div>
+</div>
+<div class="rotate-90 origin-center whitespace-nowrap text-[10px] font-mono text-primary/40 tracking-[0.3em] uppercase">
+        Signal Strength: Nominal
+      </div>
+<div class="rotate-90 origin-center whitespace-nowrap text-[10px] font-mono text-primary/40 tracking-[0.3em] uppercase mt-20">
+        Lat: 40.7128 N | Lon: 74.0060 W
+      </div>
+<div class="flex flex-col items-center gap-1 mt-10">
+<div class="w-px h-8 bg-gradient-to-t from-primary/50 to-transparent"></div>
+<div class="size-1 bg-primary rounded-full animate-pulse"></div>
+</div>
+</div>
+</div>
+</body></html>

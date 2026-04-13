@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Match Turn Analysis</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ad2bee",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#1c1022",
+                        "card-dark": "#2b1933",
+                        "accent-purple": "#3c2348"
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Spline Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel { background: rgba(60, 35, 72, 0.4); backdrop-filter: blur(8px); border: 1px solid rgba(173, 43, 238, 0.2); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden max-w-[430px] mx-auto shadow-2xl">
+<!-- Header -->
+<div class="sticky top-0 z-50 flex items-center bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md p-4 pb-2 justify-between border-b border-white/5">
+<div class="text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-white/10 cursor-pointer">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</div>
+<div class="flex flex-col items-center">
+<h2 class="text-white text-lg font-bold leading-tight tracking-tight">Match Analysis</h2>
+<span class="text-xs text-primary font-medium">Ranked • Infinity League</span>
+</div>
+<div class="flex w-10 items-center justify-end">
+<button class="flex items-center justify-center rounded-full size-10 bg-transparent text-white hover:bg-white/10">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+<!-- Score Summary -->
+<div class="flex flex-wrap gap-3 p-4">
+<div class="flex min-w-[120px] flex-1 flex-col gap-1 rounded-xl p-4 bg-accent-purple border border-primary/20 shadow-lg">
+<p class="text-primary text-xs font-semibold uppercase tracking-wider">Final Power</p>
+<div class="flex items-baseline gap-1">
+<p class="text-white text-2xl font-bold">72</p>
+<span class="text-green-400 text-xs font-bold">+12</span>
+</div>
+</div>
+<div class="flex min-w-[120px] flex-1 flex-col gap-1 rounded-xl p-4 bg-accent-purple border border-primary/20 shadow-lg">
+<p class="text-primary text-xs font-semibold uppercase tracking-wider">Cubes</p>
+<div class="flex items-center gap-2">
+<p class="text-white text-2xl font-bold">+8</p>
+<span class="material-symbols-outlined text-blue-400 text-sm">filter_vintage</span>
+</div>
+</div>
+<div class="flex min-w-[120px] flex-1 flex-col gap-1 rounded-xl p-4 bg-accent-purple border border-primary/20 shadow-lg">
+<p class="text-primary text-xs font-semibold uppercase tracking-wider">Win Rate</p>
+<p class="text-white text-2xl font-bold">64%</p>
+</div>
+</div>
+<!-- Post-Match Insights -->
+<div class="px-4 py-2">
+<div class="rounded-xl bg-gradient-to-r from-primary/20 to-accent-purple p-4 border border-primary/30">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-yellow-400">auto_awesome</span>
+<h3 class="text-white font-bold">Winning Play</h3>
+</div>
+<p class="text-sm text-gray-300 leading-relaxed">
+                    Playing <span class="text-primary font-bold">Shang-Chi</span> on Turn 6 at <span class="font-bold">The Hub</span> neutralized the opponent's 20-power Devil Dinosaur, swinging the lane by 24 power.
+                </p>
+</div>
+</div>
+<!-- Turn Breakdown -->
+<div class="flex items-center justify-between px-4 pt-6 pb-2">
+<h3 class="text-white text-lg font-bold leading-tight">Turn-by-Turn</h3>
+<span class="text-xs text-gray-400 bg-white/5 px-2 py-1 rounded-full">Total Turns: 6</span>
+</div>
+<div class="space-y-4 p-4">
+<!-- Turn 1 -->
+<div class="flex flex-col gap-3 rounded-xl bg-card-dark p-4 shadow-xl border border-white/5">
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-0.5">
+<span class="text-primary text-xs font-bold uppercase">Turn 1</span>
+<p class="text-white font-bold">Developing Strategy</p>
+</div>
+<div class="flex gap-1">
+<span class="px-2 py-0.5 rounded text-[10px] bg-green-500/20 text-green-400 font-bold">STABLE</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-1">
+<p class="text-xs text-gray-400 uppercase">You</p>
+<div class="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
+<div class="w-8 h-10 rounded bg-indigo-600 flex items-center justify-center text-[10px] font-bold" data-alt="Small card thumbnail of Sunspot">SUN</div>
+<span class="text-sm font-medium">Sunspot</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<p class="text-xs text-gray-400 uppercase">Opponent</p>
+<div class="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
+<div class="w-8 h-10 rounded bg-gray-600 flex items-center justify-center text-[10px] font-bold" data-alt="Small card thumbnail of Misty Knight">MIS</div>
+<span class="text-sm font-medium">Misty Knight</span>
+</div>
+</div>
+</div>
+<div class="mt-2 pt-3 border-t border-white/5">
+<div class="flex justify-around text-center">
+<div><p class="text-[10px] text-gray-400">Loc 1</p><p class="text-sm font-bold text-green-400">1 : 0</p></div>
+<div><p class="text-[10px] text-gray-400">Loc 2</p><p class="text-sm font-bold text-gray-400">0 : 0</p></div>
+<div><p class="text-[10px] text-gray-400">Loc 3</p><p class="text-sm font-bold text-red-400">0 : 2</p></div>
+</div>
+</div>
+</div>
+<!-- Turn 2 (Snap Event) -->
+<div class="flex flex-col gap-3 rounded-xl bg-card-dark p-4 shadow-xl border-l-4 border-l-red-500 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-2">
+<span class="material-symbols-outlined text-red-500 text-xl animate-pulse">filter_vintage</span>
+</div>
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-0.5">
+<span class="text-primary text-xs font-bold uppercase">Turn 2</span>
+<p class="text-white font-bold">Pressure Applied</p>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] bg-red-500/20 text-red-400 font-bold uppercase tracking-tighter">Opponent Snapped</span>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-1">
+<p class="text-xs text-gray-400 uppercase">You</p>
+<div class="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
+<div class="w-8 h-10 rounded bg-orange-600 flex items-center justify-center text-[10px] font-bold" data-alt="Small card thumbnail of Collector">COL</div>
+<span class="text-sm font-medium">Collector</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<p class="text-xs text-gray-400 uppercase">Opponent</p>
+<div class="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
+<div class="w-8 h-10 rounded bg-green-700 flex items-center justify-center text-[10px] font-bold" data-alt="Small card thumbnail of Scorpion">SCO</div>
+<span class="text-sm font-medium">Scorpion</span>
+</div>
+</div>
+</div>
+<div class="mt-2 pt-3 border-t border-white/5">
+<div class="flex justify-around text-center">
+<div><p class="text-[10px] text-gray-400">Loc 1</p><p class="text-sm font-bold text-green-400">2 : 0</p></div>
+<div><p class="text-[10px] text-gray-400">Loc 2</p><p class="text-sm font-bold text-green-400">2 : 0</p></div>
+<div><p class="text-[10px] text-gray-400">Loc 3</p><p class="text-sm font-bold text-red-400">0 : 4</p></div>
+</div>
+</div>
+</div>
+<!-- Turn 6 (Final Play) -->
+<div class="flex flex-col gap-3 rounded-xl bg-accent-purple p-4 shadow-xl border border-primary/40">
+<div class="flex justify-between items-start">
+<div class="flex flex-col gap-0.5">
+<span class="text-primary text-xs font-bold uppercase">Turn 6</span>
+<p class="text-white font-bold">The Swing</p>
+</div>
+<span class="px-2 py-0.5 rounded text-[10px] bg-primary/30 text-primary font-bold uppercase tracking-tighter">Clutch Win</span>
+</div>
+<div class="space-y-2">
+<div class="flex flex-col gap-1">
+<p class="text-xs text-gray-300 uppercase">Your Final Moves</p>
+<div class="flex gap-2">
+<div class="flex-1 flex items-center gap-2 p-2 bg-primary/20 rounded-lg border border-primary/30">
+<div class="w-8 h-10 rounded bg-red-600 flex items-center justify-center text-[10px] font-bold" data-alt="Shang Chi card art">SHA</div>
+<span class="text-sm font-bold">Shang-Chi</span>
+</div>
+<div class="flex-1 flex items-center gap-2 p-2 bg-primary/20 rounded-lg border border-primary/30">
+<div class="w-8 h-10 rounded bg-blue-400 flex items-center justify-center text-[10px] font-bold" data-alt="Sentinel card art">SEN</div>
+<span class="text-sm font-bold">Sentinel</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-2 p-3 bg-black/20 rounded-lg">
+<p class="text-[10px] text-center text-primary font-bold uppercase mb-2">Final Board State</p>
+<div class="flex justify-around text-center items-center">
+<div class="px-2 py-1 bg-green-500/20 rounded border border-green-500/30">
+<p class="text-[8px] text-gray-400">L1</p>
+<p class="text-lg font-black text-white">24</p>
+</div>
+<div class="h-8 w-px bg-white/10"></div>
+<div class="px-2 py-1 bg-green-500/20 rounded border border-green-500/30">
+<p class="text-[8px] text-gray-400">L2</p>
+<p class="text-lg font-black text-white">18</p>
+</div>
+<div class="h-8 w-px bg-white/10"></div>
+<div class="px-2 py-1 bg-red-500/20 rounded border border-red-500/30">
+<p class="text-[8px] text-gray-400">L3</p>
+<p class="text-lg font-black text-white">30</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-2 py-2 bg-primary text-white text-sm font-bold rounded-lg shadow-lg hover:bg-primary/90 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">visibility</span>
+                    View Replay
+                </button>
+</div>
+</div>
+<!-- Missed Opportunity (Optional Card) -->
+<div class="px-4 pb-10">
+<div class="rounded-xl bg-red-500/5 p-4 border border-red-500/20">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-red-500">error</span>
+<h3 class="text-white font-bold text-sm">Missed Opportunity</h3>
+</div>
+<p class="text-xs text-gray-400 leading-relaxed">
+                    On <span class="font-bold text-white">Turn 4</span>, playing <span class="font-bold text-white">White Queen</span> instead of <span class="font-bold text-white">Moon Girl</span> would have given you insight into their Turn 6 combo.
+                </p>
+</div>
+</div>
+<!-- Bottom Navigation Spacer -->
+<div class="h-16"></div>
+</div>
+</body></html>

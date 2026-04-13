@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Deck Builder</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ad2bee",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#1c1022",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .holographic-glow {
+            box-shadow: 0 0 15px rgba(173, 43, 238, 0.4);
+            border: 1px solid rgba(173, 43, 238, 0.3);
+        }
+        .card-slot {
+            background: linear-gradient(145deg, #2a1835, #1c1022);
+            border: 1px dashed rgba(173, 43, 238, 0.2);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white">
+<div class="relative flex h-screen w-full flex-col overflow-hidden max-w-[430px] mx-auto shadow-2xl">
+<!-- Top Navigation Bar -->
+<div class="flex items-center bg-background-dark/80 backdrop-blur-md p-4 pb-2 justify-between sticky top-0 z-50">
+<div class="text-white flex size-12 shrink-0 items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined">close</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<h2 class="text-white text-lg font-bold leading-tight tracking-tight">New Meta Deck</h2>
+<span class="text-primary text-[10px] font-bold uppercase tracking-widest">Incomplete (8/12)</span>
+</div>
+<div class="flex w-12 items-center justify-end cursor-pointer">
+<p class="text-primary text-base font-bold leading-normal tracking-wide">Save</p>
+</div>
+</div>
+<!-- Main Content (Scrollable Area) -->
+<div class="flex-1 overflow-y-auto pb-40">
+<!-- Deck Grid (Current Selection) -->
+<div class="p-4 pt-2">
+<div class="grid grid-cols-4 gap-2">
+<!-- 12 Slots for Marvel Snap Deck -->
+<div class="aspect-[3/4] card-slot rounded-lg flex flex-col items-center justify-center holographic-glow">
+<div class="w-full h-full bg-cover bg-center rounded-lg" data-alt="Iron Man marvel snap card illustration" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAr9xx8zs9-g_2wZJpfqab7pEikC1gghqMJlHFWc7JRgn5OSQqe_fVnoO_6EkFZpQWsMumyKIqqRos3xkuE9ibQM8CS8HGjXgxy8N1LHcgATIZuw700VXpL8wKjGc9RDV6GPNJIIR31a2Do-wzLf1sU2oXdS5lN8WKeHW2HTKbrQwOUJqX8N71ImxFjW0Jv1xCv93t2yGpTn5a9wgiBmXJ097Q2D5keE1LgIormf4a5uGma2ynwqcreVNTecOKn5pCdb9MGTkXbkgfT')"></div>
+</div>
+<div class="aspect-[3/4] card-slot rounded-lg flex flex-col items-center justify-center holographic-glow">
+<div class="w-full h-full bg-cover bg-center rounded-lg" data-alt="Spider-man marvel snap card illustration" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDfZT55-43dlDB-M808Zp0vvqLZnmQtmANVb_3_16_sqcxW-lvWbApI4Ahtid4w5j8EiA7AwmczJSRccCPKD0zGSLBHWawukoHWC4rzegeg1wTqdfvgmQCMGkqymoVUIwjUcVcPxiJUBbe3rHeuT1AByLnE-uFFeQLuhY3BkSVBL2TKOnR7tJHF0TEYcqw7910qCY9ZCAi_31Q66CuwqugbJvy4vqLE3wpDje8-cklcu3u_xxpnNbxyL2JN6IVkEOMF2ttMqGXm3yrs')"></div>
+</div>
+<div class="aspect-[3/4] card-slot rounded-lg flex flex-col items-center justify-center holographic-glow">
+<div class="w-full h-full bg-cover bg-center rounded-lg" data-alt="Hulk marvel snap card illustration" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCgiYWbaLaOBxZPTNc2cbfMsXskyROOdrCXk5o6tiDqDlKz3vaPLsYSZbQoxTsvaIMD_gpsyBgS0ixjt7ruTDhvK7Vy25EqbCpgDrnrXDhk7GkQD-a0grUwAQAj7EjzBuEr82lA6Cy34uIEL1UOcE4JtTUGH0kxHo3XKOu234RHjUlX-oz75eWpQdQZZaneuc6cD2M1dsfuv-01lxjbVxmAViPbn4J4j3xFQG3d1wpvjINfxkTl1qZtSM5A_UUTV5KXbgCv7cbDtpYH')"></div>
+</div>
+<div class="aspect-[3/4] card-slot rounded-lg flex flex-col items-center justify-center holographic-glow">
+<div class="w-full h-full bg-cover bg-center rounded-lg" data-alt="Wolverine marvel snap card illustration" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDKidb8P5UW0zdCMwQFy3x7yp1nF7abPhCSCr0pRyyvCg863Zpz_aUcDVtYWnBLPKIZDjMKpkWvBsqn0aoXiu6inj5lWKkXQoqrQZqXRsXgzEcESP1rboteYDWa1Dwav0aqbNnGA8e4kHi0wSFX0Yphj958vJbUFQPqZRlWE99EftRCvnjLDLF8S-PHSj7MDJh0MpnTydXEhXR5n0vzD2pjxvWY9-VCE526NLHKLiay1E68PZinP-jaJoCghmiXHMXpIuQFVsty_EoB')"></div>
+</div>
+<!-- Empty slots -->
+<div class="aspect-[3/4] card-slot rounded-lg flex items-center justify-center opacity-40">
+<span class="material-symbols-outlined text-primary">add</span>
+</div>
+<div class="aspect-[3/4] card-slot rounded-lg flex items-center justify-center opacity-40">
+<span class="material-symbols-outlined text-primary">add</span>
+</div>
+<div class="aspect-[3/4] card-slot rounded-lg flex items-center justify-center opacity-40">
+<span class="material-symbols-outlined text-primary">add</span>
+</div>
+<div class="aspect-[3/4] card-slot rounded-lg flex items-center justify-center opacity-40">
+<span class="material-symbols-outlined text-primary">add</span>
+</div>
+</div>
+</div>
+<!-- Stats Bar -->
+<div class="px-4 py-2 flex justify-between items-center bg-primary/10 border-y border-primary/20">
+<div class="flex gap-4">
+<div class="flex flex-col">
+<span class="text-[10px] text-gray-400 uppercase">Avg Energy</span>
+<span class="text-sm font-bold">3.4</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] text-gray-400 uppercase">Total Power</span>
+<span class="text-sm font-bold">42</span>
+</div>
+</div>
+<div class="flex gap-1 h-8 items-end">
+<div class="w-2 bg-primary/30 h-[20%] rounded-t-sm"></div>
+<div class="w-2 bg-primary/60 h-[50%] rounded-t-sm"></div>
+<div class="w-2 bg-primary h-[90%] rounded-t-sm"></div>
+<div class="w-2 bg-primary/80 h-[60%] rounded-t-sm"></div>
+<div class="w-2 bg-primary/40 h-[30%] rounded-t-sm"></div>
+<div class="w-2 bg-primary/20 h-[10%] rounded-t-sm"></div>
+</div>
+</div>
+<!-- Search and Filter -->
+<div class="px-4 py-3 sticky top-0 bg-background-dark z-40">
+<label class="flex flex-col min-w-40 h-10 w-full mb-3">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full bg-[#3c2348]">
+<div class="text-[#b792c9] flex items-center justify-center pl-4 rounded-l-xl">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 border-none bg-transparent focus:outline-0 focus:ring-0 text-white placeholder:text-[#b792c9] px-2 text-sm font-normal" placeholder="Search collection..."/>
+</div>
+</label>
+<div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-1 rounded-full bg-primary px-4">
+<span class="text-white text-xs font-bold">All</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-1 rounded-full bg-[#3c2348] px-4">
+<span class="text-white text-xs font-medium">Cost</span>
+<span class="material-symbols-outlined text-[16px]">keyboard_arrow_down</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-1 rounded-full bg-[#3c2348] px-4">
+<span class="text-white text-xs font-medium">Power</span>
+<span class="material-symbols-outlined text-[16px]">keyboard_arrow_down</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-1 rounded-full bg-[#3c2348] px-4">
+<span class="text-white text-xs font-medium">Ability</span>
+<span class="material-symbols-outlined text-[16px]">keyboard_arrow_down</span>
+</button>
+</div>
+</div>
+<!-- Card Browser (Results) -->
+<div class="grid grid-cols-3 gap-3 p-4">
+<div class="flex flex-col gap-1 cursor-pointer">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-lg border border-white/10" data-alt="Blue Marvel character card art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCRgR7eNeQtNahOxMXr9dpdDVsUAJ0bDUHKlgRDhwhs99PBFZzbY3fSKrmLfiuoDLT2mIXI3td_KE1NISMZsNCurRLStFHP_NFnDJnCg7Rqb6GGujUUGHSNgwb2LluBwQiIhgQ582FNw30u70hNSRMDz08w9RXap_-Bi9CSaD_ur_XU0eXZToJYF1MW3_fMPg63m6Zbrc_VUbPssblEu2rbfQRDHOlNu-kJt5yYW41dfMk5aaUmMVRr_4WoGsIAxqA_00IJcDzJ4egu");'></div>
+<div class="flex justify-between px-1">
+<span class="text-[10px] font-bold bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center">5</span>
+<span class="text-[10px] font-bold bg-orange-600 rounded-full w-4 h-4 flex items-center justify-center">3</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 cursor-pointer">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-lg border border-white/10" data-alt="Captain America character card art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBw2_yD21aj_eBuxoKKU16Nv4qoqma9EU6doICR3qSwxcfj21YpPXS_iUhDsufIwtxPdBYsTYMDg4ObQxtl4GexWdLZwBfcPh4_cLvnAcoKCCGS6MwNzcMSwYSMh0Y3mWlhpI49AV0kQk95cgWksGbUMprz4r6RGf7KlNoWJMFOG9l6TN08xxNljWhJj0hI4IxxPOaEaT__MDgcRwuvKwakJBq4ysFS2-OByrdG6q2Ri5UOsxqIi_PAjOB4UZFZDAIJEsmDBHFLIPlF");'></div>
+<div class="flex justify-between px-1">
+<span class="text-[10px] font-bold bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center">3</span>
+<span class="text-[10px] font-bold bg-orange-600 rounded-full w-4 h-4 flex items-center justify-center">3</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 cursor-pointer">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-lg border border-white/10" data-alt="Onslaught character card art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAMcRPOJcVBpUyiFSBtemTstXiJYSwLDjZVMyDKJqyVlUS2TXJNHZTVKOspKkyUoGvopCYTOGlsBRJMjL98iwRD7eVNyWOitqNsjG-zbtemX0NE2gzEPE5wi4yD--BtPV-Dk_COdi4OoFy6bRW2DmVpPU4NEeZDl57xYzuWS290-n8vxBQpPeUSx9Fn8tqMiXiGZ1m88rtr-Tki5H9weoblrsQdSl4aU7P9L-CgRp2HFgxo5xv3FSXqBpk_fnZxIVwCuRJ0TtsEkYNy");'></div>
+<div class="flex justify-between px-1">
+<span class="text-[10px] font-bold bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center">6</span>
+<span class="text-[10px] font-bold bg-orange-600 rounded-full w-4 h-4 flex items-center justify-center">7</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 cursor-pointer">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-lg border border-white/10" data-alt="Ironheart character card art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBXF0ypKHtGFCWFU86RMl-sE3T8RFCUDjfV4mXOzP0lrT_mWAP8CsVaNKGu3kvxberOpRtk9udWka3vsxG0EkrJ4imugODb66EoCc_FWUB20veNiEZE6OXZbLnQkvdiVboJBDZz5Wy866yXD7RDSQGc4fOFoL4N_4c76HqH6Um1AiTYqSmVBRSrOC8MemuXGLu-0TR9liOL7XkmYDDNsfsrh5w2aj8SB6rhAMFKSMrNPE9v0rdHQPwopYrWWyRK9q-XHsp7hRLn4Dvr");'></div>
+<div class="flex justify-between px-1">
+<span class="text-[10px] font-bold bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center">3</span>
+<span class="text-[10px] font-bold bg-orange-600 rounded-full w-4 h-4 flex items-center justify-center">0</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 cursor-pointer">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-lg border border-white/10" data-alt="Klaw character card art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDyFDuHcsnprOCGeyiDMu5WDd66EsyPiLdMlJaA00YMUzuHNhpRBf9LfYE4CJQbqW9Y5RXfv_F2gghjytkwSoyMeCpeZ8TTmxA6qlRCf3tb5CYV614M1PPOEqXyQndckr8kyxEJgIw2oa6MW-Sa01iWzOsczv7mtkJN5hvkRzezWmgOSC4r_oHZa6ZUKJAt2iNBIHbU3sk35dOyq1VTdbSyV8W13ahSv_Ug9VA4giZ408hMTgSZ6rdTKUZU5PoAqPcS_YAXDTKBxyUa");'></div>
+<div class="flex justify-between px-1">
+<span class="text-[10px] font-bold bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center">5</span>
+<span class="text-[10px] font-bold bg-orange-600 rounded-full w-4 h-4 flex items-center justify-center">4</span>
+</div>
+</div>
+<div class="flex flex-col gap-1 cursor-pointer">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-lg border border-white/10" data-alt="Spider-Woman character card art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDzERDnAWL6L22XFRk5AgHB_Ypjp1QmU9eXgXjpFp8fjgD1gkAJyj488eavVdfGNax8TBYO5aFgquMh3TAMCTE8yxl3N71B-O33x8L_-lFaI9m-Ml1fGTY_4fAt0nLEukOhyB8L_ZHDApZO0zI58vD5pjL24vfs6jQ-VQcBxMH8G2DLXfvoHcop9ZSoQigqyIT0jtb7zSjaceChsZmwMt2kVlzjxT_qVD1LHV-uVvZ5xskS-dCSaT6GZns4AvrY8BOgXSFoxl68di59");'></div>
+<div class="flex justify-between px-1">
+<span class="text-[10px] font-bold bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center">5</span>
+<span class="text-[10px] font-bold bg-orange-600 rounded-full w-4 h-4 flex items-center justify-center">8</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Bottom Actions -->
+<div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background-dark via-background-dark to-transparent pt-10">
+<div class="flex gap-4">
+<button class="flex-1 bg-white/5 backdrop-blur-md border border-white/10 h-12 rounded-full flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">auto_fix_high</span>
+<span class="font-bold text-sm">Smart Auto-fill</span>
+</button>
+<button class="flex-1 bg-primary h-12 rounded-full flex items-center justify-center gap-2 shadow-lg shadow-primary/40">
+<span class="material-symbols-outlined text-sm text-white">share</span>
+<span class="font-bold text-sm text-white">Share Deck</span>
+</button>
+</div>
+</div>
+<!-- iOS Indicator Bar -->
+<div class="h-1.5 w-32 bg-white/20 rounded-full absolute bottom-2 left-1/2 -translate-x-1/2"></div>
+</div>
+</body></html>

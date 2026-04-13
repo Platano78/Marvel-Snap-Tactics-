@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Marvel Snap Collection Tracker</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ad2bee",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#1c1022",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Top App Bar -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-50">
+<div class="text-white flex size-12 shrink-0 items-center justify-center">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Collection Tracker</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 bg-transparent text-white gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<span class="material-symbols-outlined text-2xl">account_circle</span>
+</button>
+</div>
+</div>
+<!-- Stats Overview -->
+<div class="flex flex-wrap gap-4 p-4">
+<div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 bg-primary/10 border border-primary/20">
+<p class="text-[#b792c9] text-xs uppercase tracking-widest font-bold">Collection Level</p>
+<p class="text-white tracking-light text-3xl font-bold leading-tight">4,822</p>
+</div>
+<div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 bg-primary/10 border border-primary/20">
+<p class="text-[#b792c9] text-xs uppercase tracking-widest font-bold">Completion</p>
+<p class="text-white tracking-light text-3xl font-bold leading-tight">92%</p>
+</div>
+</div>
+<!-- Progress Section -->
+<div class="flex flex-col gap-3 p-4 bg-[#2a1833] mx-4 rounded-xl">
+<div class="flex gap-6 justify-between">
+<p class="text-white text-sm font-medium leading-normal">Pool 3 Progress</p>
+<p class="text-primary text-sm font-bold leading-normal">98/104</p>
+</div>
+<div class="rounded-full bg-[#553267] h-2.5 w-full">
+<div class="h-2.5 rounded-full bg-primary" style="width: 92%;"></div>
+</div>
+<p class="text-[#b792c9] text-xs font-normal leading-normal italic">Approx. 480 credits to next Reserve</p>
+</div>
+<!-- Search and Filters -->
+<div class="px-4 py-4">
+<label class="flex flex-col min-w-40 h-12 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full">
+<div class="text-[#b792c9] flex border-none bg-[#3c2348] items-center justify-center pl-4 rounded-l-xl border-r-0">
+<span class="material-symbols-outlined text-xl">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#3c2348] focus:border-none h-full placeholder:text-[#b792c9] px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Search cards by name or ability" value=""/>
+</div>
+</label>
+</div>
+<div class="flex gap-3 px-4 pb-4 overflow-x-auto no-scrollbar">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary px-4">
+<p class="text-white text-sm font-medium">All Cards</p>
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-[#3c2348] px-4">
+<p class="text-white text-sm font-medium">Owned</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-[#3c2348] px-4">
+<p class="text-white text-sm font-medium">Missing</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-[#3c2348] px-4">
+<p class="text-white text-sm font-medium">Pool 5</p>
+</button>
+</div>
+<!-- Section Header -->
+<div class="flex items-center justify-between px-4 py-2">
+<h3 class="text-white text-lg font-bold">Recent Unlocks</h3>
+<button class="text-primary text-sm font-bold">Edit Grid</button>
+</div>
+<!-- Card Grid (Togglable) -->
+<div class="grid grid-cols-3 gap-3 p-4">
+<div class="relative group">
+<img class="w-full aspect-[3/4] object-cover rounded-lg border-2 border-primary shadow-lg shadow-primary/20" data-alt="Comic book character illustration card" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARwUn404TzYwZzOHvoYAneZu4122KUiUDxcLiVxLogHkyInmtPkpamWttjbXpjAjw4sPTmVlaNHzf-gsA9E6AJXL5FDJnJlr1SgUEU9qjlBPM0H1gFJ2DloGy6Uub9qAQP3dzPiUQlxNrd8ujZRBN33-_ByL1iR2H__7YtkEK-A6wHsAVNMNUclUW36rTPDLV4rzViLM8Iy-dEFoohiv_rRKrfLWN990UrDhq7evhpdwO6ekr55wp97XcMXqzjwuY7R_SmG_7RulVJ"/>
+<div class="absolute inset-0 bg-black/20 rounded-lg flex items-start justify-end p-1">
+<span class="material-symbols-outlined text-green-400 bg-black/60 rounded-full text-lg">check_circle</span>
+</div>
+<p class="text-center text-xs mt-1 font-bold">Thanos</p>
+</div>
+<div class="relative group">
+<img class="w-full aspect-[3/4] object-cover rounded-lg border-2 border-primary shadow-lg shadow-primary/20" data-alt="Spider-man style comic artwork" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDT9NJVAYEtigi5_0MZghgvhAQd5kFKK8Em-XGW0RvYKcOjYn3Cxz3kp5Xk6O3Be6Y3fyvdM2n4MbDHtAuigdAYU9XFwJMu2H3aYwjL51awiQOO-skKTzHAV_ozRhVd5mzS38F2fgAMmT4sv9uIPVQkbux_TCceRVTRv4ybB__bpBfGmZ6clzxhMycFoaD7DGnTLHuTuxit6Z4NPpdSHD9V3flI2kiiYJQqoQgY-OySzQmNELdad7ClhMiw9Df-Yd7vvifID7nwL4-m"/>
+<div class="absolute inset-0 bg-black/20 rounded-lg flex items-start justify-end p-1">
+<span class="material-symbols-outlined text-green-400 bg-black/60 rounded-full text-lg">check_circle</span>
+</div>
+<p class="text-center text-xs mt-1 font-bold">Galactus</p>
+</div>
+<div class="relative group opacity-50 grayscale">
+<img class="w-full aspect-[3/4] object-cover rounded-lg border-2 border-gray-600" data-alt="Iron man style comic artwork" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbO4lhj7PxnRdazAC9UtilVJjntCIptufR6eb75hM1j8wzmmaYEfQGbt9koOGczXS2x12AgqTjJEUT8ctRucll1lvJZTlmyewmQjWVr5xsHrIdb6HL8IeaFCxs3NPR-OkVFy1sEEt6Zplaq8Nm8TAOEu4YUXErdjQ3WhdK1Ahews7KlWYznwiJqaT_HJ0fFJhiBkaoJ8qCCP84AHaOJiv3Jta73VAv93EG-mwwD3elxTGLDzRN0DSWOqE0CIricWUFscytZLuREAXq"/>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-white/50 text-2xl">lock</span>
+</div>
+<p class="text-center text-xs mt-1 font-bold">High Evo</p>
+</div>
+</div>
+<!-- Decks Section -->
+<div class="mt-4 px-4 pb-8">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-white text-lg font-bold">Decks You Can Build</h3>
+<span class="bg-primary/20 text-primary text-[10px] px-2 py-1 rounded font-bold uppercase">Meta Tier 1</span>
+</div>
+<div class="space-y-4">
+<!-- Deck Card 1 -->
+<div class="bg-[#2a1833] rounded-xl p-4 border border-white/5">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h4 class="font-bold text-base">Hela Discard</h4>
+<p class="text-[#b792c9] text-xs">Win Rate: 58.4% | Cube Rate: 0.82</p>
+</div>
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-[#2a1833] bg-primary flex items-center justify-center text-[10px] font-bold">12/12</div>
+</div>
+</div>
+<div class="flex gap-1 overflow-hidden h-12">
+<div class="flex-1 bg-gradient-to-t from-black/60 to-transparent rounded overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="Card thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgu3wJ-F_dvRVQsRA4KEJXRFM6VABURakn2PP0u4bwrHdGGXcqwvCupGn0f8vwc_3C28HjMs06Yzs9augHGVJhp4SG1E3nSAHhpL47S7BsR7hbVjOkoA0yur1WjhGII6RXmF7dgQf02SLPmbBy8MK5jsX_HvWp6FHhHXWDgv8wvzihBT0XmOTPSECzUigSmmtUb9mzudmhWiE8CiUyMQxulWdi9IFCq_W05UC9q4VwNcDAzIFE8q24KRAfLfeD4h8jcegQyzM7vKPh"/>
+</div>
+<div class="flex-1 bg-gradient-to-t from-black/60 to-transparent rounded overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="Card thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAnuYdYYrF2bPSVppAg92D3LNKiCtYx9LRMtfOhZ25-yRH9t8uy4LVFa16kciKOsnDYEfb3ZwoutSwsPMnqDunqN30PbSY-fZDfXqe_FIX_iPmk1QVKcXngUmXZK5eVyOZR2rXG5QgQZU7DIaSqgjhcBSEuJ1SURCbBYl36in07gt4z0CZJMm8slu-kloFcVaZ3mXu4144cLUV7CzFg75PhMchN09gmFumoetgj-t9BCO9cwJiMhledBV0dsQj8x506UxxVR-xRwDkq"/>
+</div>
+<div class="flex-1 bg-gradient-to-t from-black/60 to-transparent rounded overflow-hidden relative">
+<img class="w-full h-full object-cover" data-alt="Card thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4qD-4M-zQuAH8aVSkDubc9BSXbgek7NwldH2IezltQtYO2l68I47Ic8VmB6gBCisH8q4rTgJXfWUHUzlw8PrVYn9OMOiR6HsiMm96rqHcvtfTQaE_UK2AtqUv7LkZ8IeXBWukNHnuvCyMfFdbRzTt9hpfgfOc3DFVjAFqrP41dlIxJjiXGxStsxpiHQPtVrYFW3TlpwAX-GkWa8JNgUKhQ0zfsX8d4ZvHjj2V0r03IL7OTCtbEPkHM0ivV1hrP8a170m4DpwxFqXn"/>
+</div>
+<div class="flex-1 bg-primary/20 rounded flex items-center justify-center">
+<span class="text-[10px] font-bold">+9</span>
+</div>
+</div>
+<button class="w-full mt-4 py-2 bg-primary/20 hover:bg-primary/30 text-primary rounded-lg text-sm font-bold transition-colors">
+                    View Deck Guide
+                </button>
+</div>
+<!-- Deck Card 2 -->
+<div class="bg-[#2a1833] rounded-xl p-4 border border-white/5">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h4 class="font-bold text-base">Destroy Meta</h4>
+<p class="text-[#b792c9] text-xs">Win Rate: 54.1% | Cube Rate: 0.65</p>
+</div>
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-[#2a1833] bg-yellow-500/80 flex items-center justify-center text-[10px] font-bold text-black">11/12</div>
+</div>
+</div>
+<div class="flex gap-1 overflow-hidden h-12">
+<div class="flex-1 bg-gray-800 rounded"></div>
+<div class="flex-1 bg-gray-800 rounded"></div>
+<div class="flex-1 bg-gray-800 rounded"></div>
+<div class="flex-1 bg-primary/20 rounded flex items-center justify-center text-[10px] font-bold">+9</div>
+</div>
+<div class="mt-3 flex items-center gap-2">
+<p class="text-[10px] text-[#b792c9]">Missing: <span class="text-white font-bold">X-23</span></p>
+</div>
+<button class="w-full mt-3 py-2 bg-white/10 text-white rounded-lg text-sm font-bold">
+                    View Substitutes
+                </button>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation (iOS Style) -->
+<div class="fixed bottom-0 left-0 right-0 bg-[#1c1022]/95 backdrop-blur-md border-t border-white/10 h-20 flex items-center justify-around px-6 pb-4">
+<div class="flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-primary">style</span>
+<span class="text-[10px] font-medium text-primary">Collection</span>
+</div>
+<div class="flex flex-col items-center gap-1 opacity-50">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium">Meta</span>
+</div>
+<div class="flex flex-col items-center gap-1 opacity-50">
+<span class="material-symbols-outlined">auto_fix_high</span>
+<span class="text-[10px] font-medium">Builder</span>
+</div>
+<div class="flex flex-col items-center gap-1 opacity-50">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</div>
+</div>
+</div>
+<style>
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
+</body></html>

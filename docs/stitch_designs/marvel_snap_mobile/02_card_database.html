@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Marvel Snap Companion - Card Database</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ad2bee",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#1c1022",
+                        "card-rarity-legendary": "#ff9a00",
+                        "card-rarity-ultra": "#ff003c",
+                        "card-rarity-infinity": "#9d4edd",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Spline Sans', sans-serif;
+        }
+        .ios-notch {
+            height: 44px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display selection:bg-primary/30">
+<div class="relative flex h-screen w-full flex-col overflow-hidden">
+<!-- Status Bar Space (iOS) -->
+<div class="ios-notch w-full shrink-0"></div>
+<!-- Top Navigation -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-20">
+<div class="flex size-10 items-center justify-center rounded-full bg-slate-200 dark:bg-primary/20">
+<span class="material-symbols-outlined text-primary">search</span>
+</div>
+<h2 class="text-xl font-bold leading-tight tracking-tight flex-1 text-center">Card Database</h2>
+<div class="flex size-10 items-center justify-center">
+<button class="flex items-center justify-center rounded-full h-10 w-10 bg-slate-200 dark:bg-primary/20 text-primary">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-3 px-4 py-2 overflow-x-auto no-scrollbar whitespace-nowrap">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-slate-200 dark:bg-white/10 px-4">
+<span class="text-sm font-semibold">Keywords</span>
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-slate-200 dark:bg-white/10 px-4">
+<span class="text-sm font-semibold">Power</span>
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-slate-200 dark:bg-white/10 px-4">
+<span class="text-sm font-semibold">Rarity</span>
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-slate-200 dark:bg-white/10 px-4">
+<span class="text-sm font-semibold">Series</span>
+<span class="material-symbols-outlined text-[20px]">expand_more</span>
+</button>
+</div>
+<!-- Energy Selector (Horizontal Toggle) -->
+<div class="px-4 py-3">
+<div class="flex h-12 w-full items-center justify-between rounded-full bg-slate-200 dark:bg-white/5 p-1">
+<label class="flex-1 flex cursor-pointer h-full items-center justify-center rounded-full has-[:checked]:bg-primary has-[:checked]:text-white text-slate-500 dark:text-slate-400 text-sm font-bold">
+<span>0</span>
+<input class="hidden" name="energy" type="radio" value="0"/>
+</label>
+<label class="flex-1 flex cursor-pointer h-full items-center justify-center rounded-full has-[:checked]:bg-primary has-[:checked]:text-white text-slate-500 dark:text-slate-400 text-sm font-bold">
+<span>1</span>
+<input class="hidden" name="energy" type="radio" value="1"/>
+</label>
+<label class="flex-1 flex cursor-pointer h-full items-center justify-center rounded-full has-[:checked]:bg-primary has-[:checked]:text-white text-slate-500 dark:text-slate-400 text-sm font-bold">
+<span>2</span>
+<input checked="" class="hidden" name="energy" type="radio" value="2"/>
+</label>
+<label class="flex-1 flex cursor-pointer h-full items-center justify-center rounded-full has-[:checked]:bg-primary has-[:checked]:text-white text-slate-500 dark:text-slate-400 text-sm font-bold">
+<span>3</span>
+<input class="hidden" name="energy" type="radio" value="3"/>
+</label>
+<label class="flex-1 flex cursor-pointer h-full items-center justify-center rounded-full has-[:checked]:bg-primary has-[:checked]:text-white text-slate-500 dark:text-slate-400 text-sm font-bold">
+<span>4</span>
+<input class="hidden" name="energy" type="radio" value="4"/>
+</label>
+<label class="flex-1 flex cursor-pointer h-full items-center justify-center rounded-full has-[:checked]:bg-primary has-[:checked]:text-white text-slate-500 dark:text-slate-400 text-sm font-bold">
+<span>5</span>
+<input class="hidden" name="energy" type="radio" value="5"/>
+</label>
+<label class="flex-1 flex cursor-pointer h-full items-center justify-center rounded-full has-[:checked]:bg-primary has-[:checked]:text-white text-slate-500 dark:text-slate-400 text-sm font-bold">
+<span>6+</span>
+<input class="hidden" name="energy" type="radio" value="6+"/>
+</label>
+</div>
+</div>
+<!-- Main Card Grid -->
+<div class="flex-1 overflow-y-auto px-4 pb-20">
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-4 py-2">
+<!-- Card 1: Iron Man -->
+<div class="group relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-card-rarity-infinity shadow-[0_0_15px_rgba(157,78,221,0.3)] transition-transform active:scale-95">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Iron Man Marvel Snap card art" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD8Vk95vmmiIsdo3f9v3RSf7GwSr3V2X_6wALqzezedfGA0Pw-m6XaQXwoxhiLOynGW83A5bsbHjcVpwR6mbi3mLSSo8nMT5r-6ttEl2ZhyidDDO_OlbxL2qOS690XRdwpllIjNb4TgWrAKWLOQO5LTOziVQLXx-EJ3X7qWe6lkNTL8i0FzxDYlkJ13gbabFi0PwoHbXgR5a5-qigGCZVdoOTEX_iZPiMUQHF-j795Wfgxim3_81CCKPtmwxGEm69O676sWuXed7qSN');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute top-2 left-2 flex items-center justify-center h-7 w-7 rounded-full bg-blue-600 border border-white/20 text-[12px] font-bold text-white">5</div>
+<div class="absolute top-2 right-2 flex items-center justify-center h-7 w-7 rounded-full bg-orange-500 border border-white/20 text-[12px] font-bold text-white">0</div>
+<p class="absolute bottom-3 left-3 text-white text-sm font-bold">Iron Man</p>
+</div>
+<!-- Card 2: Ant-Man -->
+<div class="group relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-card-rarity-legendary shadow-[0_0_15px_rgba(255,154,0,0.3)] transition-transform active:scale-95">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Ant-Man Marvel Snap card art" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAvE_zNb9wxFt7lbE0E4vmIFpgvnaaz3wbB5D_z_Elo5tkr1oWEIMK6mmTeKJpcUEyRcOcTJJ8jz-6GsLtTwu8Xy78JK3i2LGAsi74Z78BtDW4rX_fBSZhvTMLYS-n0zVWd7onNFTwgd07Wi3y536G6pE3AQYrMOf0a9XdVWeNaPe2s9V6iGUpy3rnWqumzflDNNZJ8olupVnGu0BybejIuEmbRxUQjZlzJ1LyjB5nYE-SySHcXeK9ab0WKGUJNeIstfbRN1BCtCf23');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute top-2 left-2 flex items-center justify-center h-7 w-7 rounded-full bg-blue-600 border border-white/20 text-[12px] font-bold text-white">1</div>
+<div class="absolute top-2 right-2 flex items-center justify-center h-7 w-7 rounded-full bg-orange-500 border border-white/20 text-[12px] font-bold text-white">1</div>
+<p class="absolute bottom-3 left-3 text-white text-sm font-bold">Ant-Man</p>
+</div>
+<!-- Card 3: Blue Marvel -->
+<div class="group relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-card-rarity-ultra shadow-[0_0_15px_rgba(255,0,60,0.3)] transition-transform active:scale-95">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Blue Marvel Marvel Snap card art" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBTpbdgQWr_seyaKJ_x0cNOTIt4KBnScgkWj_1oPn6aaGMJjn301_O51zFxViabP4HZiZAMvCHrrPyU7z9pvGTte7mSlNR4biUumGOvOtbzuObPOk1jLfL8Fi7LU8QAXWtc9xAqjGsMTWORFn9daqhqwdNS0LpvJ4NjzlgU3Pq0uXJe11IwVnorTK6acZw30oYN1jVihCmkY3MwTPTFcAkJnj5OjP30B7APEreMczHRyjWKw-b6Oor4GYt836GY2Hap96LrHWubUbmZ');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute top-2 left-2 flex items-center justify-center h-7 w-7 rounded-full bg-blue-600 border border-white/20 text-[12px] font-bold text-white">5</div>
+<div class="absolute top-2 right-2 flex items-center justify-center h-7 w-7 rounded-full bg-orange-500 border border-white/20 text-[12px] font-bold text-white">3</div>
+<p class="absolute bottom-3 left-3 text-white text-sm font-bold">Blue Marvel</p>
+</div>
+<!-- Card 4: Kazar -->
+<div class="group relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-white/20 transition-transform active:scale-95">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Kazar Marvel Snap card art" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD5iY7Ti62D9CsqASRB2hi3547Ii0CLlLxLAZKaMi3naW4vM9exFT51I2YXU7KBHjIiveSlErnsY3OtXSUqRYA8G2jBSago6lGzZmSFy-NyCALxj3XPKYeWFKr1QN0KFGV2xhiUdv984omWMqs1xU2EEYdafqIDJhARA9dJ7ogtBFKDf802fy-iumfuaJfxo6Zj3v74zWBg6WL89kEaXOlvADmu0ZmDuQU3HECzBaDwx3GT7R9oqWsdJb51IWNx9JRO9Mdm1Qhn5y1y');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute top-2 left-2 flex items-center justify-center h-7 w-7 rounded-full bg-blue-600 border border-white/20 text-[12px] font-bold text-white">4</div>
+<div class="absolute top-2 right-2 flex items-center justify-center h-7 w-7 rounded-full bg-orange-500 border border-white/20 text-[12px] font-bold text-white">4</div>
+<p class="absolute bottom-3 left-3 text-white text-sm font-bold">Kazar</p>
+</div>
+<!-- Card 5: Onslaught -->
+<div class="group relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-card-rarity-infinity shadow-[0_0_15px_rgba(157,78,221,0.3)] transition-transform active:scale-95">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Onslaught Marvel Snap card art" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuARSuXNVZVes_ZSI-xFEZI9C7KdzkjoSL11m7DNw_hGxBzyFA_jD6YWd_U2OjDb7tSAhandF9-1-N66RsqvdvpY2CDlqN_neRKpPewqhQMNw_szI3m5nEKqeVR77mfC195LODZKaLxY7mkcxPj3K-HZnJ9_tNYUxtbA2uyPC2dR7fOlKSAA3ih_wmAkg7CBchwj5rQvyuzx8h0PbsyzGWEP_XTUcGNLW1YQvYPfsWtiFnceA-biyal9kTCbTvKwTyzdWF1YfKJrxiWX');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute top-2 left-2 flex items-center justify-center h-7 w-7 rounded-full bg-blue-600 border border-white/20 text-[12px] font-bold text-white">6</div>
+<div class="absolute top-2 right-2 flex items-center justify-center h-7 w-7 rounded-full bg-orange-500 border border-white/20 text-[12px] font-bold text-white">7</div>
+<p class="absolute bottom-3 left-3 text-white text-sm font-bold">Onslaught</p>
+</div>
+<!-- Card 6: Spectrum -->
+<div class="group relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-white/20 transition-transform active:scale-95">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Spectrum Marvel Snap card art" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCavstKx1yicU67x8hUseubDXSsJsSZCNXFfXCF0pLuxMci4avdweg_SZ5ESXREDaVRFlg-zv0U8pcDv2p8DxvPm0N-lr986wpOoAusU-Plzn4lO3kMNGoBON3yza55fLZThFeM9Aezq5uPfPUPt5YoTMucSjMjoE01eeWqdVgCon5q-di5JVxCwqmSt1089X5rHVk7ACiJ33CYM77BVMnmUFDwSmLdr-w-U3ihm8FRnCeq_a5SvU7iNEC0rFpcQw-notQqE6A1YwLz');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute top-2 left-2 flex items-center justify-center h-7 w-7 rounded-full bg-blue-600 border border-white/20 text-[12px] font-bold text-white">6</div>
+<div class="absolute top-2 right-2 flex items-center justify-center h-7 w-7 rounded-full bg-orange-500 border border-white/20 text-[12px] font-bold text-white">5</div>
+<p class="absolute bottom-3 left-3 text-white text-sm font-bold">Spectrum</p>
+</div>
+</div>
+</div>
+<!-- Detail Overlay (Active State Simulation) -->
+<div class="absolute inset-0 z-50 flex flex-col items-center justify-end bg-black/60 backdrop-blur-sm pointer-events-none opacity-0 invisible">
+<!-- This would be toggled on via JS in a real app -->
+<div class="w-full max-w-md bg-background-dark rounded-t-xl p-6 border-t border-white/10 pointer-events-auto">
+<div class="h-1.5 w-12 bg-white/20 rounded-full mx-auto mb-6"></div>
+<div class="flex gap-6 items-start">
+<div class="w-40 aspect-[3/4] rounded-xl border-2 border-primary shadow-lg shadow-primary/20 overflow-hidden shrink-0">
+<div class="h-full w-full bg-cover bg-center" data-alt="Detail view of Iron Man card" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDvWoRZtRgDLw2Tfc4fVMeOvmK1zsmorxaKU1gn3t6jR6wqxFRlPegNdOIABM6IYTHH0ksZQFH0qeZGSMlbX6ZHmKvQN9EwUYIT1SwDkbHphmprwA04w6NvTusGnO8RtejnnwB25_pblGQo77Qnqr9PP0oq7AVUsr6ITrliFWbo-kAojAMnuz3dA8uiPJQ3yIUnoFf5MZiL8CG7n6iR-6n0WHGKHhVjnvtUvpC0bl2nWcP8UKWRKJTBFRROattBend7d-V5ia10r2sJ');"></div>
+</div>
+<div class="flex-1 flex flex-col gap-4">
+<div>
+<h3 class="text-2xl font-black italic uppercase text-white">Iron Man</h3>
+<span class="text-primary text-xs font-bold tracking-widest uppercase">Ongoing</span>
+</div>
+<p class="text-slate-300 text-sm leading-relaxed">
+                            Your total Power is doubled at this location.
+                        </p>
+<div class="flex gap-4">
+<div class="flex flex-col">
+<span class="text-xs text-slate-500 font-bold uppercase">Energy</span>
+<span class="text-xl font-bold text-blue-400">5</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs text-slate-500 font-bold uppercase">Power</span>
+<span class="text-xl font-bold text-orange-400">0</span>
+</div>
+</div>
+</div>
+</div>
+<button class="mt-8 w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl">ADD TO COLLECTION</button>
+</div>
+</div>
+<!-- Bottom Tab Bar -->
+<div class="fixed bottom-0 left-0 right-0 h-20 bg-background-light dark:bg-background-dark/95 backdrop-blur-lg border-t border-slate-200 dark:border-white/5 flex items-center justify-around px-6 z-30">
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">style</span>
+<span class="text-[10px] font-bold uppercase">Decks</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">database</span>
+<span class="text-[10px] font-bold uppercase">Cards</span>
+</div>
+<div class="relative -top-4">
+<div class="h-14 w-14 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/40 text-white">
+<span class="material-symbols-outlined text-3xl">add</span>
+</div>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">analytics</span>
+<span class="text-[10px] font-bold uppercase">Meta</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-[10px] font-bold uppercase">Profile</span>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stark Tech Match Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#00aaff",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1c23",
+                        "stark-red": "#ff4444",
+                        "stark-charcoal": "#121216",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .hex-grid {
+            background-image: radial-gradient(circle, #00aaff1a 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+        .scan-line {
+            background: linear-gradient(to bottom, transparent 50%, rgba(0, 170, 255, 0.05) 50%);
+            background-size: 100% 4px;
+        }
+        .glass-panel {
+            background: rgba(18, 18, 22, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 170, 255, 0.3);
+            box-shadow: 0 0 15px rgba(0, 170, 255, 0.1);
+        }
+        .glow-blue {
+            box-shadow: 0 0 10px rgba(0, 170, 255, 0.4), inset 0 0 5px rgba(0, 170, 255, 0.2);
+        }
+        .glow-red {
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.4), inset 0 0 5px rgba(255, 68, 68, 0.2);
+        }
+        .arc-pulse {
+            border: 2px solid #00aaff;
+            box-shadow: 0 0 20px rgba(0, 170, 255, 0.6);
+        }
+        .letterbox {
+            height: 40px;
+            background: black;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body class="bg-background-dark font-display text-white selection:bg-primary/30 overflow-hidden">
+<!-- Letterboxing Top -->
+<div class="letterbox fixed top-0 w-full flex items-center justify-between px-10 text-[10px] tracking-widest text-primary/60 uppercase">
+<div class="flex items-center gap-4">
+<span>System: Mark LXXXV</span>
+<span class="animate-pulse">● Scanning...</span>
+</div>
+<div class="flex items-center gap-4">
+<span>Latency: 24ms</span>
+<span>v4.12.0-Prime</span>
+</div>
+</div>
+<!-- Main Content Wrapper -->
+<div class="flex h-screen pt-10 pb-10 hex-grid relative">
+<div class="absolute inset-0 scan-line pointer-events-none opacity-20"></div>
+<!-- SideNavBar -->
+<aside class="w-20 lg:w-64 flex flex-col glass-panel border-r border-primary/20 z-40 transition-all duration-300">
+<div class="p-6 flex flex-col gap-8 h-full">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 glow-blue border border-primary/50" data-alt="Stark Industries circular logo hologram" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDaEeakX98BmFqpPp9IuVnoBRakJ6WbZxSvRgZbmePyuyR1fCxAMXDilA509P74SxYLHjcP-1ldI0ak_OMdbTQWXlgjrXFUWSPIkRibb3wU6y1Jxeymm7Ll8JKFPeTXFElYxaWAMC_wS2sLyjh6G4_NZaw_Ctc1579L2iXlEcfpNBY-FlxhweQeYTensGTHQIg3kKg1HMQuoo6_6k9XPzPQtskURkhm7QQC-NJmBgcR4dBQJDeGUvBAc0kCARdOSgijHBg5Kak3fog-");'></div>
+<div class="hidden lg:flex flex-col">
+<h1 class="text-white text-sm font-bold leading-tight tracking-tighter uppercase italic">Stark Tech</h1>
+<p class="text-primary text-[10px] font-mono leading-normal">System: Online</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 flex-1">
+<div class="flex items-center gap-3 px-3 py-3 rounded-lg bg-primary/20 border-l-4 border-primary group cursor-pointer transition-all">
+<span class="material-symbols-outlined text-primary text-[24px]">dashboard</span>
+<p class="hidden lg:block text-white text-sm font-medium">Tactical View</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 group cursor-pointer text-gray-400 hover:text-white transition-all">
+<span class="material-symbols-outlined text-[24px]">style</span>
+<p class="hidden lg:block text-sm font-medium">Deck Forge</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 group cursor-pointer text-gray-400 hover:text-white transition-all">
+<span class="material-symbols-outlined text-[24px]">history_edu</span>
+<p class="hidden lg:block text-sm font-medium">Battle Logs</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 group cursor-pointer text-gray-400 hover:text-white transition-all">
+<span class="material-symbols-outlined text-[24px]">layers</span>
+<p class="hidden lg:block text-sm font-medium">Vault</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 group cursor-pointer text-gray-400 hover:text-white transition-all mt-auto">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+<p class="hidden lg:block text-sm font-medium">Calibration</p>
+</div>
+</nav>
+<button class="flex min-w-0 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-background-dark text-xs font-black leading-normal tracking-widest uppercase hover:brightness-110 glow-blue">
+<span class="truncate">Deploy Deck</span>
+</button>
+</div>
+</aside>
+<!-- Main Workspace -->
+<main class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative">
+<!-- TopNavBar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-primary/10 px-8 py-4 glass-panel sticky top-0 z-30">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3 text-white">
+<div class="size-6 text-primary drop-shadow-[0_0_8px_#00aaff]">
+<span class="material-symbols-outlined text-[28px]">token</span>
+</div>
+<h2 class="text-white text-lg font-black leading-tight tracking-widest italic uppercase">Snapapoulous Prime</h2>
+</div>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-primary/60 hover:text-primary text-[11px] font-bold tracking-widest transition-colors" href="#">MATCH TRACKER</a>
+<a class="text-primary/60 hover:text-primary text-[11px] font-bold tracking-widest transition-colors" href="#">ANALYTICS</a>
+<a class="text-primary/60 hover:text-primary text-[11px] font-bold tracking-widest transition-colors" href="#">HUD CONFIG</a>
+</div>
+</div>
+<div class="flex flex-1 justify-end gap-6 items-center">
+<label class="hidden lg:flex flex-col w-64">
+<div class="flex w-full items-stretch rounded-lg h-9 glass-panel overflow-hidden border-primary/20">
+<div class="text-primary/50 flex items-center justify-center pl-3">
+<span class="material-symbols-outlined text-[18px]">search</span>
+</div>
+<input class="form-input w-full bg-transparent border-none text-white focus:ring-0 placeholder:text-primary/30 text-xs font-mono" placeholder="QUERY SYSTEM..."/>
+</div>
+</label>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-lg size-9 glass-panel text-primary/80 hover:text-primary hover:border-primary/50 transition-all">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<button class="flex items-center justify-center rounded-lg size-9 glass-panel text-primary/80 hover:text-primary hover:border-primary/50 transition-all">
+<span class="material-symbols-outlined text-[20px]">person</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 border border-primary/50 glow-blue" data-alt="User profile avatar with blue overlay" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAgbf69fI0mV8csMBf8nUMv4uSYGAOCPd5qV_UHk-R-e_0m60HTZ0W78N1--QBZJyKdV6byOLizYf3a0g6ID1Vs2yM39pbgjsBD9m8xe6uBq-c04On0B47bRILcB67GSTD7RjRFXKZaQyLnqEy2cPUMpPuo8FEZkkBwaKMX1hUak_exbn0gaIxvuwYSMTRqtx3NFvV-JKc_v8iNHUyH0D1LzVE32p-Jj7Zag_8GHIFc_DUEu50WNfuCe_kYdHUIuiKWJnJCu6UDpb2s");'></div>
+</div>
+</header>
+<!-- Content -->
+<div class="p-8 flex flex-col gap-6">
+<!-- HUD Stats -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="glass-panel flex flex-col gap-1 p-5 rounded-xl border-l-4 border-l-primary/60">
+<p class="text-primary/50 text-[10px] font-bold tracking-widest uppercase">Collection Purity</p>
+<div class="flex items-end justify-between">
+<p class="text-white text-3xl font-mono font-bold tracking-tighter">84.2<span class="text-primary text-lg">%</span></p>
+<p class="text-emerald-400 text-xs font-mono mb-1">+1.2%</p>
+</div>
+</div>
+<div class="glass-panel flex flex-col gap-1 p-5 rounded-xl border-l-4 border-l-primary/60">
+<p class="text-primary/50 text-[10px] font-bold tracking-widest uppercase">Efficiency Rate</p>
+<div class="flex items-end justify-between">
+<p class="text-white text-3xl font-mono font-bold tracking-tighter">62.5<span class="text-primary text-lg">%</span></p>
+<p class="text-emerald-400 text-xs font-mono mb-1">+3.4%</p>
+</div>
+</div>
+<div class="glass-panel flex flex-col gap-1 p-5 rounded-xl border-l-4 border-l-stark-red/60">
+<p class="text-primary/50 text-[10px] font-bold tracking-widest uppercase">Net Cube Yield</p>
+<div class="flex items-end justify-between">
+<p class="text-white text-3xl font-mono font-bold tracking-tighter">-12.0</p>
+<p class="text-stark-red text-xs font-mono mb-1">-5.0%</p>
+</div>
+</div>
+<div class="glass-panel flex flex-col gap-1 p-5 rounded-xl border-l-4 border-l-primary/60">
+<p class="text-primary/50 text-[10px] font-bold tracking-widest uppercase">Combat Streak</p>
+<div class="flex items-end justify-between">
+<p class="text-white text-3xl font-mono font-bold tracking-tighter">W4</p>
+<p class="text-emerald-400 text-xs font-mono mb-1">+2</p>
+</div>
+</div>
+</div>
+<!-- Match Tracker Section Header -->
+<div class="flex items-center gap-4 mt-4">
+<h2 class="text-primary text-xs font-black leading-tight tracking-[0.2em] uppercase italic">Holographic Match Interface</h2>
+<div class="h-[1px] flex-1 bg-primary/20"></div>
+</div>
+<!-- Match Tracker Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Central Console -->
+<div class="lg:col-span-2 glass-panel rounded-2xl p-8 flex flex-col items-center justify-center gap-10 relative overflow-hidden group">
+<div class="absolute top-4 right-4 text-primary/20 font-mono text-xs italic">SYNCED: MARVEL_SNAP_API</div>
+<!-- Arc Reactor Visualizer -->
+<div class="relative flex items-center justify-center">
+<div class="absolute inset-0 rounded-full border-2 border-primary/10 animate-[spin_10s_linear_infinite]"></div>
+<div class="absolute inset-[-15px] rounded-full border border-dashed border-primary/20 animate-[spin_20s_linear_infinite_reverse]"></div>
+<div class="arc-pulse rounded-full size-48 flex flex-col items-center justify-center bg-background-dark/50 backdrop-blur-md">
+<span class="text-primary/50 text-[10px] font-black tracking-widest uppercase">Current Pot</span>
+<span class="text-white text-6xl font-mono font-black">04</span>
+</div>
+</div>
+<!-- Button HUD -->
+<div class="flex flex-wrap justify-center gap-4 w-full max-w-lg">
+<button class="group flex flex-col items-center justify-center size-20 rounded-xl glass-panel border-primary/40 hover:border-primary hover:glow-blue transition-all">
+<span class="text-primary text-xl font-mono font-black">+1</span>
+<span class="text-[9px] uppercase tracking-tighter opacity-60">Cube</span>
+</button>
+<button class="group flex flex-col items-center justify-center size-20 rounded-xl glass-panel border-primary/40 hover:border-primary hover:glow-blue transition-all">
+<span class="text-primary text-xl font-mono font-black">+2</span>
+<span class="text-[9px] uppercase tracking-tighter opacity-60">Cubes</span>
+</button>
+<button class="group flex flex-col items-center justify-center size-20 rounded-xl glass-panel border-primary/60 bg-primary/10 hover:border-primary hover:glow-blue transition-all">
+<span class="text-primary text-xl font-mono font-black">+4</span>
+<span class="text-[9px] uppercase tracking-tighter opacity-60 font-bold">Snap</span>
+</button>
+<button class="group flex flex-col items-center justify-center size-20 rounded-xl glass-panel border-primary hover:border-primary hover:glow-blue bg-primary/20 transition-all">
+<span class="text-primary text-xl font-mono font-black">+8</span>
+<span class="text-[9px] uppercase tracking-tighter font-black">MAX</span>
+</button>
+</div>
+<!-- Emergency Controls -->
+<div class="flex gap-4 w-full">
+<button class="flex-1 h-14 rounded-xl border border-stark-red/30 bg-stark-red/10 text-stark-red font-black tracking-widest uppercase text-sm hover:bg-stark-red/20 hover:glow-red transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">flag</span>
+                                Retreat
+                            </button>
+<button class="flex-1 h-14 rounded-xl border border-stark-red/30 bg-stark-red/20 text-stark-red font-black tracking-widest uppercase text-sm hover:bg-stark-red/30 hover:glow-red transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">error</span>
+                                Match Loss
+                            </button>
+</div>
+</div>
+<!-- Side Panel / Logs -->
+<div class="flex flex-col gap-4">
+<div class="glass-panel rounded-2xl p-6 flex-1 flex flex-col gap-4">
+<div class="flex items-center justify-between border-b border-primary/10 pb-3">
+<h3 class="text-primary text-[10px] font-black uppercase tracking-widest">Active Deck Analysis</h3>
+<span class="text-emerald-400 text-[10px] font-mono">T-TIER 1</span>
+</div>
+<div class="flex items-center gap-3 glass-panel p-3 rounded-lg border-primary/10">
+<div class="size-10 rounded-md bg-cover bg-center" data-alt="Cybernetic futuristic card icon" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBoGEtDFW1s_m2P52ZnD3LsoDbnqnd4ji18HrrAifIF-Fs0Azlt7lE4rXlPqF2HvMVjBcGnD3ixavFD2MK-kujZvmMOHe8wuaLSNhdNxQhMys3Y9Dh1VssUlocf2r2x278CF1gLeKtDo9HUw1NB1xZz_WlXkmaetQOs1aI_2aIEccQutwcmMFzGIjDrLPjNAq3dkKcFyZjR93MUfHaZUuJ5P2z3CAuA6ZaM6zDLpW0F7CQbs28ClpDO_CrbM6ZR67N_p8KBLdtXEHi1');"></div>
+<div>
+<p class="text-xs font-bold text-white">Sera Control</p>
+<p class="text-[9px] text-primary/60 font-mono">CL: 4,890 / WR: 58%</p>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto space-y-2 pr-2">
+<p class="text-[10px] text-primary/40 uppercase font-black mb-2">Recent Match History</p>
+<div class="flex items-center justify-between p-2 rounded bg-white/5 border border-white/5">
+<span class="text-[10px] font-mono">VS Thanos Lockjaw</span>
+<span class="text-emerald-400 text-[10px] font-mono font-bold">+4</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded bg-white/5 border border-white/5">
+<span class="text-[10px] font-mono">VS Galactus</span>
+<span class="text-stark-red text-[10px] font-mono font-bold">-1</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded bg-white/5 border border-white/5">
+<span class="text-[10px] font-mono">VS High Evo</span>
+<span class="text-emerald-400 text-[10px] font-mono font-bold">+8</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded bg-white/5 border border-white/5 opacity-50">
+<span class="text-[10px] font-mono">VS Patriot</span>
+<span class="text-emerald-400 text-[10px] font-mono font-bold">+2</span>
+</div>
+</div>
+<button class="w-full py-2 border border-primary/20 rounded bg-primary/5 text-[10px] font-bold text-primary hover:bg-primary hover:text-background-dark transition-all uppercase tracking-widest">View Detailed Logs</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Letterboxing Bottom -->
+<div class="letterbox fixed bottom-0 w-full flex items-center justify-center text-[10px] tracking-widest text-primary/60 uppercase">
+<div class="flex items-center gap-12">
+<span>Core Power: 100%</span>
+<span class="text-primary">System Integrity: Nominal</span>
+<span>Uptime: 04:21:44</span>
+</div>
+</div>
+</body></html>

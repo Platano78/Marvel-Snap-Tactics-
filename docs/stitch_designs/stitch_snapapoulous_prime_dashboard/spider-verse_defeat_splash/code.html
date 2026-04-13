@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Spider-Verse Defeat Splash</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Caveat:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f425af",
+                        "secondary": "#00f2ff",
+                        "background-light": "#f8f5f7",
+                        "background-dark": "#0a0612",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "handwritten": ["Caveat", "cursive"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>.glitch-bg {
+    background-image: linear-gradient(rgba(18, 11, 22, 0.95), rgba(18, 11, 22, 0.95)), url(https://lh3.googleusercontent.com/aida-public/AB6AXuAQxkZXiSXydvFbbKnybSLvkMHMWgePsulfuw-7OGJ7Vfw0pVvFstHU81awoUlHzb6eR8SUAJA9yKKytXIwMhTF_g401H5u3mMKzYG_aWdKbMJT63eJScAnGJ8iryHGqLJnRGfo08ngUrw3wD89Hc4hmMREW5gDvTihQEPdGR1HGSxeLUQbaeUMU08oyLLtQzqW2D-SoR7_ZTzj0kudQ83mRSAeP-1Kfrf-QKanFX1NOAI-Em_B2bqK9-RYIi6yYD-2nvBU3nmNYXyw);
+    position: relative;
+    overflow: hidden
+    }
+.scanlines {
+    background: linear-gradient(to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+    background-size: 100% 4px;
+    pointer-events: none
+    }
+.halftone {
+    background-image: radial-gradient(circle, #392833 1px, transparent 1px);
+    background-size: 20px 20px;
+    opacity: 0.15
+    }
+.defeat-text {
+    text-shadow: -3px -3px 0 #00f2ff, 3px 3px 0 #f425af;
+    filter: drop-shadow(0 0 10px rgba(244, 37, 175, 0.5));
+    transform: skew(-5deg)
+    }
+.duct-tape {
+    position: relative;
+    background: #2d1b28;
+    box-shadow: 2px 2px 0 #111
+    }
+.duct-tape::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: -10px;
+    right: -10px;
+    bottom: -5px;
+    background: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255, 255, 255, 0.05) 5px, rgba(255, 255, 255, 0.05) 10px);
+    z-index: -1;
+    border: 1px solid rgba(255, 255, 255, 0.1)
+    }
+.scribble-line {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+    width: 1px;
+    height: 100px;
+    transform: rotate(15deg)
+    }</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white selection:bg-primary/30">
+<div class="relative min-h-screen w-full flex flex-col glitch-bg">
+<!-- Background FX Layers -->
+<div class="absolute inset-0 scanlines opacity-30"></div>
+<div class="absolute inset-0 halftone"></div>
+<!-- Random Scribbles -->
+<div class="scribble-line top-10 left-[15%] h-32"></div>
+<div class="scribble-line top-40 right-[20%] h-24 opacity-20"></div>
+<div class="scribble-line bottom-20 left-[10%] h-40 opacity-40"></div>
+<!-- Top Nav Bar -->
+<div class="relative z-10 w-full">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-white/10 px-6 py-4 lg:px-20">
+<div class="flex items-center gap-4 text-white">
+<div class="size-6 text-primary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 4H17.3334V17.3334H30.6666V30.6666H44V44H4V4Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-tight uppercase italic">Spider-Verse Snap</h2>
+</div>
+<div class="flex gap-4">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-white/5 border border-white/10 hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-white/5 border border-white/10 hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-[20px]">person</span>
+</button>
+</div>
+</header>
+</div>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col items-center justify-center relative px-4 text-center">
+<!-- Defeat Splash -->
+<div class="relative mb-4">
+<h1 class="defeat-text text-white text-[80px] md:text-[140px] font-black leading-none tracking-tighter uppercase italic select-none">
+                    DEFEAT
+                </h1>
+<div class="absolute -top-4 -right-4 text-secondary/40 font-bold text-xl uppercase tracking-widest hidden md:block">
+                    ERROR_404_VICTORY
+                </div>
+</div>
+<!-- Cube Loss -->
+<div class="transform -rotate-2 bg-black/40 backdrop-blur-sm px-8 py-2 border-l-4 border-primary">
+<h2 class="text-primary text-[32px] md:text-[44px] font-bold leading-tight tracking-tighter">
+                    -2 CUBES
+                </h2>
+</div>
+<!-- Handwritten Annotation -->
+<div class="mt-12 relative max-w-xs group">
+<div class="text-yellow-400 font-handwritten text-2xl md:text-3xl transform -rotate-1 transition-transform group-hover:rotate-0">
+                    Ouch... let's get 'em next time!
+                    <div class="mt-2 flex justify-center">
+<span class="material-symbols-outlined text-4xl">face</span>
+</div>
+</div>
+<!-- Sketched Spider Mask (Simulated with Material Icon) -->
+<div class="absolute -bottom-10 right-0 opacity-20 pointer-events-none transform rotate-12">
+<span class="material-symbols-outlined text-6xl">grid_view</span>
+</div>
+</div>
+<!-- Image Grid Mockup (Match Details) -->
+<div class="w-full max-w-4xl mt-16 px-4">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
+<div class="flex flex-col gap-2 group cursor-pointer">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-lg border-2 border-transparent group-hover:border-primary transition-all grayscale hover:grayscale-0 relative overflow-hidden" data-alt="Spider-Man Noir card portrait" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA8blfpD2OF25rISlvmccAoePcMi0AnmotWEoeQOCdXeietHjcm0Yi8IkqERrzYbK8WNYP0kTpK51Ws3Q3IFB_lsAtDHjAQzvopfEu8GHME2AV1SRNH4dMxNrUsehKXAzIqQCHxnpPWMb8U9Ohe5Z6FcUVNqL6VeneP9_FzdCp3-v60Cg4aG8mUdnC4xM2VndP9Y3Nxjpytmi-TEPtbrgGJDjM1mYaopN2bPhKbm0J_T3nfYwgcUc1-Tn-zmR6OIRM0jqzGS9MsGhiZ");'>
+<div class="absolute inset-0 bg-primary/20 mix-blend-multiply"></div>
+</div>
+<p class="text-xs text-white/50 font-medium uppercase tracking-widest">Card MVP</p>
+</div>
+<div class="flex flex-col gap-2 group cursor-pointer">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-lg border-2 border-transparent group-hover:border-primary transition-all grayscale hover:grayscale-0" data-alt="Glitchy stylized cityscape background" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD0JE1ff3ZiKXErlB6wuDGlqN7DxqcA_OEukp9A2Kt5TN3J-E49uotGyBywZOdeKd3s63Ofw8_jjvvyKvj3-iIDzvislEVHQsB9ziwXnmsTtZoUUyxJV93DgXBJ6yNn74UjI0wPNwqQSHDVqddbYZ6nc1UK3NcxdKtwKD69_Oq27tTjrYylo3RnJ0R99AZjQAD5ObunhtuXx1vKYpp94qmTW6hvZWzxLTz7vRUPn0rva04Bj6bIOufObr88GtLr1RkJXz30yeZb19Yo");'>
+</div>
+<p class="text-xs text-white/50 font-medium uppercase tracking-widest">Location 1</p>
+</div>
+<div class="flex flex-col gap-2 group cursor-pointer">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-lg border-2 border-transparent group-hover:border-primary transition-all grayscale hover:grayscale-0" data-alt="Abstract colorful neon pattern" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCc4BhBz2bHdZZEJVXk0iNkIzWKnvxe9XyXO2exAo8-flLq3s_OcooSteYaj14u6ZGA9V4sm20kONm6xq4g006VjiHGRrpCH-Aus1LPXqu1hH-_IlO13pStc33HeumfX9kne7_vBJiASLjEhhOLHv2fnFHGZVYKbR9DcnCKMx5SYcrTbewcHPkIDe1MWu33HnHid0PyTaKTAxHUrng02KFWYoXZIMKpjpZjrDwQUC-uDMteo3C0z-RxWdQRZSkdCfqHESSSbCE5yNQC");'>
+</div>
+<p class="text-xs text-white/50 font-medium uppercase tracking-widest">Location 2</p>
+</div>
+<div class="flex flex-col gap-2 group cursor-pointer">
+<div class="w-full bg-center bg-no-repeat aspect-[3/4] bg-cover rounded-lg border-2 border-transparent group-hover:border-primary transition-all grayscale hover:grayscale-0" data-alt="Cyberpunk city street at night" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAnr-Zc01lXiIYRFeLErGWwMkoOHx-KxnSpofP8RZx2JNYtsv6Nrif5YRj9I79cD3XpTdUWt-1eNuY4-MtviwAbp2YDqn1jKfDoA18tWvnWAo6OLBwtZnNTKzKLrk7Y9-ANyqysyG0VoCiNK1CNXj6xJ_AsIA0DQfaKfYS2PPwFUkGke4j1EY_2zSGCTTJRU8sdo5dsazJ0cOa8LxBZ6SGY2fWFdp22EfJK_ixSNYeYu2g8Aqcm8jMyCnoeh8L5bt2FZME8PgKC9eJu");'>
+</div>
+<p class="text-xs text-white/50 font-medium uppercase tracking-widest">Location 3</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Taped Footer Buttons -->
+<footer class="relative z-20 pb-12 px-6">
+<div class="flex flex-wrap justify-center gap-6">
+<button class="duct-tape px-8 py-3 font-bold uppercase tracking-widest hover:translate-y-[-2px] transition-transform flex items-center gap-2 group">
+<span class="material-symbols-outlined group-hover:text-primary">history</span>
+                    Match History
+                </button>
+<button class="duct-tape px-10 py-4 bg-primary text-white font-black uppercase tracking-[0.2em] hover:scale-105 transition-all flex items-center gap-3">
+                    Next Match
+                    <span class="material-symbols-outlined">double_arrow</span>
+</button>
+<button class="duct-tape px-8 py-3 font-bold uppercase tracking-widest hover:translate-y-[-2px] transition-transform flex items-center gap-2 group">
+<span class="material-symbols-outlined group-hover:text-secondary">dashboard</span>
+                    Collection
+                </button>
+</div>
+</footer>
+<!-- Bottom Border Texture -->
+<div class="h-1 w-full bg-gradient-to-r from-primary via-secondary to-primary opacity-50"></div>
+</div>
+</body></html>

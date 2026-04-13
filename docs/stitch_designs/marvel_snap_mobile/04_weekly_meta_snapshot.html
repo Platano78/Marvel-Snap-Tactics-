@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Weekly Meta Snapshot</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ad2bee",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#1c1022",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Spline Sans', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+<!-- TopAppBar -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-50">
+<div class="text-primary flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined" style="font-size: 28px;">analytics</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Weekly Meta Snapshot</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex cursor-pointer items-center justify-center rounded-lg h-12 bg-transparent text-slate-900 dark:text-white">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<div class="pb-3 bg-background-light dark:bg-background-dark">
+<div class="flex border-b border-slate-200 dark:border-[#553267] px-4 gap-8">
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-slate-500 dark:text-[#b792c9] pb-[13px] pt-4" href="#">
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Decks</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-primary text-slate-900 dark:text-white pb-[13px] pt-4" href="#">
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Snapshot</p>
+</a>
+<a class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-slate-500 dark:text-[#b792c9] pb-[13px] pt-4" href="#">
+<p class="text-sm font-bold leading-normal tracking-[0.015em]">Analysis</p>
+</a>
+</div>
+</div>
+<!-- Chart Section -->
+<div class="flex flex-wrap gap-4 px-4 py-6 bg-background-light dark:bg-background-dark">
+<div class="flex min-w-72 flex-1 flex-col gap-2">
+<p class="text-slate-500 dark:text-[#b792c9] text-base font-medium leading-normal">Archetype Popularity (Last 7 Days)</p>
+<div class="flex items-baseline justify-between">
+<p class="text-slate-900 dark:text-white tracking-tight text-[32px] font-bold leading-tight truncate">Meta Power Shift</p>
+<div class="flex gap-1 items-center bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-lg">
+<span class="material-symbols-outlined text-[#0bda76] text-sm">trending_up</span>
+<p class="text-[#0bda76] text-sm font-medium leading-normal">+5.4%</p>
+</div>
+</div>
+<div class="flex min-h-[220px] flex-1 flex-col gap-8 py-4">
+<svg fill="none" height="148" preserveaspectratio="none" viewbox="-3 0 478 150" width="100%" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25V149H326.769H0V109Z" fill="url(#paint0_linear_1131_5935)"></path>
+<path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25" stroke="#ad2bee" stroke-linecap="round" stroke-width="3"></path>
+<defs>
+<lineargradient gradientunits="userSpaceOnUse" id="paint0_linear_1131_5935" x1="236" x2="236" y1="1" y2="149">
+<stop stop-color="#ad2bee" stop-opacity="0.3"></stop>
+<stop offset="1" stop-color="#ad2bee" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+</svg>
+<div class="flex justify-between px-2">
+<p class="text-slate-500 dark:text-[#b792c9] text-[11px] font-bold uppercase tracking-wider">Mon</p>
+<p class="text-slate-500 dark:text-[#b792c9] text-[11px] font-bold uppercase tracking-wider">Tue</p>
+<p class="text-slate-500 dark:text-[#b792c9] text-[11px] font-bold uppercase tracking-wider">Wed</p>
+<p class="text-slate-500 dark:text-[#b792c9] text-[11px] font-bold uppercase tracking-wider">Thu</p>
+<p class="text-slate-500 dark:text-[#b792c9] text-[11px] font-bold uppercase tracking-wider">Fri</p>
+<p class="text-slate-500 dark:text-[#b792c9] text-[11px] font-bold uppercase tracking-wider">Sat</p>
+<p class="text-slate-500 dark:text-[#b792c9] text-[11px] font-bold uppercase tracking-wider">Sun</p>
+</div>
+</div>
+<div class="flex gap-4 overflow-x-auto pb-2 -mx-4 px-4 no-scrollbar">
+<div class="flex items-center gap-2 bg-slate-100 dark:bg-[#2b1933] px-3 py-1.5 rounded-full shrink-0 border border-slate-200 dark:border-[#553267]">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span class="text-xs font-bold text-slate-700 dark:text-white">Arishem Control</span>
+</div>
+<div class="flex items-center gap-2 bg-slate-100 dark:bg-[#2b1933] px-3 py-1.5 rounded-full shrink-0 border border-slate-200 dark:border-[#553267]">
+<div class="w-2 h-2 rounded-full bg-blue-500"></div>
+<span class="text-xs font-bold text-slate-700 dark:text-white">Thena Bounce</span>
+</div>
+<div class="flex items-center gap-2 bg-slate-100 dark:bg-[#2b1933] px-3 py-1.5 rounded-full shrink-0 border border-slate-200 dark:border-[#553267]">
+<div class="w-2 h-2 rounded-full bg-orange-500"></div>
+<span class="text-xs font-bold text-slate-700 dark:text-white">Destroy</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Weekly Summary -->
+<div class="px-4 py-2">
+<div class="bg-primary/10 dark:bg-primary/5 border border-primary/20 p-4 rounded-xl">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary">psychology</span>
+<h3 class="text-slate-900 dark:text-white font-bold">Weekly Analysis</h3>
+</div>
+<p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                    The meta has stabilized around high-variance decks. To counter the dominant <strong>Arishem</strong> archetype, consider teching in <strong>Cassandra Nova</strong> or <strong>Darkhawk</strong>. Control decks are seeing a resurgence as a response to the increase in greedy combo lines. Prioritize initiative to land Cosmos and Enchantress on key turns.
+                </p>
+</div>
+</div>
+<!-- Rising Stars -->
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-green-500">trending_up</span>
+            Rising Stars
+        </h3>
+<div class="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
+<div class="flex flex-1 gap-3 rounded-lg border border-slate-200 dark:border-[#553267] bg-white dark:bg-[#2b1933] p-4 flex-col shadow-sm">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-xl w-12 shrink-0 border-2 border-primary" data-alt="Comic book card art for Sera" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBVFmtOf7z90i83P0ev_xEDuhLZc0morLPyiR-wBK9GSzdnZNRi5rC1SdJSUTB5GVF-t_zkyJRBjs7sRqKy0z7UW3Z3mRyIH2yy2Mr9XRe0wBlK2TVcNsnXRmqHEOYWESNVkOB0e_pJvYxdhj83YOuhaxi4fZGCkt1feiNKV5M58EseaPZNbCE_ERV4t6htm6lXAS6FlHJ1fqSmm3i7_RA71mwvOvKVzuxTYAx3PyxW5xVguXVCyNupSRm95aK8bw3wlFUs8I5hAR0B");'></div>
+<div class="flex flex-col gap-1">
+<h2 class="text-slate-900 dark:text-white text-base font-bold leading-tight">Sera</h2>
+<p class="text-green-600 dark:text-[#0bda76] text-sm font-medium leading-normal">+12.4% Playrate</p>
+</div>
+</div>
+<div class="flex flex-1 gap-3 rounded-lg border border-slate-200 dark:border-[#553267] bg-white dark:bg-[#2b1933] p-4 flex-col shadow-sm">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-xl w-12 shrink-0 border-2 border-primary" data-alt="Comic book card art for High Evolutionary" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCav4Y4-jnz932r6rK0VzVdTcdfqHW2wtV6FZZIVQ63KPmlh51bBRiKdlBH7zZ12el4rkAtsoB7fZuDl1aTC4l467JWfW5bXlqzaZWYCC-neD3eJAg-q5lw23gnGdOXya3pa6UrFbDQ-HI7oKQjrQ6FDGAVAyhAQgSIed5MHnrAT8Hq8VnSYyJjtqUhdahS93dmb1uR7FXO3aRtJpfFe7kWMC6Rn5141zOUpgUdmMFQuu_H8lw06MkhmupWFghYVqqzS6VYrwokZwLp");'></div>
+<div class="flex flex-col gap-1">
+<h2 class="text-slate-900 dark:text-white text-base font-bold leading-tight">High Evo</h2>
+<p class="text-green-600 dark:text-[#0bda76] text-sm font-medium leading-normal">+8.1% Playrate</p>
+</div>
+</div>
+</div>
+<!-- Falling Off -->
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-red-500">trending_down</span>
+            Falling Off
+        </h3>
+<div class="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
+<div class="flex flex-1 gap-3 rounded-lg border border-slate-200 dark:border-[#553267] bg-white dark:bg-[#2b1933] p-4 flex-col shadow-sm">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-xl w-12 shrink-0 border-2 border-slate-400 opacity-70" data-alt="Comic book card art for Hela" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAVW_1I_DkzGLVdXhPrkKZ3k4IjzYZEge7pE8uJH_Zka9MqK2Jovm8D7asXBMcrWDj7C3mxK8bwbOZP8u2W0pUPixYiGf8v6oJaB3v9sCk8-fOLO01I1ckmOAdOePn530c23eX7aJHtCzoH8RH0z-WK9d32ZSZ0JID0fI-2Pn8V-HZqF1zACS51w59QdRnqRV4WIBV1eAKOzAJF2prYhA-rEC0RHDiDvt3U8NcxyZLmH3gz0-_1Dcin9RYZkOiR9_gFtFMeDlj5xgo-");'></div>
+<div class="flex flex-col gap-1">
+<h2 class="text-slate-900 dark:text-white text-base font-bold leading-tight">Hela</h2>
+<p class="text-red-500 text-sm font-medium leading-normal">-15.2% Playrate</p>
+</div>
+</div>
+<div class="flex flex-1 gap-3 rounded-lg border border-slate-200 dark:border-[#553267] bg-white dark:bg-[#2b1933] p-4 flex-col shadow-sm">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-xl w-12 shrink-0 border-2 border-slate-400 opacity-70" data-alt="Comic book card art for Professor X" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB1UO3AR-jk5V7Otnep2COAyndGhBrCdlE4K4HQRu8jAlM38I-I8uBmCkyrfvn3OTlpF2vtiOLrQjCn-haOzBzxX6ck4JnZeiI4BTE0wizf7t1z9Bb9Ff2I17iYYetYcOzq5AKsHHl7NEdXVEVRJkc5nY5mk_DYYX8wd43O3tymCeJyyn6B7HgsTdzWCQKS9E5lbbnxDWE8078XnJpuAnzjqeJ_nCAz1AnB5BgGmKWXSJbCKAilwrYbaRo5I5fQEXKbuHqwuEQV7wsZ");'></div>
+<div class="flex flex-col gap-1">
+<h2 class="text-slate-900 dark:text-white text-base font-bold leading-tight">Professor X</h2>
+<p class="text-red-500 text-sm font-medium leading-normal">-9.7% Playrate</p>
+</div>
+</div>
+</div>
+<div class="h-24"></div>
+<!-- Navigation Bar (iOS Style) -->
+<div class="fixed bottom-0 w-full bg-white dark:bg-[#1c1022] border-t border-slate-200 dark:border-[#553267] flex justify-around items-center py-2 pb-6 px-6 z-50">
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-[#b792c9]">
+<span class="material-symbols-outlined">style</span>
+<span class="text-[10px] font-bold">Decks</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">insights</span>
+<span class="text-[10px] font-bold">Meta</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-[#b792c9]">
+<span class="material-symbols-outlined">view_module</span>
+<span class="text-[10px] font-bold">Collection</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-[#b792c9]">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold">Profile</span>
+</button>
+</div>
+</div>
+</body></html>

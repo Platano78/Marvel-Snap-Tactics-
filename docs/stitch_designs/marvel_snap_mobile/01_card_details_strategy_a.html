@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ad2bee",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#0f0814",
+                        "location-common": "#4ade80",
+                        "location-rare": "#60a5fa",
+                        "location-ultra": "#f472b6",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        }
+        body {
+            min-height: 100dvh;
+        }
+        .cosmic-gradient {
+            background: radial-gradient(circle at top right, rgba(173, 43, 238, 0.15), transparent),
+                        radial-gradient(circle at bottom left, rgba(67, 56, 202, 0.15), transparent);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display text-white cosmic-gradient">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<header class="sticky top-0 z-50 bg-background-dark/90 backdrop-blur-xl border-b border-white/10 px-4 py-4 space-y-4">
+<div class="flex items-center justify-between">
+<button class="text-white flex items-center justify-center">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight">Location Database</h1>
+<button class="text-primary flex items-center justify-center">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="w-full bg-white/5 border border-white/10 rounded-full py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-slate-500" placeholder="Search locations..." type="text"/>
+</div>
+<div class="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-1">
+<button class="flex-shrink-0 bg-primary px-4 py-1.5 rounded-full text-xs font-bold">All</button>
+<button class="flex-shrink-0 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full text-xs font-bold text-slate-300">Power Modifiers</button>
+<button class="flex-shrink-0 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full text-xs font-bold text-slate-300">Card Movement</button>
+<button class="flex-shrink-0 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full text-xs font-bold text-slate-300">Game Rules</button>
+</div>
+</header>
+<main class="relative z-10 flex flex-col px-4 pt-6 pb-24 gap-6">
+<section>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-orange-400 text-sm fill-1">local_fire_department</span>
+<h2 class="text-xs font-bold uppercase tracking-widest text-orange-400">Featured Location</h2>
+<div class="ml-auto flex items-center gap-1.5 bg-white/10 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+<span class="text-[10px] font-bold">14:22:05</span>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-2xl aspect-[16/7] group border border-white/20">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAsxzcMqta4pbo9KdUuHsQMfhNn929lafJdSW6RrQWXmsxcD18Hdm08s3IVMeyI6IheL0sl9-yS5hqAbFOBbDLgJTbBZQApxWjl_v3cv8pmgCOXDbrbMa4BuHbA6db8Ty5c3Gnozr_rSv-zCY5PJrOz7fNH3QN-IU1MhQ-7QUIjkEEgbXUUNGi3y3tgZpUCVcn4Nc2uBTDgkfkdmuUF5ommpi2QuUSA_0muFUR2VDv09hn8cpO4m2zdomV5wE37b6zgW7D0MSCkTeGj");'></div>
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4">
+<h3 class="text-2xl font-black uppercase tracking-tighter">The Nexus</h3>
+<p class="text-xs text-slate-300 line-clamp-2">Your Power here is added to other locations.</p>
+</div>
+<div class="absolute top-4 right-4">
+<span class="bg-location-rare text-white text-[10px] font-black px-2 py-1 rounded uppercase tracking-widest shadow-lg">Rare</span>
+</div>
+</div>
+</section>
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="text-lg font-bold">All Locations</h2>
+<span class="text-xs text-slate-500 font-medium">124 Results</span>
+</div>
+<div class="bg-white/5 border border-white/10 rounded-2xl p-3 flex gap-4 items-center">
+<div class="size-20 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-slate-800">
+<div class="w-full h-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCgBKL_0zCnnMF9mFo9BVx9Gj9iyUr8xhjK1vPn9rthFksUHkc4xwP6rTTuDiMSHlxCwosSToPa5IoZKpqOLI9FxDqv108S1XOc3apK_8dX01pN6a6KSdDpfoJs7fHCchSQc5eABofOnYPDMZSzbGheUf2LvuzNmo21CoMzkm-jenTnLvDZwU_LvWz028QPobzCZFC4EaZxuBn059MhLGoVn_JeUzC2rj327nDW55ZNfEem2Ra3VxbY5Sky9766vNkYRB_JvhGL-tXw");'></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<h4 class="font-bold text-base truncate">Death's Domain</h4>
+<span class="text-location-ultra text-[9px] font-black uppercase tracking-tighter">Ultra Rare</span>
+</div>
+<p class="text-sm text-slate-400 leading-snug">When you play a card here, destroy it.</p>
+<div class="mt-2 flex gap-2">
+<span class="text-[10px] font-bold bg-red-500/20 text-red-400 px-2 py-0.5 rounded">Destruction</span>
+</div>
+</div>
+</div>
+<div class="bg-white/5 border border-white/10 rounded-2xl p-3 flex gap-4 items-center">
+<div class="size-20 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-slate-800">
+<div class="w-full h-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDt_uPM5Mleq860bInSvlmA-8LY4ihz39zmvrWPa4ha5K8oQEYorHIT6jW2rap1LmR0ncPH_dhlKqijYzcGgvn784ljql-t5dQ61rdqwicquC1Eyi3p_XUXCQ5j40fq53D72ZjmUZwUtvjjF6qmg1nofQA4p-kb-jDg2oqU56nkooK-mZHUy4HGTVScSTmA87w_y7HyIc-BxdwrKAM5eWy_RqCmnx3tuxukrTkb3lAE3byciS_6cTlEaoia5kMbKILVuteSDg203ZdR");'></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<h4 class="font-bold text-base truncate">Savage Land</h4>
+<span class="text-location-common text-[9px] font-black uppercase tracking-tighter">Common</span>
+</div>
+<p class="text-sm text-slate-400 leading-snug">Add two Raptors to each side here.</p>
+<div class="mt-2 flex gap-2">
+<span class="text-[10px] font-bold bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded">Token Generation</span>
+</div>
+</div>
+</div>
+<div class="bg-white/5 border border-white/10 rounded-2xl p-3 flex gap-4 items-center">
+<div class="size-20 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-slate-800">
+<div class="w-full h-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDaehaslP7kVppAfAQlFwNL_ZETIbwBC-6Zj0bnzLY_b0yI0DUEj6Vh7XwCYGWZQak7YUgVnjjFbCoFBTbFVJFu0MsO7l22b0y7kTYAeO_pRcKwzpQl8WkRKyx6ECN3uYFD7TA5Zf7fN7WMkS_ImopMRRClcDAw32neK0EYRigLqlpazEiG0xOYi5EjOqdieoBVTQta1X-eD4FOU2mwteBHmyMf-tmJ3WMDQVQ50c0G0Hd7hDinW1FX9qPjLpehcBg_eexW3GROjOsf");'></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<h4 class="font-bold text-base truncate">Baxter Building</h4>
+<span class="text-location-common text-[9px] font-black uppercase tracking-tighter">Common</span>
+</div>
+<p class="text-sm text-slate-400 leading-snug">Whoever is winning this location gets +3 Power at the others.</p>
+<div class="mt-2 flex gap-2">
+<span class="text-[10px] font-bold bg-green-500/20 text-green-400 px-2 py-0.5 rounded">Power Boost</span>
+</div>
+</div>
+</div>
+<div class="bg-white/5 border border-white/10 rounded-2xl p-3 flex gap-4 items-center">
+<div class="size-20 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-slate-800">
+<div class="w-full h-full bg-cover bg-center" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCjLoNkyRTGy_GgjlZngFJ0VacD83XsWLERPTsHVtFaHihhi43YWnLhCmWtR7SmtXUkCpJI4D_-JGWqqrJl_yEk6cMovZIhP5pXT-iRaxC0Uu3GJZHi64wStr8UVltM6-MERmVXrd_6anPyS5fVlZJjPR5LXjZLrbhbPDAhRVQ2NU9v8FZdY9Mh5u0uRp2OxTXFazAqrHX1pFwpYoIVu-MztvagikSO5r3kOcpOYii5pO--uW-V180IkuirC1Aq_H4SLI7uXcTGO9lt");'></div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<h4 class="font-bold text-base truncate">The Hub</h4>
+<span class="text-location-common text-[9px] font-black uppercase tracking-tighter">Common</span>
+</div>
+<p class="text-sm text-slate-400 leading-snug">Add a random card to your hand.</p>
+<div class="mt-2 flex gap-2">
+<span class="text-[10px] font-bold bg-primary/20 text-primary px-2 py-0.5 rounded">Card Generation</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-background-dark/95 backdrop-blur-xl border-t border-white/10 px-6 py-3 pb-8">
+<div class="flex justify-between items-center">
+<button class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">style</span>
+<span class="text-[10px] font-bold">Cards</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined fill-1">map</span>
+<span class="text-[10px] font-bold">Locations</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold">Decks</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="text-[10px] font-bold">Meta</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-500">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold">Profile</span>
+</button>
+</div>
+</nav>
+</div>
+
+</body></html>

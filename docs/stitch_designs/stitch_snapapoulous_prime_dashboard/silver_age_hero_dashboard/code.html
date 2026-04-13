@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Silver Age Hero Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&amp;family=Permanent+Marker&amp;family=Roboto+Condensed:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#E23636", // Classic Marvel Red
+              "background-light": "#F2E8CF", // Aged paper feel
+              "background-dark": "#1A1A1A",
+              "action-green": "#2ECC71",
+              "action-yellow": "#FFD700",
+              "action-blue": "#3498DB",
+            },
+            fontFamily: {
+              display: ["Bangers", "cursive"],
+              marker: ["'Permanent Marker'", "cursive"],
+              body: ["'Roboto Condensed'", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "4px",
+            },
+          },
+        },
+      };
+    </script>
+<style>.halftone {
+            background-image: radial-gradient(circle, #000 15%, transparent 16%);
+            background-size: 6px 6px;
+            opacity: 0.1;
+            pointer-events: none;
+            position: absolute;
+            inset: 0;
+        }
+        .kirby-krackle {
+            background-image: radial-gradient(circle, #000 30%, transparent 35%),
+                              radial-gradient(circle, #000 20%, transparent 25%);
+            background-size: 20px 20px, 15px 15px;
+            background-position: 0 0, 10px 10px;
+            opacity: 0.15;
+        }
+        .comic-border {
+            border: 4px solid black;
+            box-shadow: 6px 6px 0px 0px rgba(0,0,0,0.8);
+            transform: rotate(-0.5deg);
+        }
+        .comic-border-alt {
+            border: 4px solid black;
+            box-shadow: 6px 6px 0px 0px rgba(0,0,0,0.8);
+            transform: rotate(0.8deg);
+        }
+        .starburst {
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+        .letter-column-border {
+            border-left: 8px solid black;
+            padding-left: 20px;
+        }
+        .speed-lines {
+            background: repeating-linear-gradient(
+                -45deg,
+                rgba(255,255,255,0.1),
+                rgba(255,255,255,0.1) 2px,
+                transparent 2px,
+                transparent 10px
+            );
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-body text-slate-900 dark:text-slate-100 min-h-screen overflow-x-hidden">
+<header class="relative py-8 px-4 flex justify-center items-center bg-primary overflow-hidden border-b-8 border-black">
+<div class="halftone"></div>
+<div class="absolute inset-0 kirby-krackle opacity-30"></div>
+<div class="relative z-10 flex flex-col items-center">
+<div class="bg-action-yellow border-4 border-black p-8 starburst shadow-2xl scale-125 mb-4">
+<h1 class="font-display text-4xl md:text-6xl text-black uppercase tracking-widest drop-shadow-md">
+                    SNAPAPOULOUS PRIME
+                </h1>
+</div>
+<p class="font-marker text-xl text-white bg-black px-4 py-1 -rotate-2">SILVER AGE EDITION</p>
+</div>
+</header>
+<main class="container mx-auto px-6 py-10 grid grid-cols-12 gap-8 relative">
+<div class="col-span-12 lg:col-span-8 space-y-12">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+<div class="comic-border bg-white dark:bg-zinc-800 p-6 flex flex-col justify-between h-40 group hover:scale-[1.02] transition-transform">
+<div class="halftone group-hover:opacity-20 transition-opacity"></div>
+<span class="font-display text-2xl text-primary uppercase">Collection Progress</span>
+<div class="flex items-end gap-2">
+<span class="text-6xl font-display">84%</span>
+<span class="font-marker text-zinc-500 mb-2">295/351 CARDS</span>
+</div>
+</div>
+<div class="comic-border-alt bg-action-blue text-white p-6 flex flex-col justify-between h-40 group hover:scale-[1.02] transition-transform">
+<div class="speed-lines absolute inset-0"></div>
+<span class="font-display text-2xl uppercase relative z-10">Win Rate</span>
+<div class="flex items-end gap-2 relative z-10">
+<span class="text-6xl font-display drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">62.5%</span>
+<span class="font-marker text-white/80 mb-2">150 GAMES</span>
+</div>
+</div>
+<div class="comic-border-alt bg-zinc-900 text-action-yellow p-6 flex flex-col justify-between h-40 group hover:scale-[1.02] transition-transform">
+<div class="absolute inset-0 kirby-krackle opacity-40"></div>
+<span class="font-display text-2xl uppercase relative z-10">Net Cubes</span>
+<div class="flex items-end gap-2 relative z-10">
+<span class="text-6xl font-display drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">+142</span>
+<span class="font-marker text-action-yellow/80 mb-2">TODAY: +12</span>
+</div>
+</div>
+<div class="comic-border bg-action-green text-black p-6 flex flex-col justify-between h-40 group hover:scale-[1.02] transition-transform">
+<span class="font-display text-2xl uppercase">Win Streak</span>
+<div class="flex items-end gap-2">
+<span class="text-6xl font-display">W5</span>
+<span class="font-marker text-black/60 mb-2">HOT STREAK!</span>
+</div>
+</div>
+</div>
+<section class="comic-border bg-zinc-100 dark:bg-zinc-900 p-8 relative overflow-hidden">
+<div class="halftone opacity-5"></div>
+<h2 class="font-display text-4xl mb-8 border-b-4 border-black inline-block pr-12 pb-2 uppercase italic">Quick Match Entry</h2>
+<div class="mb-10">
+<label class="font-marker text-action-green text-2xl block mb-4 uppercase tracking-tighter">VICTORY!</label>
+<div class="grid grid-cols-4 gap-4">
+<button class="bg-action-green hover:bg-green-500 text-white font-display text-4xl py-4 border-4 border-black shadow-[4px_4px_0_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all relative overflow-hidden">
+<span class="relative z-10">+1</span>
+<div class="speed-lines absolute inset-0 opacity-40"></div>
+</button>
+<button class="bg-action-green hover:bg-green-500 text-white font-display text-4xl py-4 border-4 border-black shadow-[4px_4px_0_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all relative overflow-hidden">
+<span class="relative z-10">+2</span>
+<div class="speed-lines absolute inset-0 opacity-40"></div>
+</button>
+<button class="bg-action-green hover:bg-green-500 text-white font-display text-4xl py-4 border-4 border-black shadow-[4px_4px_0_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all relative overflow-hidden">
+<span class="relative z-10">+4</span>
+<div class="speed-lines absolute inset-0 opacity-40"></div>
+</button>
+<button class="bg-action-green hover:bg-green-500 text-white font-display text-4xl py-4 border-4 border-black shadow-[4px_4px_0_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all relative overflow-hidden scale-110">
+<span class="relative z-10">+8</span>
+<div class="speed-lines absolute inset-0 opacity-40"></div>
+</button>
+</div>
+</div>
+<div>
+<label class="font-marker text-primary text-2xl block mb-4 uppercase tracking-tighter">DEFEAT...</label>
+<div class="grid grid-cols-4 gap-4">
+<button class="bg-primary hover:bg-red-500 text-white font-display text-4xl py-4 border-4 border-black shadow-[4px_4px_0_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">
+                            -1
+                        </button>
+<button class="bg-primary hover:bg-red-500 text-white font-display text-4xl py-4 border-4 border-black shadow-[4px_4px_0_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">
+                            -2
+                        </button>
+<button class="bg-primary hover:bg-red-500 text-white font-display text-4xl py-4 border-4 border-black shadow-[4px_4px_0_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all">
+                            -4
+                        </button>
+<button class="bg-primary hover:bg-red-500 text-white font-display text-4xl py-4 border-4 border-black shadow-[4px_4px_0_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all scale-110">
+                            -8
+                        </button>
+</div>
+</div>
+</section>
+</div>
+<aside class="col-span-12 lg:col-span-4">
+<div class="comic-border bg-white dark:bg-zinc-800 p-8 h-full min-h-[600px] letter-column-border">
+<div class="halftone opacity-5"></div>
+<h2 class="font-display text-4xl mb-6 uppercase italic text-zinc-800 dark:text-white border-b-2 border-zinc-200 dark:border-zinc-700 pb-2">Mail Call!</h2>
+<p class="font-marker text-sm mb-8 text-zinc-500 dark:text-zinc-400">Recent match results from the frontline...</p>
+<div class="space-y-8">
+<div class="relative pl-4 border-l-2 border-primary">
+<div class="flex justify-between items-start mb-2">
+<span class="font-display text-xl text-action-green">VICTORY (+4)</span>
+<span class="text-xs font-bold font-marker uppercase opacity-50">2 MINS AGO</span>
+</div>
+<p class="italic text-lg leading-tight">"A stunning win against High Evo! The final turn Shang-Chi was exactly what I needed to clinch it."</p>
+<p class="mt-2 text-sm font-bold font-marker">— Player 121</p>
+</div>
+<div class="relative pl-4 border-l-2 border-zinc-400">
+<div class="flex justify-between items-start mb-2">
+<span class="font-display text-xl text-primary">DEFEAT (-2)</span>
+<span class="text-xs font-bold font-marker uppercase opacity-50">15 MINS AGO</span>
+</div>
+<p class="italic text-lg leading-tight">"They snapped early, and I thought I had the counter. Galactus caught me off guard again!"</p>
+<p class="mt-2 text-sm font-bold font-marker">— Stan L.</p>
+</div>
+<div class="relative pl-4 border-l-2 border-action-green">
+<div class="flex justify-between items-start mb-2">
+<span class="font-display text-xl text-action-green">VICTORY (+8)</span>
+<span class="text-xs font-bold font-marker uppercase opacity-50">1 HOUR AGO</span>
+</div>
+<p class="italic text-lg leading-tight">"8 CUBES! The ultimate bluff paid off. Kirby Krackle effect activated!"</p>
+<p class="mt-2 text-sm font-bold font-marker">— Jack K.</p>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 bg-zinc-900 border-t-4 border-black p-4 z-50">
+<div class="container mx-auto flex justify-center gap-4 md:gap-12">
+<button class="flex flex-col items-center group">
+<div class="w-14 h-14 rounded-full border-4 border-action-yellow bg-zinc-800 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform overflow-hidden relative">
+<span class="material-symbols-outlined text-action-yellow text-3xl z-10">bolt</span>
+<div class="halftone opacity-20"></div>
+</div>
+<span class="font-display text-action-yellow text-xs uppercase tracking-widest">Home</span>
+</button>
+<button class="flex flex-col items-center group">
+<div class="w-14 h-14 rounded-full border-4 border-white/20 bg-zinc-800 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform overflow-hidden relative">
+<span class="material-symbols-outlined text-white text-3xl z-10">smart_toy</span>
+<div class="halftone opacity-20"></div>
+</div>
+<span class="font-display text-white/50 text-xs uppercase tracking-widest">AI Ops</span>
+</button>
+<button class="flex flex-col items-center group">
+<div class="w-14 h-14 rounded-full border-4 border-white/20 bg-zinc-800 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform overflow-hidden relative">
+<span class="material-symbols-outlined text-white text-3xl z-10">style</span>
+<div class="halftone opacity-20"></div>
+</div>
+<span class="font-display text-white/50 text-xs uppercase tracking-widest">Cards</span>
+</button>
+<button class="flex flex-col items-center group">
+<div class="w-14 h-14 rounded-full border-4 border-white/20 bg-zinc-800 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform overflow-hidden relative">
+<span class="material-symbols-outlined text-white text-3xl z-10">content_paste</span>
+<div class="halftone opacity-20"></div>
+</div>
+<span class="font-display text-white/50 text-xs uppercase tracking-widest">Decks</span>
+</button>
+<button class="flex flex-col items-center group">
+<div class="w-14 h-14 rounded-full border-4 border-white/20 bg-zinc-800 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform overflow-hidden relative">
+<span class="material-symbols-outlined text-white text-3xl z-10">casino</span>
+<div class="halftone opacity-20"></div>
+</div>
+<span class="font-display text-white/50 text-xs uppercase tracking-widest">Sim</span>
+</button>
+<button class="flex flex-col items-center group">
+<div class="w-14 h-14 rounded-full border-4 border-white/20 bg-zinc-800 flex items-center justify-center mb-1 group-hover:scale-110 transition-transform overflow-hidden relative">
+<span class="material-symbols-outlined text-white text-3xl z-10">ads_click</span>
+<div class="halftone opacity-20"></div>
+</div>
+<span class="font-display text-white/50 text-xs uppercase tracking-widest">Calc</span>
+</button>
+</div>
+</nav>
+<div class="h-32"></div>
+
+</body></html>

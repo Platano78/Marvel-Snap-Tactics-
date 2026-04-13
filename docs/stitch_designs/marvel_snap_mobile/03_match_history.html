@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ad2bee",
+                        "background-light": "#f7f6f8",
+                        "background-dark": "#1c1022",
+                    },
+                    fontFamily: {
+                        "display": ["Spline Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Spline Sans', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark overflow-x-hidden max-w-[430px] mx-auto">
+<!-- TopAppBar -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between sticky top-0 z-10 backdrop-blur-md bg-opacity-80 dark:bg-opacity-80">
+<div class="text-slate-900 dark:text-white flex size-12 shrink-0 items-center justify-center cursor-pointer">
+<span class="material-symbols-outlined">arrow_back_ios</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Match History</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex cursor-pointer items-center justify-center rounded-full h-10 w-10 bg-primary/10 text-primary">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Summary Widgets -->
+<div class="flex flex-wrap gap-3 p-4">
+<div class="flex min-w-[140px] flex-1 flex-col gap-1 rounded-xl p-4 bg-primary/10 border border-primary/20">
+<p class="text-slate-500 dark:text-[#b792c9] text-xs font-medium uppercase tracking-wider">Today's Net</p>
+<p class="text-slate-900 dark:text-white tracking-tight text-2xl font-bold">+18 Cubes</p>
+<div class="flex items-center gap-1 text-[#0bda76]">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<p class="text-xs font-bold leading-normal">+6.2%</p>
+</div>
+</div>
+<div class="flex min-w-[140px] flex-1 flex-col gap-1 rounded-xl p-4 bg-primary/10 border border-primary/20">
+<p class="text-slate-500 dark:text-[#b792c9] text-xs font-medium uppercase tracking-wider">Win Rate</p>
+<p class="text-slate-900 dark:text-white tracking-tight text-2xl font-bold">58.4%</p>
+<div class="flex items-center gap-1 text-[#0bda76]">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<p class="text-xs font-bold leading-normal">+1.5%</p>
+</div>
+</div>
+</div>
+<!-- Secondary Summary row -->
+<div class="flex gap-3 px-4 pb-4">
+<div class="flex flex-1 items-center justify-between rounded-xl p-3 bg-slate-100 dark:bg-[#3c2348]">
+<div class="flex flex-col">
+<p class="text-slate-500 dark:text-[#b792c9] text-[10px] uppercase font-bold tracking-widest">Total Matches</p>
+<p class="text-slate-900 dark:text-white text-lg font-bold">32 Games</p>
+</div>
+<span class="material-symbols-outlined text-primary/60">sports_esports</span>
+</div>
+</div>
+<!-- List Header -->
+<div class="flex items-center justify-between px-4 pb-2 pt-4">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Recent Battles</h3>
+<span class="text-xs font-medium text-primary">View All</span>
+</div>
+<!-- Match History List -->
+<div class="flex flex-col gap-1 px-4">
+<!-- Match Item 1 -->
+<div class="flex gap-4 bg-white dark:bg-[#2a1a33] p-4 rounded-xl border border-slate-200 dark:border-white/5 items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-[64px] ring-2 ring-[#0bda76]/30" data-alt="Marvel character portrait of Thanos card art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBG_HIpj6DZiY7BsVmIspXlRHAASJ9bF88wo0xc7Evz8U8DQWZcQHp4KQqPDCSyHQ4Ec-2SiLEC9cIqp4FXRYzaNv0-6SDJBM9_HwcoINPAQQyWsHLrNBIXnNS-1xXmXtz8qNcDmuTsMk1YyzbPVAWCwYDh-dHrWNfF9UQYNS9PxFVWhSwGifPhZPjSiwUdm6p3wU2K9NOb3XlFMEDzMyGRgTkVW-NCSCxsAx3DolqD14ngeHF84XwZy57aAADIT9FfdwEvU_nr5DuL");'></div>
+<div class="flex flex-1 flex-col justify-center min-w-0">
+<div class="flex items-center gap-2">
+<span class="text-[#0bda76] text-sm font-bold uppercase tracking-tight">Victory</span>
+<span class="text-slate-900 dark:text-white font-bold text-sm bg-[#0bda76]/20 px-2 py-0.5 rounded-full">+8 Cubes</span>
+</div>
+<p class="text-slate-900 dark:text-white text-sm font-medium mt-1 truncate">vs. DoomBringer88</p>
+<p class="text-slate-500 dark:text-[#b792c9] text-xs font-normal truncate">Suspected: Hela Discard</p>
+</div>
+<div class="shrink-0 text-right">
+<p class="text-slate-400 dark:text-[#b792c9] text-[10px] font-medium uppercase">3m ago</p>
+<span class="material-symbols-outlined text-slate-400 text-sm mt-2">chevron_right</span>
+</div>
+</div>
+<!-- Match Item 2 -->
+<div class="flex gap-4 bg-white dark:bg-[#2a1a33] p-4 rounded-xl border border-slate-200 dark:border-white/5 items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-[64px] ring-2 ring-red-500/30" data-alt="Marvel character portrait of Galactus card art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC4EU1bv0x4BuqfYZKbbov7hLCSrXJmxOmmxVNfO-G7JSf3plyyENEznqFkg6UrhFQ3FuizjctQkkK8qiFVtZgFAG8apzNOzq03oVKMZQ5Odpa7U2Zx0rZKrzyDfo3wRegiXEKcdAq7h14TCm0XKDyM4hnAljO5xTT7fiFjCmTeyI72n0DRQoeEcqT9LlR7Y92XAAOCR5HAcWOKUpNFdPw1naiAHTI7cjxSGZqNOtbY00l8FgKYGutmSeaMy_ljqK1Q0QL5XC1YQo9h");'></div>
+<div class="flex flex-1 flex-col justify-center min-w-0">
+<div class="flex items-center gap-2">
+<span class="text-red-500 text-sm font-bold uppercase tracking-tight">Defeat</span>
+<span class="text-slate-900 dark:text-white font-bold text-sm bg-red-500/20 px-2 py-0.5 rounded-full">-2 Cubes</span>
+</div>
+<p class="text-slate-900 dark:text-white text-sm font-medium mt-1 truncate">vs. SnapKing</p>
+<p class="text-slate-500 dark:text-[#b792c9] text-xs font-normal truncate">Suspected: Junk Control</p>
+</div>
+<div class="shrink-0 text-right">
+<p class="text-slate-400 dark:text-[#b792c9] text-[10px] font-medium uppercase">12m ago</p>
+<span class="material-symbols-outlined text-slate-400 text-sm mt-2">chevron_right</span>
+</div>
+</div>
+<!-- Match Item 3 -->
+<div class="flex gap-4 bg-white dark:bg-[#2a1a33] p-4 rounded-xl border border-slate-200 dark:border-white/5 items-center">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-[64px] ring-2 ring-[#0bda76]/30" data-alt="Marvel character portrait of Sera card art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDFtJKYbq61PA-4cVzZeE4EkJx7Uj-mqjmwyWk95JL9Yz43WLwNmLxO6ztPtMEU9GhJGLdjYvXr70602e7s_jhk-1-x-S9b2lquXMXWsqAnVYo2-3LFSHnknjdKCbwjg8aWW8HpdD1bb5kAqGGuXcKQ83XM4EL3tURRKrTbxKiah62ZskEIG9MXhuRbSr48drXeCzsYr2wn3zC9gyjAvNp2V4zA3Y3dBaUJyjG9mxdW2W5iwIJe76DGGeYw9MSG0P03mCsZyT84QtqQ");'></div>
+<div class="flex flex-1 flex-col justify-center min-w-0">
+<div class="flex items-center gap-2">
+<span class="text-[#0bda76] text-sm font-bold uppercase tracking-tight">Victory</span>
+<span class="text-slate-900 dark:text-white font-bold text-sm bg-[#0bda76]/20 px-2 py-0.5 rounded-full">+4 Cubes</span>
+</div>
+<p class="text-slate-900 dark:text-white text-sm font-medium mt-1 truncate">vs. WakandaForever</p>
+<p class="text-slate-500 dark:text-[#b792c9] text-xs font-normal truncate">Suspected: Shuri Red Skull</p>
+</div>
+<div class="shrink-0 text-right">
+<p class="text-slate-400 dark:text-[#b792c9] text-[10px] font-medium uppercase">45m ago</p>
+<span class="material-symbols-outlined text-slate-400 text-sm mt-2">chevron_right</span>
+</div>
+</div>
+<!-- Match Item 4 -->
+<div class="flex gap-4 bg-white dark:bg-[#2a1a33] p-4 rounded-xl border border-slate-200 dark:border-white/5 items-center opacity-80">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-lg size-[64px] ring-2 ring-[#0bda76]/30" data-alt="Marvel character portrait of Loki card art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBhtBk2xGMAHQ9DnrRZFQ-rsC_NPw6Q6pHrIqCYxCgyczHAZ4G5rp7x4l7HEGs4deXs2TQs2LqQh8dV3SbAhnrE_I0hxtH2KqN6oqH1WN0HhjuszN7uCYXXClXF_fX2fL4h_TwmBY9NDOzyA3jQGUn4Bd7e305hPm81TwxbACJkybJng41svsBy-8-aDNt14jGxJ0JJMiVuz0OIrC86x9Hs7IsTF9V0iAMLDkAu1Tu7gpomGgT5M2wtcjqR0ddin_5bhklgPD0eBgPI");'></div>
+<div class="flex flex-1 flex-col justify-center min-w-0">
+<div class="flex items-center gap-2">
+<span class="text-[#0bda76] text-sm font-bold uppercase tracking-tight">Victory</span>
+<span class="text-slate-900 dark:text-white font-bold text-sm bg-[#0bda76]/20 px-2 py-0.5 rounded-full">+1 Cube</span>
+</div>
+<p class="text-slate-900 dark:text-white text-sm font-medium mt-1 truncate">vs. PlayerOne</p>
+<p class="text-slate-500 dark:text-[#b792c9] text-xs font-normal truncate">Suspected: Destroy</p>
+</div>
+<div class="shrink-0 text-right">
+<p class="text-slate-400 dark:text-[#b792c9] text-[10px] font-medium uppercase">1h ago</p>
+<span class="material-symbols-outlined text-slate-400 text-sm mt-2">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Floating Action Button for Deck Stats (Contextual UI) -->
+<div class="fixed bottom-24 right-6">
+<button class="bg-primary text-white size-14 rounded-full shadow-lg shadow-primary/40 flex items-center justify-center">
+<span class="material-symbols-outlined">analytics</span>
+</button>
+</div>
+<!-- Bottom Navigation Bar Placeholder -->
+<div class="mt-auto flex items-center justify-around bg-white dark:bg-[#120a16] border-t border-slate-200 dark:border-white/5 p-4 pb-8">
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">style</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Collection</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Meta</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined">history</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">History</span>
+</div>
+<div class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Settings</span>
+</div>
+</div>
+</div>
+</body></html>
