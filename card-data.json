@@ -2507,7 +2507,7 @@
     "name": "Chamber",
     "defId": "Chamber",
     "cost": 2,
-    "power": 3,
+    "power": 1,
     "ability": "Activate: +2 Power for each\n5-Cost or higher card you have\nhere and in hand.",
     "series": 8
   },
@@ -3526,5 +3526,85 @@
     "power": 1,
     "ability": "Objective: End 2 turns in a row with unspent Energy \u2192 Give your other cards here and in your hand +2 Power.",
     "series": 5
+  },
+  {
+    "name": "Stick",
+    "defId": "Stick",
+    "cost": 4,
+    "power": 3,
+    "ability": "On Reveal: Give the next card you play Power equal to this card's Power.",
+    "series": 7
+  },
+  {
+    "name": "Moondragon",
+    "defId": "Moondragon",
+    "cost": 2,
+    "power": 1,
+    "ability": "End of Turn: +2 Power if you played 1 card this turn and spent all your Energy.",
+    "series": 8
+  },
+  {
+    "name": "Wilson Fisk",
+    "defId": "WilsonFisk",
+    "cost": 5,
+    "power": 9,
+    "ability": "Costs 3 if you have the highest Power among cards in play.",
+    "series": 8
+  },
+  {
+    "name": "Major Victory",
+    "defId": "MajorVictory",
+    "cost": 3,
+    "power": 5,
+    "ability": "On Reveal: Add 2 members of the Guardians crew to your hand.",
+    "series": 7
+  },
+  {
+    "name": "Ikari",
+    "defId": "Ikari",
+    "cost": 4,
+    "power": 12,
+    "ability": "You can only play this where an enemy is afflicted with negative Power.",
+    "series": 7
+  },
+  {
+    "name": "Venus",
+    "defId": "Venus",
+    "cost": 3,
+    "power": 3,
+    "ability": "When your cards in play are Empowered, give those cards an additional +1 Power.",
+    "series": 8
+  },
+  {
+    "name": "Quicksand",
+    "defId": "Quicksand",
+    "cost": 2,
+    "power": 4,
+    "ability": "The next time your opponent would start a turn with bonus Energy, they don't get it.",
+    "series": 7
+  },
+  {
+    "name": "Scorpion Brand New Day",
+    "defId": "ScorpionBrandNewDay",
+    "cost": 6,
+    "power": 8,
+    "ability": "Ongoing: Double the Power reductions on all enemy cards.",
+    "series": 8
+  },
+  {
+    "name": "Stryfe",
+    "defId": "Stryfe",
+    "cost": 4,
+    "power": 6,
+    "ability": "Objective: Play 3 On Reveal cards \u2192 Use the highest-Cost On Reveal in your hand. (0/3)",
+    "series": 8
+  },
+  {
+    "name": "Shadowlands Daredevil",
+    "defId": "ShadowlandsDaredevil",
+    "cost": 2,
+    "power": 3,
+    "ability": "On Reveal: Shuffle in 3 Demons. When you draw a card with 6 or more Power, +2 Power.",
+    "series": 8
   }
 ]

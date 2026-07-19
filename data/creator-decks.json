@@ -30,5 +30,13 @@
     "publishedDate": "2026-07-10",
     "videoUrl": "https://www.youtube.com/watch?v=t_vrJXXJZGM",
     "notes": "Deck #7 in Coccia's Weekly Meta Report #192 (7/10/26). Unbenched by the 2026-07-19 card-data refresh (Spider-Man Brand New Day added); 12/12 cards verified in card-data.json."
+  },
+  {
+    "deckCode": "QWdvbnksQW1lcmljYUNoYXZleixCcm9vZCxDYXB0YWluQ2FydGVyLEdyYW5kTWFzdGVyLEd3ZW5wb29sLElzY2EsTXJTaW5pc3RlcixTdGljayxTdG9ybUhvcnNlbWFuLFdvbHZlcmluZUhvcnNlbWFuLFphYnU=",
+    "deckName": "Buff Riders",
+    "creatorId": "bynx-plays",
+    "publishedDate": "2026-07-18",
+    "videoUrl": "https://www.youtube.com/watch?v=BMhWb8QzX6o",
+    "notes": "Isca Buff deck from Bynx's 7/18/26 spotlight video. Unbenched by the 2026-07-19 web-lane card sweep (Stick added); 12/12 cards verified in card-data.json."
   }
 ]
