@@ -22,10 +22,10 @@
   <link rel="dns-prefetch" href="https://unpkg.com">
   <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
 
-  <!-- Google Fonts - Spline Sans (UI) + Inter (fallback) + Permanent Marker (Hero) + Material Symbols -->
+  <!-- Google Fonts - Spline Sans (UI) + Inter (fallback) + Material Symbols -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Caveat:wght@400;700&family=Spline+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
 
   <!-- Service Worker Update Handler - runs early to catch SW updates -->
@@ -152,10 +152,10 @@
           },
           fontFamily: {
             'display': ['Spline Sans', 'Inter', 'system-ui', 'sans-serif'],
-            'hero': ['Permanent Marker', 'cursive'],
+            'hero': ['Spline Sans', 'Inter', 'sans-serif'],
             'mono': ['SF Mono', 'Menlo', 'Monaco', 'monospace'],
-            'comic': ['Bangers', 'Impact', 'Arial Black', 'sans-serif'],
-            'annotation': ['Caveat', 'cursive'],
+            'comic': ['Spline Sans', 'Inter', 'sans-serif'],
+            'annotation': ['Spline Sans', 'Inter', 'sans-serif'],
           },
           boxShadow: {
             'glass': '0 0 20px rgba(173, 43, 238, 0.15)',
@@ -293,9 +293,10 @@
 
       --font-ui: 'Spline Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
-      --font-hero: 'Permanent Marker', cursive;
-      --font-comic: 'Bangers', 'Impact', 'Arial Black', sans-serif;
-      --font-annotation: 'Caveat', cursive;
+      --font-hero: 'Spline Sans', 'Inter', sans-serif;
+      --font-comic: 'Spline Sans', 'Inter', sans-serif;
+      --font-annotation: 'Spline Sans', 'Inter', sans-serif;
+      --ease-snap: cubic-bezier(0.2, 0.9, 0.3, 1);
     }
 
     /* ============================================
@@ -519,6 +520,7 @@
       padding-bottom: env(safe-area-inset-bottom);
       padding-left: env(safe-area-inset-left);
       padding-right: env(safe-area-inset-right);
+      font-variant-numeric: tabular-nums;
     }
     @media (orientation: landscape) {
       .app-container {
@@ -536,22 +538,19 @@
     .panel-border { border: 3px solid #1A1A1A; box-shadow: 4px 4px 0px #1A1A1A; }
     .halftone { background-image: radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px); background-size: 8px 8px; }
 
-    /* Comic Book Border System */
-    .comic-panel { border: 3px solid #1A1A1A; box-shadow: 4px 4px 0px #1A1A1A; }
-    .comic-panel-accent { border: 3px solid #1A1A1A; box-shadow: 4px 4px 0px var(--cosmic-purple); }
-    .comic-panel-win { border: 3px solid #1A1A1A; box-shadow: 4px 4px 0px #22C55E; }
-    .comic-panel-loss { border: 3px solid #1A1A1A; box-shadow: 4px 4px 0px #ff4444; }
-    .comic-panel-sm { border: 2px solid #1A1A1A; box-shadow: 2px 2px 0px #1A1A1A; }
-    .comic-tilt-left { transform: rotate(-0.5deg); }
-    .comic-tilt-right { transform: rotate(0.8deg); }
+    /* Cosmic Panel System (formerly Comic Book Border System) */
+    .comic-panel { background: var(--stitch-card, #1c1022); border: 1px solid rgba(199,95,255,0.15); border-radius: 0.75rem; }
+    .comic-panel-accent { background: var(--stitch-card, #1c1022); border: 1px solid rgba(199,95,255,0.15); border-radius: 0.75rem; border-left: 3px solid var(--cosmic-purple-text); }
+    .comic-panel-win { background: var(--stitch-card, #1c1022); border: 1px solid rgba(199,95,255,0.15); border-radius: 0.75rem; border-left: 3px solid #22C55E; }
+    .comic-panel-loss { background: var(--stitch-card, #1c1022); border: 1px solid rgba(199,95,255,0.15); border-radius: 0.75rem; border-left: 3px solid #ff4444; }
+    .comic-panel-sm { background: var(--stitch-card, #1c1022); border: 1px solid rgba(199,95,255,0.15); border-radius: 0.75rem; }
+    .comic-tilt-left { transform: none; }
+    .comic-tilt-right { transform: none; }
     .comic-btn {
-      box-shadow: 3px 3px 0px #1A1A1A;
-      border: 2px solid #1A1A1A;
-      transition: transform 0.1s ease, box-shadow 0.1s ease;
+      transition: transform 0.1s var(--ease-snap), background-color 0.1s var(--ease-snap);
     }
     .comic-btn:active {
-      transform: translate(3px, 3px) !important;
-      box-shadow: 0 0 0 #1A1A1A !important;
+      transform: scale(0.97);
     }
 
     /* Card Frame System */
@@ -563,22 +562,11 @@
       .card-frame-owned:hover { box-shadow: 5px 7px 0px currentColor, 0 0 20px rgba(173,43,238,0.5); }
     }
 
-    /* Halftone Cosmic (dark-mode friendly) */
+    /* Halftone Cosmic / Kirby Krackle: patterns retired for Cosmic Purple flat surfaces */
     .halftone-cosmic { position: relative; }
-    .halftone-cosmic::before {
-      content: ''; position: absolute; inset: 0;
-      background-image: radial-gradient(circle, rgba(173,43,238,0.06) 1px, transparent 1px);
-      background-size: 8px 8px; pointer-events: none; z-index: 0;
-    }
+    .halftone-cosmic::before { content: none; background: none; }
     .kirby-krackle { position: relative; }
-    .kirby-krackle::before {
-      content: ''; position: absolute; inset: 0;
-      background-image: radial-gradient(circle, rgba(173,43,238,0.08) 30%, transparent 35%),
-        radial-gradient(circle, rgba(255,215,0,0.05) 20%, transparent 25%);
-      background-size: 20px 20px, 15px 15px;
-      background-position: 0 0, 10px 10px;
-      pointer-events: none; z-index: 0;
-    }
+    .kirby-krackle::before { content: none; background: none; }
 
     /* Comic Starburst */
     .starburst {
@@ -629,9 +617,8 @@
     .slide-left { animation: slide-left-enter 0.18s ease-out; }
     .slide-right { animation: slide-right-enter 0.18s ease-out; }
 
-    /* Phase 3: Empty state float animation */
-    @keyframes empty-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-    .empty-float { animation: empty-float 3s ease-in-out infinite; }
+    /* Phase 3: Empty state (float animation retired — motion is interaction-only) */
+    .empty-float { animation: none; }
 
     /* Phase 4: Skeleton shimmer */
     @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
@@ -658,7 +645,6 @@
     @media (prefers-reduced-motion: reduce) {
       .halftone-cosmic::before, .kirby-krackle::before { display: none; }
       .slide-left, .slide-right { animation: none !important; }
-      .empty-float { animation: none !important; }
       .skeleton { animation: none !important; }
       .toast-enter, .toast-exit { animation: none !important; }
       .card-pulse { animation: none !important; }
@@ -775,11 +761,11 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      font-size: 0.9375rem;
-      font-family: var(--font-comic);
-      font-weight: 400;
+      font-size: 0.8125rem;
+      font-family: 'Spline Sans', 'Inter', sans-serif;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.12em;
       color: var(--stitch-muted);
       margin-bottom: 0.75rem;
       border-left: 4px solid var(--cosmic-purple);
@@ -789,6 +775,9 @@
       font-size: 18px;
       color: var(--cosmic-purple-text);
     }
+
+    /* Annotation: Spline Sans italic stack replaces retired script font */
+    .font-annotation { font-style: italic; }
 
     /* Scrollbar hide utility (used by filter pills row) */
     .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -4104,8 +4093,6 @@ RESPONSE GUIDELINES:
               <h1 className="font-display text-3xl font-bold text-white tracking-tight">SNAPAPOULOUS PRIME</h1>
               <p className="text-cosmic-purple-text font-annotation text-lg mt-1">Your Marvel Snap Companion</p>
             </div>
-            {/* Decorative starburst corner */}
-            <div className="absolute -top-4 -right-4 w-20 h-20 starburst opacity-10" style={{background: '#ffd700'}} />
           </div>
 
           {/* Player OS: Wallet Widget */}
