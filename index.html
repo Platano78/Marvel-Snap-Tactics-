@@ -615,10 +615,46 @@
       animation: holo-sweep-once 1.1s var(--ease-snap) 0.1s 1 both;
     }
 
+    /* Discovery variant (H2): same foil material as .holo-foil, but the sheen
+       has NO resting opacity — it only wakes on hover/focus. Ownership foil
+       reads as a permanent shimmer; discovery foil reads as "sheen responds to
+       your look". Minimal addition — .holo-foil-active alone can't do this
+       because its ::after only exists via the .holo-foil selector. */
+    .holo-foil-hover {
+      position: relative;
+      isolation: isolate;
+    }
+    .holo-foil-hover::after {
+      content: '';
+      position: absolute;
+      top: -60%;
+      left: -60%;
+      width: 220%;
+      height: 220%;
+      background: linear-gradient(115deg,
+        transparent 35%,
+        rgba(255, 138, 214, 0.22) 44%,
+        rgba(120, 210, 255, 0.20) 51%,
+        rgba(255, 244, 150, 0.20) 58%,
+        transparent 67%);
+      transform: translate3d(-18%, 0, 0);
+      mix-blend-mode: overlay;
+      opacity: 0;
+      pointer-events: none;
+      will-change: transform, opacity;
+      transition: opacity 0.4s var(--ease-snap), transform 0.6s var(--ease-snap);
+    }
+    .holo-foil-hover:hover::after,
+    .holo-foil-hover:focus-visible::after {
+      opacity: 0.5;
+      transform: translate3d(18%, 0, 0);
+    }
+
     @media (prefers-reduced-motion: reduce) {
       body::before { animation: none; }
       .holo-foil-active::after { transition: none; }
       .holo-foil-sweep-once::after { animation: none; opacity: 0.5; transform: translate3d(-18%, 0, 0); }
+      .holo-foil-hover::after { transition: none; }
     }
 
     body {
@@ -4272,7 +4308,7 @@ RESPONSE GUIDELINES:
                 </div>
                 {Array.isArray(battlePass.claimedLevels) && battlePass.claimedLevels.length > 0 && (
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-cosmic-purple-text">{battlePass.claimedLevels.length}</div>
+                    <div className="text-2xl font-bold text-mcu-gold">{battlePass.claimedLevels.length}</div>
                     <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted">Claimed</div>
                   </div>
                 )}
@@ -5419,8 +5455,9 @@ RESPONSE GUIDELINES:
                 <div className="flex flex-wrap gap-2">
                   {quickPrompts.map(qp => (
                     <button key={qp.label} onClick={() => sendMessage(qp.prompt)}
-                      className="flex items-center min-h-[44px] bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-gray-200 text-sm px-4 rounded-full hover:bg-[rgba(173,43,238,0.1)] transition-colors">
-                      {qp.label}
+                      className="holo-foil-hover flex items-center min-h-[44px] bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-gray-200 text-sm px-4 rounded-full hover:bg-[rgba(173,43,238,0.1)] transition-colors">
+                      {/* z-10: text sits above the sheen — sheen never crosses text */}
+                      <span className="relative z-10">{qp.label}</span>
                     </button>
                   ))}
                 </div>
@@ -5565,7 +5602,7 @@ RESPONSE GUIDELINES:
           <main className="relative z-10 flex flex-col pb-10">
             {/* Hero Card Art */}
             <div className="px-4 py-6">
-              <div className="relative w-full aspect-[3/4] max-w-xs mx-auto bg-[#2b1933] rounded-xl overflow-hidden shadow-2xl border-4 border-[#ad2bee]/50">
+              <div className="holo-foil holo-foil-active relative w-full aspect-[3/4] max-w-xs mx-auto bg-[#2b1933] rounded-xl overflow-hidden shadow-2xl border-4 border-[#ad2bee]/50">
                 {artUrl ? (
                   <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${artUrl})` }} />
                 ) : (
@@ -5573,12 +5610,12 @@ RESPONSE GUIDELINES:
                     <span className="material-symbols-outlined text-6xl">style</span>
                   </div>
                 )}
-                {/* Energy badge */}
-                <div className="absolute top-4 left-4 size-14 bg-blue-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                {/* Energy badge — z-10 keeps it above the sheen */}
+                <div className="absolute top-4 left-4 z-10 size-14 bg-blue-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
                   <span className="text-2xl font-black text-white">{card.cost}</span>
                 </div>
-                {/* Power badge */}
-                <div className="absolute bottom-4 right-4 size-14 bg-orange-500 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                {/* Power badge — z-10 keeps it above the sheen */}
+                <div className="absolute bottom-4 right-4 z-10 size-14 bg-orange-500 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
                   <span className="text-2xl font-black text-white">{card.power}</span>
                 </div>
               </div>
@@ -5966,7 +6003,7 @@ RESPONSE GUIDELINES:
               const artUrl = getCardArtUrl(card);
               return (
                 <div key={card.name}
-                     className={`relative group${!isOwned ? ' opacity-50 grayscale' : ''}`}>
+                     className={`relative group${!isOwned ? ' opacity-50 grayscale' : ' holo-foil holo-foil-active'}`}>
                   {/* Card art — fallback always rendered behind img; gradient + name layered on top */}
                   <div className="relative w-full aspect-[3/4]">
                     {/* Fallback gradient background (always present, covered by img on success) */}
@@ -6242,7 +6279,7 @@ RESPONSE GUIDELINES:
                     <button
                       key={card.name}
                       onClick={() => setSelectedCard(card)}
-                      className={`group relative aspect-[3/4] rounded-xl overflow-hidden border-2 ${borderCls} transition-[transform,box-shadow] duration-150 ease-[var(--ease-snap)] active:scale-95 hover:ring-2 hover:ring-cosmic-purple-text/60 text-left`}
+                      className={`holo-foil-hover group relative aspect-[3/4] rounded-xl overflow-hidden border-2 ${borderCls} transition-[transform,box-shadow] duration-150 ease-[var(--ease-snap)] active:scale-95 hover:ring-2 hover:ring-cosmic-purple-text/60 text-left`}
                       aria-label={`${card.name}, ${card.cost} energy, ${card.power} power${owned ? ', in collection' : ''}`}
                     >
                       {/* Art */}
@@ -6255,22 +6292,22 @@ RESPONSE GUIDELINES:
                       )}
                       {/* Gradient overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                      {/* Energy badge */}
-                      <div className="absolute top-2 left-2 flex items-center justify-center h-7 w-7 rounded-full bg-blue-600 border border-white/20 text-[12px] font-bold text-white">
+                      {/* Energy badge — z-10 keeps it above the discovery sheen */}
+                      <div className="absolute top-2 left-2 z-10 flex items-center justify-center h-7 w-7 rounded-full bg-blue-600 border border-white/20 text-[12px] font-bold text-white">
                         {card.cost}
                       </div>
-                      {/* Power badge */}
-                      <div className="absolute top-2 right-2 flex items-center justify-center h-7 w-7 rounded-full bg-orange-500 border border-white/20 text-[12px] font-bold text-white">
+                      {/* Power badge — z-10 keeps it above the discovery sheen */}
+                      <div className="absolute top-2 right-2 z-10 flex items-center justify-center h-7 w-7 rounded-full bg-orange-500 border border-white/20 text-[12px] font-bold text-white">
                         {card.power}
                       </div>
                       {/* Owned indicator */}
                       {owned && (
-                        <div className="absolute bottom-7 right-2">
+                        <div className="absolute bottom-7 right-2 z-10">
                           <span className="material-symbols-outlined text-[#0bda76] text-base bg-black/60 rounded-full" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                         </div>
                       )}
-                      {/* Name */}
-                      <p className="absolute bottom-2 left-2 right-2 text-white text-xs font-bold truncate">{card.name}</p>
+                      {/* Name — z-10 keeps it above the discovery sheen */}
+                      <p className="absolute bottom-2 left-2 right-2 z-10 text-white text-xs font-bold truncate">{card.name}</p>
                     </button>
                   );
                 })}
@@ -7676,7 +7713,7 @@ RESPONSE GUIDELINES:
 
                   {/* Main spotlight card */}
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-16 rounded-lg overflow-hidden border shrink-0" style={{ borderColor: 'rgba(173,43,238,0.3)' }}>
+                    <div className="holo-foil w-12 h-16 rounded-lg overflow-hidden border shrink-0" style={{ borderColor: 'rgba(173,43,238,0.3)' }}>
                       <img src={getCardArtUrl({ name: week.spotlight.mainCard })} alt="" loading="lazy" className="w-full h-full object-cover"
                         onError={(e) => { e.target.style.display = 'none'; }} />
                     </div>
@@ -8508,15 +8545,23 @@ RESPONSE GUIDELINES:
               </div>
               <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Top Cards</div>
               <div className="grid grid-cols-3 gap-2">
-                {mastery.cards.slice(0, 10).map((c) => (
-                  <div key={c.card} className="relative w-full aspect-[3/4] rounded-lg overflow-hidden border shrink-0" style={{ borderColor: 'rgba(173,43,238,0.25)' }}>
-                    <img src={getCardArtUrl({ name: c.card })} alt="" loading="lazy" className="w-full h-full object-cover"
-                         onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                    <div className="absolute bottom-0 right-0 px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ background: 'rgba(173,43,238,0.85)' }}>
-                      {c.level}
+                {mastery.cards.slice(0, 10).map((c) => {
+                  const isMaxed = c.level >= (c.levelCap || 30);
+                  return (
+                    <div key={c.card} className={`relative w-full aspect-[3/4] rounded-lg overflow-hidden border shrink-0${isMaxed ? ' holo-foil' : ''}`} style={{ borderColor: 'rgba(173,43,238,0.25)' }}>
+                      <img src={getCardArtUrl({ name: c.card })} alt="" loading="lazy" className="w-full h-full object-cover"
+                           onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      {isMaxed && (
+                        <div className="absolute bottom-0 left-0 z-10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black" style={{ background: '#ffd700' }}>
+                          Max
+                        </div>
+                      )}
+                      <div className="absolute bottom-0 right-0 z-10 px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ background: 'rgba(173,43,238,0.85)' }}>
+                        {c.level}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -9956,7 +10001,7 @@ RESPONSE GUIDELINES:
                   <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Variants</div>
                 </div>
                 <div className="rounded-2xl bg-stark-surface p-3 text-center">
-                  <div className="text-2xl font-bold text-cosmic-purple-text">{collEnhanced.godSplitCount || 0}</div>
+                  <div className="text-2xl font-bold text-mcu-gold">{collEnhanced.godSplitCount || 0}</div>
                   <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">God Splits</div>
                 </div>
                 <div className="rounded-2xl bg-stark-surface p-3 text-center">
@@ -9971,10 +10016,10 @@ RESPONSE GUIDELINES:
                     {hallOfArmorCards.map(c => {
                       const displayName = resolveCardDefId(c.cardDefId, armorDefIdMap);
                       return (
-                        <div key={c.cardDefId} className="relative w-full aspect-[3/4] rounded-lg overflow-hidden border shrink-0" style={{ borderColor: 'rgba(173,43,238,0.25)' }}>
+                        <div key={c.cardDefId} className="holo-foil relative w-full aspect-[3/4] rounded-lg overflow-hidden border shrink-0" style={{ borderColor: 'rgba(173,43,238,0.25)' }}>
                           <img src={getCardArtUrl({ name: displayName })} alt="" loading="lazy" className="w-full h-full object-cover"
                                onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                          <div className="absolute bottom-0 right-0 px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ background: 'rgba(173,43,238,0.85)' }}>
+                          <div className="absolute bottom-0 right-0 z-10 px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ background: 'rgba(173,43,238,0.85)' }}>
                             {c.variants.length}
                           </div>
                         </div>
