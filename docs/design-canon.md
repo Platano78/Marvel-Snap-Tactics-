@@ -35,7 +35,26 @@ design world; the comic-book direction (ADR-004 era, dashboard-project explorati
 7. Kill-list (extinct classes/patterns): Bangers/Caveat/Permanent Marker, halftone/kirby patterns,
    comic tilts, hard offset shadows, green/red comic blocks.
 
+## Signature Layer — FULL HOLO (owner ruling 2026-07-19)
+
+The bans prevent the bad; this layer IS the point of view. Cosmic means *cosmic*: nebula depth,
+holographic foil, starlight — the game's own cards are holographic and the app shimmers with them.
+Rules 1-7 still bind (single accent family, no comic DNA, named-property transitions) — this layer
+adds expression WITHIN them, it does not relax them.
+
+1. **Atmosphere**: layered nebula gradient + faint starfield behind the app (CSS only, subtle,
+   `prefers-reduced-motion` safe, zero-JS ambient). The flat void is retired.
+2. **Glass with depth**: elevated surfaces (dashboard hero, splash, spotlight, modals) use real
+   glass — `rgba(60,35,72,0.6)` + backdrop-blur + inner highlight edge. Flat surface-1 remains for
+   list rows and dense tables.
+3. **Holo-foil**: shimmer/foil sheen on owned cards, god-splits, mastery-maxed, and the victory
+   splash — CSS gradient/mask sheen, interaction-and-state driven, GPU-cheap.
+4. **Hero moments**: masthead gets cosmic gradient gloss; dashboard gets a featured-card art hero.
+5. **Gold = reward**: spotlight keys, maxed mastery, max-stakes. Never chrome, always earned.
+6. **Annotation chips**: AI advisor tips as purple holo-notes (Spider-Verse DNA, cosmic-rendered).
+
 ## Borrowed DNA (from the retired explorations, re-rendered in-world)
 
-- Victory/defeat splash micro-moment on cube logging (from Spider-Verse splashes) — planned.
-- Match-notes surfaced as a feed ("Mail Call" lineage) — planned.
+- Victory/defeat splash micro-moment on cube logging (from Spider-Verse splashes) — SHIPPED (ae0aba7).
+- Match-notes surfaced as a feed ("Mail Call" lineage) — SHIPPED (ae0aba7).
+- Annotation chips (Spider-Verse sticky-note lineage) — part of the Signature Layer.
