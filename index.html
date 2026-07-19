@@ -983,34 +983,6 @@
       color: #9CA3AF;
       font-size: 0.8em;
     }
-    /* Card Performance Styles */
-    .performance-card {
-      display: flex;
-      align-items: center;
-      padding: 10px 14px;
-      border-radius: 8px;
-      margin: 4px 0;
-      background: rgba(255, 255, 255, 0.05);
-    }
-    .performance-card.positive { border-left: 4px solid #22c55e; }
-    .performance-card.negative { border-left: 4px solid #ef4444; }
-    .performance-card .rank {
-      width: 36px;
-      font-weight: bold;
-      color: #ffd700;
-      font-size: 0.9em;
-    }
-    .performance-card .card-name {
-      flex: 1;
-      font-size: 0.95em;
-    }
-    .performance-card .net-cubes {
-      font-weight: bold;
-      font-size: 1em;
-    }
-    .performance-card.positive .net-cubes { color: #22c55e; }
-    .performance-card.negative .net-cubes { color: #ef4444; }
-
     /* Sync Preview Modal */
     .sync-preview-modal {
       max-width: 500px;
@@ -1074,86 +1046,6 @@
     .card-stat .cubes { font-weight: bold; }
     .card-stat.positive .cubes { color: #22c55e; }
     .card-stat.negative .cubes { color: #ef4444; }
-
-    /* Performance Summary */
-    .performance-summary {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .summary-stat {
-      text-align: center;
-      padding: 12px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-    }
-    .summary-stat .label {
-      display: block;
-      font-size: 0.75em;
-      color: #9CA3AF;
-      margin-bottom: 4px;
-    }
-    .summary-stat .value {
-      font-size: 1.3em;
-      font-weight: bold;
-    }
-    .summary-stat.positive .value { color: #22c55e; }
-    .summary-stat.negative .value { color: #ef4444; }
-    .summary-stat.net .value { color: #ffd700; }
-
-    /* Stats Section Styling */
-    .stats-section {
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-    .stats-section h3 {
-      margin: 0 0 12px 0;
-      font-size: 1em;
-      color: #ffd700;
-    }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-    .stat-card {
-      background: linear-gradient(135deg, #1c1022 0%, #2d1f4e 50%, #1c1022 100%);
-      border: 1px solid rgba(173, 43, 238, 0.15);
-      border-radius: 0.75rem;
-      padding: 12px;
-      text-align: center;
-    }
-    .stat-card .stat-value {
-      display: block;
-      font-size: 1.5em;
-      font-weight: bold;
-      color: white;
-    }
-    .stat-card .stat-label {
-      font-size: 0.75em;
-      color: #9CA3AF;
-    }
-    .stat-card.highlight .stat-value { color: #ffd700; }
-    .stat-card.positive .stat-value { color: #22c55e; }
-    .stat-card.negative .stat-value { color: #ef4444; }
-    .data-source {
-      margin-top: 8px;
-      font-size: 0.75em;
-      color: #9CA3AF;
-      text-align: right;
-    }
-    .import-prompt {
-      text-align: center;
-      padding: 20px;
-      color: #9CA3AF;
-    }
-    .import-prompt a {
-      color: #c75fff;
-      text-decoration: underline;
-    }
 
     /* Toast notification — now rendered via React ToastProvider */
 
@@ -3924,7 +3816,7 @@ RESPONSE GUIDELINES:
     );
 
     // Phase 1: Directional page transition wrapper
-    const TAB_INDEX = {ai:0, collection:1, decks:2, history:3, settings:4, dashboard:5, oracle:6, profile:7};
+    const TAB_INDEX = {ai:0, collection:1, decks:2, history:3, settings:4, dashboard:5, oracle:6, profile:7, analytics:8};
     const PageTransition = ({ activeTab, children }) => {
       const prevTab = useRef(activeTab);
       const [direction, setDirection] = useState('slide-left');
@@ -4621,6 +4513,7 @@ RESPONSE GUIDELINES:
           {/* FAB — Analytics, matches Stitch bottom-right placement */}
           <div className="fixed bottom-24 right-6 z-20">
             <button
+              onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'analytics' }))}
               className="size-14 rounded-full flex items-center justify-center text-white"
               style={{ background: '#ad2bee', boxShadow: '0 4px 20px rgba(173,43,238,0.40)' }}
               aria-label="View analytics"
@@ -8174,6 +8067,8 @@ RESPONSE GUIDELINES:
     const CardPerformanceView = () => {
       const [performanceData, setPerformanceData] = useState(null);
       const [profileStats, setProfileStats] = useState(null);
+      const [missions, setMissions] = useState(null);
+      const [mastery, setMastery] = useState(null);
       const [sortBy, setSortBy] = useState('netCubes');
       const [filterType, setFilterType] = useState('all');
 
@@ -8184,22 +8079,42 @@ RESPONSE GUIDELINES:
       }, []);
 
       const loadData = () => {
-        const perfData = loadFromStorage('snap_card_performance', null);
-        const stats = loadFromStorage('snap_profile_stats', null);
-        setPerformanceData(perfData);
-        setProfileStats(stats);
+        setPerformanceData(loadFromStorage('snap_card_performance', null));
+        setProfileStats(loadFromStorage('snap_profile_stats', null));
+        setMissions(loadFromStorage('snap_missions', null));
+        setMastery(loadFromStorage('snap_mastery', null));
       };
 
-      if (!performanceData && !profileStats) {
+      const hasMissions = !!missions && (((missions.daily || []).length + (missions.weekly || []).length) > 0);
+      const hasMastery = !!mastery && (mastery.cards || []).length > 0;
+
+      if (!performanceData && !profileStats && !hasMissions && !hasMastery) {
         return (
           <div className="px-4 pb-20">
             <Header title="ANALYTICS" />
-            <div className="import-prompt" style={{ padding: '40px 20px' }}>
-              <p style={{ fontSize: '1.1em', marginBottom: '12px' }}>No game data imported yet.</p>
-              <p style={{ fontSize: '0.9em' }}>
-                Import your game files from<br />
-                <a href="#" onClick={(e) => { e.preventDefault(); }}>Settings &rarr; PC Game Data Sync</a>
-              </p>
+            <div className="flex flex-col items-center gap-4 px-6 py-10 text-center mt-8">
+              <div className="flex -space-x-4" aria-hidden="true">
+                {['Iron Man', 'Hulk', 'Wolverine'].map((name, i) => (
+                  <div key={name}
+                       className="relative w-16 aspect-[3/4] rounded-lg overflow-hidden border-2 border-gray-600 bg-[#2b1933] shrink-0 grayscale opacity-70"
+                       style={{ transform: `rotate(${(i - 1) * 8}deg)` }}>
+                    <img src={getCardArtUrl({ name })} alt="" loading="lazy" className="w-full h-full object-cover"
+                         onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                  </div>
+                ))}
+              </div>
+              <div>
+                <p className="text-white font-bold text-lg mb-1">Unlock Your Analytics</p>
+                <p className="text-[#b792c9] text-sm max-w-xs mx-auto">
+                  Sync your game folder to unlock analytics — lifetime stats, per-card performance, missions, and mastery progress.
+                </p>
+              </div>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'settings' }))}
+                className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple-text hover:bg-[#b84eff] transition-colors min-h-[44px]"
+              >
+                Link Game Folder
+              </button>
             </div>
           </div>
         );
@@ -8220,34 +8135,76 @@ RESPONSE GUIDELINES:
       const totalPositive = cards.filter(c => c.netCubes > 0).reduce((sum, c) => sum + c.netCubes, 0);
       const totalNegative = cards.filter(c => c.netCubes < 0).reduce((sum, c) => sum + c.netCubes, 0);
 
+      // Reward objects come straight from raw game JSON with no fixed schema —
+      // only render a reward when both an amount and a currency/type are present.
+      const rewardLabel = (reward) => {
+        if (!reward || typeof reward !== 'object') return null;
+        const amount = reward.Amount ?? reward.Quantity ?? reward.Count;
+        const currency = reward.Currency ?? reward.CurrencyType ?? reward.Type;
+        if (amount == null || !currency) return null;
+        return `${amount} ${currency}`;
+      };
+
+      const renderMission = (m, i) => {
+        const target = m.target || 1;
+        const pct = Math.min(100, ((m.progress || 0) / target) * 100);
+        const reward = rewardLabel(m.reward);
+        return (
+          <div key={`${m.id}-${i}`} className={`rounded-xl bg-stark-surface p-3 ${m.completed ? 'opacity-50' : ''}`}>
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2 min-w-0">
+                {m.completed && (
+                  <span className="material-symbols-outlined text-stitch-green shrink-0" style={{ fontSize: '18px' }} aria-hidden="true">check_circle</span>
+                )}
+                <span className={`text-sm font-medium truncate ${m.completed ? 'text-stitch-muted line-through' : 'text-white'}`}>
+                  {m.description || 'Mission'}
+                </span>
+              </div>
+              <span className="text-xs font-bold text-white shrink-0">{m.progress}/{target}</span>
+            </div>
+            <div className="stitch-progress"><div className="stitch-progress-fill bg-cosmic-purple" style={{ width: `${pct}%` }} /></div>
+            {reward && <div className="mt-2 text-xs text-mcu-gold font-semibold">+{reward}</div>}
+          </div>
+        );
+      };
+
+      const masterySummary = mastery ? {
+        totalCards: mastery.cards.length,
+        avgLevel: mastery.cards.length > 0 ? (mastery.cards.reduce((sum, c) => sum + (c.level || 0), 0) / mastery.cards.length).toFixed(1) : '0',
+        maxedCards: mastery.cards.filter(c => c.level >= (c.levelCap || 30)).length
+      } : null;
+
       return (
         <div className="px-4 pb-20">
           <Header title="ANALYTICS" />
 
           {/* Lifetime Stats */}
           {profileStats && (
-            <div className="stats-section">
-              <h3>Lifetime Stats</h3>
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <span className="stat-value">{(profileStats.totalGames || profileStats.wins + profileStats.losses).toLocaleString()}</span>
-                  <span className="stat-label">Total Games</span>
+            <div className="stitch-card p-5 mb-4">
+              <div className="stitch-section-header">
+                <span className="material-symbols-outlined" aria-hidden="true">military_tech</span>
+                Lifetime Stats
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Total Games</div>
+                  <div className="text-3xl font-bold text-white">{((profileStats.totalGames || (profileStats.wins || 0) + (profileStats.losses || 0))).toLocaleString()}</div>
                 </div>
-                <div className="stat-card highlight">
-                  <span className="stat-value">{profileStats.winRate}%</span>
-                  <span className="stat-label">Win Rate</span>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Win Rate</div>
+                  <div className="text-3xl font-bold text-mcu-gold">{profileStats.winRate}%</div>
                 </div>
-                <div className="stat-card positive">
-                  <span className="stat-value">{(profileStats.wins || 0).toLocaleString()}</span>
-                  <span className="stat-label">Wins</span>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Wins</div>
+                  <div className="text-3xl font-bold text-stitch-green">{(profileStats.wins || 0).toLocaleString()}</div>
                 </div>
-                <div className="stat-card">
-                  <span className="stat-value">{(profileStats.snaps || 0).toLocaleString()}</span>
-                  <span className="stat-label">Snaps</span>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Snaps</div>
+                  <div className="text-3xl font-bold text-white">{(profileStats.snaps || 0).toLocaleString()}</div>
                 </div>
               </div>
               {profileStats.snapId && (
-                <p className="data-source">
+                <p className="text-xs text-stitch-muted text-right mt-3">
                   {profileStats.snapId} • Imported {new Date(profileStats.importedAt || Date.now()).toLocaleDateString()}
                 </p>
               )}
@@ -8256,50 +8213,56 @@ RESPONSE GUIDELINES:
 
           {/* Season Stats */}
           {profileStats?.rankData && (
-            <div className="stats-section">
-              <h3>Season Stats</h3>
-              <div className="stats-grid">
-                <div className="stat-card highlight">
-                  <span className="stat-value">{profileStats.rankData.tier}</span>
-                  <span className="stat-label">Rank {profileStats.rankData.currentRank}</span>
+            <div className="stitch-card p-5 mb-4">
+              <div className="stitch-section-header">
+                <span className="material-symbols-outlined" aria-hidden="true">workspace_premium</span>
+                Season Stats
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Rank {profileStats.rankData.currentRank}</div>
+                  <div className="text-3xl font-bold text-mcu-gold">{profileStats.rankData.tier}</div>
                 </div>
                 {profileStats.skillRating > 0 && (
-                  <div className="stat-card">
-                    <span className="stat-value">{profileStats.skillRating}</span>
-                    <span className="stat-label">Skill Rating</span>
+                  <div className="rounded-2xl bg-stark-surface p-4">
+                    <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Skill Rating</div>
+                    <div className="text-3xl font-bold text-white">{profileStats.skillRating}</div>
                   </div>
                 )}
-                <div className="stat-card">
-                  <span className="stat-value">{profileStats.rankData.gamesPlayedInSeason || 0}</span>
-                  <span className="stat-label">Season Games</span>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Season Games</div>
+                  <div className="text-3xl font-bold text-white">{profileStats.rankData.gamesPlayedInSeason || 0}</div>
                 </div>
-                <div className="stat-card positive">
-                  <span className="stat-value">{profileStats.rankData.highWatermarkTier || '—'}</span>
-                  <span className="stat-label">Season Best ({profileStats.rankData.highWatermark || 0})</span>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Season Best ({profileStats.rankData.highWatermark || 0})</div>
+                  <div className="text-3xl font-bold text-stitch-green">{profileStats.rankData.highWatermarkTier || '—'}</div>
                 </div>
               </div>
               {profileStats.rankData.seasonId && (
-                <p className="data-source">{profileStats.rankData.seasonId}</p>
+                <p className="text-xs text-stitch-muted mt-3">{profileStats.rankData.seasonId}</p>
               )}
             </div>
           )}
 
           {/* Currency Stats */}
           {profileStats?.currencies && (
-            <div className="stats-section">
-              <h3>Currencies</h3>
-              <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-                <div className="stat-card">
-                  <span className="stat-value" style={{ color: '#22c55e' }}>{(profileStats.currencies.credits || 0).toLocaleString()}</span>
-                  <span className="stat-label">Credits</span>
+            <div className="stitch-card p-5 mb-4">
+              <div className="stitch-section-header">
+                <span className="material-symbols-outlined" aria-hidden="true">payments</span>
+                Currencies
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-2xl bg-stark-surface p-4 text-center">
+                  <div className="text-2xl font-bold text-stitch-green">{(profileStats.currencies.credits || 0).toLocaleString()}</div>
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Credits</div>
                 </div>
-                <div className="stat-card">
-                  <span className="stat-value" style={{ color: '#ffd700' }}>{(profileStats.currencies.gold || 0).toLocaleString()}</span>
-                  <span className="stat-label">Gold</span>
+                <div className="rounded-2xl bg-stark-surface p-4 text-center">
+                  <div className="text-2xl font-bold text-mcu-gold">{(profileStats.currencies.gold || 0).toLocaleString()}</div>
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Gold</div>
                 </div>
-                <div className="stat-card">
-                  <span className="stat-value" style={{ color: '#8B5CF6' }}>{(profileStats.currencies.tokens || 0).toLocaleString()}</span>
-                  <span className="stat-label">Tokens</span>
+                <div className="rounded-2xl bg-stark-surface p-4 text-center">
+                  <div className="text-2xl font-bold text-cosmic-purple-text">{(profileStats.currencies.tokens || 0).toLocaleString()}</div>
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Tokens</div>
                 </div>
               </div>
             </div>
@@ -8307,66 +8270,135 @@ RESPONSE GUIDELINES:
 
           {/* Card Performance */}
           {performanceData && cards.length > 0 && (
-            <>
-              <div className="stats-section" style={{ padding: '12px 16px' }}>
-                <h3 style={{ marginBottom: '8px' }}>Card Performance</h3>
-                <p style={{ margin: 0, fontSize: '0.8em', color: '#9CA3AF' }}>Net cubes earned/lost per card (lifetime)</p>
+            <div className="stitch-card p-5 mb-4">
+              <div className="stitch-section-header">
+                <span className="material-symbols-outlined" aria-hidden="true">bar_chart</span>
+                Card Performance
+              </div>
+              <p className="text-xs text-stitch-muted mb-3">Net cubes earned/lost per card (lifetime)</p>
 
-                <div className="performance-summary" style={{ marginTop: '12px' }}>
-                  <div className="summary-stat positive">
-                    <span className="label">Gained</span>
-                    <span className="value">+{totalPositive.toLocaleString()}</span>
-                  </div>
-                  <div className="summary-stat negative">
-                    <span className="label">Lost</span>
-                    <span className="value">{totalNegative.toLocaleString()}</span>
-                  </div>
-                  <div className="summary-stat net">
-                    <span className="label">Net</span>
-                    <span className="value">{(totalPositive + totalNegative).toLocaleString()}</span>
-                  </div>
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="rounded-2xl bg-stark-surface p-3 text-center">
+                  <div className="text-lg font-bold text-stitch-green">+{totalPositive.toLocaleString()}</div>
+                  <div className="text-xs text-stitch-muted mt-1">Gained</div>
                 </div>
-
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-                  <select
-                    value={filterType}
-                    onChange={(e) => setFilterType(e.target.value)}
-                    style={{ flex: 1, background: '#374151', color: 'white', border: 'none', borderRadius: '6px', padding: '8px' }}
-                  >
-                    <option value="all">All Cards ({Object.keys(performanceData.cards).length})</option>
-                    <option value="positive">Winners Only</option>
-                    <option value="negative">Losers Only</option>
-                  </select>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    style={{ flex: 1, background: '#374151', color: 'white', border: 'none', borderRadius: '6px', padding: '8px' }}
-                  >
-                    <option value="netCubes">By Cubes</option>
-                    <option value="name">By Name</option>
-                  </select>
+                <div className="rounded-2xl bg-stark-surface p-3 text-center">
+                  <div className="text-lg font-bold text-red-400">{totalNegative.toLocaleString()}</div>
+                  <div className="text-xs text-stitch-muted mt-1">Lost</div>
                 </div>
-
-                <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
-                  {cards.map((card, i) => (
-                    <div
-                      key={card.card}
-                      className={`performance-card ${card.netCubes >= 0 ? 'positive' : 'negative'}`}
-                    >
-                      <span className="rank">#{i + 1}</span>
-                      <span className="card-name">{card.card}</span>
-                      <span className="net-cubes">
-                        {card.netCubes >= 0 ? '+' : ''}{card.netCubes}
-                      </span>
-                    </div>
-                  ))}
+                <div className="rounded-2xl bg-stark-surface p-3 text-center">
+                  <div className="text-lg font-bold text-mcu-gold">{(totalPositive + totalNegative).toLocaleString()}</div>
+                  <div className="text-xs text-stitch-muted mt-1">Net</div>
                 </div>
               </div>
 
-              <p style={{ textAlign: 'center', fontSize: '0.75em', color: '#9CA3AF' }}>
+              <div className="flex gap-2 mb-3">
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value)}
+                  className="flex-1 rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/40"
+                >
+                  <option value="all">All Cards ({Object.keys(performanceData.cards).length})</option>
+                  <option value="positive">Winners Only</option>
+                  <option value="negative">Losers Only</option>
+                </select>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="flex-1 rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/40"
+                >
+                  <option value="netCubes">By Cubes</option>
+                  <option value="name">By Name</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5 max-h-[350px] overflow-y-auto">
+                {cards.map((card, i) => (
+                  <div
+                    key={card.card}
+                    className={`flex items-center gap-3 rounded-xl bg-stark-surface p-2.5 border-l-4 ${card.netCubes >= 0 ? 'border-stitch-green' : 'border-red-500'}`}
+                  >
+                    <span className="text-xs font-bold text-mcu-gold w-8 shrink-0">#{i + 1}</span>
+                    <span className="text-sm text-white flex-1 truncate">{card.card}</span>
+                    <span className={`text-sm font-bold shrink-0 ${card.netCubes >= 0 ? 'text-stitch-green' : 'text-red-400'}`}>
+                      {card.netCubes >= 0 ? '+' : ''}{card.netCubes}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-center text-xs text-stitch-muted mt-3">
                 Data from: {new Date(performanceData.importedAt).toLocaleDateString()}
               </p>
-            </>
+            </div>
+          )}
+
+          {/* Missions */}
+          {hasMissions && (
+            <div className="stitch-card p-5 mb-4">
+              <div className="stitch-section-header">
+                <span className="material-symbols-outlined" aria-hidden="true">task_alt</span>
+                Missions
+              </div>
+              {missions.daily?.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted">Daily</span>
+                    <span className="text-xs text-stitch-muted">{missions.dailyCompleted ?? missions.daily.filter(m => m.completed).length}/{missions.daily.length}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {missions.daily.map(renderMission)}
+                  </div>
+                </div>
+              )}
+              {missions.weekly?.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted">Weekly</span>
+                    <span className="text-xs text-stitch-muted">{missions.weeklyCompleted ?? missions.weekly.filter(m => m.completed).length}/{missions.weekly.length}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {missions.weekly.map(renderMission)}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Mastery */}
+          {hasMastery && (
+            <div className="stitch-card p-5 mb-4">
+              <div className="stitch-section-header">
+                <span className="material-symbols-outlined" aria-hidden="true">military_tech</span>
+                Mastery
+              </div>
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="rounded-2xl bg-stark-surface p-3 text-center">
+                  <div className="text-2xl font-bold text-white">{masterySummary.totalCards}</div>
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Cards</div>
+                </div>
+                <div className="rounded-2xl bg-stark-surface p-3 text-center">
+                  <div className="text-2xl font-bold text-mcu-gold">{masterySummary.avgLevel}</div>
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Avg Level</div>
+                </div>
+                <div className="rounded-2xl bg-stark-surface p-3 text-center">
+                  <div className="text-2xl font-bold text-stitch-green">{masterySummary.maxedCards}</div>
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Maxed</div>
+                </div>
+              </div>
+              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Top Cards</div>
+              <div className="grid grid-cols-3 gap-2">
+                {mastery.cards.slice(0, 10).map((c) => (
+                  <div key={c.card} className="relative w-full aspect-[3/4] rounded-lg overflow-hidden border shrink-0" style={{ borderColor: 'rgba(173,43,238,0.25)' }}>
+                    <img src={getCardArtUrl({ name: c.card })} alt="" loading="lazy" className="w-full h-full object-cover"
+                         onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                    <div className="absolute bottom-0 right-0 px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ background: 'rgba(173,43,238,0.85)' }}>
+                      {c.level}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       );
@@ -8930,6 +8962,13 @@ RESPONSE GUIDELINES:
               >
                 <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">history</span>
                 <span className="text-white text-sm">Match History</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'analytics' }))}
+                className="stitch-list-item p-3 min-h-[44px] flex flex-col items-center"
+              >
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">monitoring</span>
+                <span className="text-white text-sm">Analytics</span>
               </button>
             </div>
           </div>
@@ -10299,7 +10338,8 @@ RESPONSE GUIDELINES:
           settings: 'Settings',
           history: 'Match History',
           oracle: 'Oracle',
-          profile: 'Profile'
+          profile: 'Profile',
+          analytics: 'Analytics'
         };
         document.title = (titles[activeTab] || 'AI Advisor') + ' - Snapapoulous Prime';
       }, [activeTab]);
@@ -10419,7 +10459,7 @@ RESPONSE GUIDELINES:
         const tab = params.get('tab');
         const action = params.get('action');
 
-        if (tab && ['dashboard', 'ai', 'collection', 'database', 'decks', 'compare', 'settings', 'oracle', 'history', 'profile'].includes(tab)) {
+        if (tab && ['dashboard', 'ai', 'collection', 'database', 'decks', 'compare', 'settings', 'oracle', 'history', 'profile', 'analytics'].includes(tab)) {
           setActiveTab(tab);
         }
 
@@ -10636,6 +10676,11 @@ RESPONSE GUIDELINES:
             {activeTab === 'history' && (
               <ErrorBoundary>
                 <MatchHistory matches={matches} />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'analytics' && (
+              <ErrorBoundary>
+                <CardPerformanceView />
               </ErrorBoundary>
             )}
             {activeTab === 'profile' && (
