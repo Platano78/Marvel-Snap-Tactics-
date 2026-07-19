@@ -3504,9 +3504,10 @@ RESPONSE GUIDELINES:
         // before ids were tracked. Hand-made decks absent from this import are
         // never touched (id collision with a real game deck is not realistic).
         const existingDecks = JSON.parse(localStorage.getItem('snap_decks') || '[]');
-        const mergedDecks = [...existingDecks];
+        let mergedDecks = [...existingDecks];
         let addedCount = 0;
         let updatedCount = 0;
+        const matchedIds = new Set();
         importedDecks.forEach(imported => {
           let idx = mergedDecks.findIndex(d => d.id === imported.id);
           if (idx === -1) idx = mergedDecks.findIndex(d => !d.id && d.name === imported.name);
@@ -3526,10 +3527,22 @@ RESPONSE GUIDELINES:
             };
             updatedCount++;
           }
+          matchedIds.add(imported.id);
         });
 
+        // Deletion reconciliation: a previously-imported deck absent from this
+        // import was deleted in-game, so drop it. Hand-made decks (no `imported`
+        // flag) are always kept, regardless of the import. Safe against a
+        // zero-deck import wiping everything: the outer `data.decks.decks?.length
+        // > 0` guard already keeps this whole block (add/update/remove alike)
+        // from running when the parse yields no decks, so `importedDecks` can
+        // never be empty here.
+        const beforeCount = mergedDecks.length;
+        mergedDecks = mergedDecks.filter(d => !d.imported || matchedIds.has(d.id));
+        const removedCount = beforeCount - mergedDecks.length;
+
         localStorage.setItem('snap_decks', JSON.stringify(mergedDecks));
-        results.push(`Decks: ${addedCount} added, ${updatedCount} updated (${mergedDecks.length} total)`);
+        results.push(`Decks: ${addedCount} added, ${updatedCount} updated, ${removedCount} removed (${mergedDecks.length} total)`);
       }
 
       return results;
