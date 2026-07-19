@@ -123,7 +123,7 @@
     "name": "Ka-Zar",
     "defId": "KaZar",
     "cost": 4,
-    "power": 5,
+    "power": 6,
     "ability": "Ongoing: Your 1-Cost cards have +1 Power.",
     "series": 2
   },
@@ -147,7 +147,7 @@
     "name": "Odin",
     "defId": "Odin",
     "cost": 6,
-    "power": 9,
+    "power": 10,
     "ability": "On Reveal: Repeat the On Reveal abilities of your other cards here.",
     "series": 2
   },
@@ -595,7 +595,7 @@
     "name": "Bucky Barnes",
     "defId": "BuckyBarnes",
     "cost": 2,
-    "power": 1,
+    "power": 2,
     "ability": "When Destroyed: Replace this with the Winter Soldier.",
     "series": 5
   },
@@ -867,7 +867,7 @@
     "name": "Black Bolt",
     "defId": "BlackBolt",
     "cost": 5,
-    "power": 7,
+    "power": 8,
     "ability": "On Reveal: Discard the card that costs the least from your\nopponent's hand.",
     "series": 6
   },
@@ -3460,7 +3460,71 @@
     "defId": "WolverineHorseman",
     "cost": 4,
     "power": 3,
-    "ability": "Objective: This has 5 or more Power \u2192 Give one of your cards at each location +3 Power. (3/5)",
+    "ability": "Objective: This has 5 or more Power \u2192 Give one of your cards at each location +4 Power. (3/5)",
+    "series": 5
+  },
+  {
+    "name": "Tombstone",
+    "defId": "Tombstone",
+    "cost": 2,
+    "power": 3,
+    "ability": "On Reveal: Destroy your lowest-Power card at each other location.",
+    "series": 8
+  },
+  {
+    "name": "Muse",
+    "defId": "Muse",
+    "cost": 3,
+    "power": 3,
+    "ability": "Ongoing: +3 Power for each location where one of your cards has been destroyed.",
+    "series": 8
+  },
+  {
+    "name": "Isca The Unbeaten",
+    "defId": "Isca",
+    "cost": 4,
+    "power": 3,
+    "ability": "End of Turn: If you're losing this location, double this card's Power.",
+    "series": 8
+  },
+  {
+    "name": "Spider-Man Brand New Day",
+    "defId": "SpiderManBrandNewDay",
+    "cost": 1,
+    "power": 2,
+    "ability": "Moveable twice. After this moves to a location, give one of your other cards there +1 Power (even unrevealed ones).",
+    "series": 8
+  },
+  {
+    "name": "Mary Jane",
+    "defId": "MaryJane",
+    "cost": 3,
+    "power": 3,
+    "ability": "End of Turn: Give each of your cards that moved this turn +1 Power.",
+    "series": 8
+  },
+  {
+    "name": "Aunt May",
+    "defId": "AuntMay",
+    "cost": 2,
+    "power": 4,
+    "ability": "End of Turn: If you used a Moveable ability, give a Moveable card in your hand -1 Cost and +2 Power.",
+    "series": 8
+  },
+  {
+    "name": "Polaris Horseman of Pestilence",
+    "defId": "PolarisHorseman",
+    "cost": 2,
+    "power": 2,
+    "ability": "Objective: Cards in play are afflicted with -5 Power \u2192 Put a card from your hand here.",
+    "series": 5
+  },
+  {
+    "name": "Storm Horseman of Famine",
+    "defId": "StormHorseman",
+    "cost": 3,
+    "power": 1,
+    "ability": "Objective: End 2 turns in a row with unspent Energy \u2192 Give your other cards here and in your hand +2 Power.",
     "series": 5
   }
 ]
