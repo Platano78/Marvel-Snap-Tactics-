@@ -6,5 +6,29 @@
     "publishedDate": "2026-07-13",
     "videoUrl": "https://www.youtube.com/watch?v=AxXvJilZLL0",
     "notes": "Highest win-rate deck on Untapped.gg after Infinite per RegisKillbin's 7/13/26 roundup. 12/12 cards verified in card-data.json."
+  },
+  {
+    "deckCode": "QWRhbWFudGl1bUluZnVzaW9uLEFybmltWm9sYSxCbGFja1BhbnRoZXIsRmFzdGJhbGxTcGVjaWFsLEdhbGFjdHVzLEtpZE9tZWdhLE1hZ2lrLE5pbXJvZCxTaHVyaSxTeW1iaW90ZVNwaWRlck1hbixUb21ic3RvbmUsVmVub20=",
+    "deckName": "Tombstone Galactus",
+    "creatorId": "regiskillbin",
+    "publishedDate": "2026-07-12",
+    "videoUrl": "https://www.youtube.com/watch?v=EmiO0FEtoyI",
+    "notes": "Nimrod Galactus shell with Tombstone — 69% win-rate per RegisKillbin's 7/12/26 video. Unbenched by the 2026-07-19 card-data refresh (Tombstone added); 12/12 cards verified in card-data.json."
+  },
+  {
+    "deckCode": "QnVja3lCYXJuZXMsQ2FybmFnZSxEZWF0aCxEZWJyaWksRG9ybWFtbXUsS2lsbG1vbmdlcixNdXNlLFNxdWlycmVsR2lybCxVbmNsZUJlbixWZW5vbSxXZWFwb25YV29sdmVyaW5lLFgyMw==",
+    "deckName": "Dormammu",
+    "creatorId": "alexander-coccia",
+    "publishedDate": "2026-07-10",
+    "videoUrl": "https://www.youtube.com/watch?v=t_vrJXXJZGM",
+    "notes": "Deck #4 in Coccia's Weekly Meta Report #192 (7/10/26). Unbenched by the 2026-07-19 card-data refresh (Muse added); 12/12 cards verified in card-data.json."
+  },
+  {
+    "deckCode": "QWVybyxCYXRyb2MsS2luZ3BpbixLcmF2ZW4sTWFnbmV0byxQb2xhcmlzLFByb3dsZXIsU2FtV2lsc29uLFNjcmVhbSxTcGlkZXJNYW4sU3BpZGVyTWFuQnJhbmROZXdEYXksU3RlZ3Jvbg==",
+    "deckName": "Scream",
+    "creatorId": "alexander-coccia",
+    "publishedDate": "2026-07-10",
+    "videoUrl": "https://www.youtube.com/watch?v=t_vrJXXJZGM",
+    "notes": "Deck #7 in Coccia's Weekly Meta Report #192 (7/10/26). Unbenched by the 2026-07-19 card-data refresh (Spider-Man Brand New Day added); 12/12 cards verified in card-data.json."
   }
 ]
