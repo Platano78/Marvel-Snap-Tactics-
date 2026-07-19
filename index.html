@@ -3772,7 +3772,7 @@ RESPONSE GUIDELINES:
 
 
     // Phase 1: Directional page transition wrapper
-    const TAB_INDEX = {ai:0, collection:1, database:2, decks:3, compare:4, history:5, settings:6, dashboard:7, oracle:8, profile:9, analytics:10};
+    const TAB_INDEX = {ai:0, collection:1, database:2, decks:3, compare:4, history:5, settings:6, dashboard:7, oracle:8, profile:9, analytics:10, simulator:11};
     const PageTransition = ({ activeTab, children }) => {
       const prevTab = useRef(activeTab);
       const [direction, setDirection] = useState('slide-left');
@@ -8947,6 +8947,13 @@ RESPONSE GUIDELINES:
                 <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">monitoring</span>
                 <span className="text-white text-sm">Analytics</span>
               </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'simulator' }))}
+                className="stitch-list-item p-3 min-h-[44px] flex flex-col items-center"
+              >
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">casino</span>
+                <span className="text-white text-sm">Simulator</span>
+              </button>
             </div>
           </div>
 
@@ -10331,6 +10338,862 @@ RESPONSE GUIDELINES:
       );
     };
 
+    // ==================== DECK SIMULATOR ENGINE ====================
+    // Recovered verbatim from f84ce2a (pre-deletion Deck Simulator, byte-for-byte
+    // unchanged across 3 redesigns) — see docs/plans/deck-simulator-rebuild.md §3
+    // for provenance and node --check / node -e gate verification.
+    const SimulationEngine = {
+      // Factorial with memoization for performance
+      _factorialCache: [1, 1],
+      factorial(n) {
+        if (n < 0) return 0;
+        if (n < this._factorialCache.length) return this._factorialCache[n];
+        let result = this._factorialCache[this._factorialCache.length - 1];
+        for (let i = this._factorialCache.length; i <= n; i++) {
+          result *= i;
+          this._factorialCache[i] = result;
+        }
+        return result;
+      },
+
+      // Combination C(n, k) = n! / (k! * (n-k)!)
+      combination(n, k) {
+        if (k < 0 || k > n) return 0;
+        if (k === 0 || k === n) return 1;
+        k = Math.min(k, n - k);
+        let result = 1;
+        for (let i = 0; i < k; i++) {
+          result = result * (n - i) / (i + 1);
+        }
+        return Math.round(result);
+      },
+
+      // Hypergeometric probability: P(X >= 1) = 1 - P(X = 0)
+      // N = population size (deck), K = success states (copies), n = draws
+      hypergeometricAtLeastOne(N, K, n) {
+        if (K <= 0 || n <= 0 || N <= 0) return 0;
+        if (K >= N || n >= N) return 1;
+        const pZero = this.combination(N - K, n) / this.combination(N, n);
+        return Math.max(0, Math.min(1, 1 - pZero));
+      },
+
+      // Probability of drawing ALL of k specific cards by drawing n cards
+      hypergeometricAllCards(N, targetCards, n) {
+        const k = targetCards.length;
+        if (k === 0) return 1;
+        if (k > n) return 0;
+        if (n >= N) return 1;
+        return this.combination(N - k, n - k) / this.combination(N, n);
+      },
+
+      openingHandProbabilities(deckSize, handSize) {
+        return handSize / deckSize;
+      },
+
+      cardByTurnProbability(deckSize, handSize, turn) {
+        const cardsSeen = Math.min(deckSize, handSize + turn);
+        return cardsSeen / deckSize;
+      }
+    };
+
+    // Seeded RNG — Mulberry32. Determinism-verified: two instances created with
+    // the same seed produce an identical output stream.
+    const createSeededRNG = (seed) => {
+      let state = seed;
+      return () => {
+        state |= 0;
+        state = state + 0x6D2B79F5 | 0;
+        let t = Math.imul(state ^ state >>> 15, 1 | state);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    };
+
+    const MonteCarloEngine = {
+      // Shuffle array using Fisher-Yates with provided RNG
+      shuffle(array, rng) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(rng() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      },
+
+      // Simulate single game and return results
+      simulateGame(deck, options, rng) {
+        const {
+          handSize = 3,
+          turnsToSimulate = 6,
+          extraDrawsPerTurn = 0,
+          thinningPerTurn = 0,
+          junkInsertsPerTurn = 0,
+          handSizeLimit = Infinity
+        } = options;
+
+        let currentDeck = this.shuffle([...deck], rng);
+        let hand = currentDeck.splice(0, handSize);
+        const drawnCards = [...hand];
+        const handByTurn = [{ turn: 0, hand: [...hand], deckSize: currentDeck.length }];
+
+        for (let turn = 1; turn <= turnsToSimulate; turn++) {
+          for (let i = 0; i < thinningPerTurn && currentDeck.length > 0; i++) {
+            const idx = Math.floor(rng() * currentDeck.length);
+            currentDeck.splice(idx, 1);
+          }
+
+          for (let i = 0; i < junkInsertsPerTurn; i++) {
+            currentDeck.push({ name: `Junk_${turn}_${i}`, cost: 99, power: 0, isJunk: true });
+          }
+
+          const drawCount = 1 + extraDrawsPerTurn;
+          for (let i = 0; i < drawCount && currentDeck.length > 0; i++) {
+            const card = currentDeck.shift();
+            hand.push(card);
+            drawnCards.push(card);
+          }
+
+          while (hand.length > handSizeLimit && hand.length > 0) {
+            const idx = Math.floor(rng() * hand.length);
+            hand.splice(idx, 1);
+          }
+
+          handByTurn.push({ turn, hand: [...hand], deckSize: currentDeck.length });
+        }
+
+        return { hand, drawnCards, handByTurn };
+      },
+
+      // Run Monte Carlo simulation
+      runSimulation(deck, options, numRuns, onProgress, seed = null) {
+        const results = {
+          openingHands: {},
+          cardByTurn: {},
+          curveAnalysis: [],
+          comboResults: {},
+          sampleHands: []
+        };
+
+        const comboCards = options.comboCards || [];
+        const deckCardNames = deck.map(c => c.name);
+
+        deckCardNames.forEach(name => {
+          results.openingHands[name] = 0;
+          results.cardByTurn[name] = Array(7).fill(0);
+        });
+
+        for (let turn = 1; turn <= 6; turn++) {
+          results.curveAnalysis.push({ turn, onCurvePlays: 0, brickCount: 0, totalPlayableEnergy: 0 });
+        }
+
+        if (comboCards.length > 0) {
+          for (let turn = 1; turn <= 6; turn++) {
+            results.comboResults[turn] = 0;
+          }
+        }
+
+        for (let i = 0; i < numRuns; i++) {
+          const simRng = seed !== null ? createSeededRNG(seed + i) : () => Math.random();
+          const { handByTurn } = this.simulateGame(deck, options, simRng);
+
+          const openingHand = handByTurn[0].hand;
+          openingHand.forEach(card => {
+            if (results.openingHands[card.name] !== undefined) {
+              results.openingHands[card.name]++;
+            }
+          });
+
+          if (i < 10) {
+            results.sampleHands.push(openingHand.map(c => c.name));
+          }
+
+          const seenCards = new Set();
+          handByTurn.forEach(({ turn, hand }) => {
+            hand.forEach(card => {
+              if (!seenCards.has(card.name) && results.cardByTurn[card.name]) {
+                seenCards.add(card.name);
+                for (let t = turn; t <= 6; t++) {
+                  results.cardByTurn[card.name][t]++;
+                }
+              }
+            });
+          });
+
+          handByTurn.slice(1).forEach(({ turn, hand }) => {
+            const analysis = results.curveAnalysis[turn - 1];
+            const playableCosts = hand.filter(c => !c.isJunk && c.cost <= turn).map(c => c.cost);
+
+            if (playableCosts.length > 0) {
+              analysis.onCurvePlays++;
+              analysis.totalPlayableEnergy += Math.max(...playableCosts);
+            } else {
+              analysis.brickCount++;
+            }
+          });
+
+          if (comboCards.length > 0) {
+            handByTurn.slice(1).forEach(({ turn, hand }) => {
+              const handNames = new Set(hand.map(c => c.name));
+              if (comboCards.every(name => handNames.has(name))) {
+                results.comboResults[turn]++;
+              }
+            });
+          }
+
+          if (onProgress && i % Math.max(1, Math.floor(numRuns / 100)) === 0) {
+            onProgress(i / numRuns);
+          }
+        }
+
+        Object.keys(results.openingHands).forEach(name => {
+          results.openingHands[name] = (results.openingHands[name] / numRuns) * 100;
+        });
+
+        Object.keys(results.cardByTurn).forEach(name => {
+          results.cardByTurn[name] = results.cardByTurn[name].map(count => (count / numRuns) * 100);
+        });
+
+        results.curveAnalysis = results.curveAnalysis.map(a => ({
+          ...a,
+          onCurveRate: (a.onCurvePlays / numRuns) * 100,
+          brickRate: (a.brickCount / numRuns) * 100,
+          avgPlayableEnergy: a.totalPlayableEnergy / numRuns
+        }));
+
+        if (comboCards.length > 0) {
+          Object.keys(results.comboResults).forEach(turn => {
+            results.comboResults[turn] = (results.comboResults[turn] / numRuns) * 100;
+          });
+        }
+
+        return results;
+      }
+    };
+
+    // Web Worker source (Blob URL, no build step — ADR-001). Mirrors SimulationEngine
+    // /createSeededRNG/MonteCarloEngine above verbatim: a Blob-constructed worker has
+    // no module system to import from the main thread, so the simulation logic is
+    // duplicated here (plain-string ES5-ish, no nested template literals, to keep the
+    // outer JS template literal that builds this source string unambiguous).
+    const workerCode = `
+  const createSeededRNG = (seed) => {
+    let state = seed;
+    return () => {
+      state |= 0;
+      state = state + 0x6D2B79F5 | 0;
+      let t = Math.imul(state ^ state >>> 15, 1 | state);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  };
+
+  const shuffle = (array, rng) => {
+    const arr = array.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  };
+
+  const simulateGame = (deck, options, rng) => {
+    const handSize = options.handSize || 3;
+    const turnsToSimulate = options.turnsToSimulate || 6;
+    const extraDrawsPerTurn = options.extraDrawsPerTurn || 0;
+    const thinningPerTurn = options.thinningPerTurn || 0;
+    const junkInsertsPerTurn = options.junkInsertsPerTurn || 0;
+    const handSizeLimit = options.handSizeLimit === undefined ? Infinity : options.handSizeLimit;
+
+    let currentDeck = shuffle(deck.slice(), rng);
+    let hand = currentDeck.splice(0, handSize);
+    const handByTurn = [{ turn: 0, hand: hand.slice(), deckSize: currentDeck.length }];
+
+    for (let turn = 1; turn <= turnsToSimulate; turn++) {
+      for (let i = 0; i < thinningPerTurn && currentDeck.length > 0; i++) {
+        const idx = Math.floor(rng() * currentDeck.length);
+        currentDeck.splice(idx, 1);
+      }
+
+      for (let i = 0; i < junkInsertsPerTurn; i++) {
+        currentDeck.push({ name: 'Junk_' + turn + '_' + i, cost: 99, power: 0, isJunk: true });
+      }
+
+      const drawCount = 1 + extraDrawsPerTurn;
+      for (let i = 0; i < drawCount && currentDeck.length > 0; i++) {
+        hand.push(currentDeck.shift());
+      }
+
+      while (hand.length > handSizeLimit && hand.length > 0) {
+        const idx = Math.floor(rng() * hand.length);
+        hand.splice(idx, 1);
+      }
+
+      handByTurn.push({ turn: turn, hand: hand.slice(), deckSize: currentDeck.length });
+    }
+
+    return { handByTurn: handByTurn };
+  };
+
+  self.onmessage = function(e) {
+    const deck = e.data.deck;
+    const options = e.data.options;
+    const numRuns = e.data.numRuns;
+    const seed = e.data.seed;
+    const chunkSize = e.data.chunkSize || 1000;
+
+    const results = { openingHands: {}, cardByTurn: {}, curveAnalysis: [], comboResults: {}, sampleHands: [] };
+    const comboCards = options.comboCards || [];
+    const deckCardNames = deck.map(function (c) { return c.name; });
+
+    deckCardNames.forEach(function (name) {
+      results.openingHands[name] = 0;
+      results.cardByTurn[name] = new Array(7).fill(0);
+    });
+
+    for (let turn = 1; turn <= 6; turn++) {
+      results.curveAnalysis.push({ turn: turn, onCurvePlays: 0, brickCount: 0, totalPlayableEnergy: 0 });
+    }
+
+    if (comboCards.length > 0) {
+      for (let turn = 1; turn <= 6; turn++) {
+        results.comboResults[turn] = 0;
+      }
+    }
+
+    let completed = 0;
+    const runChunk = () => {
+      const chunkEnd = Math.min(completed + chunkSize, numRuns);
+      for (let i = completed; i < chunkEnd; i++) {
+        const simRng = seed !== null ? createSeededRNG(seed + i) : function () { return Math.random(); };
+        const gameResult = simulateGame(deck, options, simRng);
+        const handByTurn = gameResult.handByTurn;
+
+        const openingHand = handByTurn[0].hand;
+        openingHand.forEach(function (card) {
+          if (results.openingHands[card.name] !== undefined) {
+            results.openingHands[card.name]++;
+          }
+        });
+
+        if (i < 10) {
+          results.sampleHands.push(openingHand.map(function (c) { return c.name; }));
+        }
+
+        const seenCards = new Set();
+        handByTurn.forEach(function (entry) {
+          entry.hand.forEach(function (card) {
+            if (!seenCards.has(card.name) && results.cardByTurn[card.name]) {
+              seenCards.add(card.name);
+              for (let t = entry.turn; t <= 6; t++) {
+                results.cardByTurn[card.name][t]++;
+              }
+            }
+          });
+        });
+
+        handByTurn.slice(1).forEach(function (entry) {
+          const analysis = results.curveAnalysis[entry.turn - 1];
+          const playableCosts = entry.hand.filter(function (c) { return !c.isJunk && c.cost <= entry.turn; }).map(function (c) { return c.cost; });
+          if (playableCosts.length > 0) {
+            analysis.onCurvePlays++;
+            analysis.totalPlayableEnergy += Math.max.apply(null, playableCosts);
+          } else {
+            analysis.brickCount++;
+          }
+        });
+
+        if (comboCards.length > 0) {
+          handByTurn.slice(1).forEach(function (entry) {
+            const handNames = new Set(entry.hand.map(function (c) { return c.name; }));
+            if (comboCards.every(function (name) { return handNames.has(name); })) {
+              results.comboResults[entry.turn]++;
+            }
+          });
+        }
+      }
+
+      completed = chunkEnd;
+      self.postMessage({ type: 'progress', progress: completed / numRuns });
+
+      if (completed < numRuns) {
+        setTimeout(runChunk, 0);
+      } else {
+        Object.keys(results.openingHands).forEach(function (name) {
+          results.openingHands[name] = (results.openingHands[name] / numRuns) * 100;
+        });
+        Object.keys(results.cardByTurn).forEach(function (name) {
+          results.cardByTurn[name] = results.cardByTurn[name].map(function (count) { return (count / numRuns) * 100; });
+        });
+        results.curveAnalysis = results.curveAnalysis.map(function (a) {
+          return Object.assign({}, a, {
+            onCurveRate: (a.onCurvePlays / numRuns) * 100,
+            brickRate: (a.brickCount / numRuns) * 100,
+            avgPlayableEnergy: a.totalPlayableEnergy / numRuns
+          });
+        });
+        if (comboCards.length > 0) {
+          Object.keys(results.comboResults).forEach(function (turn) {
+            results.comboResults[turn] = (results.comboResults[turn] / numRuns) * 100;
+          });
+        }
+        self.postMessage({ type: 'complete', results: results });
+      }
+    };
+    runChunk();
+  };
+`;
+
+    // Create Web Worker from Blob — no separate .js file to serve, no CORS issue
+    const createSimulationWorker = () => {
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      return new Worker(URL.createObjectURL(blob));
+    };
+
+    // ==================== DECK SIMULATOR COMPONENT ====================
+    const SIMULATOR_MODES = [
+      { id: 'opening', label: 'Opening Hand', icon: 'style' },
+      { id: 'draw', label: 'Draw by Turn', icon: 'timeline' },
+      { id: 'curve', label: 'Curve/Brick', icon: 'bar_chart' },
+      { id: 'combo', label: 'Combo Finder', icon: 'join' },
+      { id: 'play', label: 'Play-Through', icon: 'sports_esports' },
+      { id: 'advanced', label: 'All Results', icon: 'grid_view' }
+    ];
+    const SIMULATOR_RUN_PRESETS = [1000, 10000, 50000];
+    const SIMULATOR_MIN_RUNS = 100;
+    const SIMULATOR_MAX_RUNS = 200000;
+    const SIMULATOR_WORKER_THRESHOLD = 5000;
+
+    const DeckSimulator = ({ decks, collection, cardDataVersion }) => {
+      const [selectedDeckId, setSelectedDeckId] = useState(() => loadFromStorage('snap_simulator_deck', decks[0]?.id || ''));
+      const [mode, setMode] = useState('curve');
+      const [numRuns, setNumRuns] = useState(50000);
+      const [customRuns, setCustomRuns] = useState('');
+      const [useSeed, setUseSeed] = useState(false);
+      const [seed, setSeed] = useState(42);
+      const [showAdvanced, setShowAdvanced] = useState(false);
+      const [startingHandSize, setStartingHandSize] = useState(3);
+      const [extraDrawsPerTurn, setExtraDrawsPerTurn] = useState(0);
+      const [thinningPerTurn, setThinningPerTurn] = useState(0);
+      const [junkInsertsPerTurn, setJunkInsertsPerTurn] = useState(0);
+      const [handSizeLimit, setHandSizeLimit] = useState(0);
+      const [isRunning, setIsRunning] = useState(false);
+      const [progress, setProgress] = useState(0);
+      const [results, setResults] = useState(null);
+      const [runError, setRunError] = useState('');
+      const workerRef = useRef(null);
+
+      useEffect(() => { saveToStorage('snap_simulator_deck', selectedDeckId); }, [selectedDeckId]);
+
+      // Self-heal the selection: if the persisted/initial id doesn't match any
+      // current deck (e.g. simulator was first opened before any deck existed,
+      // or the selected deck was since deleted) fall back to the first deck.
+      useEffect(() => {
+        if (decks.length === 0) return;
+        if (!decks.some(d => d.id === selectedDeckId)) {
+          setSelectedDeckId(decks[0].id);
+        }
+      }, [decks, selectedDeckId]);
+
+      // Terminate any in-flight worker on unmount
+      useEffect(() => () => {
+        if (workerRef.current) { workerRef.current.terminate(); workerRef.current = null; }
+      }, []);
+
+      // Memoized card lookup map — maps both display names AND defIds, matches the
+      // current codebase's resolution pattern (not the old naive uniqueCards.find()),
+      // see docs/plans/deck-simulator-rebuild.md §4.1
+      const cardLookup = useMemo(() => {
+        const map = new Map();
+        uniqueCards.forEach(c => {
+          map.set(c.name, c);
+          if (c.defId) map.set(c.defId, c);
+        });
+        return map;
+      }, [cardDataVersion]);
+
+      const selectedDeck = decks.find(d => d.id === selectedDeckId) || null;
+      const deckCards = selectedDeck
+        ? selectedDeck.cards.map(name => cardLookup.get(name) || { name, cost: 0, power: 0, series: 0 })
+        : [];
+      const deckIsValid = deckCards.length === 12;
+
+      const isAdvancedModified = startingHandSize !== 3 || extraDrawsPerTurn !== 0 || thinningPerTurn !== 0 || junkInsertsPerTurn !== 0 || handSizeLimit !== 0;
+
+      const resetAdvanced = () => {
+        setStartingHandSize(3);
+        setExtraDrawsPerTurn(0);
+        setThinningPerTurn(0);
+        setJunkInsertsPerTurn(0);
+        setHandSizeLimit(0);
+      };
+
+      // Exact hypergeometric curve — only valid at baseline rules (12-card deck,
+      // 3-card hand, 1 draw/turn); disabled the instant Advanced Rules deviate.
+      const exactCurve = useMemo(() => {
+        if (!deckIsValid || isAdvancedModified) return null;
+        const N = deckCards.length;
+        return Array.from({ length: 6 }, (_, idx) => {
+          const turn = idx + 1;
+          const n = Math.min(N, 3 + turn);
+          const K = deckCards.filter(c => !c.isJunk && c.cost <= turn).length;
+          const onCurveRate = SimulationEngine.hypergeometricAtLeastOne(N, K, n) * 100;
+          return { turn, onCurveRate, brickRate: 100 - onCurveRate };
+        });
+      }, [deckCards, deckIsValid, isAdvancedModified]);
+
+      const effectiveRuns = Math.max(SIMULATOR_MIN_RUNS, Math.min(SIMULATOR_MAX_RUNS, numRuns));
+
+      const cancelRun = () => {
+        if (workerRef.current) {
+          workerRef.current.terminate();
+          workerRef.current = null;
+        }
+        setIsRunning(false);
+        setProgress(0);
+      };
+
+      const runSimulation = () => {
+        if (!deckIsValid || isRunning) return;
+        setRunError('');
+        setResults(null);
+        setIsRunning(true);
+        setProgress(0);
+
+        const options = {
+          handSize: startingHandSize,
+          turnsToSimulate: 6,
+          extraDrawsPerTurn,
+          thinningPerTurn,
+          junkInsertsPerTurn,
+          handSizeLimit: handSizeLimit > 0 ? handSizeLimit : Infinity
+        };
+        const seedValue = useSeed ? seed : null;
+        const deckForSim = deckCards.map(c => ({ name: c.name, cost: c.cost, power: c.power }));
+
+        const runMainThread = () => {
+          requestAnimationFrame(() => {
+            try {
+              const simResults = MonteCarloEngine.runSimulation(deckForSim, options, effectiveRuns, (p) => setProgress(p), seedValue);
+              setResults(simResults);
+            } catch (err) {
+              console.error('Simulation failed:', err);
+              setRunError('Simulation failed to complete.');
+            } finally {
+              setIsRunning(false);
+              setProgress(1);
+            }
+          });
+        };
+
+        if (effectiveRuns >= SIMULATOR_WORKER_THRESHOLD) {
+          let worker;
+          try {
+            worker = createSimulationWorker();
+          } catch (err) {
+            console.warn('Web Worker unavailable, falling back to main thread:', err);
+            runMainThread();
+            return;
+          }
+          workerRef.current = worker;
+          worker.onmessage = (e) => {
+            if (e.data.type === 'progress') {
+              setProgress(e.data.progress);
+            } else if (e.data.type === 'complete') {
+              setResults(e.data.results);
+              setIsRunning(false);
+              worker.terminate();
+              workerRef.current = null;
+            }
+          };
+          worker.onerror = (err) => {
+            console.error('Simulation worker error, falling back to main thread:', err);
+            worker.terminate();
+            workerRef.current = null;
+            runMainThread();
+          };
+          worker.postMessage({ deck: deckForSim, options, numRuns: effectiveRuns, seed: seedValue });
+        } else {
+          runMainThread();
+        }
+      };
+
+      const applyCustomRuns = (value) => {
+        const parsed = parseInt(value, 10);
+        if (!Number.isNaN(parsed)) {
+          setNumRuns(Math.max(SIMULATOR_MIN_RUNS, Math.min(SIMULATOR_MAX_RUNS, parsed)));
+        }
+      };
+
+      // Empty state — no decks saved at all
+      if (decks.length === 0) {
+        return (
+          <div className="px-4 pb-20">
+            <Header title="SIMULATOR" />
+            <div className="flex flex-col items-center gap-4 px-6 py-10 text-center mt-8">
+              <div className="flex -space-x-4" aria-hidden="true">
+                {['Iron Man', 'Hulk', 'Wolverine'].map((name, i) => (
+                  <div key={name}
+                       className="relative w-16 aspect-[3/4] rounded-lg overflow-hidden border-2 border-gray-600 bg-[#2b1933] shrink-0 grayscale opacity-70"
+                       style={{ transform: `rotate(${(i - 1) * 8}deg)` }}>
+                    <img src={getCardArtUrl({ name })} alt="" loading="lazy" className="w-full h-full object-cover"
+                         onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                  </div>
+                ))}
+              </div>
+              <div>
+                <p className="text-white font-bold text-lg mb-1">No Decks to Simulate</p>
+                <p className="text-[#b792c9] text-sm max-w-xs mx-auto">
+                  Build a deck first, then run draw and curve simulations against it here.
+                </p>
+              </div>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'decks' }))}
+                className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple-text hover:bg-[#b84eff] transition-colors min-h-[44px]"
+              >
+                Build a Deck
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="SIMULATOR" subtitle="Draw & curve odds via Monte Carlo simulation" />
+
+          {/* Deck Selector */}
+          <div className="stitch-card p-5 mb-4">
+            <div className="stitch-section-header">
+              <span className="material-symbols-outlined" aria-hidden="true">style</span>
+              Simulation Deck
+            </div>
+            <DeckSelector value={selectedDeckId} onChange={setSelectedDeckId} color="#ad2bee" label="Deck" decks={decks} />
+            {selectedDeck && !deckIsValid && (
+              <p className="mt-3 text-sm text-red-400">
+                This deck has {deckCards.length} card{deckCards.length !== 1 ? 's' : ''}, not 12 — simulation requires a full 12-card deck.
+              </p>
+            )}
+          </div>
+
+          {/* Mode Selector */}
+          <div className="stitch-card p-5 mb-4">
+            <div className="stitch-section-header">
+              <span className="material-symbols-outlined" aria-hidden="true">tune</span>
+              Mode
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {SIMULATOR_MODES.map(m => {
+                const isActive = mode === m.id;
+                const isAvailable = m.id === 'curve';
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => isAvailable && setMode(m.id)}
+                    disabled={!isAvailable}
+                    aria-pressed={isActive}
+                    aria-label={isAvailable ? m.label : `${m.label} (coming soon)`}
+                    className={`stitch-list-item p-3 min-h-[44px] flex flex-col items-center gap-1 ${isActive ? 'ring-2 ring-cosmic-purple-text' : ''} ${!isAvailable ? 'opacity-40 cursor-not-allowed' : ''}`}
+                  >
+                    <span className={`material-symbols-outlined text-xl ${isActive ? 'text-cosmic-purple-text' : 'text-stitch-muted'}`} aria-hidden="true">{m.icon}</span>
+                    <span className="text-white text-[11px] text-center leading-tight">{m.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Run Controls */}
+          <div className="stitch-card p-5 mb-4">
+            <div className="stitch-section-header">
+              <span className="material-symbols-outlined" aria-hidden="true">casino</span>
+              Run Controls
+            </div>
+            <div className="flex gap-2 flex-wrap mb-3" role="group" aria-label="Run count presets">
+              {SIMULATOR_RUN_PRESETS.map(p => (
+                <button
+                  key={p}
+                  onClick={() => { setNumRuns(p); setCustomRuns(''); }}
+                  aria-pressed={numRuns === p && customRuns === ''}
+                  className={`stitch-pill ${numRuns === p && customRuns === '' ? 'active' : ''}`}
+                >
+                  {p >= 1000 ? `${p / 1000}K` : p}
+                </button>
+              ))}
+              <input
+                type="number"
+                min={SIMULATOR_MIN_RUNS}
+                max={SIMULATOR_MAX_RUNS}
+                placeholder="Custom"
+                value={customRuns}
+                onChange={(e) => { setCustomRuns(e.target.value); applyCustomRuns(e.target.value); }}
+                aria-label="Custom run count"
+                className="w-24 rounded-full px-3 py-1.5 text-sm bg-stark-surface-2 text-white border border-[rgba(173,43,238,0.25)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20"
+              />
+            </div>
+            <p className="text-xs text-stitch-muted mb-3">
+              {effectiveRuns.toLocaleString()} runs {effectiveRuns >= SIMULATOR_WORKER_THRESHOLD ? '(background worker)' : '(main thread)'}
+            </p>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setUseSeed(!useSeed)}
+                aria-pressed={useSeed}
+                aria-label="Toggle seeded RNG for reproducible results"
+                className={`stitch-pill ${useSeed ? 'active' : ''}`}
+              >
+                Seeded
+              </button>
+              {useSeed && (
+                <input
+                  type="number"
+                  value={seed}
+                  onChange={(e) => setSeed(parseInt(e.target.value, 10) || 0)}
+                  aria-label="RNG seed"
+                  className="w-28 rounded-full px-3 py-1.5 text-sm bg-stark-surface-2 text-white border border-[rgba(173,43,238,0.25)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20"
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Advanced Rules */}
+          <div className="stitch-card p-5 mb-4">
+            <button
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="stitch-section-header w-full !mb-0 justify-between"
+              aria-expanded={showAdvanced}
+            >
+              <span className="flex items-center gap-2">
+                <span className="material-symbols-outlined" aria-hidden="true">settings</span>
+                Advanced Rules
+                {isAdvancedModified && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cosmic-purple-text text-white normal-case tracking-normal">Modified</span>
+                )}
+              </span>
+              <span className="material-symbols-outlined" aria-hidden="true">{showAdvanced ? 'expand_less' : 'expand_more'}</span>
+            </button>
+
+            {showAdvanced && (
+              <div className="mt-4 flex flex-col gap-4">
+                {isAdvancedModified && (
+                  <p className="text-xs text-red-400">
+                    Exact hypergeometric comparison is disabled while Advanced Rules differ from baseline (12-card deck, 3-card hand, 1 draw/turn) — Monte Carlo only.
+                  </p>
+                )}
+                {[
+                  { label: 'Starting Hand Size', value: startingHandSize, set: setStartingHandSize, min: 1, max: 12, def: 3 },
+                  { label: 'Extra Draws / Turn', value: extraDrawsPerTurn, set: setExtraDrawsPerTurn, min: 0, max: 5, def: 0 },
+                  { label: 'Thinning / Turn', value: thinningPerTurn, set: setThinningPerTurn, min: 0, max: 5, def: 0 },
+                  { label: 'Junk Inserts / Turn', value: junkInsertsPerTurn, set: setJunkInsertsPerTurn, min: 0, max: 5, def: 0 },
+                  { label: 'Hand Size Limit (0 = unlimited)', value: handSizeLimit, set: setHandSizeLimit, min: 0, max: 20, def: 0 }
+                ].map(field => (
+                  <div key={field.label} className="flex items-center justify-between gap-3">
+                    <label className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted">{field.label}</label>
+                    <input
+                      type="number"
+                      min={field.min}
+                      max={field.max}
+                      value={field.value}
+                      onChange={(e) => field.set(Math.max(field.min, Math.min(field.max, parseInt(e.target.value, 10) || field.def)))}
+                      aria-label={field.label}
+                      className="w-20 rounded-full px-3 py-1.5 text-sm text-center bg-stark-surface-2 text-white border border-[rgba(173,43,238,0.25)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20"
+                    />
+                  </div>
+                ))}
+                {isAdvancedModified && (
+                  <button onClick={resetAdvanced} className="self-start text-xs font-semibold text-cosmic-purple-text hover:underline">
+                    Reset to baseline
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Run Button / Progress */}
+          <div className="stitch-card p-5 mb-4">
+            {!isRunning ? (
+              <button
+                onClick={runSimulation}
+                disabled={!deckIsValid}
+                className="w-full min-h-[44px] rounded-full font-bold text-white bg-cosmic-purple-text hover:bg-[#b84eff] transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Run Simulation
+              </button>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <div className="stitch-progress"><div className="stitch-progress-fill bg-cosmic-purple" style={{ width: `${Math.round(progress * 100)}%` }} /></div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-stitch-muted">{Math.round(progress * 100)}% complete</span>
+                  <button onClick={cancelRun} className="px-4 py-1.5 rounded-full text-xs font-bold text-red-300 bg-red-500/15 border border-red-500/40 hover:bg-red-500/25 transition-colors min-h-[36px]">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+            {runError && <p className="mt-2 text-sm text-red-400">{runError}</p>}
+          </div>
+
+          {/* Curve Analysis Results */}
+          {results && mode === 'curve' && (
+            <div className="stitch-card p-5 mb-4">
+              <div className="stitch-section-header">
+                <span className="material-symbols-outlined" aria-hidden="true">bar_chart</span>
+                Curve / Brick Analysis
+              </div>
+
+              <div className="flex items-end justify-between gap-2 h-32 mb-4" role="img" aria-label="On-curve rate by turn">
+                {results.curveAnalysis.map(t => (
+                  <div key={t.turn} className="flex-1 flex flex-col items-center justify-end h-full">
+                    <div
+                      className="w-full rounded-t-lg bg-cosmic-purple-text"
+                      style={{ height: `${Math.max(2, t.onCurveRate)}%` }}
+                      title={`Turn ${t.turn}: ${t.onCurveRate.toFixed(1)}% on-curve`}
+                    />
+                    <span className="text-[10px] text-stitch-muted mt-1">T{t.turn}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {results.curveAnalysis.map((t, idx) => {
+                  const exact = exactCurve ? exactCurve[idx] : null;
+                  return (
+                    <div key={t.turn} className="rounded-2xl bg-stark-surface p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-bold text-white">Turn {t.turn}</span>
+                        <span className="text-xs text-stitch-muted">Avg playable energy: {t.avgPlayableEnergy.toFixed(2)}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-1">On-Curve (Sim)</div>
+                          <div className="text-lg font-bold text-cosmic-purple-text">{t.onCurveRate.toFixed(1)}%</div>
+                        </div>
+                        <div>
+                          <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-1">Brick (Sim)</div>
+                          <div className="text-lg font-bold text-red-400">{t.brickRate.toFixed(1)}%</div>
+                        </div>
+                      </div>
+                      {exact && (
+                        <div className="grid grid-cols-2 gap-3 text-sm mt-3 pt-3 border-t border-white/5">
+                          <div>
+                            <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-1">On-Curve (Exact)</div>
+                            <div className="text-sm font-semibold text-white">{exact.onCurveRate.toFixed(2)}%</div>
+                          </div>
+                          <div>
+                            <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-1">Brick (Exact)</div>
+                            <div className="text-sm font-semibold text-white">{exact.brickRate.toFixed(2)}%</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
     const App = () => {
       const [activeTab, setActiveTab] = useState('ai');
       const [collection, setCollection] = useState(() => loadFromStorage('snap_collection', { owned: [], lastUpdated: new Date().toISOString() }));
@@ -10392,7 +11255,8 @@ RESPONSE GUIDELINES:
           history: 'Match History',
           oracle: 'Oracle',
           profile: 'Profile',
-          analytics: 'Analytics'
+          analytics: 'Analytics',
+          simulator: 'Simulator'
         };
         document.title = (titles[activeTab] || 'AI Advisor') + ' - Snapapoulous Prime';
       }, [activeTab]);
@@ -10512,7 +11376,7 @@ RESPONSE GUIDELINES:
         const tab = params.get('tab');
         const action = params.get('action');
 
-        if (tab && ['dashboard', 'ai', 'collection', 'database', 'decks', 'compare', 'settings', 'oracle', 'history', 'profile', 'analytics'].includes(tab)) {
+        if (tab && ['dashboard', 'ai', 'collection', 'database', 'decks', 'compare', 'settings', 'oracle', 'history', 'profile', 'analytics', 'simulator'].includes(tab)) {
           setActiveTab(tab);
         }
 
@@ -10734,6 +11598,11 @@ RESPONSE GUIDELINES:
             {activeTab === 'analytics' && (
               <ErrorBoundary>
                 <CardPerformanceView />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'simulator' && (
+              <ErrorBoundary>
+                <DeckSimulator decks={decks} collection={collection} cardDataVersion={cardDataVersion} />
               </ErrorBoundary>
             )}
             {activeTab === 'profile' && (
