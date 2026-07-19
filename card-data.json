@@ -587,7 +587,7 @@
     "name": "Agent 13",
     "defId": "Agent13",
     "cost": 1,
-    "power": 2,
+    "power": 3,
     "ability": "On Reveal: Add a random card to your hand.",
     "series": 5
   },
@@ -1258,9 +1258,9 @@
   {
     "name": "Luke Cage",
     "defId": "LukeCage",
-    "cost": 3,
+    "cost": 2,
     "power": 2,
-    "ability": "Ongoing: Your cards can't have their Power reduced.",
+    "ability": "Ongoing: Your cards here and in the front row can't have their Power reduced.",
     "series": 6
   },
   {
@@ -1634,9 +1634,9 @@
   {
     "name": "Spider-Man 2099",
     "defId": "SpiderMan2099",
-    "cost": 5,
-    "power": 9,
-    "ability": "The first time this moves to any location, destroy an enemy card there.",
+    "cost": 4,
+    "power": 5,
+    "ability": "The first time this moves to any location, afflict an enemy card there with -3 Power.",
     "series": 6
   },
   {
@@ -2227,7 +2227,7 @@
     "name": "Supergiant",
     "defId": "Supergiant",
     "cost": 4,
-    "power": 6,
+    "power": 5,
     "ability": "On Reveal: All cards played next turn don't reveal until the game ends.",
     "series": 7
   },

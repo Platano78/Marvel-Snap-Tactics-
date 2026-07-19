@@ -1,7 +1,7 @@
 {
-  "lastUpdated": "2026-03-01",
-  "scheduleVersion": "2.0",
-  "season": "X-Men: Origins of Apocalypse",
+  "lastUpdated": "2026-07-19",
+  "scheduleVersion": "3.0",
+  "season": "Spider-Man: Brand New Day",
   "weeks": [
     {
       "weekNumber": 1,
@@ -62,7 +62,112 @@
         { "name": "Spider-Ham", "series": 5 },
         { "name": "Alioth", "series": 5 }
       ]
+    },
+    {
+      "weekNumber": 5,
+      "startDate": "2026-06-02",
+      "endDate": "2026-06-09",
+      "spotlight": {
+        "mainCard": "Shadowlands Daredevil",
+        "series": 5,
+        "previouslyAvailable": false
+      },
+      "cacheCards": [
+        { "name": "Jeff the Baby Dolphin!?", "series": 5 },
+        { "name": "Venus", "series": 5 },
+        { "name": "Monstro", "series": 5 }
+      ]
+    },
+    {
+      "weekNumber": 6,
+      "startDate": "2026-06-09",
+      "endDate": "2026-06-16",
+      "spotlight": {
+        "mainCard": "Jubilee Silver Surfer",
+        "series": 5,
+        "previouslyAvailable": false
+      },
+      "cacheCards": []
+    },
+    {
+      "weekNumber": 7,
+      "startDate": "2026-06-16",
+      "endDate": "2026-06-23",
+      "spotlight": {
+        "mainCard": "Sub-Mariner",
+        "series": 5,
+        "previouslyAvailable": false
+      },
+      "cacheCards": []
+    },
+    {
+      "weekNumber": 8,
+      "startDate": "2026-06-23",
+      "endDate": "2026-06-30",
+      "spotlight": {
+        "mainCard": "Namorita",
+        "series": 5,
+        "previouslyAvailable": false
+      },
+      "cacheCards": []
+    },
+    {
+      "weekNumber": 9,
+      "startDate": "2026-06-30",
+      "endDate": "2026-07-07",
+      "spotlight": {
+        "mainCard": "Aunt May",
+        "series": 5,
+        "previouslyAvailable": false
+      },
+      "cacheCards": [
+        { "name": "Jeff the Baby Dolphin!?", "series": 5 }
+      ]
+    },
+    {
+      "weekNumber": 10,
+      "startDate": "2026-07-07",
+      "endDate": "2026-07-14",
+      "spotlight": {
+        "mainCard": "Tarantula",
+        "series": 5,
+        "previouslyAvailable": false
+      },
+      "cacheCards": []
+    },
+    {
+      "weekNumber": 11,
+      "startDate": "2026-07-14",
+      "endDate": "2026-07-21",
+      "spotlight": {
+        "mainCard": "Boomerang",
+        "series": 5,
+        "previouslyAvailable": false
+      },
+      "cacheCards": []
+    },
+    {
+      "weekNumber": 12,
+      "startDate": "2026-07-21",
+      "endDate": "2026-07-28",
+      "spotlight": {
+        "mainCard": "Scorpion: Brand New Day",
+        "series": 5,
+        "previouslyAvailable": false
+      },
+      "cacheCards": []
+    },
+    {
+      "weekNumber": 13,
+      "startDate": "2026-07-28",
+      "endDate": "2026-08-04",
+      "spotlight": {
+        "mainCard": "Sinister Six",
+        "series": 5,
+        "previouslyAvailable": false
+      },
+      "cacheCards": []
     }
   ],
-  "notes": "Main spotlight cards confirmed from official marvelsnap.com. Cache companion cards are approximate — update from in-game spotlights each Tuesday. Source: https://marvelsnap.com/news/"
+  "notes": "GAP: weeks covering 2026-04-07 through 2026-05-26 (X-Men: End of Days / April season, Daredevil: Crimson Twilight / May season) could not be reconstructed with confidence and are intentionally omitted rather than fabricated -- see meta-research-notes.md. Weeks 5-11 (June 2 - July 21, 2026) are reconstructed from a dated raw schedule (fourthlocation.com) cross-checked against Marvel Snap Zone / GameFAQs 'Spotlight Cache Version Update' articles for the same months; mainCard = the card explicitly tagged as a new Series 5 addition that week. cacheCards (the 3 companion cards each week per the official Spotlight Cache mechanic) were NOT independently verifiable for most weeks -- left empty rather than invented; only week 5 and week 9 had multiple same-day S5 releases that could plausibly be companions. WEEKS 12-13 (July 21 and July 28) ARE DATAMINED/LEAKED, NOT YET LIVE as of this file's lastUpdated date (2026-07-19) -- treat as unconfirmed until they go live. Source: cross-referenced marvelsnap.com, marvelsnapzone.com (via search snippets, direct fetch blocked), fourthlocation.com/schedule/, gamingonphone.com."
 }
