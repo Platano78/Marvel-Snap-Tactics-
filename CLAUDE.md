@@ -1,3 +1,13 @@
+# Snapapoulous Prime
+
+> **First, read `AGENTS.md` in this directory and follow its routing.** It is the canonical
+> brain for this project (areas, Inputs tables keyed to `index.html` section banners,
+> pickup/handoff). This file is a thin redirect; the full spec below is retained as Layer-3
+> reference (project identity, requirements, AI-provider details) — load it only when the
+> router sends you here, not by default.
+
+---
+
 # SNAPAPOULOUS PRIME - Project Specification & Claude Code Prompt
 
 > **Purpose**: This document serves as both project specification and Claude Code execution prompt. Place this in your repo root as `CLAUDE.md` and instruct Claude Code to read it first.
