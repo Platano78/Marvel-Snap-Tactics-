@@ -114,7 +114,7 @@ Track architectural and technology decisions with context and rationale.
 
 ### ADR-004: Marvel Comic Book Design Language (2025-01-XX)
 
-**Status**: Accepted
+**Status**: Superseded by ADR-005
 
 **Context:**
 - App is Marvel Snap companion
@@ -138,6 +138,76 @@ Track architectural and technology decisions with context and rationale.
 - (+) Series colors aid quick card identification
 - (-) More CSS complexity than plain styling
 - (-) May not suit all user preferences
+
+---
+
+### ADR-005: Cosmic Purple Design Language Supersedes Comic Book Direction (2026-07-19)
+
+**Status**: Accepted
+
+**Context:**
+- Two parallel Stitch design explorations existed: a Silver Age comic-book direction (ADR-004) and a
+  `marvel_snap_mobile` mobile-first "Cosmic Purple" project
+- Owner ruled the `marvel_snap_mobile` Stitch project the sole design authority — "what I imagined
+  more than anything"
+- App had drifted into a mix of both directions with no canon to build against
+
+**Decision:**
+- Commit fully to Cosmic Purple; comic-book DNA (Bangers/Caveat fonts, halftone patterns, comic
+  tilts, hard offset shadows, panel borders) purged across all 10 tabs in a 7-sweep pass
+- Canonical spec recorded at `docs/design-canon.md`: theme colorMode DARK, `--cosmic-purple #ad2bee`,
+  Spline Sans typography, `ROUND_FULL` interactive controls
+- Authority chain: Stitch project `marvel_snap_mobile` → tracked exports in
+  `docs/stitch_designs/marvel_snap_mobile/*.html` → `docs/design-canon.md`
+
+**Alternatives Considered:**
+- Silver Age comic-book direction (ADR-004) -> rejected as primary; retained as archive/DNA mine
+  (borrowed elements like Victory/defeat splash micro-moments still draw from it)
+- Spider-Verse glitch exploration -> rejected as primary; retained as archive/DNA mine
+
+**Consequences:**
+- (+) Single coherent visual world instead of two competing directions
+- (+) `docs/design-canon.md` gives every future UI change a concrete reference instead of ad-hoc taste calls
+- (+) Mobile-first Stitch mockups map directly onto the shipped single-file architecture (ADR-001 unaffected)
+- (-) Full purge was a 7-commit sweep across the whole app — large surface area to review in one pass
+- (-) Marvel-red skip-link focus color is the only ADR-004 remnant; intentional low-visibility exception
+
+---
+
+### ADR-006: Feature-Restore Ruling — Analytics, Missions, Mastery, Battle Pass, Hall of Armor (2026-07-19)
+
+**Status**: Accepted
+
+**Context:**
+- The EOS audit (`docs/plans/eos-audit-2026-07-19.md`) flagged several components as dead code because
+  they had zero render sites: `CardPerformanceView` (Analytics), and write-only ghost keys
+  `snap_missions`, `snap_mastery`, `snap_battlepass` that were parsed and stored every folder sync but
+  never displayed
+- Owner reviewed the audit's delete recommendations and made a product call to restore rather than remove
+
+**Decision:**
+- RESTORE Analytics tab, wiring the existing `CardPerformanceView` back into the app (supersedes audit
+  row 10's delete ruling)
+- RESTORE Missions, Mastery, and Battle Pass as visible UI surfaces over the already-parsed live data
+  (supersedes audit row 9's "ghost keys" finding)
+- BUILD Hall of Armor as a fresh UI surface over parsed cosmetic/variant data
+- Economy HQ STAYS DEAD — the March 1 trim ruling is honored; this audit does not reopen it
+- Deck Simulator is approved for a full rebuild, scoped as its own arc after the sweep/audit-fix work
+  lands (not part of this docs pass)
+
+**Alternatives Considered:**
+- Delete `CardPerformanceView` and stop parsing missions/mastery/battlepass data (the audit's literal
+  recommendation) -> rejected; the data pipeline already exists and the owner wants the surfaces built
+  rather than the plumbing torn out
+- Restore Economy HQ alongside the others -> rejected; no new information since the March 1 trim, ruling
+  stands
+
+**Consequences:**
+- (+) No throwaway work — parsers written during the Deep Data Audit (Feb 28) now have UI consumers
+- (+) Clear, recorded boundary: Economy HQ is intentionally dead, not merely neglected
+- (-) Analytics/Missions/Mastery/Battle Pass/Hall of Armor each add surface area that must track the
+  Cosmic Purple canon (ADR-005) going forward
+- (-) Deck Simulator rebuild is explicitly deferred, so its git-history spec must survive until that arc starts
 
 ---
 

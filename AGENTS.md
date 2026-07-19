@@ -22,7 +22,7 @@ sectioned by `// ==================== NAME ====================` banners — gre
 | **Storage / collection inference / vault** | `index.html` (`INDEXEDDB HELPER` ~L3347, `COLLECTION INFERRER` ~L3568, `VAULT MANAGER` ~L3599) | UI / AI sections |
 | **PWA / offline / install / service worker** | `sw.js`, `manifest.json`, `index.html` (`LOW-END DEVICE DETECTION` ~L1792) | feature component sections |
 | **Styles / CSS / accessibility / responsive** | `index.html` `<style>` block (~L108–1358, incl. `ACCESSIBILITY & PERFORMANCE` ~L1240), Tailwind CDN classes | JS logic sections |
-| **AI tool-routing learning state** | `data/learning/learning-state.json` | `index.html` |
+| **Analytics tab / card performance** | `index.html` (`CardPerformanceView` ~L8042, rendered ~L10736) | card-db / deck sections |
 
 ## Verbs
 - `pickup`  → read `_pickup-handoff.md` §pickup, then route to the named area.

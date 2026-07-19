@@ -34,6 +34,48 @@ Track recurring bugs with solutions and prevention strategies.
 - **Solution**: Fixed in PR #26 - Updated stats access to use proper collection tracking methods
 - **Prevention**: Add TypeScript interfaces for collection data structures; test AI context building with empty/partial collections
 
+### 2026-07-19 - BUG-004: True Offline Cold Boot Renders Blank Page
+- **Issue**: A true offline first load (no browser HTTP cache) rendered a blank page instead of the app
+- **Root Cause**: `sw.js` fetch handler bailed on all cross-origin requests before caching (`if (url.origin !== location.origin) return;`), so the CDN runtime (React/ReactDOM/Babel/Tailwind) was never cached — only the evictable browser cache masked it
+- **Solution**: SW now runtime-caches the CDN origins into a stable `snapapoulous-cdn-runtime` cache; CACHE_NAME bumped
+- **Prevention**: Treat CDN script tags as part of the offline contract, not just same-origin assets — audit `sw.js` fetch handler scope whenever a new CDN dependency is added
+
+### 2026-07-19 - BUG-005: qrcode CDN Bundle 404s
+- **Issue**: QR vault sync broken in prod — pinned `qrcode@1.5.3/build/qrcode.min.js` 404s
+- **Root Cause**: qrcode 1.5.x dropped the prebuilt standalone bundle from the CDN path (1.5.4 also 404s)
+- **Solution**: Pinned to `qrcode@1.4.4`, the last version with a standalone build, verified 200
+- **Prevention**: When pinning a CDN dependency version, verify the exact asset path resolves — don't assume the latest minor still ships the same build artifact
+
+### 2026-07-19 - BUG-006: CARD_DATA_FALLBACK Diverged From card-data.json
+- **Issue**: The embedded 57-card fallback list disagreed with the authoritative 433-card `card-data.json` on series, cost, power, and abilities; "Ant-Man" (hyphen) vs "Ant Man" broke exact-name lookups across the boundary
+- **Root Cause**: Fallback was hand-authored early and never regenerated as `card-data.json` evolved
+- **Solution**: Regenerated `CARD_DATA_FALLBACK` directly from `card-data.json` (57/57 matched); fixed Hulk power, Ant Man name+series, America Chavez cost
+- **Prevention**: Fallback data should be generated from the authoritative source, never hand-maintained in parallel
+
+### 2026-07-19 - BUG-007: "Refresh Game Data" No-Op for Spotlight Data
+- **Issue**: The Refresh button requested `{cache:'reload'}` for spotlight data but still reported "Updated" even though nothing changed
+- **Root Cause**: SW's stale-while-revalidate whitelist only covered card-data/persona/meta-context; spotlight-schedule.json fell through to the cache-first handler, which ignores the reload hint
+- **Solution**: Added `spotlight-schedule.json` to the SW precache list and SWR whitelist
+- **Prevention**: When adding a new data file to a refresh-on-demand UI action, add it to the SW's SWR whitelist in the same change — the two are coupled but live in different files
+
+### 2026-07-19 - BUG-008: NavBar Active-Tab Indicator Race
+- **Issue**: The sliding tab indicator sometimes rendered in the wrong position or direction
+- **Root Cause**: Indicator position was computed via DOM measurement, racing against layout/paint timing
+- **Solution**: Replaced DOM measurement with an index-based `calc()`; indicator hides when the active tab isn't in the nav row
+- **Prevention**: Prefer derived/index-based positioning over `getBoundingClientRect()`-style DOM measurement for animated UI state that depends on render timing
+
+### 2026-07-19 - BUG-009: DeckComparison cardLookup Stale After Card Data Refresh
+- **Issue**: `DeckComparison`'s card lookup memo didn't update after card data refreshed
+- **Root Cause**: The memo dependency array referenced the wrong casing of the version prop, so `cardDataVersion` changes weren't detected
+- **Solution**: Fixed the dependency array to the correct `cardDataVersion` casing
+- **Prevention**: When a component consumes a version/invalidation prop, verify the exact prop name and casing in the dependency array — a silent typo there produces a stale-memo bug with no error
+
+### 2026-07-19 - BUG-010: Gemini OAuth Scope May Not Authorize Inference (pending live validation)
+- **Issue**: Gemini OAuth (the ADR-002 primary AI path) requested scope `generative-language.retriever` and sent that token to `generateContent` — if the scope doesn't authorize inference, every new "Continue with Google" user could silently 403 on first message
+- **Root Cause**: Wrong OAuth scope requested by `initTokenClient`
+- **Solution**: Scope changed to `generative-language`, evidence-cited against the documented `generateContent` requirement — **still needs an owner live sign-in test to confirm the fix**
+- **Prevention**: OAuth scope changes affecting the primary auth path need a live sign-in smoke test before being considered closed, not just a code-level fix
+
 ---
 
 ## Tips

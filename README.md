@@ -163,13 +163,17 @@ python -m http.server 8000
 
 ### Project Structure
 ```
-├── index.html          # Main app (everything embedded)
-├── manifest.json       # PWA manifest
-├── sw.js               # Service worker
-├── persona.json        # AI persona configuration
-├── assets/icons/       # PWA icons
-└── docs/               # Detailed feature documentation
-    └── SIMULATOR.md    # Deck Simulator guide
+├── index.html                     # Main app (everything embedded)
+├── card-data.json                 # Authoritative card data
+├── data/
+│   ├── meta-context.json          # AI advisor meta context
+│   └── spotlight-schedule.json    # Spotlight cache rotation schedule
+├── manifest.json                  # PWA manifest
+├── sw.js                          # Service worker
+├── persona.json                   # AI persona configuration
+├── assets/icons/                  # PWA icons
+└── docs/                          # Detailed feature documentation
+    └── SIMULATOR.md               # Deck Simulator guide
 ```
 
 ---

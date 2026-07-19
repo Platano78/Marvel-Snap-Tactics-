@@ -16,6 +16,12 @@ Track completed work with ticket/PR references for audit trail and context.
 
 ## Entries
 
+### 2026-07-19 - EOS Audit + Cosmic Purple Sweep + Feature Restores
+- **Status**: Completed
+- **Description**: Full EOS audit (24-row master table, 6 sonnet finders + 6 haiku adversarial verifiers + orchestrator re-probes, all rows CONFIRMED or RESTRUCTURED), followed by a 7-sweep Cosmic Purple design-language commit across every tab, 5 feature restores (Analytics, Missions, Mastery, Battle Pass, Hall of Armor), and a 14-item audit-fix slice (data, AI providers, stat-math consolidation, dead-code removal). MKG Bridge ruled out of product scope (personal dev infra, never a feature). `data/learning/learning-state.json` deleted (MKG router telemetry, doesn't belong in the repo).
+- **URL**: commits `d77c7d9`..`1dca663` (audit table `d77c7d9`; offline-first fix `553e2e4`; MKG-out-of-scope ruling `5a0575b`; dashboard slice `172da7f`; learning-state deletion `30633c1`; Sweep 1-7 `7e25b0d`..`3992df5`; audit-fix slice `1dca663`)
+- **Notes**: Also logged as ADR-005 (Cosmic Purple supersedes ADR-004) and ADR-006 (feature-restore ruling) in decisions.md, and BUG-004 through BUG-010 in bugs.md. Economy HQ stays dead (March 1 ruling honored). Deck Simulator rebuild approved as its own arc, not part of this pass.
+
 ### 2025-01-22 - PR #26: Fix AI Stats Access and Collection Tracking
 - **Status**: Completed
 - **Description**: Fixed AI stats access errors and collection tracking issues that were breaking the AI advisor

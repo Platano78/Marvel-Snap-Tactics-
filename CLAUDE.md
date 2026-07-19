@@ -77,10 +77,10 @@
 │  │  │ Claude  │ │ OpenAI  │ │ Gemini  │ │ Groq  │ │   │
 │  │  │(API Key)│ │(API Key)│ │ (OAuth) │ │(Key)  │ │   │
 │  │  └─────────┘ └─────────┘ └─────────┘ └───────┘ │   │
-│  │  ┌─────────────────┐ ┌─────────────────────┐   │   │
-│  │  │  Local Models   │ │     MKG Bridge      │   │   │
-│  │  │ (Ollama/LMStudio│ │ (DeepSeek Router)   │   │   │
-│  │  └─────────────────┘ └─────────────────────┘   │   │
+│  │  ┌─────────────────┐                             │   │
+│  │  │  Local Models   │                             │   │
+│  │  │ (Ollama/LMStudio│                             │   │
+│  │  └─────────────────┘                             │   │
 │  └─────────────────────────────────────────────────┘   │
 ├─────────────────────────────────────────────────────────┤
 │                   PERSISTENCE LAYER                     │
@@ -206,15 +206,14 @@ Every AI request includes the Snapapoulous persona as system prompt, ensuring co
 ### Provider Priority (UI Order)
 1. **Gemini (Google OAuth)** - One-click sign-in, free tier is generous
 2. **Local Models** - For privacy-conscious users with Ollama/LM Studio
-3. **MKG Bridge** - For users with existing multi-AI router setup
-4. **Claude / OpenAI / Groq** - API key required, shown in "Advanced" section
+3. **Claude / OpenAI / Groq** - API key required, shown in "Advanced" section
 
 ### Provider Configuration UI
 Settings page with:
 - **Big Google Sign-In button** at top (primary CTA)
 - Provider dropdown for alternatives
 - API Key input (masked) for key-based providers
-- Endpoint URL input for Local/MKG options
+- Endpoint URL input for Local model option
 - Model selector (provider-specific options)
 - "Test Connection" button
 
@@ -302,7 +301,7 @@ async function callGeminiWithOAuth(messages) {
   name: 'Claude',
   authType: 'api_key',
   endpoint: 'https://api.anthropic.com/v1/messages',
-  models: ['claude-sonnet-4-20250514', 'claude-haiku-4-5-20251001'],
+  models: ['claude-sonnet-5', 'claude-haiku-4-5-20251001'],
   headers: (key) => ({
     'x-api-key': key,
     'anthropic-version': '2023-06-01',
@@ -390,22 +389,6 @@ async function callGeminiWithOAuth(messages) {
     stream: false
   }),
   parseResponse: (data) => data.message.content
-}
-```
-
-#### MKG Bridge (User's DeepSeek Router)
-```javascript
-{
-  name: 'MKG Bridge',
-  authType: 'none',  // Local service
-  endpoint: 'http://localhost:PORT/v1/chat/completions',  // User configurable
-  models: [],  // Fetched from bridge or user-specified
-  // Assumes OpenAI-compatible API
-  formatRequest: (messages, model) => ({
-    model,
-    messages
-  }),
-  parseResponse: (data) => data.choices[0].message.content
 }
 ```
 
@@ -622,7 +605,6 @@ self.addEventListener('fetch', (event) => {
 3. **Phase 3**: Additional providers + Polish
    - API key providers (Claude, OpenAI, Groq)
    - Local model support (Ollama endpoint)
-   - MKG Bridge support
    - Advanced stats/charts
    - RapidAPI optional refresh for bleeding-edge card data
    - Export/import functionality
@@ -642,12 +624,16 @@ self.addEventListener('fetch', (event) => {
 
 #### Static Data Maintenance
 - Maintainer pulls fresh data via RapidAPI when new cards release
-- Commit updated `cardData.js` to repo
+- Commit updated `card-data.json` to repo
 - Users get updates on next app refresh (PWA cache invalidation)
 
 ---
 
 ## RAPIDAPI MARVEL SNAP INTEGRATION
+
+> **STATUS (2026-07-19)**: unimplemented/aspirational — the shipped card-data path is the static
+> `card-data.json` pipeline; the vestigial UI stub (`rapidApiKey` state, never wired to an input) was
+> removed. Everything below is Layer-3 reference for a future build, not a description of shipped code.
 
 ### API Details
 - **Host**: `marvel-snap-api.p.rapidapi.com`
