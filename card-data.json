@@ -5,7 +5,7 @@
     "cost": 7,
     "power": 12,
     "ability": "On Reveal: Gain the Power of front-row enemy cards here.",
-    "series": 0
+    "series": 8
   },
   {
     "name": "Abomination",
@@ -3436,8 +3436,8 @@
     "defId": "ArchangelHorseman",
     "cost": 2,
     "power": 3,
-    "ability": "Objective: Your cards are destroyed 4 times \u2192 Resurrect one here with +4 Power. (0/4)",
-    "series": 5
+    "ability": "Objective: Your cards are destroyed 4 times \u2192 Resurrect one here with +5 Power. (0/4)",
+    "series": 8
   },
   {
     "name": "Caliban, Horseman of Pestilence",
@@ -3445,15 +3445,15 @@
     "cost": 3,
     "power": 4,
     "ability": "Objective: Have 3 cards that are 4-Cost or higher in play \u2192 Afflict the highest-Cost enemy card with -7 Power. (0/3)",
-    "series": 5
+    "series": 8
   },
   {
     "name": "Gambit Horseman of Death",
     "defId": "GambitHorseman",
     "cost": 3,
     "power": 3,
-    "ability": "Objective: Play 6 total Cost of created cards \u2192 Randomly destroy up to 4 total Cost of enemy cards. (0/6)",
-    "series": 5
+    "ability": "Objective: Play 6 total Cost of created cards \u2192 Randomly destroy up to 3 total Cost of enemy cards. (0/6)",
+    "series": 8
   },
   {
     "name": "Wolverine Horseman of War",
@@ -3461,7 +3461,7 @@
     "cost": 4,
     "power": 3,
     "ability": "Objective: This has 5 or more Power \u2192 Give one of your cards at each location +4 Power. (3/5)",
-    "series": 5
+    "series": 8
   },
   {
     "name": "Tombstone",
@@ -3516,16 +3516,16 @@
     "defId": "PolarisHorseman",
     "cost": 2,
     "power": 2,
-    "ability": "Objective: Cards in play are afflicted with -5 Power \u2192 Put a card from your hand here.",
-    "series": 5
+    "ability": "Objective: Cards in play are afflicted with -5 Power \u2192 Put a card from your hand here. (0/5)",
+    "series": 8
   },
   {
     "name": "Storm Horseman of Famine",
     "defId": "StormHorseman",
     "cost": 3,
     "power": 1,
-    "ability": "Objective: End 2 turns in a row with unspent Energy \u2192 Give your other cards here and in your hand +2 Power.",
-    "series": 5
+    "ability": "Objective: End 2 turns in a row with unspent Energy \u2192 Give your other cards here and in your hand +2 Power. (0/2)",
+    "series": 8
   },
   {
     "name": "Stick",
@@ -3605,6 +3605,62 @@
     "cost": 2,
     "power": 3,
     "ability": "On Reveal: Shuffle in 3 Demons. When you draw a card with 6 or more Power, +2 Power.",
+    "series": 8
+  },
+  {
+    "name": "Tarantula",
+    "defId": "Tarantula",
+    "cost": 2,
+    "power": 2,
+    "ability": "End of Turn: If you have the highest Power among cards in play, give this and 2 characters in your hand +1 Power.",
+    "series": 8
+  },
+  {
+    "name": "Boomerang",
+    "defId": "Boomerang",
+    "cost": 2,
+    "power": 2,
+    "ability": "When this returns to your hand, randomly steal 4 Power from characters in your opponent's hand. Activate: Return this to your hand.",
+    "series": 8
+  },
+  {
+    "name": "Mother Askani",
+    "defId": "MotherAskani",
+    "cost": 4,
+    "power": 4,
+    "ability": "On Reveal: Copy the leftmost card in your hand. Give the copy -1 Cost and +2 Power.",
+    "series": 7
+  },
+  {
+    "name": "Askani'son",
+    "defId": "Askanison",
+    "cost": 2,
+    "power": 3,
+    "ability": "Activate: Create a 1-Cost card at another location. Increase the Cost each time you're winning here as the turn starts.",
+    "series": 7
+  },
+  {
+    "name": "Starhawk",
+    "defId": "Starhawk",
+    "cost": 2,
+    "power": 3,
+    "ability": "On Reveal: +1 Power to your cards at the left location if it's an odd turn, otherwise give to the right location.",
+    "series": 7
+  },
+  {
+    "name": "Sinister Six",
+    "defId": "SinisterSix",
+    "cost": 6,
+    "power": 12,
+    "ability": "Game Start: The first 6 characters you draw are EVIL! After you play them all, merge them into this and add this to the last one's location. (0/6)",
+    "series": 8
+  },
+  {
+    "name": "En Sabah Nur",
+    "defId": "EnSabahNur",
+    "cost": 4,
+    "power": 6,
+    "ability": "Objective: Have a full front row at each location \u2192 Transform into Apocalypse, Celestials' Chosen. (0/6)",
     "series": 8
   }
 ]
