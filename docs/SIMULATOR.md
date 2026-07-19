@@ -1,5 +1,7 @@
 # Deck Simulator Guide
 
+> **STATUS**: Rebuilt 2026-07-19 (ADR-006): live as the "simulator" secondary tab; this doc remains the behavioral spec.
+
 The Deck Simulator is a comprehensive probability analysis tool for Marvel Snap. Test your deck's consistency, find optimal combos, and understand your draw odds before you queue up.
 
 ---

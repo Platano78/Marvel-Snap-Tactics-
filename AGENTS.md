@@ -23,6 +23,7 @@ sectioned by `// ==================== NAME ====================` banners — gre
 | **PWA / offline / install / service worker** | `sw.js`, `manifest.json`, `index.html` (`LOW-END DEVICE DETECTION` ~L1792) | feature component sections |
 | **Styles / CSS / accessibility / responsive** | `index.html` `<style>` block (~L108–1358, incl. `ACCESSIBILITY & PERFORMANCE` ~L1240), Tailwind CDN classes | JS logic sections |
 | **Analytics tab / card performance** | `index.html` (`CardPerformanceView` ~L8042, rendered ~L10736) | card-db / deck sections |
+| **Simulator / deck probability / Monte Carlo** | `index.html` (`SimulationEngine` ~L10345, `MonteCarloEngine` ~L10412, `SIMULATOR_MODES`/worker/panels ~L10753, `DeckSimulator` component ~L11123); `docs/SIMULATOR.md` | card-db / deck-building sections |
 
 ## Verbs
 - `pickup`  → read `_pickup-handoff.md` §pickup, then route to the named area.

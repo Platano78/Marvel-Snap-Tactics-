@@ -16,6 +16,12 @@ Track completed work with ticket/PR references for audit trail and context.
 
 ## Entries
 
+### 2026-07-19 - Deck Simulator Rebuild Arc Closed
+- **Status**: Completed
+- **Description**: Recovered and rebuilt the Deck Simulator (originally added `f84ce2a`, deleted `a8a2875`) as a Cosmic Purple-canon secondary tab: S1 shipped the engine/worker/routing/Curve mode, S2 shipped the remaining five modes (Opening Hand, Draw by Turn, Combo Finder, Interactive Play-Through, All Results), S3 closed the arc with percentage-display rounding consistency (BUG-012), full run/seed/Advanced-Rules settings persistence, a canon compliance pass, and doc/AGENTS.md updates.
+- **URL**: commits `096b2ff` (plan) → `82819dd` (S1) → `2777395` (S2) → this slice (S3)
+- **Notes**: Also logged as BUG-011 and BUG-012 in bugs.md. `docs/SIMULATOR.md` STATUS header updated to point at ADR-006 and the live tab.
+
 ### 2026-07-19 - EOS Audit + Cosmic Purple Sweep + Feature Restores
 - **Status**: Completed
 - **Description**: Full EOS audit (24-row master table, 6 sonnet finders + 6 haiku adversarial verifiers + orchestrator re-probes, all rows CONFIRMED or RESTRUCTURED), followed by a 7-sweep Cosmic Purple design-language commit across every tab, 5 feature restores (Analytics, Missions, Mastery, Battle Pass, Hall of Armor), and a 14-item audit-fix slice (data, AI providers, stat-math consolidation, dead-code removal). MKG Bridge ruled out of product scope (personal dev infra, never a feature). `data/learning/learning-state.json` deleted (MKG router telemetry, doesn't belong in the repo).

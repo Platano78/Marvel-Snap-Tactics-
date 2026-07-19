@@ -76,6 +76,18 @@ Track recurring bugs with solutions and prevention strategies.
 - **Solution**: Scope changed to `generative-language`, evidence-cited against the documented `generateContent` requirement — **still needs an owner live sign-in test to confirm the fix**
 - **Prevention**: OAuth scope changes affecting the primary auth path need a live sign-in smoke test before being considered closed, not just a code-level fix
 
+### 2026-07-19 - BUG-011: snap_simulator_deck Persisted Empty String From Empty-State Mount
+- **Issue**: If the Simulator was opened before any deck existed, `selectedDeckId` initialized to `''` and got written to `snap_simulator_deck`, sticking on `''` even after the user later created a deck
+- **Root Cause**: The persistence effect wrote on every `selectedDeckId` change with no reconciliation against the live `decks` list
+- **Solution**: Added a self-healing effect (S1) — if the persisted/initial id doesn't match any current deck, fall back to `decks[0].id`
+- **Prevention**: Any id persisted from a list that can be empty at first mount needs a self-heal-on-mismatch effect, not just an initial-load default
+
+### 2026-07-19 - BUG-012: Simulator Percentage Displays Mixed 0dp and 1dp
+- **Issue**: Sim results displayed at 0 decimal places (e.g. "34%") while other panels/exact-math comparisons showed 1 or 2 decimal places (e.g. "33.3%", "25.23%") for the same kind of value, reading as a false gap between sim and exact
+- **Root Cause**: Each results panel's `toFixed()` call was written independently without a shared formatting convention
+- **Solution**: Standardized every percentage display in the simulator (Opening Hand, Draw by Turn heatmap, Curve/Brick sim + exact, Combo Finder sim + exact) to `toFixed(1)`
+- **Prevention**: When multiple panels render the same metric type (sim vs. exact) side by side, fix the decimal precision once as a shared convention, not per-callsite
+
 ---
 
 ## Tips

@@ -693,7 +693,7 @@
       color: var(--stitch-muted);
       border: 1px solid var(--stitch-border);
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: background-color 0.15s var(--ease-snap), color 0.15s var(--ease-snap), border-color 0.15s var(--ease-snap);
     }
     .stitch-pill:hover {
       background: rgba(85, 50, 103, 0.8);
@@ -10805,7 +10805,7 @@ RESPONSE GUIDELINES:
           </div>
           {exactOpeningHandPct != null && (
             <p className="text-xs text-stitch-muted mb-3">
-              Exact (hypergeometric): every card has a {exactOpeningHandPct.toFixed(2)}% chance in a {startingHandSize}-card opening hand from a {deckCards.length}-card deck.
+              Exact (hypergeometric): every card has a {exactOpeningHandPct.toFixed(1)}% chance in a {startingHandSize}-card opening hand from a {deckCards.length}-card deck.
             </p>
           )}
           <div className="flex flex-col gap-2 mb-5">
@@ -10890,7 +10890,7 @@ RESPONSE GUIDELINES:
                     <td className="py-1.5 pl-1 text-white font-medium truncate max-w-[90px]">{card.name}</td>
                     {SIMULATOR_DRAW_TURNS.map(t => {
                       const pct = (results.cardByTurn[card.name] && results.cardByTurn[card.name][t]) || 0;
-                      return <td key={t} className={`py-1.5 text-center font-bold ${drawTierClass(pct)}`}>{pct.toFixed(0)}%</td>;
+                      return <td key={t} className={`py-1.5 text-center font-bold ${drawTierClass(pct)}`}>{pct.toFixed(1)}%</td>;
                     })}
                   </tr>
                 ))}
@@ -11107,19 +11107,33 @@ RESPONSE GUIDELINES:
       );
     };
 
+    // Defaults for the persisted run/seed/advanced-rules preference bundle —
+    // shared between the initial-state loader and the reset path so both agree.
+    const SIMULATOR_PREFS_DEFAULTS = {
+      numRuns: 50000,
+      useSeed: false,
+      seed: 42,
+      startingHandSize: 3,
+      extraDrawsPerTurn: 0,
+      thinningPerTurn: 0,
+      junkInsertsPerTurn: 0,
+      handSizeLimit: 0
+    };
+
     const DeckSimulator = ({ decks, collection, cardDataVersion }) => {
       const [selectedDeckId, setSelectedDeckId] = useState(() => loadFromStorage('snap_simulator_deck', decks[0]?.id || ''));
       const [mode, setMode] = useState('curve');
-      const [numRuns, setNumRuns] = useState(50000);
+      const simulatorPrefs = useMemo(() => ({ ...SIMULATOR_PREFS_DEFAULTS, ...loadFromStorage('snap_simulator_prefs', {}) }), []);
+      const [numRuns, setNumRuns] = useState(simulatorPrefs.numRuns);
       const [customRuns, setCustomRuns] = useState('');
-      const [useSeed, setUseSeed] = useState(false);
-      const [seed, setSeed] = useState(42);
+      const [useSeed, setUseSeed] = useState(simulatorPrefs.useSeed);
+      const [seed, setSeed] = useState(simulatorPrefs.seed);
       const [showAdvanced, setShowAdvanced] = useState(false);
-      const [startingHandSize, setStartingHandSize] = useState(3);
-      const [extraDrawsPerTurn, setExtraDrawsPerTurn] = useState(0);
-      const [thinningPerTurn, setThinningPerTurn] = useState(0);
-      const [junkInsertsPerTurn, setJunkInsertsPerTurn] = useState(0);
-      const [handSizeLimit, setHandSizeLimit] = useState(0);
+      const [startingHandSize, setStartingHandSize] = useState(simulatorPrefs.startingHandSize);
+      const [extraDrawsPerTurn, setExtraDrawsPerTurn] = useState(simulatorPrefs.extraDrawsPerTurn);
+      const [thinningPerTurn, setThinningPerTurn] = useState(simulatorPrefs.thinningPerTurn);
+      const [junkInsertsPerTurn, setJunkInsertsPerTurn] = useState(simulatorPrefs.junkInsertsPerTurn);
+      const [handSizeLimit, setHandSizeLimit] = useState(simulatorPrefs.handSizeLimit);
       const [isRunning, setIsRunning] = useState(false);
       const [progress, setProgress] = useState(0);
       const [results, setResults] = useState(null);
@@ -11140,6 +11154,14 @@ RESPONSE GUIDELINES:
       };
 
       useEffect(() => { saveToStorage('snap_simulator_deck', selectedDeckId); }, [selectedDeckId]);
+
+      // Persist run count, seed settings, and Advanced Rules — restored via
+      // simulatorPrefs above on next mount.
+      useEffect(() => {
+        saveToStorage('snap_simulator_prefs', {
+          numRuns, useSeed, seed, startingHandSize, extraDrawsPerTurn, thinningPerTurn, junkInsertsPerTurn, handSizeLimit
+        });
+      }, [numRuns, useSeed, seed, startingHandSize, extraDrawsPerTurn, thinningPerTurn, junkInsertsPerTurn, handSizeLimit]);
 
       // Self-heal the selection: if the persisted/initial id doesn't match any
       // current deck (e.g. simulator was first opened before any deck existed,
@@ -11596,11 +11618,11 @@ RESPONSE GUIDELINES:
                         <div className="grid grid-cols-2 gap-3 text-sm mt-3 pt-3 border-t border-white/5">
                           <div>
                             <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-1">On-Curve (Exact)</div>
-                            <div className="text-sm font-semibold text-white">{exact.onCurveRate.toFixed(2)}%</div>
+                            <div className="text-sm font-semibold text-white">{exact.onCurveRate.toFixed(1)}%</div>
                           </div>
                           <div>
                             <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-1">Brick (Exact)</div>
-                            <div className="text-sm font-semibold text-white">{exact.brickRate.toFixed(2)}%</div>
+                            <div className="text-sm font-semibold text-white">{exact.brickRate.toFixed(1)}%</div>
                           </div>
                         </div>
                       )}
