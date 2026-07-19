@@ -3786,6 +3786,36 @@ RESPONSE GUIDELINES:
       catch (e) { console.warn('Storage error:', e); }
     };
 
+    // CORS proxy helper - uses multiple fallback proxies. Top-level so any component
+    // (Settings' card-data refresh, Decks' Tier-2 creator feed) can reuse it verbatim.
+    const fetchWithCorsProxy = async (url) => {
+      const CORS_PROXIES = [
+        (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+        (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`
+      ];
+
+      // First try direct fetch (in case CORS is enabled)
+      try {
+        const directResponse = await fetch(url);
+        if (directResponse.ok) return directResponse;
+      } catch (e) {
+        console.log('Direct fetch failed, trying CORS proxies...');
+      }
+
+      // Try each CORS proxy
+      for (const proxyFn of CORS_PROXIES) {
+        try {
+          const proxyUrl = proxyFn(url);
+          const response = await fetch(proxyUrl);
+          if (response.ok) return response;
+        } catch (e) {
+          console.log('Proxy failed, trying next...');
+        }
+      }
+
+      throw new Error('All fetch methods failed (CORS blocked)');
+    };
+
     const generateId = () => 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
       const r = Math.random() * 16 | 0;
       return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
@@ -6330,7 +6360,7 @@ RESPONSE GUIDELINES:
     };
 
     // ==================== DECKS COMPONENT ====================
-    const Decks = ({ decks, setDecks, collection }) => {
+    const Decks = ({ decks, setDecks, collection, settings }) => {
       const [view, setView] = useState('list'); // list, create, edit, import
       const [editingDeck, setEditingDeck] = useState(null);
       const [deckName, setDeckName] = useState('');
@@ -6348,6 +6378,10 @@ RESPONSE GUIDELINES:
       const [creatorsError, setCreatorsError] = useState(false);
       const [selectedCreatorId, setSelectedCreatorId] = useState(null);
       const [decodedDeckCache, setDecodedDeckCache] = useState({}); // deckCode -> { names, error }
+
+      // Creator Decks (Tier 2, opt-in via Settings "Live creator videos") — YouTube RSS per creator
+      const [creatorVideos, setCreatorVideos] = useState({}); // channelId -> { videos: [{videoId,title,published,url}], timestamp }
+      const [creatorVideosStale, setCreatorVideosStale] = useState({}); // channelId -> true when served from a stale cache after a failed refetch
 
       // Case-insensitive set of owned card names for deck ownership checks
       const deckOwnedSet = useMemo(() => new Set((collection.owned || []).map(c => c.toLowerCase())), [collection.owned]);
@@ -6511,6 +6545,129 @@ RESPONSE GUIDELINES:
         })();
         return () => { cancelled = true; };
       }, [creatorDecks]);
+
+      // Parse a YouTube Atom RSS feed body into up to 3 recent entries. Defensive against
+      // malformed XML — returns [] rather than throwing so one bad feed can't break the row.
+      const parseYouTubeRss = (xmlText) => {
+        try {
+          const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+          if (doc.querySelector('parsererror')) return [];
+          const entries = Array.from(doc.getElementsByTagName('entry')).slice(0, 3);
+          return entries.map(entry => {
+            const videoIdEl = entry.getElementsByTagName('yt:videoId')[0];
+            const titleEl = entry.getElementsByTagName('title')[0];
+            const publishedEl = entry.getElementsByTagName('published')[0];
+            const linkEl = entry.getElementsByTagName('link')[0];
+            const url = linkEl ? linkEl.getAttribute('href') : null;
+            let videoId = videoIdEl ? videoIdEl.textContent.trim() : null;
+            if (!videoId && url) {
+              const m = url.match(/[?&]v=([^&]+)/);
+              if (m) videoId = m[1];
+            }
+            return {
+              videoId,
+              title: titleEl ? titleEl.textContent.trim() : '',
+              published: publishedEl ? publishedEl.textContent.trim() : null,
+              url: url || (videoId ? `https://www.youtube.com/watch?v=${videoId}` : null)
+            };
+          }).filter(v => v.videoId);
+        } catch (e) {
+          return [];
+        }
+      };
+
+      const CREATOR_FEED_CACHE_KEY = 'snap_creator_feed';
+      const CREATOR_FEED_TTL_MS = 6 * 60 * 60 * 1000; // 6h
+
+      // Tier 2 — opt-in live video row (Settings toggle, default OFF). Toggle OFF must run
+      // zero Tier-2 code: no fetch, no cache read (§4.4 failure matrix, binding).
+      useEffect(() => {
+        if (!settings?.enableCreatorVideos) return;
+        if (creators.length === 0) return;
+        let cancelled = false;
+        const cache = loadFromStorage(CREATOR_FEED_CACHE_KEY, {});
+        const now = Date.now();
+        const freshFromCache = {};
+        const toFetch = [];
+        creators.forEach(creator => {
+          if (!creator.channelId) return;
+          const entry = cache[creator.channelId];
+          if (entry && (now - entry.timestamp) < CREATOR_FEED_TTL_MS) {
+            freshFromCache[creator.channelId] = entry;
+          } else {
+            toFetch.push(creator);
+          }
+        });
+        if (Object.keys(freshFromCache).length > 0) {
+          setCreatorVideos(prev => ({ ...prev, ...freshFromCache }));
+        }
+        if (toFetch.length === 0) return;
+
+        (async () => {
+          const updatedCache = { ...cache };
+          for (const creator of toFetch) {
+            try {
+              const res = await fetchWithCorsProxy(`https://www.youtube.com/feeds/videos.xml?channel_id=${creator.channelId}`);
+              const text = await res.text();
+              const videos = parseYouTubeRss(text);
+              if (videos.length > 0) {
+                const entry = { videos, timestamp: Date.now() };
+                updatedCache[creator.channelId] = entry;
+                if (!cancelled) {
+                  setCreatorVideos(prev => ({ ...prev, [creator.channelId]: entry }));
+                  setCreatorVideosStale(prev => ({ ...prev, [creator.channelId]: false }));
+                }
+              } else if (cache[creator.channelId] && !cancelled) {
+                // Parsed but empty — keep serving the stale cache rather than blanking the row.
+                setCreatorVideos(prev => ({ ...prev, [creator.channelId]: cache[creator.channelId] }));
+                setCreatorVideosStale(prev => ({ ...prev, [creator.channelId]: true }));
+              }
+            } catch (e) {
+              // Offline or both proxies down — per-creator isolation: serve stale cache if we
+              // have one, else leave this creator absent (row hides it, never a thrown error).
+              if (cache[creator.channelId] && !cancelled) {
+                setCreatorVideos(prev => ({ ...prev, [creator.channelId]: cache[creator.channelId] }));
+                setCreatorVideosStale(prev => ({ ...prev, [creator.channelId]: true }));
+              }
+            }
+          }
+          if (!cancelled) saveToStorage(CREATOR_FEED_CACHE_KEY, updatedCache);
+        })();
+        return () => { cancelled = true; };
+      }, [settings?.enableCreatorVideos, creators]);
+
+      const relativeVideoDate = (iso) => {
+        if (!iso) return '';
+        const diffMs = Date.now() - new Date(iso).getTime();
+        const diffMin = Math.floor(diffMs / 60000);
+        if (diffMin < 60) return `${Math.max(diffMin, 0)}m ago`;
+        const diffHr = Math.floor(diffMin / 60);
+        if (diffHr < 24) return `${diffHr}h ago`;
+        const diffDays = Math.floor(diffHr / 24);
+        if (diffDays < 30) return `${diffDays}d ago`;
+        return `${Math.floor(diffDays / 30)}mo ago`;
+      };
+
+      // Flatten + sort all loaded creator videos newest-first, respecting the avatar-chip filter.
+      const latestCreatorVideos = useMemo(() => {
+        if (!settings?.enableCreatorVideos) return [];
+        const list = [];
+        creators.forEach(creator => {
+          if (selectedCreatorId && creator.id !== selectedCreatorId) return;
+          const entry = creatorVideos[creator.channelId];
+          if (!entry || !entry.videos) return;
+          entry.videos.forEach(v => {
+            list.push({
+              ...v,
+              creatorId: creator.id,
+              creatorName: creator.name,
+              stale: !!creatorVideosStale[creator.channelId],
+              cacheTimestamp: entry.timestamp
+            });
+          });
+        });
+        return list.sort((a, b) => new Date(b.published || 0) - new Date(a.published || 0));
+      }, [settings?.enableCreatorVideos, creators, creatorVideos, creatorVideosStale, selectedCreatorId]);
 
       const creatorInitials = (name) => name ? name.slice(0, 2).toUpperCase() : '?';
 
@@ -6742,6 +6899,42 @@ RESPONSE GUIDELINES:
                     </button>
                   ))}
                 </div>
+
+                {/* Tier 2 — Live video row (opt-in via Settings "Live creator videos", §4). Appears
+                    only once data has arrived; no skeleton/spinner for a background, best-effort fetch. */}
+                {latestCreatorVideos.length > 0 && (
+                  <div className="mb-4">
+                    <p className="stitch-label mb-2">Latest videos</p>
+                    <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+                      {latestCreatorVideos.map(video => (
+                        <a
+                          key={video.videoId}
+                          href={video.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="holo-foil-hover shrink-0 w-40 rounded-xl overflow-hidden bg-stark-surface border border-[rgba(173,43,238,0.18)]"
+                          aria-label={`Watch "${video.title}" by ${video.creatorName} on YouTube`}
+                        >
+                          <div className="relative w-full aspect-video bg-stark-surface-2">
+                            <img
+                              src={`https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`}
+                              alt=""
+                              loading="lazy"
+                              className="absolute inset-0 w-full h-full object-cover"
+                              onError={(e) => { e.currentTarget.closest('a').style.display = 'none'; }}
+                            />
+                          </div>
+                          <div className="p-2">
+                            <p className="text-white text-xs font-semibold line-clamp-2 leading-snug">{video.title}</p>
+                            <p className="text-stitch-muted text-[10px] mt-1 truncate">
+                              {video.creatorName} &middot; {video.stale ? `as of ${new Date(video.cacheTimestamp).toLocaleDateString()}` : relativeVideoDate(video.published)}
+                            </p>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-3">
                   {creatorDecks
@@ -8944,35 +9137,6 @@ RESPONSE GUIDELINES:
         }
       };
 
-      // CORS proxy helper - uses multiple fallback proxies
-      const fetchWithCorsProxy = async (url) => {
-        const CORS_PROXIES = [
-          (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
-          (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`
-        ];
-
-        // First try direct fetch (in case CORS is enabled)
-        try {
-          const directResponse = await fetch(url);
-          if (directResponse.ok) return directResponse;
-        } catch (e) {
-          console.log('Direct fetch failed, trying CORS proxies...');
-        }
-
-        // Try each CORS proxy
-        for (const proxyFn of CORS_PROXIES) {
-          try {
-            const proxyUrl = proxyFn(url);
-            const response = await fetch(proxyUrl);
-            if (response.ok) return response;
-          } catch (e) {
-            console.log('Proxy failed, trying next...');
-          }
-        }
-
-        throw new Error('All fetch methods failed (CORS blocked)');
-      };
-
       const refreshCardData = async () => {
         setIsRefreshingCards(true);
         try {
@@ -9828,6 +9992,31 @@ RESPONSE GUIDELINES:
               Refresh Game Data
             </button>
             <p className="text-stitch-muted text-xs mt-2">Pulls latest meta &amp; spotlight data from the server. AI advice and Oracle will use the updated info immediately.</p>
+          </div>
+
+          {/* Live Creator Videos — Tier 2 opt-in (Creator Decks §4/§9 owner ruling) */}
+          <div className="stitch-card p-5 mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-display font-semibold text-[#c75fff]">Live Creator Videos</h3>
+                <p className="text-stitch-muted text-sm mt-1">
+                  Fetches latest videos from creators' YouTube feeds when online.
+                </p>
+              </div>
+              <button
+                onClick={() => setSettings(prev => ({ ...prev, enableCreatorVideos: !prev.enableCreatorVideos }))}
+                className={`relative w-14 h-8 rounded-full transition-colors shrink-0 ${
+                  settings.enableCreatorVideos ? 'bg-cosmic-purple-text' : 'bg-stark-surface-2'
+                }`}
+                aria-label={settings.enableCreatorVideos ? 'Disable live creator videos' : 'Enable live creator videos'}
+                role="switch"
+                aria-checked={!!settings.enableCreatorVideos}
+              >
+                <span className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white shadow-md transform transition-transform ${
+                  settings.enableCreatorVideos ? 'translate-x-6' : 'translate-x-0'
+                }`} />
+              </button>
+            </div>
           </div>
 
           {/* Export/Import */}
@@ -12451,7 +12640,7 @@ RESPONSE GUIDELINES:
             )}
             {activeTab === 'decks' && (
               <ErrorBoundary>
-                <Decks decks={decks} setDecks={setDecks} collection={collection} />
+                <Decks decks={decks} setDecks={setDecks} collection={collection} settings={settings} />
               </ErrorBoundary>
             )}
             {activeTab === 'compare' && (
