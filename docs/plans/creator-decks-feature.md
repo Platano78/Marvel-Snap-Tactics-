@@ -349,6 +349,11 @@ the *primary* art source the whole app depends on).
 
 ## 9. Open Questions for Owner
 
+> **OWNER RULINGS (2026-07-19)**: (1) proceed with the suggested-creator direction — subject to
+> the research verification pass below (real channels + real channelIds only, no guesses);
+> (2) **link-out** confirmed; (3) Tier 2 is **opt-in** via a Settings toggle (owner override of
+> the doc's lean); (4) archetype filtering: not now. Slice 3 remains gated on the tags backfill.
+
 1. **Which creators to seed?** The following are **SUGGESTIONS ONLY — not verified, not
    confirmed, need owner sign-off** before any `channelId`/`avatarUrl` is committed to
    `data/creators.json`. They are widely-known Marvel Snap YouTube creators by general

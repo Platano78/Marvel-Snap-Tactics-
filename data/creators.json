@@ -1,0 +1,30 @@
+[
+  {
+    "id": "regiskillbin",
+    "name": "RegisKillbin",
+    "channelId": "UCbt1SGMrWj5Q7TMXAfmTERQ",
+    "avatarUrl": "https://yt3.googleusercontent.com/ytc/AIdro_nZvSYOBpU1gZGCasRxgT5U1jsL5DutI19wtcBW-wjNPgc=s900-c-k-c0x00ffffff-no-rj",
+    "links": { "youtube": "https://www.youtube.com/@RegisKillbin", "twitter": "", "twitch": "" }
+  },
+  {
+    "id": "bynx-plays",
+    "name": "Bynx_Plays",
+    "channelId": "UCrHCec2oVPLvJQR43pjiVFg",
+    "avatarUrl": "https://yt3.googleusercontent.com/zh4pwYNNkWs3Dh5UGwATfXjdI0giJcib4IMpwaViXK2nyxmXRE298e2yuZmfCNshIs2pIM88=s900-c-k-c0x00ffffff-no-rj",
+    "links": { "youtube": "https://www.youtube.com/@Bynx_Plays", "twitter": "https://twitter.com/Bynx_Plays", "twitch": "https://www.twitch.tv/Bynx_Plays" }
+  },
+  {
+    "id": "alexander-coccia",
+    "name": "Alexander Coccia",
+    "channelId": "UCoJqslowQxACrT3msrmKJLg",
+    "avatarUrl": "https://yt3.googleusercontent.com/-qf1e1Gbsuj2ZkAdivAUOf51yVyGlAgiCiOl0Dqj6sSArXyR3Z6tfzJcX4aJwKw-jFeh2uXGiA=s900-c-k-c0x00ffffff-no-rj",
+    "links": { "youtube": "https://www.youtube.com/@AlexanderCoccia", "twitter": "https://twitter.com/AlexanderCoccia", "twitch": "https://www.twitch.tv/alexandercoccia" }
+  },
+  {
+    "id": "snapstertv",
+    "name": "SnapsterTV",
+    "channelId": "UCdF0CzSQ4-GXsdDf83sNJmQ",
+    "avatarUrl": "https://yt3.googleusercontent.com/PAKjmrU6NK9TeotRKvYriwiwfDw2FP9gdFgX7CLwWbLBchQcOB3vvsrEtrE7yuMzFbKIY2UnnQ=s900-c-k-c0x00ffffff-no-rj",
+    "links": { "youtube": "https://www.youtube.com/@SnapsterTV", "twitter": "https://twitter.com/DekksterGaming", "twitch": "https://www.twitch.tv/dekkster" }
+  }
+]
