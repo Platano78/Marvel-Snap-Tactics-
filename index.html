@@ -3146,46 +3146,6 @@ RESPONSE GUIDELINES:
       },
 
       /**
-       * Parse RankState.json for rank information
-       * Used for dashboard rank display
-       */
-      parseRankState(json) {
-        try {
-          if (!json?.ServerState) return null;
-
-          const rank = json.ServerState?.Rank || json.ServerState?.CompetitiveRank || {};
-
-          // Rank tiers: Bronze(0-29), Silver(30-39), Gold(40-49), Platinum(50-59),
-          // Diamond(60-69), Vibranium(70-79), Omega(80-89), Galactic(90-100), Infinite(100+)
-          const currentRank = rank?.CurrentRank || rank?.Rank || 0;
-          const getTierName = (r) => {
-            if (r >= 100) return 'Infinite';
-            if (r >= 90) return 'Galactic';
-            if (r >= 80) return 'Omega';
-            if (r >= 70) return 'Vibranium';
-            if (r >= 60) return 'Diamond';
-            if (r >= 50) return 'Platinum';
-            if (r >= 40) return 'Gold';
-            if (r >= 30) return 'Silver';
-            return 'Bronze';
-          };
-
-          return {
-            type: 'rank',
-            currentRank,
-            tier: getTierName(currentRank),
-            cubes: rank?.Cubes || 0,
-            seasonBest: rank?.SeasonBest || rank?.HighestRank || currentRank,
-            seasonBestTier: getTierName(rank?.SeasonBest || currentRank),
-            parseDate: new Date().toISOString()
-          };
-        } catch (error) {
-          console.error('Error parsing rank state:', error);
-          return null;
-        }
-      },
-
-      /**
        * Parse DeckState.json for saved decks
        * Used for deck management and mission suggestions
        */
@@ -3517,15 +3477,6 @@ RESPONSE GUIDELINES:
         results.push(`Server Time: synced`);
       }
 
-      // Rank
-      if (data.rank) {
-        localStorage.setItem('snap_rank', JSON.stringify({
-          ...data.rank,
-          importedAt: timestamp
-        }));
-        results.push(`Rank: ${data.rank.tier} (${data.rank.currentRank})`);
-      }
-
       // Saved Decks — store to snap_decks (same key DeckBuilder reads)
       if (data.decks && data.decks.decks?.length > 0) {
         // Build CardDefId→displayName map — use CardDataLoader.cache (populated by parseCollection)
@@ -3547,14 +3498,38 @@ RESPONSE GUIDELINES:
           imported: true
         }));
 
-        // Merge with existing user-created decks (deduplicate by name)
+        // Upsert against existing decks, keyed by the game's stable deck id so an
+        // in-game edit (same deck, changed cards) overwrites instead of getting
+        // filtered out. Fall back to a name match only for legacy entries saved
+        // before ids were tracked. Hand-made decks absent from this import are
+        // never touched (id collision with a real game deck is not realistic).
         const existingDecks = JSON.parse(localStorage.getItem('snap_decks') || '[]');
-        const existingNames = new Set(existingDecks.map(d => d.name));
-        const newDecks = importedDecks.filter(d => !existingNames.has(d.name));
-        const mergedDecks = [...existingDecks, ...newDecks];
+        const mergedDecks = [...existingDecks];
+        let addedCount = 0;
+        let updatedCount = 0;
+        importedDecks.forEach(imported => {
+          let idx = mergedDecks.findIndex(d => d.id === imported.id);
+          if (idx === -1) idx = mergedDecks.findIndex(d => !d.id && d.name === imported.name);
+
+          if (idx === -1) {
+            mergedDecks.push(imported);
+            addedCount++;
+          } else {
+            mergedDecks[idx] = {
+              ...mergedDecks[idx],
+              id: imported.id,
+              name: imported.name,
+              cards: imported.cards,
+              createdAt: mergedDecks[idx].createdAt || imported.createdAt,
+              updatedAt: timestamp,
+              imported: true
+            };
+            updatedCount++;
+          }
+        });
 
         localStorage.setItem('snap_decks', JSON.stringify(mergedDecks));
-        results.push(`Decks: ${newDecks.length} imported (${mergedDecks.length} total)`);
+        results.push(`Decks: ${addedCount} added, ${updatedCount} updated (${mergedDecks.length} total)`);
       }
 
       return results;
@@ -8480,7 +8455,6 @@ RESPONSE GUIDELINES:
             rewards: null,       // Pity counters for Spotlight Oracle
             missions: null,      // Mission tracking
             timeModel: null,     // Server time for accurate countdowns
-            rank: null,          // Rank info
             decks: null          // Saved decks
           };
 
@@ -8490,12 +8464,9 @@ RESPONSE GUIDELINES:
             'ProfileState.json': 'profile',
             'CharacterMasteryState.json': 'mastery',
             'BattlePassState.json': 'battlePass',
-            'SeasonPassState.json': 'battlePass',  // Alternative filename
             'RewardState.json': 'rewards',
             'MissionState.json': 'missions',
-            'TimeModelState.json': 'timeModel',
-            'RankState.json': 'rank',
-            'CompetitiveRankState.json': 'rank'  // Alternative
+            'TimeModelState.json': 'timeModel'
           };
 
           // Parse each available file
@@ -8533,9 +8504,6 @@ RESPONSE GUIDELINES:
                   break;
                 case 'timeModel':
                   results.timeModel = GameDataParser.parseTimeModelState(json);
-                  break;
-                case 'rank':
-                  results.rank = GameDataParser.parseRankState(json);
                   break;
               }
             } catch (err) {
@@ -10275,10 +10243,23 @@ RESPONSE GUIDELINES:
       const ownedCount = getOwnedCount(collection);
       const completionPercent = totalCards > 0 ? Math.round((ownedCount / totalCards) * 100) : 0;
       const { totalWins, totalGames, winRate, netCubes } = getMatchStats(matches);
-      const [rank] = useState(() => loadFromStorage('snap_rank', null));
-      const [importedStats] = useState(() => loadFromStorage('snap_profile_stats', null));
-      const [decks] = useState(() => loadFromStorage('snap_decks', []));
-      const [collEnhanced] = useState(() => loadFromStorage('snap_collection_enhanced', null));
+      const [rank, setRank] = useState(null);
+      const [importedStats, setImportedStats] = useState(null);
+      const [decks, setDecks] = useState([]);
+      const [collEnhanced, setCollEnhanced] = useState(null);
+
+      // Load Player OS data on mount and when a sync writes fresh data.
+      useEffect(() => {
+        const loadProfileData = () => {
+          setRank(loadFromStorage('snap_rank', null));
+          setImportedStats(loadFromStorage('snap_profile_stats', null));
+          setDecks(loadFromStorage('snap_decks', []));
+          setCollEnhanced(loadFromStorage('snap_collection_enhanced', null));
+        };
+        loadProfileData();
+        window.addEventListener('snap-data-updated', loadProfileData);
+        return () => window.removeEventListener('snap-data-updated', loadProfileData);
+      }, []);
 
       const achievements = useMemo(() => {
         const list = [];
