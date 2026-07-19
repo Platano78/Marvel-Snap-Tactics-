@@ -3905,13 +3905,11 @@ RESPONSE GUIDELINES:
       if (!showBanner || !deferredPrompt) return null;
 
       return (
-        <div className="fixed top-16 left-0 right-0 z-40 bg-cosmic-purple-text text-white px-4 py-3 text-center text-sm">
-          <div className="flex items-center justify-between">
-            <span>Install Snapapoulous Prime as an app</span>
-            <button onClick={handleInstall} className="px-3 py-1 bg-white text-cosmic-purple-text rounded font-bold">
-              Install
-            </button>
-          </div>
+        <div className="mx-4 mt-4 rounded-xl bg-stark-surface-2 border border-cosmic-purple-text/30 text-white px-4 py-3 text-sm flex items-center justify-between gap-3">
+          <span>Install Snapapoulous Prime as an app</span>
+          <button onClick={handleInstall} className="shrink-0 px-3 py-1.5 rounded-lg bg-cosmic-purple-text text-white font-semibold">
+            Install
+          </button>
         </div>
       );
     };
@@ -3920,7 +3918,7 @@ RESPONSE GUIDELINES:
     const EmptyState = ({ icon = 'inbox', title, description, className = '' }) => (
       <div className={`stitch-card comic-panel-sm p-8 text-center comic-tilt-right empty-float ${className}`.trim()}>
         <span className="material-symbols-outlined text-4xl text-stitch-muted mb-2 block" aria-hidden="true">{icon}</span>
-        <div className="font-comic text-lg text-stitch-muted tracking-wide">{title}</div>
+        <div className="font-semibold text-lg text-stitch-muted tracking-wide">{title}</div>
         {description && (
           <div className="text-stitch-muted/60 text-sm mt-1 font-annotation text-base">{description}</div>
         )}
@@ -3996,7 +3994,7 @@ RESPONSE GUIDELINES:
                     : 'text-stitch-muted hover:text-white'
                 }`}>
                 <span className="material-symbols-outlined" aria-hidden="true" style={{fontSize: '22px'}}>{tab.icon}</span>
-                <span className="text-[10px] mt-0.5 font-medium font-comic tracking-wide hidden min-[360px]:block">{tab.label}</span>
+                <span className="text-[10px] mt-0.5 font-semibold tracking-wide hidden min-[360px]:block">{tab.label}</span>
               </button>
             ))}
           </div>
@@ -4015,7 +4013,7 @@ RESPONSE GUIDELINES:
               </button>
             )}
             <div>
-              <h1 className="text-lg font-comic text-white tracking-wider">{title}</h1>
+              <h1 className="text-lg font-semibold text-white tracking-wider">{title}</h1>
               {subtitle && <p className="text-xs text-cosmic-purple-text font-medium">{subtitle}</p>}
             </div>
           </div>
@@ -4099,11 +4097,11 @@ RESPONSE GUIDELINES:
       const streak = getStreak();
 
       return (
-        <div className="px-4 pb-20 halftone-cosmic">
+        <div className="px-4 pb-20">
           {/* Hero Banner */}
-          <div className="comic-panel-accent kirby-krackle overflow-hidden relative mb-4 p-5 rounded-lg" style={{background: 'linear-gradient(135deg, #1c1022 0%, #2b1933 100%)'}}>
+          <div className="comic-panel-accent overflow-hidden relative mb-4 p-5 rounded-lg" style={{background: 'linear-gradient(135deg, #1c1022 0%, #2b1933 100%)'}}>
             <div className="relative z-10">
-              <h1 className="font-comic text-3xl text-white tracking-wider" style={{textShadow: '0 0 12px rgba(173,43,238,0.5), 2px 2px 0 #1A1A1A'}}>SNAPAPOULOUS PRIME</h1>
+              <h1 className="font-display text-3xl font-bold text-white tracking-tight">SNAPAPOULOUS PRIME</h1>
               <p className="text-cosmic-purple-text font-annotation text-lg mt-1">Your Marvel Snap Companion</p>
             </div>
             {/* Decorative starburst corner */}
@@ -4257,56 +4255,56 @@ RESPONSE GUIDELINES:
             </div>
           )}
 
-          <div className="grid grid-cols-4 gap-3 mb-4">
-            <div className="stitch-stat comic-panel-sm comic-tilt-left">
-              <div className="stitch-label mb-1">Collection</div>
-              <div className="text-2xl font-comic text-white" style={{textShadow: '0 0 8px rgba(173,43,238,0.4)'}}>{completionPercent}%</div>
-              <div className="text-xs text-stitch-muted">{ownedInDatabase}/{totalCards}</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <div className="rounded-2xl bg-stark-surface p-4">
+              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Collection</div>
+              <div className="text-3xl font-bold text-white">{completionPercent}%</div>
+              <div className="text-xs text-stitch-muted mt-1">{ownedInDatabase}/{totalCards}</div>
             </div>
-            <div className="stitch-stat comic-panel-sm comic-tilt-right">
-              <div className="stitch-label mb-1">Win Rate</div>
-              <div className="text-2xl font-comic text-white" style={{textShadow: '0 0 8px rgba(173,43,238,0.4)'}}>{winRate}%</div>
-              <div className="text-xs text-stitch-muted">{totalWins}/{totalGames}</div>
+            <div className="rounded-2xl bg-stark-surface p-4">
+              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Win Rate</div>
+              <div className="text-3xl font-bold text-white">{winRate}%</div>
+              <div className="text-xs text-stitch-muted mt-1">{totalWins}/{totalGames}</div>
             </div>
-            <div className="stitch-stat comic-panel-sm comic-tilt-left">
-              <div className="stitch-label mb-1">Net Cubes</div>
-              <div className={`text-2xl font-comic ${netCubes >= 0 ? 'text-stitch-green' : 'text-red-500'}`} style={{textShadow: '0 0 8px rgba(173,43,238,0.4)'}}>
+            <div className="rounded-2xl bg-stark-surface p-4">
+              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Net Cubes</div>
+              <div className={`text-3xl font-bold ${netCubes >= 0 ? 'text-stitch-green' : 'text-red-400'}`}>
                 {netCubes >= 0 ? '+' : ''}{netCubes}
               </div>
-              <div className="text-xs text-stitch-muted">Today {todayCubes >= 0 ? '+' : ''}{todayCubes}</div>
+              <div className="text-xs text-stitch-muted mt-1">Today {todayCubes >= 0 ? '+' : ''}{todayCubes}</div>
             </div>
-            <div className="stitch-stat comic-panel-sm comic-tilt-right">
-              <div className="stitch-label mb-1">Streak</div>
-              <div className={`text-2xl font-comic ${streak.type === 'WIN' ? 'text-stitch-green' : streak.type === 'LOSS' ? 'text-red-500' : 'text-stitch-muted'}`} style={{textShadow: '0 0 8px rgba(173,43,238,0.4)'}}>
+            <div className="rounded-2xl bg-stark-surface p-4">
+              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Streak</div>
+              <div className={`text-3xl font-bold ${streak.type === 'WIN' ? 'text-stitch-green' : streak.type === 'LOSS' ? 'text-red-400' : 'text-stitch-muted'}`}>
                 {streak.count}{streak.type === 'WIN' ? 'W' : streak.type === 'LOSS' ? 'L' : '-'}
               </div>
-              <div className="text-xs text-stitch-muted">Current</div>
+              <div className="text-xs text-stitch-muted mt-1">Current</div>
             </div>
           </div>
-          <div className="stitch-card comic-panel-accent p-5 mb-4 kirby-krackle overflow-hidden">
-            <div className="stitch-section-header relative z-10">
-              <span className="material-symbols-outlined" aria-hidden="true">bolt</span>
-              Quick Match
+          <div className="rounded-2xl bg-stark-surface p-5 mb-4">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="material-symbols-outlined text-cosmic-purple-text" aria-hidden="true">bolt</span>
+              <h3 className="font-display font-semibold text-white text-base">Quick Match</h3>
             </div>
-            <div className="mb-3 relative z-10" role="group" aria-label="Record win">
-              <div className="text-sm text-stitch-green mb-2 font-comic tracking-wide" id="win-label">VICTORY</div>
+            <div className="mb-3" role="group" aria-label="Record win">
+              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-emerald-300 mb-2" id="win-label">Victory</div>
               <div className="flex gap-2" role="group" aria-labelledby="win-label">
                 {[1, 2, 4, 8].map(cubes => (
                   <button key={`win-${cubes}`} onClick={() => onQuickMatch('WIN', cubes)}
                     aria-label={`Record win of ${cubes} cube${cubes > 1 ? 's' : ''}`}
-                    className="flex-1 bg-green-600 hover:bg-green-500 text-white font-comic text-lg py-3 rounded-lg comic-btn">
+                    className="flex-1 min-h-[44px] rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 font-bold text-lg hover:bg-emerald-500/25 hover:shadow-[0_0_12px_rgba(16,185,129,0.35)] transition-colors">
                     +{cubes}
                   </button>
                 ))}
               </div>
             </div>
-            <div className="relative z-10" role="group" aria-label="Record loss">
-              <div className="text-sm text-red-500 mb-2 font-comic tracking-wide" id="loss-label">DEFEAT</div>
+            <div role="group" aria-label="Record loss">
+              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-red-300 mb-2" id="loss-label">Defeat</div>
               <div className="flex gap-2" role="group" aria-labelledby="loss-label">
                 {[1, 2, 4, 8].map(cubes => (
                   <button key={`loss-${cubes}`} onClick={() => onQuickMatch('LOSS', cubes)}
                     aria-label={`Record loss of ${cubes} cube${cubes > 1 ? 's' : ''}`}
-                    className="flex-1 bg-red-600 hover:bg-red-500 text-white font-comic text-lg py-3 rounded-lg comic-btn">
+                    className="flex-1 min-h-[44px] rounded-xl bg-red-500/15 border border-red-500/40 text-red-300 font-bold text-lg hover:bg-red-500/25 hover:shadow-[0_0_12px_rgba(248,113,113,0.35)] transition-colors">
                     -{cubes}
                   </button>
                 ))}
@@ -4322,11 +4320,19 @@ RESPONSE GUIDELINES:
               <button onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'history' }))} className="text-xs text-cosmic-purple-text hover:text-white transition-colors">View All &rarr;</button>
             </div>
             {matches.length === 0 ? (
-              <EmptyState
-                icon="history"
-                title="No Battles Yet"
-                description="Log your first match using the buttons above"
-              />
+              <div className="flex flex-col items-center gap-3 py-6 text-center">
+                <div className="flex -space-x-3" aria-hidden="true">
+                  {['Iron Man', 'Hulk', 'Thor'].map((name, i) => (
+                    <div key={name}
+                      className="w-14 h-20 rounded-lg overflow-hidden ring-1 ring-purple-500/30 bg-stark-surface-2 shrink-0"
+                      style={{ transform: `rotate(${i === 0 ? '-6deg' : i === 2 ? '6deg' : '0deg'})` }}>
+                      <img src={getCardArtUrl({ name })} alt="" loading="lazy" className="w-full h-full object-cover"
+                        onError={(e) => { e.target.style.display = 'none'; }} />
+                    </div>
+                  ))}
+                </div>
+                <p className="text-sm text-stitch-muted">No battles yet — log your first match above</p>
+              </div>
             ) : (
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {matches.slice(-5).reverse().map(match => (
