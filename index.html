@@ -10762,6 +10762,350 @@ RESPONSE GUIDELINES:
     const SIMULATOR_MIN_RUNS = 100;
     const SIMULATOR_MAX_RUNS = 200000;
     const SIMULATOR_WORKER_THRESHOLD = 5000;
+    const SIMULATOR_MIN_COMBO_CARDS = 2;
+    const SIMULATOR_MAX_COMBO_CARDS = 4;
+    const SIMULATOR_DRAW_TURNS = [1, 2, 3, 4, 5, 6];
+
+    // Small selectable card-art chip — used by the Combo Finder and Draw by Turn
+    // pickers. Fixed-size container + onError fallback per design-canon rule 5.
+    const CardChipToggle = ({ card, selected, onClick, disabled }) => (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={disabled}
+        aria-pressed={selected}
+        aria-label={`${card.name}, cost ${card.cost}${selected ? ', selected — tap to remove' : ', tap to select'}`}
+        className={`relative aspect-[3/4] rounded-lg overflow-hidden shrink-0 transition-[box-shadow,transform] duration-150 ease-[var(--ease-snap)] active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${selected ? 'ring-2 ring-cosmic-purple-text holo-glow' : ''}`}
+      >
+        <div className="absolute inset-0 card-art card-art-fallback" />
+        <img src={getCardArtUrl(card)} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover"
+             onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+        <span className="absolute bottom-0.5 left-0.5 right-0.5 text-[9px] text-white text-center leading-tight truncate font-bold drop-shadow-lg">{card.name}</span>
+        {selected && (
+          <span className="absolute top-1 right-1 w-5 h-5 rounded-full bg-cosmic-purple-text flex items-center justify-center z-10">
+            <span className="material-symbols-outlined text-white" style={{ fontSize: '13px' }} aria-hidden="true">check</span>
+          </span>
+        )}
+      </button>
+    );
+
+    // Opening Hand Test — per-card probability in the starting hand + sample hands.
+    const OpeningHandPanel = ({ results, deckCards, startingHandSize, exactOpeningHandPct }) => {
+      if (!results) return null;
+      const cardByName = new Map(deckCards.map(c => [c.name, c]));
+      const rows = deckCards
+        .map(c => ({ card: c, pct: results.openingHands[c.name] || 0 }))
+        .sort((a, b) => b.pct - a.pct);
+      return (
+        <div className="stitch-card p-5 mb-4">
+          <div className="stitch-section-header">
+            <span className="material-symbols-outlined" aria-hidden="true">style</span>
+            Opening Hand Test
+          </div>
+          {exactOpeningHandPct != null && (
+            <p className="text-xs text-stitch-muted mb-3">
+              Exact (hypergeometric): every card has a {exactOpeningHandPct.toFixed(2)}% chance in a {startingHandSize}-card opening hand from a {deckCards.length}-card deck.
+            </p>
+          )}
+          <div className="flex flex-col gap-2 mb-5">
+            {rows.map(({ card, pct }) => (
+              <div key={card.name} className="flex items-center gap-3">
+                <div className="relative w-8 aspect-[3/4] rounded overflow-hidden shrink-0">
+                  <div className="absolute inset-0 card-art card-art-fallback" />
+                  <img src={getCardArtUrl(card)} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover"
+                       onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                </div>
+                <span className="text-xs text-white flex-1 truncate">{card.name}</span>
+                <div className="flex-[2] stitch-progress">
+                  <div className="stitch-progress-fill bg-cosmic-purple-text" style={{ width: `${Math.min(100, pct)}%` }} />
+                </div>
+                <span className="text-xs font-bold text-white w-12 text-right shrink-0">{pct.toFixed(1)}%</span>
+              </div>
+            ))}
+          </div>
+          {results.sampleHands.length > 0 && (
+            <div>
+              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Sample Hands</div>
+              <div className="flex flex-col gap-2">
+                {results.sampleHands.slice(0, 5).map((hand, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="text-[10px] text-stitch-muted w-10 shrink-0">Hand {i + 1}</span>
+                    <div className="flex gap-1">
+                      {hand.map((name, j) => {
+                        const card = cardByName.get(name) || { name };
+                        return (
+                          <div key={name + j} className="relative w-8 aspect-[3/4] rounded overflow-hidden shrink-0" title={name}>
+                            <div className="absolute inset-0 card-art card-art-fallback" />
+                            <img src={getCardArtUrl(card)} alt={name} loading="lazy" className="absolute inset-0 w-full h-full object-cover"
+                                 onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // Draw by Turn — per-card, per-turn probability heatmap with a card-picker filter.
+    // Filtering is display-only: cardByTurn is already computed for every deck card
+    // by MonteCarloEngine.runSimulation regardless of which cards are selected.
+    const drawTierClass = (pct) => pct >= 70 ? 'text-stitch-green' : pct >= 40 ? 'text-[#ffd700]' : 'text-stitch-muted';
+
+    const DrawByTurnPanel = ({ results, deckCards, drawTargets, toggleDrawTarget, exactDrawByTurn }) => {
+      if (!results) return null;
+      const shown = drawTargets.length > 0 ? deckCards.filter(c => drawTargets.includes(c.name)) : deckCards;
+      return (
+        <div className="stitch-card p-5 mb-4">
+          <div className="stitch-section-header">
+            <span className="material-symbols-outlined" aria-hidden="true">timeline</span>
+            Draw by Turn
+          </div>
+          <div className="mb-4">
+            <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">
+              Filter Cards {drawTargets.length > 0 ? `(${drawTargets.length} selected)` : '(showing all 12)'}
+            </div>
+            <div className="grid grid-cols-6 gap-1.5">
+              {deckCards.map(card => (
+                <CardChipToggle key={card.name} card={card} selected={drawTargets.includes(card.name)} onClick={() => toggleDrawTarget(card.name)} />
+              ))}
+            </div>
+          </div>
+          <div className="overflow-x-auto -mx-1">
+            <table className="w-full text-xs min-w-[420px]">
+              <thead>
+                <tr className="text-stitch-muted">
+                  <th className="text-left font-semibold uppercase tracking-[0.1em] text-[10px] pb-2 pl-1">Card</th>
+                  {SIMULATOR_DRAW_TURNS.map(t => <th key={t} className="font-semibold pb-2 text-center">T{t}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {shown.map(card => (
+                  <tr key={card.name} className="border-t border-white/5">
+                    <td className="py-1.5 pl-1 text-white font-medium truncate max-w-[90px]">{card.name}</td>
+                    {SIMULATOR_DRAW_TURNS.map(t => {
+                      const pct = (results.cardByTurn[card.name] && results.cardByTurn[card.name][t]) || 0;
+                      return <td key={t} className={`py-1.5 text-center font-bold ${drawTierClass(pct)}`}>{pct.toFixed(0)}%</td>;
+                    })}
+                  </tr>
+                ))}
+                {exactDrawByTurn && (
+                  <tr className="border-t border-white/10">
+                    <td className="py-1.5 pl-1 text-stitch-muted italic">Exact (uniform)</td>
+                    {exactDrawByTurn.map(({ turn, pct }) => (
+                      <td key={turn} className="py-1.5 text-center text-stitch-muted italic">{pct.toFixed(1)}%</td>
+                    ))}
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    };
+
+    // Combo Finder card picker — must render before the Run button (needs to gate it).
+    const ComboCardPicker = ({ deckCards, comboCards, toggleComboCard }) => (
+      <div className="stitch-card p-5 mb-4">
+        <div className="stitch-section-header">
+          <span className="material-symbols-outlined" aria-hidden="true">join</span>
+          Combo Pieces
+        </div>
+        <p className="text-xs text-stitch-muted mb-3">
+          Select {SIMULATOR_MIN_COMBO_CARDS}-{SIMULATOR_MAX_COMBO_CARDS} combo pieces ({comboCards.length}/{SIMULATOR_MAX_COMBO_CARDS} selected{comboCards.length < SIMULATOR_MIN_COMBO_CARDS ? ` — pick at least ${SIMULATOR_MIN_COMBO_CARDS} to run` : ''}).
+        </p>
+        <div className="grid grid-cols-6 gap-1.5">
+          {deckCards.map(card => (
+            <CardChipToggle
+              key={card.name}
+              card={card}
+              selected={comboCards.includes(card.name)}
+              disabled={!comboCards.includes(card.name) && comboCards.length >= SIMULATOR_MAX_COMBO_CARDS}
+              onClick={() => toggleComboCard(card.name)}
+            />
+          ))}
+        </div>
+      </div>
+    );
+
+    // Combo Finder results — probability ALL selected pieces are drawn by each turn.
+    const ComboResultsPanel = ({ results, exactCombo }) => {
+      const usedCombo = results?.comboCardsUsed || [];
+      if (!results || usedCombo.length < SIMULATOR_MIN_COMBO_CARDS) return null;
+      return (
+        <div className="stitch-card p-5 mb-4">
+          <div className="stitch-section-header">
+            <span className="material-symbols-outlined" aria-hidden="true">join</span>
+            Combo Finder Results
+          </div>
+          <p className="text-xs text-stitch-muted mb-3">
+            Showing results for: <span className="text-white font-semibold">{usedCombo.join(' + ')}</span>
+          </p>
+          <div className="flex flex-col gap-2">
+            {SIMULATOR_DRAW_TURNS.map(turn => {
+              const pct = results.comboResults[turn] || 0;
+              const exact = exactCombo ? exactCombo.find(e => e.turn === turn) : null;
+              return (
+                <div key={turn} className="flex items-center gap-3">
+                  <span className="text-xs text-stitch-muted w-8 shrink-0">T{turn}</span>
+                  <div className="flex-1 stitch-progress">
+                    <div className="stitch-progress-fill bg-cosmic-purple-text" style={{ width: `${Math.min(100, pct)}%` }} />
+                  </div>
+                  <span className="text-xs font-bold text-white w-14 text-right shrink-0">{pct.toFixed(1)}%</span>
+                  {exact && <span className="text-[10px] text-stitch-muted w-20 text-right italic shrink-0">exact {exact.pct.toFixed(1)}%</span>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    };
+
+    // Interactive Play-Through — turn-by-turn manual draw with undo + Auto-Play.
+    // Redesigned state pattern (per docs/plans/deck-simulator-rebuild.md §6 S2 scope):
+    // functional setState with an explicit history stack, not the old closure-based
+    // autoPlay. Auto-Play's setInterval id lives in a plain local var captured only by
+    // this effect's own closure and cleared by its cleanup — never read outside it, so
+    // there is no stale-closure risk. This component unmounts on mode-switch (the
+    // parent renders it conditionally), which alone triggers effect cleanup; the
+    // selectedDeckId effect below covers the case where the deck changes without a
+    // mode-switch.
+    const PlaythroughPanel = ({ deckForSim, deckIsValid, startingHandSize, extraDrawsPerTurn, thinningPerTurn, junkInsertsPerTurn, handSizeLimit, useSeed, seed, selectedDeckId }) => {
+      const [playHistory, setPlayHistory] = useState([]);
+      const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+      const rngRef = useRef(null);
+
+      useEffect(() => {
+        setPlayHistory([]);
+        setIsAutoPlaying(false);
+      }, [selectedDeckId]);
+
+      const stepTurn = (prevHistory) => {
+        const current = prevHistory[prevHistory.length - 1];
+        if (!current || current.turn >= 6) return prevHistory;
+        const rng = rngRef.current || Math.random;
+        let deck = [...current.deck];
+        let hand = [...current.hand];
+        const turn = current.turn + 1;
+
+        for (let i = 0; i < thinningPerTurn && deck.length > 0; i++) {
+          const idx = Math.floor(rng() * deck.length);
+          deck.splice(idx, 1);
+        }
+        for (let i = 0; i < junkInsertsPerTurn; i++) {
+          deck.push({ name: `Junk_${turn}_${i}`, cost: 99, power: 0, isJunk: true });
+        }
+        const drawCount = 1 + extraDrawsPerTurn;
+        const drawnNames = [];
+        for (let i = 0; i < drawCount && deck.length > 0; i++) {
+          const card = deck.shift();
+          hand.push(card);
+          drawnNames.push(card.name);
+        }
+        const limit = handSizeLimit > 0 ? handSizeLimit : Infinity;
+        while (hand.length > limit && hand.length > 0) {
+          const idx = Math.floor(rng() * hand.length);
+          hand.splice(idx, 1);
+        }
+
+        return [...prevHistory, { turn, hand, deck, drawnNames }];
+      };
+
+      const newGame = () => {
+        setIsAutoPlaying(false);
+        const rng = useSeed ? createSeededRNG(seed) : Math.random;
+        rngRef.current = rng;
+        const shuffled = MonteCarloEngine.shuffle(deckForSim, rng);
+        const hand = shuffled.splice(0, startingHandSize);
+        setPlayHistory([{ turn: 0, hand, deck: shuffled, drawnNames: hand.map(c => c.name) }]);
+      };
+
+      const drawNext = () => setPlayHistory(prev => stepTurn(prev));
+      const undo = () => setPlayHistory(prev => prev.length > 1 ? prev.slice(0, -1) : prev);
+
+      useEffect(() => {
+        if (!isAutoPlaying) return;
+        const id = setInterval(() => {
+          setPlayHistory(prev => {
+            const next = stepTurn(prev);
+            const nextCurrent = next[next.length - 1];
+            if (!nextCurrent || nextCurrent.turn >= 6) setIsAutoPlaying(false);
+            return next;
+          });
+        }, 500);
+        return () => clearInterval(id);
+      }, [isAutoPlaying, thinningPerTurn, junkInsertsPerTurn, extraDrawsPerTurn, handSizeLimit]);
+
+      const current = playHistory[playHistory.length - 1] || null;
+      const drawnSet = new Set(current?.drawnNames || []);
+
+      return (
+        <div className="stitch-card p-5 mb-4">
+          <div className="stitch-section-header">
+            <span className="material-symbols-outlined" aria-hidden="true">sports_esports</span>
+            Interactive Play-Through
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-4">
+            <button onClick={newGame} disabled={!deckIsValid}
+                    className="px-4 py-2 rounded-full text-xs font-bold text-white bg-cosmic-purple-text hover:bg-[#b84eff] transition-colors duration-150 ease-[var(--ease-snap)] disabled:opacity-40 disabled:cursor-not-allowed min-h-[36px]">
+              New Game
+            </button>
+            <button onClick={drawNext} disabled={!current || current.turn >= 6 || isAutoPlaying}
+                    className="px-4 py-2 rounded-full text-xs font-bold text-white bg-stark-surface-2 border border-[rgba(173,43,238,0.35)] hover:bg-[rgba(173,43,238,0.15)] transition-colors duration-150 ease-[var(--ease-snap)] disabled:opacity-40 disabled:cursor-not-allowed min-h-[36px]">
+              Draw Next
+            </button>
+            <button onClick={undo} disabled={playHistory.length <= 1 || isAutoPlaying}
+                    className="px-4 py-2 rounded-full text-xs font-bold text-white bg-stark-surface-2 border border-[rgba(173,43,238,0.35)] hover:bg-[rgba(173,43,238,0.15)] transition-colors duration-150 ease-[var(--ease-snap)] disabled:opacity-40 disabled:cursor-not-allowed min-h-[36px]">
+              Undo
+            </button>
+            <button onClick={() => setIsAutoPlaying(a => !a)} disabled={!current || current.turn >= 6}
+                    aria-pressed={isAutoPlaying}
+                    className={`px-4 py-2 rounded-full text-xs font-bold transition-colors duration-150 ease-[var(--ease-snap)] disabled:opacity-40 disabled:cursor-not-allowed min-h-[36px] ${isAutoPlaying ? 'bg-red-500/20 text-red-300 border border-red-500/40' : 'bg-stark-surface-2 text-white border border-[rgba(173,43,238,0.35)] hover:bg-[rgba(173,43,238,0.15)]'}`}>
+              {isAutoPlaying ? 'Stop Auto-Play' : 'Auto-Play'}
+            </button>
+          </div>
+
+          {!current ? (
+            <p className="text-sm text-stitch-muted">Start a new game to draw through your deck turn by turn.</p>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-bold text-white">Turn {current.turn}</span>
+                <span className="text-xs text-stitch-muted">{current.deck.length} cards remaining</span>
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                {current.hand.map((card, i) => {
+                  const isDrawn = drawnSet.has(card.name);
+                  return (
+                    <div key={card.name + i}
+                         className={`relative aspect-[3/4] rounded-lg overflow-hidden ${isDrawn ? 'ring-2 ring-[#ffd700]' : ''}`}>
+                      <div className="absolute inset-0 card-art card-art-fallback" />
+                      {!card.isJunk && (
+                        <img src={getCardArtUrl(card)} alt={card.name} loading="lazy" className="absolute inset-0 w-full h-full object-cover"
+                             onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                      <span className="absolute top-1 left-1 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white z-10">
+                        {card.isJunk ? '!' : card.cost}
+                      </span>
+                      <span className="absolute bottom-0.5 left-0.5 right-0.5 text-[9px] text-white text-center leading-tight truncate font-bold drop-shadow-lg z-10">
+                        {card.name}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      );
+    };
 
     const DeckSimulator = ({ decks, collection, cardDataVersion }) => {
       const [selectedDeckId, setSelectedDeckId] = useState(() => loadFromStorage('snap_simulator_deck', decks[0]?.id || ''));
@@ -10780,7 +11124,20 @@ RESPONSE GUIDELINES:
       const [progress, setProgress] = useState(0);
       const [results, setResults] = useState(null);
       const [runError, setRunError] = useState('');
+      const [comboCards, setComboCards] = useState([]);
+      const [drawTargets, setDrawTargets] = useState([]);
       const workerRef = useRef(null);
+
+      const toggleComboCard = (name) => {
+        setComboCards(prev => {
+          if (prev.includes(name)) return prev.filter(n => n !== name);
+          if (prev.length >= SIMULATOR_MAX_COMBO_CARDS) return prev;
+          return [...prev, name];
+        });
+      };
+      const toggleDrawTarget = (name) => {
+        setDrawTargets(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]);
+      };
 
       useEffect(() => { saveToStorage('snap_simulator_deck', selectedDeckId); }, [selectedDeckId]);
 
@@ -10817,6 +11174,18 @@ RESPONSE GUIDELINES:
         : [];
       const deckIsValid = deckCards.length === 12;
 
+      // Drop combo/draw-target selections that no longer exist in the deck
+      // (e.g. after switching to a different saved deck).
+      useEffect(() => {
+        setComboCards(prev => prev.filter(n => selectedDeck?.cards.includes(n)));
+        setDrawTargets(prev => prev.filter(n => selectedDeck?.cards.includes(n)));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [selectedDeckId]);
+
+      // Plain {name,cost,power} deck used by both the Monte Carlo engine and the
+      // Interactive Play-Through stepper — hoisted so both can share one memo.
+      const deckForSim = useMemo(() => deckCards.map(c => ({ name: c.name, cost: c.cost, power: c.power })), [deckCards]);
+
       const isAdvancedModified = startingHandSize !== 3 || extraDrawsPerTurn !== 0 || thinningPerTurn !== 0 || junkInsertsPerTurn !== 0 || handSizeLimit !== 0;
 
       const resetAdvanced = () => {
@@ -10840,6 +11209,38 @@ RESPONSE GUIDELINES:
           return { turn, onCurveRate, brickRate: 100 - onCurveRate };
         });
       }, [deckCards, deckIsValid, isAdvancedModified]);
+
+      // Exact opening-hand probability — uniform across every card in a unique-card
+      // deck (P = handSize/deckSize), only valid at baseline rules.
+      const exactOpeningHandPct = useMemo(() => {
+        if (!deckIsValid || isAdvancedModified) return null;
+        return SimulationEngine.openingHandProbabilities(deckCards.length, startingHandSize) * 100;
+      }, [deckCards.length, deckIsValid, isAdvancedModified, startingHandSize]);
+
+      // Exact draw-by-turn probability — also uniform across cards for a given turn.
+      const exactDrawByTurn = useMemo(() => {
+        if (!deckIsValid || isAdvancedModified) return null;
+        const N = deckCards.length;
+        return Array.from({ length: 6 }, (_, idx) => {
+          const turn = idx + 1;
+          return { turn, pct: SimulationEngine.cardByTurnProbability(N, startingHandSize, turn) * 100 };
+        });
+      }, [deckCards.length, deckIsValid, isAdvancedModified, startingHandSize]);
+
+      // Exact combo probability — inclusion-exclusion hypergeometric over the combo
+      // pieces actually used in the last run (results.comboCardsUsed), not the live
+      // picker selection, so it never shows a number that doesn't match results.
+      const exactCombo = useMemo(() => {
+        if (!deckIsValid || isAdvancedModified) return null;
+        const usedCombo = results?.comboCardsUsed || [];
+        if (usedCombo.length < SIMULATOR_MIN_COMBO_CARDS) return null;
+        const N = deckCards.length;
+        return Array.from({ length: 6 }, (_, idx) => {
+          const turn = idx + 1;
+          const n = Math.min(N, startingHandSize + turn);
+          return { turn, pct: SimulationEngine.hypergeometricAllCards(N, usedCombo, n) * 100 };
+        });
+      }, [deckCards.length, deckIsValid, isAdvancedModified, startingHandSize, results]);
 
       const effectiveRuns = Math.max(SIMULATOR_MIN_RUNS, Math.min(SIMULATOR_MAX_RUNS, numRuns));
 
@@ -10865,16 +11266,16 @@ RESPONSE GUIDELINES:
           extraDrawsPerTurn,
           thinningPerTurn,
           junkInsertsPerTurn,
-          handSizeLimit: handSizeLimit > 0 ? handSizeLimit : Infinity
+          handSizeLimit: handSizeLimit > 0 ? handSizeLimit : Infinity,
+          comboCards: [...comboCards]
         };
         const seedValue = useSeed ? seed : null;
-        const deckForSim = deckCards.map(c => ({ name: c.name, cost: c.cost, power: c.power }));
 
         const runMainThread = () => {
           requestAnimationFrame(() => {
             try {
               const simResults = MonteCarloEngine.runSimulation(deckForSim, options, effectiveRuns, (p) => setProgress(p), seedValue);
-              setResults(simResults);
+              setResults({ ...simResults, comboCardsUsed: options.comboCards });
             } catch (err) {
               console.error('Simulation failed:', err);
               setRunError('Simulation failed to complete.');
@@ -10899,7 +11300,7 @@ RESPONSE GUIDELINES:
             if (e.data.type === 'progress') {
               setProgress(e.data.progress);
             } else if (e.data.type === 'complete') {
-              setResults(e.data.results);
+              setResults({ ...e.data.results, comboCardsUsed: options.comboCards });
               setIsRunning(false);
               worker.terminate();
               workerRef.current = null;
@@ -10984,15 +11385,13 @@ RESPONSE GUIDELINES:
             <div className="grid grid-cols-3 gap-2">
               {SIMULATOR_MODES.map(m => {
                 const isActive = mode === m.id;
-                const isAvailable = m.id === 'curve';
                 return (
                   <button
                     key={m.id}
-                    onClick={() => isAvailable && setMode(m.id)}
-                    disabled={!isAvailable}
+                    onClick={() => setMode(m.id)}
                     aria-pressed={isActive}
-                    aria-label={isAvailable ? m.label : `${m.label} (coming soon)`}
-                    className={`stitch-list-item p-3 min-h-[44px] flex flex-col items-center gap-1 ${isActive ? 'ring-2 ring-cosmic-purple-text' : ''} ${!isAvailable ? 'opacity-40 cursor-not-allowed' : ''}`}
+                    aria-label={m.label}
+                    className={`stitch-list-item p-3 min-h-[44px] flex flex-col items-center gap-1 ${isActive ? 'ring-2 ring-cosmic-purple-text' : ''}`}
                   >
                     <span className={`material-symbols-outlined text-xl ${isActive ? 'text-cosmic-purple-text' : 'text-stitch-muted'}`} aria-hidden="true">{m.icon}</span>
                     <span className="text-white text-[11px] text-center leading-tight">{m.label}</span>
@@ -11002,7 +11401,9 @@ RESPONSE GUIDELINES:
             </div>
           </div>
 
-          {/* Run Controls */}
+          {/* Run Controls — hidden in Play mode; Interactive Play-Through draws
+              directly, it doesn't use the Monte Carlo run count/seed controls. */}
+          {mode !== 'play' && (
           <div className="stitch-card p-5 mb-4">
             <div className="stitch-section-header">
               <span className="material-symbols-outlined" aria-hidden="true">casino</span>
@@ -11054,6 +11455,7 @@ RESPONSE GUIDELINES:
               )}
             </div>
           </div>
+          )}
 
           {/* Advanced Rules */}
           <div className="stitch-card p-5 mb-4">
@@ -11108,12 +11510,19 @@ RESPONSE GUIDELINES:
             )}
           </div>
 
-          {/* Run Button / Progress */}
+          {/* Combo Card Picker — combo mode only, must render before the Run
+              button since it gates it (needs >=2 pieces selected to run). */}
+          {mode === 'combo' && (
+            <ComboCardPicker deckCards={deckCards} comboCards={comboCards} toggleComboCard={toggleComboCard} />
+          )}
+
+          {/* Run Button / Progress — hidden in Play mode */}
+          {mode !== 'play' && (
           <div className="stitch-card p-5 mb-4">
             {!isRunning ? (
               <button
                 onClick={runSimulation}
-                disabled={!deckIsValid}
+                disabled={!deckIsValid || (mode === 'combo' && comboCards.length < SIMULATOR_MIN_COMBO_CARDS)}
                 className="w-full min-h-[44px] rounded-full font-bold text-white bg-cosmic-purple-text hover:bg-[#b84eff] transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Run Simulation
@@ -11131,9 +11540,20 @@ RESPONSE GUIDELINES:
             )}
             {runError && <p className="mt-2 text-sm text-red-400">{runError}</p>}
           </div>
+          )}
+
+          {/* Opening Hand Results */}
+          {(mode === 'opening' || mode === 'advanced') && (
+            <OpeningHandPanel results={results} deckCards={deckCards} startingHandSize={startingHandSize} exactOpeningHandPct={exactOpeningHandPct} />
+          )}
+
+          {/* Draw by Turn Results */}
+          {(mode === 'draw' || mode === 'advanced') && (
+            <DrawByTurnPanel results={results} deckCards={deckCards} drawTargets={drawTargets} toggleDrawTarget={toggleDrawTarget} exactDrawByTurn={exactDrawByTurn} />
+          )}
 
           {/* Curve Analysis Results */}
-          {results && mode === 'curve' && (
+          {results && (mode === 'curve' || mode === 'advanced') && (
             <div className="stitch-card p-5 mb-4">
               <div className="stitch-section-header">
                 <span className="material-symbols-outlined" aria-hidden="true">bar_chart</span>
@@ -11189,6 +11609,27 @@ RESPONSE GUIDELINES:
                 })}
               </div>
             </div>
+          )}
+
+          {/* Combo Finder Results */}
+          {(mode === 'combo' || mode === 'advanced') && (
+            <ComboResultsPanel results={results} exactCombo={exactCombo} />
+          )}
+
+          {/* Interactive Play-Through */}
+          {mode === 'play' && (
+            <PlaythroughPanel
+              deckForSim={deckForSim}
+              deckIsValid={deckIsValid}
+              startingHandSize={startingHandSize}
+              extraDrawsPerTurn={extraDrawsPerTurn}
+              thinningPerTurn={thinningPerTurn}
+              junkInsertsPerTurn={junkInsertsPerTurn}
+              handSizeLimit={handSizeLimit}
+              useSeed={useSeed}
+              seed={seed}
+              selectedDeckId={selectedDeckId}
+            />
           )}
         </div>
       );
