@@ -1,7 +1,10 @@
 // Snapapoulous Prime Service Worker
-const CACHE_NAME = 'snapapoulous-stitch-v3';
+const CACHE_NAME = 'snapapoulous-stitch-v4';
 const FONT_CACHE = 'snap-fonts-v1';
 const ART_CACHE = 'snap-card-art-v1';
+// Stable (unversioned) name so version-pinned CDN runtime assets (React/Babel/Tailwind)
+// survive CACHE_NAME bumps across releases instead of being evicted and re-downloaded.
+const CDN_RUNTIME_CACHE = 'snapapoulous-cdn-runtime';
 const ART_CACHE_MAX_ENTRIES = 400;
 const ART_CACHE_QUEUE_KEY = '__meta__/art-cache-fifo-queue';
 // Dynamically build asset URLs based on service worker location
@@ -13,6 +16,7 @@ const OFFLINE_ASSETS = [
   './persona.json',
   './card-data.json',
   './data/meta-context.json',
+  './data/spotlight-schedule.json',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png'
 ];
@@ -104,7 +108,9 @@ self.addEventListener('activate', (event) => {
     caches.keys()
       .then((cacheNames) => {
         // Check if we're updating from an old cache
-        const keepCaches = [CACHE_NAME, FONT_CACHE, ART_CACHE];
+        // CDN_RUNTIME_CACHE is intentionally unversioned (see declaration above) so it
+        // is kept across CACHE_NAME bumps rather than being swept up as a stale cache.
+        const keepCaches = [CACHE_NAME, FONT_CACHE, ART_CACHE, CDN_RUNTIME_CACHE];
         const hadOldCache = cacheNames.some(name => !keepCaches.includes(name) && name.startsWith('snapapoulous-'));
 
         return Promise.all(
@@ -215,6 +221,30 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Cache-first for the CDN runtime (React/ReactDOM/Babel from unpkg.com, Tailwind CDN).
+  // Without this, an offline cold boot renders a blank page since none of the app's
+  // runtime dependencies are available. Scripts without a `crossorigin` attribute
+  // (e.g. the Tailwind CDN tag) produce opaque no-cors responses (status 0,
+  // response.ok === false) — these are still valid to cache, so don't gate on `.ok`.
+  if (url.origin === 'https://unpkg.com' || url.origin === 'https://cdn.tailwindcss.com') {
+    event.respondWith(
+      caches.open(CDN_RUNTIME_CACHE).then((cache) => {
+        return cache.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) return cachedResponse;
+          return fetch(event.request).then((networkResponse) => {
+            // Opaque (type 'opaque') responses have status 0 and ok === false but are
+            // still cacheable/usable; only reject genuine network errors (no response).
+            if (networkResponse) {
+              cache.put(event.request, networkResponse.clone());
+            }
+            return networkResponse;
+          }).catch(() => null);
+        });
+      })
+    );
+    return;
+  }
+
   if (url.origin !== location.origin) {
     return;
   }
@@ -252,7 +282,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Stale-while-revalidate for card data and persona (ensures fresh data while serving cached)
-  if (event.request.url.includes('card-data.json') || event.request.url.includes('persona.json') || event.request.url.includes('meta-context.json')) {
+  if (event.request.url.includes('card-data.json') || event.request.url.includes('persona.json') || event.request.url.includes('meta-context.json') || event.request.url.includes('spotlight-schedule.json')) {
     event.respondWith(
       caches.open(CACHE_NAME).then((cache) => {
         return cache.match(event.request).then((cachedResponse) => {
