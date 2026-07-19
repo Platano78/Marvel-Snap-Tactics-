@@ -5591,7 +5591,7 @@ RESPONSE GUIDELINES:
 
             {/* Ability Text */}
             <section className="px-6 mb-6">
-              <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+              <div className="bg-stark-surface p-4 rounded-2xl border border-white/10">
                 <p className="text-slate-300 leading-relaxed text-sm">{card.ability || 'No ability text available.'}</p>
               </div>
             </section>
@@ -5602,7 +5602,7 @@ RESPONSE GUIDELINES:
                 <span className="material-symbols-outlined text-[#ad2bee]">lightbulb</span>
                 <h3 className="text-xl font-bold text-white">Strategy Tips</h3>
               </div>
-              <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+              <div className="bg-stark-surface p-4 rounded-2xl border border-white/10">
                 <p className="text-slate-300 leading-relaxed text-sm">{strategyText}</p>
               </div>
             </section>
@@ -5825,7 +5825,7 @@ RESPONSE GUIDELINES:
           {/* ── Stitch: Stats Overview row ── */}
           <div className="flex flex-wrap gap-4 px-4 pt-4 pb-2">
             {/* Collection Level card */}
-            <div className="flex min-w-[140px] flex-1 flex-col gap-2 rounded-xl p-5"
+            <div className="flex min-w-[140px] flex-1 flex-col gap-2 rounded-2xl p-5"
                  style={{ background: 'rgba(173,43,238,0.10)', border: '1px solid rgba(173,43,238,0.20)' }}>
               <p className="text-xs uppercase tracking-widest font-bold" style={{ color: '#b792c9' }}>
                 {/* TODO: label changes to "Collection Score" once snap_collection_enhanced is populated via file-sync */}
@@ -5834,7 +5834,7 @@ RESPONSE GUIDELINES:
               <p className="text-white text-3xl font-bold leading-tight tracking-tight">{collectionLevel}</p>
             </div>
             {/* Completion % card */}
-            <div className="flex min-w-[140px] flex-1 flex-col gap-2 rounded-xl p-5"
+            <div className="flex min-w-[140px] flex-1 flex-col gap-2 rounded-2xl p-5"
                  style={{ background: 'rgba(173,43,238,0.10)', border: '1px solid rgba(173,43,238,0.20)' }}>
               <p className="text-xs uppercase tracking-widest font-bold" style={{ color: '#b792c9' }}>Completion</p>
               <p className="text-white text-3xl font-bold leading-tight tracking-tight">{completionPct}%</p>
@@ -5842,7 +5842,7 @@ RESPONSE GUIDELINES:
           </div>
 
           {/* ── Stitch: Pool 3 Progress bar ── */}
-          <div className="flex flex-col gap-3 mx-4 mt-2 mb-4 rounded-xl p-4" style={{ background: '#2a1833' }}>
+          <div className="flex flex-col gap-3 mx-4 mt-2 mb-4 rounded-2xl p-4" style={{ background: '#2a1833' }}>
             <div className="flex gap-6 justify-between">
               <p className="text-white text-sm font-medium leading-normal">Pool 3 Progress</p>
               <p className="text-sm font-bold leading-normal" style={{ color: '#ad2bee' }}>
@@ -5862,22 +5862,16 @@ RESPONSE GUIDELINES:
 
           {/* ── Stitch: Search input ── */}
           <div className="px-4 pb-3">
-            <label className="flex flex-col w-full h-12">
-              <div className="flex w-full flex-1 items-stretch rounded-xl h-full">
-                <div className="flex items-center justify-center pl-4 rounded-l-xl border-r-0"
-                     style={{ background: '#3c2348', color: '#b792c9' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">search</span>
-                </div>
-                <input
-                  type="text"
-                  placeholder={viewMode === 'owned' ? 'Search cards by name or ability' : 'Search cards to add...'}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  aria-label="Search cards"
-                  className="flex w-full flex-1 rounded-xl rounded-l-none border-none focus:outline-none focus:ring-0 text-white text-base font-normal leading-normal pl-2 pr-4"
-                  style={{ background: '#3c2348', color: '#ffffff' }}
-                />
-              </div>
+            <label className="relative flex items-center w-full h-12">
+              <span className="material-symbols-outlined absolute left-4 text-[#b792c9] pointer-events-none" style={{ fontSize: '20px' }} aria-hidden="true">search</span>
+              <input
+                type="text"
+                placeholder={viewMode === 'owned' ? 'Search cards by name or ability' : 'Search cards to add...'}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                aria-label="Search cards"
+                className="w-full h-full rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-white text-base font-normal leading-normal pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/40 placeholder:text-[#b792c9]"
+              />
             </label>
           </div>
 
@@ -5886,15 +5880,21 @@ RESPONSE GUIDELINES:
             {/* View mode: Owned / All */}
             <button
               onClick={() => { setViewMode('owned'); setSeriesFilter('all'); setEditMode(false); }}
-              className="flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium"
-              style={{ background: viewMode === 'owned' ? '#ad2bee' : '#3c2348', color: '#ffffff' }}
+              className={`flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium transition-colors ${
+                viewMode === 'owned'
+                  ? 'bg-cosmic-purple text-white'
+                  : 'bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-white hover:bg-[rgba(173,43,238,0.1)]'
+              }`}
               aria-pressed={viewMode === 'owned'}>
               Owned ({ownedCount})
             </button>
             <button
               onClick={() => { setViewMode('all'); setSeriesFilter('all'); setEditMode(false); }}
-              className="flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium"
-              style={{ background: viewMode === 'all' ? '#ad2bee' : '#3c2348', color: '#ffffff' }}
+              className={`flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium transition-colors ${
+                viewMode === 'all'
+                  ? 'bg-cosmic-purple text-white'
+                  : 'bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-white hover:bg-[rgba(173,43,238,0.1)]'
+              }`}
               aria-pressed={viewMode === 'all'}>
               All Cards ({totalCards})
             </button>
@@ -5902,8 +5902,11 @@ RESPONSE GUIDELINES:
             {availablePools.map(pool => (
               <button key={pool}
                 onClick={() => setSeriesFilter(seriesFilter === pool ? 'all' : pool)}
-                className="flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium"
-                style={{ background: seriesFilter === pool ? '#ad2bee' : '#3c2348', color: '#ffffff' }}
+                className={`flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium transition-colors ${
+                  seriesFilter === pool
+                    ? 'bg-cosmic-purple text-white'
+                    : 'bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-white hover:bg-[rgba(173,43,238,0.1)]'
+                }`}
                 aria-pressed={seriesFilter === pool}>
                 {pool}
               </button>
@@ -5912,7 +5915,7 @@ RESPONSE GUIDELINES:
 
           {/* ── Energy cost filter row ── */}
           <div className="px-4 pb-4">
-            <div className="flex h-11 w-full items-center justify-between rounded-full bg-[#3c2348] p-1" role="group" aria-label="Filter by energy cost">
+            <div className="flex h-11 w-full items-center justify-between rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] p-1" role="group" aria-label="Filter by energy cost">
               {['all', '0', '1', '2', '3', '4', '5', '6'].map(e => (
                 <button
                   key={e}
@@ -5920,7 +5923,7 @@ RESPONSE GUIDELINES:
                   aria-pressed={energyFilter === e}
                   className={`flex-1 flex h-full items-center justify-center rounded-full text-xs font-bold transition-colors ${
                     energyFilter === e
-                      ? 'bg-[#ad2bee] text-white'
+                      ? 'bg-cosmic-purple text-white'
                       : 'text-[#b792c9] hover:text-white'
                   }`}
                 >
@@ -5972,6 +5975,11 @@ RESPONSE GUIDELINES:
                     )}
                     {/* Gradient + name overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent rounded-lg pointer-events-none" />
+                    {!isOwned && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <span className="material-symbols-outlined text-white/50 text-2xl" aria-hidden="true">lock</span>
+                      </div>
+                    )}
                     <div className="absolute bottom-0 left-0 right-0 px-1.5 pb-1.5 z-10 pointer-events-none">
                       <p className="text-center text-[10px] font-bold text-white drop-shadow-lg truncate">{card.name}</p>
                     </div>
@@ -6003,13 +6011,42 @@ RESPONSE GUIDELINES:
 
           {/* Empty state */}
           {filteredCards.length === 0 && (
-            <EmptyState
-              icon="collections_bookmark"
-              title={viewMode === 'owned' && collection.owned.length === 0 ? 'Assemble Your Collection' : 'No Matches'}
-              description={viewMode === 'owned' && collection.owned.length === 0
-                ? 'Import data or use the Card Database to discover cards'
-                : 'No cards match your filters'}
-            />
+            viewMode === 'owned' && collection.owned.length === 0 ? (
+              /* No collection imported yet — art-forward teaser, not a barren panel */
+              <div className="flex flex-col items-center gap-4 px-6 py-10 text-center">
+                <div className="flex -space-x-4" aria-hidden="true">
+                  {['Iron Man', 'Hulk', 'Wolverine', 'Scarlet Witch'].map((name, i) => (
+                    <div key={name}
+                         className="relative w-16 aspect-[3/4] rounded-lg overflow-hidden border-2 border-gray-600 bg-[#2b1933] shrink-0 grayscale opacity-70"
+                         style={{ transform: `rotate(${(i - 1.5) * 6}deg)` }}>
+                      <img src={getCardArtUrl({ name })} alt="" loading="lazy" className="w-full h-full object-cover"
+                           onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                        <span className="material-symbols-outlined text-white/60" style={{ fontSize: '20px' }} aria-hidden="true">lock</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <p className="text-white font-bold text-lg mb-1">Assemble Your Collection</p>
+                  <p className="text-[#b792c9] text-sm max-w-xs mx-auto">
+                    Link your game data folder in Settings to import your owned cards automatically, or browse the Card Database to explore what's out there.
+                  </p>
+                </div>
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'settings' }))}
+                  className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple-text hover:bg-[#b84eff] transition-colors min-h-[44px]"
+                >
+                  Link Game Folder
+                </button>
+              </div>
+            ) : (
+              <EmptyState
+                icon="collections_bookmark"
+                title="No Matches"
+                description="No cards match your filters"
+              />
+            )
           )}
 
           {/* Card Detail Overlay — Stitch 06 full-screen panel */}
@@ -6115,8 +6152,8 @@ RESPONSE GUIDELINES:
         <div className="flex flex-col min-h-screen pb-20">
           {/* Header */}
           <div className="flex items-center bg-[#1c1022] p-4 pb-2 justify-between sticky top-0 z-20 border-b border-white/10">
-            <div className="flex size-10 items-center justify-center rounded-full bg-[#3c2348]">
-              <span className="material-symbols-outlined text-[#ad2bee]">search</span>
+            <div className="flex size-10 items-center justify-center rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.25)]">
+              <span className="material-symbols-outlined text-cosmic-purple">search</span>
             </div>
             <h2 className="text-white text-xl font-bold leading-tight tracking-tight flex-1 text-center">Card Database</h2>
             <div className="flex size-10 items-center justify-center">
@@ -6126,20 +6163,16 @@ RESPONSE GUIDELINES:
 
           {/* Search bar */}
           <div className="px-4 pt-3 pb-2">
-            <label className="flex flex-col">
-              <div className="flex w-full flex-1 items-stretch rounded-xl h-11">
-                <div className="text-[#b792c9] flex bg-[#3c2348] items-center justify-center pl-4 rounded-l-xl">
-                  <span className="material-symbols-outlined text-xl">search</span>
-                </div>
-                <input
-                  type="search"
-                  value={search}
-                  onChange={e => setSearch(e.target.value)}
-                  placeholder="Search by name or ability..."
-                  aria-label="Search cards"
-                  className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-none border-none bg-[#3c2348] h-full placeholder:text-[#b792c9] px-3 rounded-l-none border-l-0 text-sm"
-                />
-              </div>
+            <label className="relative flex items-center w-full h-11">
+              <span className="material-symbols-outlined absolute left-4 text-[#b792c9] pointer-events-none text-xl" aria-hidden="true">search</span>
+              <input
+                type="search"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search by name or ability..."
+                aria-label="Search cards"
+                className="w-full h-full rounded-full text-white focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/40 bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] placeholder:text-[#b792c9] pl-11 pr-4 text-sm"
+              />
             </label>
           </div>
 
@@ -6151,8 +6184,8 @@ RESPONSE GUIDELINES:
                 onClick={() => setSeriesFilter(opt.id)}
                 className={`flex h-8 shrink-0 items-center justify-center rounded-full px-4 text-xs font-semibold transition-colors ${
                   seriesFilter === opt.id
-                    ? 'bg-[#ad2bee] text-white'
-                    : 'bg-[#3c2348] text-[#b792c9] hover:bg-[#553267]'
+                    ? 'bg-cosmic-purple text-white'
+                    : 'bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-[#b792c9] hover:bg-[rgba(173,43,238,0.1)]'
                 }`}
               >
                 {opt.label}
@@ -6162,7 +6195,7 @@ RESPONSE GUIDELINES:
 
           {/* Energy selector */}
           <div className="px-4 py-2">
-            <div className="flex h-11 w-full items-center justify-between rounded-full bg-[#3c2348] p-1" role="group" aria-label="Filter by energy cost">
+            <div className="flex h-11 w-full items-center justify-between rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] p-1" role="group" aria-label="Filter by energy cost">
               {['all', '0', '1', '2', '3', '4', '5', '6'].map(e => (
                 <button
                   key={e}
@@ -6170,7 +6203,7 @@ RESPONSE GUIDELINES:
                   aria-pressed={energyFilter === e}
                   className={`flex-1 flex h-full items-center justify-center rounded-full text-xs font-bold transition-colors ${
                     energyFilter === e
-                      ? 'bg-[#ad2bee] text-white'
+                      ? 'bg-cosmic-purple text-white'
                       : 'text-[#b792c9] hover:text-white'
                   }`}
                 >
@@ -6198,7 +6231,7 @@ RESPONSE GUIDELINES:
                     <button
                       key={card.name}
                       onClick={() => setSelectedCard(card)}
-                      className={`group relative aspect-[3/4] rounded-xl overflow-hidden border-2 ${borderCls} transition-transform active:scale-95 text-left`}
+                      className={`group relative aspect-[3/4] rounded-xl overflow-hidden border-2 ${borderCls} transition-[transform,box-shadow] duration-150 ease-[var(--ease-snap)] active:scale-95 hover:ring-2 hover:ring-cosmic-purple-text/60 text-left`}
                       aria-label={`${card.name}, ${card.cost} energy, ${card.power} power${owned ? ', in collection' : ''}`}
                     >
                       {/* Art */}
