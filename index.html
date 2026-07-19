@@ -5359,65 +5359,102 @@ RESPONSE GUIDELINES:
         { label: "When should I snap?", prompt: "Explain the key principles of when to snap and when to retreat. Give me a mental framework I can apply every game." }
       ];
 
+      const isEmptyState = messages.length <= 1;
+
       return (
         <div className="flex flex-col h-[calc(100vh-4rem)] pb-16">
           <Header title="SNAPAPOULOUS AI" />
 
           {!isConfigured() && (
-            <div className="mx-4 mb-4 bg-yellow-900/50 border border-yellow-600 rounded-lg p-4">
-              <p className="text-yellow-200 text-sm mb-2">AI not configured yet!</p>
+            <div className="mx-4 mb-4 bg-stark-surface border border-[rgba(173,43,238,0.25)] rounded-2xl p-4">
+              <p className="text-stitch-muted text-sm mb-3">AI not configured yet!</p>
               <button onClick={() => setActiveTab('settings')}
-                className="bg-mcu-gold text-black px-4 py-2 rounded font-medium hover:bg-yellow-400">
+                className="bg-cosmic-purple-text text-white px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-[#b84eff] transition-colors min-h-[44px]">
                 Configure AI Provider
               </button>
             </div>
           )}
 
-          <div className="flex-1 overflow-y-auto px-4 space-y-4">
-            {messages.map(msg => (
-              <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] p-3 chat-bubble ${
-                  msg.role === 'user'
-                    ? 'bg-mcu-blue text-white chat-bubble-user'
-                    : 'bg-[#1a1320] text-white chat-bubble-ai'
-                }`}>
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+          {isEmptyState ? (
+            <div className="px-4 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] flex items-center justify-center flex-shrink-0">
+                  <span className="material-symbols-outlined text-cosmic-purple-text" aria-hidden="true" style={{ fontSize: '22px' }}>psychology</span>
                 </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-white">Snapapoulous</p>
+                  <p className="text-xs text-stitch-muted">Your Marvel Snap tactical advisor</p>
+                </div>
+                {isConfigured() && (
+                  <span className="text-[11px] font-semibold text-cosmic-purple-text bg-[rgba(173,43,238,0.12)] border border-[rgba(173,43,238,0.25)] rounded-full px-3 py-1 flex-shrink-0">
+                    {(AIProviders[aiConfig.provider] && AIProviders[aiConfig.provider].name) || aiConfig.provider}
+                  </span>
+                )}
               </div>
-            ))}
 
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-[#1a1320] p-4 rounded-lg chat-bubble chat-bubble-ai border border-[rgba(173,43,238,0.35)] shadow-[0_0_24px_rgba(173,43,238,0.35)]">
-                  <p className="text-xs text-[#dca3ff] mb-2 font-medium">Snapapoulous is thinking...</p>
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-cosmic-purple rounded-full typing-dot"></span>
-                    <span className="w-2 h-2 bg-cosmic-purple rounded-full typing-dot"></span>
-                    <span className="w-2 h-2 bg-cosmic-purple rounded-full typing-dot"></span>
+              {messages.map(msg => (
+                <div key={msg.id} className="flex justify-start">
+                  <div className="max-w-[85%] p-3 chat-bubble chat-bubble-ai bg-stark-surface border border-[rgba(173,43,238,0.2)] text-white">
+                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                   </div>
                 </div>
-              </div>
-            )}
+              ))}
 
-            {error && (
-              <div className="bg-red-900/50 border border-red-500 rounded-lg p-3">
-                <p className="text-red-300 text-sm">{error}</p>
+              <div>
+                <div className="stitch-section-header">
+                  <span className="material-symbols-outlined" aria-hidden="true">tips_and_updates</span>
+                  Ask about
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {quickPrompts.map(qp => (
+                    <button key={qp.label} onClick={() => sendMessage(qp.prompt)}
+                      className="flex items-center min-h-[44px] bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-gray-200 text-sm px-4 rounded-full hover:bg-[rgba(173,43,238,0.1)] transition-colors">
+                      {qp.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-            )}
 
-            <div ref={messagesEndRef} />
-          </div>
+              {error && (
+                <div className="bg-red-900/50 border border-red-500 rounded-lg p-3">
+                  <p className="text-red-300 text-sm">{error}</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto px-4 space-y-4">
+              {messages.map(msg => (
+                <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[85%] p-3 chat-bubble ${
+                    msg.role === 'user'
+                      ? 'bg-[rgba(173,43,238,0.18)] text-white chat-bubble-user'
+                      : 'bg-stark-surface text-white chat-bubble-ai border border-[rgba(173,43,238,0.2)]'
+                  }`}>
+                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  </div>
+                </div>
+              ))}
 
-          {messages.length <= 1 && (
-            <div className="px-4 py-2">
-              <div className="flex flex-wrap gap-2">
-                {quickPrompts.map(qp => (
-                  <button key={qp.label} onClick={() => sendMessage(qp.prompt)}
-                    className="bg-[#1a1320] text-gray-300 text-xs px-4 py-2 rounded-full hover:bg-stark-surface-2 touch-target-sm">
-                    {qp.label}
-                  </button>
-                ))}
-              </div>
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-stark-surface p-4 rounded-lg chat-bubble chat-bubble-ai border border-[rgba(173,43,238,0.35)] shadow-[0_0_24px_rgba(173,43,238,0.35)]">
+                    <p className="text-xs text-[#dca3ff] mb-2 font-medium">Snapapoulous is thinking...</p>
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 bg-cosmic-purple rounded-full typing-dot"></span>
+                      <span className="w-2 h-2 bg-cosmic-purple rounded-full typing-dot"></span>
+                      <span className="w-2 h-2 bg-cosmic-purple rounded-full typing-dot"></span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {error && (
+                <div className="bg-red-900/50 border border-red-500 rounded-lg p-3">
+                  <p className="text-red-300 text-sm">{error}</p>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
             </div>
           )}
 
@@ -5427,10 +5464,10 @@ RESPONSE GUIDELINES:
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                 placeholder="Ask Snapapoulous..."
                 disabled={isLoading}
-                className="flex-1 bg-[#120818] text-white rounded-lg px-4 py-3 border-2 border-[rgba(173,43,238,0.2)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 disabled:opacity-50"
+                className="flex-1 bg-stark-surface text-white rounded-full px-5 py-3 border-2 border-[rgba(173,43,238,0.2)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 disabled:opacity-50"
               />
               <button onClick={sendMessage} disabled={isLoading || !input.trim()}
-                className="bg-mcu-blue text-white px-6 py-3 rounded-lg font-display font-medium hover:shadow-glow-blue transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-glass">
+                className="bg-cosmic-purple-text text-white px-6 py-3 rounded-full font-display font-medium hover:shadow-glow-blue transition-[background-color,box-shadow] duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-glass min-h-[44px]">
                 Send
               </button>
             </div>
