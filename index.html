@@ -570,6 +570,21 @@
       .cosmic-glass-strong { background: rgba(28, 16, 34, 0.96); }
     }
 
+    /* THE VAULT — hero mount settle. One-shot on mount only, never continuous ambient motion.
+       Resting scale is >1 (not 1:1) on purpose — the CDN card renders are square tiles with
+       their own frame/border/cost-power orbs/name baked in for small card-tile use; a deliberate
+       crop + upward-biased object-position keeps the hero reading as full-bleed character art
+       instead of a stretched card thumbnail with visible chrome at the edges.
+       Neutralized globally under prefers-reduced-motion (see the *,*::before,*::after rule above). */
+    @keyframes hero-vault-settle {
+      0% { transform: scale(1.85); opacity: 0.5; }
+      100% { transform: scale(1.65); opacity: 1; }
+    }
+    .hero-vault-art {
+      animation: hero-vault-settle 0.7s var(--ease-snap) both;
+      object-position: center 30%;
+    }
+
     /* Holo-foil — the game's own card-holo sheen, applied to app chrome (rule 3).
        Foil rainbow hues are the sanctioned exception to the one-accent rule
        because this is material (foil), not an accent. GPU-cheap: only
@@ -4330,7 +4345,7 @@ RESPONSE GUIDELINES:
     );
 
     // Dashboard Component - Player OS Home
-    const Dashboard = ({ collection, matches, onQuickMatch }) => {
+    const Dashboard = ({ collection, matches, onQuickMatch, cardDataVersion }) => {
       const [importedStats, setImportedStats] = useState(null);
       const [wallet, setWallet] = useState(null);
       const [rewards, setRewards] = useState(null);
@@ -4338,16 +4353,19 @@ RESPONSE GUIDELINES:
       const [timeModel, setTimeModel] = useState(null);
       const [collectionEnhanced, setCollectionEnhanced] = useState(null);
       const [battlePass, setBattlePass] = useState(null);
+      const [cardPerformance, setCardPerformance] = useState(null);
       const [featuredArtFailed, setFeaturedArtFailed] = useState(false);
 
       // Deterministic "card of the day" — stable across reloads for the same calendar day, no Math.random.
+      // Depends on cardDataVersion because uniqueCards is a reassignable module-level `let` refreshed
+      // by the live card sync — without this dep the memo goes stale after a card-data refresh.
       const featuredCard = useMemo(() => {
         if (!uniqueCards.length) return null;
         const now = new Date();
         const startOfYear = new Date(now.getFullYear(), 0, 0);
         const dayOfYear = Math.floor((now - startOfYear) / 86400000);
         return uniqueCards[dayOfYear % uniqueCards.length];
-      }, []);
+      }, [cardDataVersion]);
 
       // Load all Player OS data on mount and when data updates
       useEffect(() => {
@@ -4359,6 +4377,7 @@ RESPONSE GUIDELINES:
           setTimeModel(loadFromStorage('snap_timemodel', null));
           setCollectionEnhanced(loadFromStorage('snap_collection_enhanced', null));
           setBattlePass(loadFromStorage('snap_battlepass', null));
+          setCardPerformance(loadFromStorage('snap_card_performance', null));
         };
         loadPlayerData();
         window.addEventListener('snap-data-updated', loadPlayerData);
@@ -4416,37 +4435,159 @@ RESPONSE GUIDELINES:
       };
       const streak = getStreak();
 
+      // THE VAULT — owned cards as the subject of the screen (design-canon.md, "The Wow Arc").
+      const ownedSet = useMemo(() => new Set((collection.owned || []).map(n => n.toLowerCase())), [collection.owned]);
+      const ownedCardObjects = useMemo(() => uniqueCards.filter(c => ownedSet.has((c.name || '').toLowerCase())), [ownedSet, cardDataVersion]);
+
+      // Hero = the owned card with the best netCubes on record; falls back to the
+      // deterministic card-of-the-day when there's no owned/perf data to crown a winner.
+      const heroCard = useMemo(() => {
+        if (ownedCardObjects.length && cardPerformance?.cards) {
+          let best = null, bestNetCubes = -Infinity;
+          for (const card of ownedCardObjects) {
+            const perf = cardPerformance.cards[card.name];
+            if (perf && typeof perf.netCubes === 'number' && perf.netCubes > bestNetCubes) {
+              bestNetCubes = perf.netCubes;
+              best = card;
+            }
+          }
+          if (best) return best;
+        }
+        return featuredCard;
+      }, [ownedCardObjects, cardPerformance, featuredCard]);
+
+      // Reset the broken-art fallback whenever the hero itself changes.
+      useEffect(() => { setFeaturedArtFailed(false); }, [heroCard?.name]);
+
+      // Arsenal shelf order: best netCubes first, then owned cards with no recorded performance yet.
+      const arsenalCards = useMemo(() => {
+        const withPerf = [];
+        const withoutPerf = [];
+        for (const card of ownedCardObjects) {
+          const perf = cardPerformance?.cards?.[card.name];
+          if (perf && typeof perf.netCubes === 'number') {
+            withPerf.push({ card, netCubes: perf.netCubes });
+          } else {
+            withoutPerf.push({ card, netCubes: null });
+          }
+        }
+        withPerf.sort((a, b) => b.netCubes - a.netCubes);
+        return [...withPerf, ...withoutPerf].slice(0, 20);
+      }, [ownedCardObjects, cardPerformance]);
+
+      // Decorative season-progress sweep for the rank arc — real when we have a games-played
+      // count, a fixed illustrative sweep otherwise (no total-games-per-season field exists).
+      const seasonSweep = rank?.gamesPlayedInSeason ? Math.min(1, rank.gamesPlayedInSeason / 100) : 0.65;
+      const rankArcRadius = 27;
+      const rankArcCircumference = 2 * Math.PI * rankArcRadius;
+
       return (
         <div className="px-4 pb-20">
-          {/* Hero Banner — cosmic-glass masthead with gradient-gloss title + featured card of the day */}
-          <div className="cosmic-glass overflow-hidden relative mb-4 p-5">
-            <div className="relative z-10 flex items-center justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-cosmic-purple-text bg-clip-text text-transparent">SNAPAPOULOUS PRIME</h1>
-                <p className="text-cosmic-purple-text font-annotation text-lg mt-1">Your Marvel Snap Companion</p>
+          {/* THE VAULT — full-bleed hero: the player's best card owns the top of Home */}
+          <div className="hero-vault-card -mx-4 relative overflow-hidden mb-6" style={{ height: 'min(55vh, 480px)' }} aria-label={heroCard ? `Featured card: ${heroCard.name}` : 'Featured card'}>
+            {heroCard && !featuredArtFailed ? (
+              <img
+                key={heroCard.name}
+                src={getCardArtUrl(heroCard)}
+                alt=""
+                className="hero-vault-art absolute inset-0 w-full h-full object-cover"
+                onError={() => setFeaturedArtFailed(true)}
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-stark-surface-2">
+                <span className="material-symbols-outlined text-6xl text-cosmic-purple-text/40" aria-hidden="true">style</span>
               </div>
-              {featuredCard && !featuredArtFailed && (
-                <div className="shrink-0 w-16 sm:w-20 md:w-24 holo-foil holo-foil-active relative aspect-[3/4] rounded-lg overflow-hidden ring-1 ring-cosmic-purple-text/40 bg-stark-surface-2" tabIndex="0" aria-label={`Card of the day: ${featuredCard.name}`}>
-                  <img
-                    src={getCardArtUrl(featuredCard)}
-                    alt={featuredCard.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover"
-                    onError={() => setFeaturedArtFailed(true)}
-                  />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-1.5 pt-4 pb-1">
-                    <div className="text-[10px] font-bold text-white truncate">{featuredCard.name}</div>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1 py-0.5 rounded bg-cosmic-purple-text/25 text-cosmic-purple-text">
-                        <span className="material-symbols-outlined" style={{ fontSize: '10px' }} aria-hidden="true">bolt</span>{featuredCard.cost}
-                      </span>
-                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1 py-0.5 rounded bg-mcu-gold/20 text-mcu-gold">
-                        <span className="material-symbols-outlined" style={{ fontSize: '10px' }} aria-hidden="true">fitness_center</span>{featuredCard.power}
-                      </span>
-                    </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent" aria-hidden="true"></div>
+
+            {rank && (
+              <div className="absolute top-3 right-3 z-20 flex flex-col items-end gap-1.5 max-w-[150px]">
+                <div className="relative w-16 h-16 shrink-0">
+                  <svg viewBox="0 0 64 64" className="absolute inset-0 w-full h-full -rotate-90" aria-hidden="true">
+                    <circle cx="32" cy="32" r={rankArcRadius} fill="none" stroke="rgba(199,95,255,0.18)" strokeWidth="3" />
+                    <circle
+                      cx="32" cy="32" r={rankArcRadius} fill="none" stroke="#ad2bee" strokeWidth="3" strokeLinecap="round"
+                      strokeDasharray={rankArcCircumference}
+                      strokeDashoffset={rankArcCircumference * (1 - seasonSweep)}
+                    />
+                  </svg>
+                  <div className="absolute inset-1.5 flex flex-col items-center justify-center cosmic-glass-strong rounded-full">
+                    <span className="text-[8px] uppercase tracking-[0.15em] font-semibold text-stitch-muted leading-none">Rank</span>
+                    <span className="text-base font-bold text-white leading-none mt-0.5">{rank.currentRank}</span>
                   </div>
                 </div>
-              )}
+                <div className="cosmic-glass-strong px-2.5 py-1 rounded-full text-right">
+                  <div className="text-[10px] font-bold text-cosmic-purple-text whitespace-nowrap">{rank.tier}{rank.skillRating ? ` · SR ${rank.skillRating}` : ''}</div>
+                </div>
+                <div className="cosmic-glass-strong rounded-full px-2.5 py-1">
+                  <DataFreshness />
+                </div>
+              </div>
+            )}
+
+            {heroCard && (
+              <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-4 pt-10">
+                <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">{heroCard.name}</h1>
+                <p className="text-cosmic-purple-text font-annotation text-sm mt-1">Your Marvel Snap Companion</p>
+              </div>
+            )}
+          </div>
+
+          {/* Your Arsenal — owned cards as a glossy shelf, stat chips riding the cards */}
+          <div className="mb-6">
+            <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-3 px-0.5">Your Arsenal</div>
+            {arsenalCards.length === 0 ? (
+              <div className="stitch-card p-5 flex flex-col items-center gap-2 text-center">
+                <span className="material-symbols-outlined text-4xl text-cosmic-purple-text/40" aria-hidden="true">inventory_2</span>
+                <p className="text-sm text-stitch-muted">No cards owned yet — sync your collection or add cards to build your Arsenal</p>
+              </div>
+            ) : (
+              <div className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory" role="list" aria-label="Owned cards">
+                {arsenalCards.map(({ card, netCubes }) => (
+                  <ArsenalTile key={card.name} card={card} netCubes={netCubes} />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Ask Snapapoulous */}
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'oracle' }))}
+            className="w-full cosmic-glass min-h-[52px] rounded-full px-6 py-3 mb-6 flex items-center justify-center gap-2 text-white font-semibold tracking-wide transition-[box-shadow,transform] duration-150 ease-[var(--ease-snap)] hover:shadow-[0_0_20px_rgba(173,43,238,0.3)] active:scale-95"
+          >
+            <span className="material-symbols-outlined text-cosmic-purple-text" aria-hidden="true">auto_awesome</span>
+            Ask Snapapoulous
+          </button>
+
+          {/* Quick Match — demoted below the Arsenal, behavior unchanged */}
+          <div className="cosmic-glass p-5 mb-4">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="material-symbols-outlined text-cosmic-purple-text" aria-hidden="true">bolt</span>
+              <h3 className="font-display font-semibold text-white text-base">Quick Match</h3>
+            </div>
+            <div className="mb-3" role="group" aria-label="Record win">
+              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-emerald-300 mb-2" id="win-label">Victory</div>
+              <div className="flex gap-2" role="group" aria-labelledby="win-label">
+                {[1, 2, 4, 8].map(cubes => (
+                  <button key={`win-${cubes}`} onClick={() => onQuickMatch('WIN', cubes)}
+                    aria-label={`Record win of ${cubes} cube${cubes > 1 ? 's' : ''}`}
+                    className="flex-1 min-h-[44px] rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 font-bold text-lg hover:bg-emerald-500/25 hover:shadow-[0_0_12px_rgba(16,185,129,0.35)] transition-colors">
+                    +{cubes}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div role="group" aria-label="Record loss">
+              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-red-300 mb-2" id="loss-label">Defeat</div>
+              <div className="flex gap-2" role="group" aria-labelledby="loss-label">
+                {[1, 2, 4, 8].map(cubes => (
+                  <button key={`loss-${cubes}`} onClick={() => onQuickMatch('LOSS', cubes)}
+                    aria-label={`Record loss of ${cubes} cube${cubes > 1 ? 's' : ''}`}
+                    className="flex-1 min-h-[44px] rounded-xl bg-red-500/15 border border-red-500/40 text-red-300 font-bold text-lg hover:bg-red-500/25 hover:shadow-[0_0_12px_rgba(248,113,113,0.35)] transition-colors">
+                    -{cubes}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -4478,17 +4619,9 @@ RESPONSE GUIDELINES:
             </div>
           )}
 
-          {/* Player OS: Rank, Skill Rating, Collection Score & Reset Timers */}
-          {(rank || timeModel || collectionEnhanced) && (
+          {/* Player OS: Reset Timers & Collection Score (Rank now lives on the hero arc above) */}
+          {(timeModel || collectionEnhanced) && (
             <div className="grid grid-cols-2 gap-3 mb-4">
-              {rank && (
-                <div className="stitch-stat rank-glow border-l-4 border-series-3">
-                  <div className="stitch-label">Rank</div>
-                  <div className="text-2xl font-display font-bold text-white">{rank.tier}</div>
-                  <div className="text-sm text-stitch-muted">Level {rank.currentRank}{rank.skillRating ? ` | SR ${rank.skillRating}` : ''}</div>
-                  <DataFreshness />
-                </div>
-              )}
               {timeModel && (
                 <div className="stitch-stat border-l-4 border-cosmic-purple-text">
                   <div className="stitch-label">Resets</div>
@@ -4649,36 +4782,6 @@ RESPONSE GUIDELINES:
             </div>
           )}
 
-          <div className="cosmic-glass p-5 mb-4">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="material-symbols-outlined text-cosmic-purple-text" aria-hidden="true">bolt</span>
-              <h3 className="font-display font-semibold text-white text-base">Quick Match</h3>
-            </div>
-            <div className="mb-3" role="group" aria-label="Record win">
-              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-emerald-300 mb-2" id="win-label">Victory</div>
-              <div className="flex gap-2" role="group" aria-labelledby="win-label">
-                {[1, 2, 4, 8].map(cubes => (
-                  <button key={`win-${cubes}`} onClick={() => onQuickMatch('WIN', cubes)}
-                    aria-label={`Record win of ${cubes} cube${cubes > 1 ? 's' : ''}`}
-                    className="flex-1 min-h-[44px] rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 font-bold text-lg hover:bg-emerald-500/25 hover:shadow-[0_0_12px_rgba(16,185,129,0.35)] transition-colors">
-                    +{cubes}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div role="group" aria-label="Record loss">
-              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-red-300 mb-2" id="loss-label">Defeat</div>
-              <div className="flex gap-2" role="group" aria-labelledby="loss-label">
-                {[1, 2, 4, 8].map(cubes => (
-                  <button key={`loss-${cubes}`} onClick={() => onQuickMatch('LOSS', cubes)}
-                    aria-label={`Record loss of ${cubes} cube${cubes > 1 ? 's' : ''}`}
-                    className="flex-1 min-h-[44px] rounded-xl bg-red-500/15 border border-red-500/40 text-red-300 font-bold text-lg hover:bg-red-500/25 hover:shadow-[0_0_12px_rgba(248,113,113,0.35)] transition-colors">
-                    -{cubes}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
           <div className="stitch-card comic-panel p-5">
             <div className="flex justify-between items-center mb-3">
               <div className="stitch-section-header mb-0">
@@ -4720,6 +4823,44 @@ RESPONSE GUIDELINES:
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      );
+    };
+
+    // Arsenal shelf tile — one owned card, art-as-UI with an optional net-cubes stat chip riding it.
+    const ArsenalTile = ({ card, netCubes }) => {
+      const [artFailed, setArtFailed] = useState(false);
+      return (
+        <div
+          className="arsenal-tile snap-center shrink-0 w-[140px] h-[196px] rounded-lg overflow-hidden relative holo-foil holo-foil-active ring-1 ring-cosmic-purple-text/30 bg-stark-surface-2 transition-transform duration-150 ease-[var(--ease-snap)] active:scale-95"
+          role="listitem"
+          tabIndex="0"
+          aria-label={`${card.name}${netCubes !== null ? `, ${netCubes >= 0 ? '+' : ''}${netCubes} net cubes` : ''}`}
+        >
+          {!artFailed ? (
+            <img
+              src={getCardArtUrl(card)}
+              alt=""
+              loading="lazy"
+              className="w-full h-full object-cover"
+              onError={() => setArtFailed(true)}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-stark-surface-2">
+              <span className="material-symbols-outlined text-3xl text-cosmic-purple-text/40" aria-hidden="true">style</span>
+            </div>
+          )}
+          {netCubes !== null && (
+            <div className="absolute top-2 right-2 cosmic-glass-strong rounded px-1.5 py-0.5 flex flex-col items-center">
+              <span className="text-[8px] uppercase tracking-[0.1em] font-semibold text-stitch-muted leading-none">Cubes</span>
+              <span className={`text-sm font-bold leading-none mt-0.5 tabular-nums ${netCubes >= 0 ? 'text-stitch-green' : 'text-red-400'}`}>
+                {netCubes >= 0 ? '+' : ''}{netCubes}
+              </span>
+            </div>
+          )}
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-2 pt-6 pb-2">
+            <p className="text-xs font-bold text-white truncate text-center">{card.name}</p>
           </div>
         </div>
       );
@@ -12961,7 +13102,7 @@ RESPONSE GUIDELINES:
             <PageTransition activeTab={activeTab}>
             {activeTab === 'dashboard' && (
               <ErrorBoundary>
-                <Dashboard collection={collection} matches={matches} onQuickMatch={handleQuickMatch} />
+                <Dashboard collection={collection} matches={matches} onQuickMatch={handleQuickMatch} cardDataVersion={cardDataVersion} />
               </ErrorBoundary>
             )}
             {activeTab === 'oracle' && (
