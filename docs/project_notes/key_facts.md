@@ -20,7 +20,7 @@ Quick reference for project configuration, URLs, ports, and important constants.
 ## Project Identity
 
 - **Project Name**: Snapapoulous Prime (Marvel-Snap-Tactics)
-- **Repository**: https://github.com/Platano78/Marvel-Snap-Tactics
+- **Repository**: https://github.com/Platano78/Marvel-Snap-Tactics- (note the trailing hyphen — it is part of the repo name)
 - **Type**: Progressive Web App (PWA)
 - **Framework**: React via CDN (no build step)
 - **Styling**: Tailwind CSS via CDN
@@ -72,6 +72,7 @@ The Marvel palette survives only as the skip-link focus color.
 | `snap_ai_config` | Selected AI provider + model config |
 | `snap_matches` | Match history array |
 | `snap_qr_scan_progress` | In-progress QR vault sync scan state |
+| `snap_game_data_mtime` | Newest game-file `lastModified` seen during folder sync (ISO) — feeds the "Game data as of" freshness hint |
 
 ## AI Provider Endpoints
 
@@ -81,7 +82,7 @@ The Marvel palette survives only as the skip-link focus color.
 
 ### Claude (Fallback)
 - **API**: https://api.anthropic.com/v1/messages
-- **Models**: claude-sonnet-4-20250514, claude-haiku-4-5-20251001
+- **Models**: claude-sonnet-5 (default), claude-haiku-4-5-20251001
 
 ### OpenAI (Fallback)
 - **API**: https://api.openai.com/v1/chat/completions
@@ -89,7 +90,12 @@ The Marvel palette survives only as the skip-link focus color.
 
 ### Groq (Fallback)
 - **API**: https://api.groq.com/openai/v1/chat/completions
-- **Models**: llama-3.3-70b-versatile, mixtral-8x7b-32768
+- **Models**: llama-3.3-70b-versatile (default), llama-3.1-8b-instant (mixtral retired upstream, removed 2026-07-19)
+
+### Gemini OAuth scope (2026-07-19 hard ruling)
+- Scope is `generative-language.retriever` and it **DOES authorize `generateContent`** — proven in
+  production. Changing it to bare `generative-language` broke OAuth and was reverted (ccf73e5).
+  Never "correct" this scope based on what its name implies. See BUG-010.
 
 ### Local Models
 - **Default Endpoint**: http://localhost:11434/api/chat (Ollama)
@@ -106,7 +112,7 @@ The Marvel palette survives only as the skip-link focus color.
 ```
 Marvel-Snap-Tactics/
 ├── index.html                     # Main PWA (single HTML with embedded React)
-├── card-data.json                 # Authoritative card data (433 cards)
+├── card-data.json                 # Authoritative card data (459 cards)
 ├── data/
 │   ├── meta-context.json          # AI advisor meta context (stale — see below)
 │   └── spotlight-schedule.json    # Spotlight cache rotation schedule
@@ -124,17 +130,37 @@ Marvel-Snap-Tactics/
 ## Deployment
 
 - **Primary**: GitHub Pages
-- **URL Pattern**: https://platano78.github.io/Marvel-Snap-Tactics/
+- **URL Pattern**: https://platano78.github.io/Marvel-Snap-Tactics-/ (trailing hyphen matches the repo name)
 - **Alternative Hosts**: Netlify, Vercel, Cloudflare Pages (static deploy)
 
 ## Current Season Context
 
-- **Season**: Dragons (January 2026)
-- **Top Meta Decks**: Shou-Lao Combo, Destroy, High Evo, Bounce
-- **Recent OTA**: Merlin nerfed, Fantomex/Vulture/Iron Lad buffed
-- **STALE (2026-07-19)**: `data/meta-context.json` and `data/spotlight-schedule.json` are ~4.5 months
-  out of date (last updated March 2026) — this feeds both the AI system prompt and the Oracle tab.
-  Content refresh is a research task (needs current-season data), not a code fix; not done in this pass.
+- **Season**: Spider-Man: Brand New Day (July 2026) — refreshed 2026-07-19/20 with both July OTAs
+  and 13 spotlight weeks; `data/meta-context.json` + `data/spotlight-schedule.json` are current.
+- **Refresh cadence (owner ruling)**: BOTH — monthly scheduled cloud routine
+  `trig_01RXr1YBBRFjfNm4ir27Az23` ("Marvel Snap monthly meta-refresh", 5th of each month
+  13:00 UTC, https://claude.ai/code/routines/trig_01RXr1YBBRFjfNm4ir27Az23) + on-demand runs.
+  Pipeline: official patch notes direct-fetch, 2+ source cross-check, honest-gap discipline.
+
+## Card Database Facts
+
+- `card-data.json` = **459 records** (2026-07-19: 458 two-source-verified + Magus added when MSZ
+  flipped it to released). Every record two-source verified or explicitly held.
+- **`series` is a POOL INDEX (1-10), NOT the game's Series tier** — decoded by `POOL_GROUPS`
+  (index.html ~L3821): Starter(1)/CL(2)/Recruit(3)/S1(4)/S2(5)/S3(6)/S4(7)/S5(8)/Spotlight(9,10).
+  Game "Series 5" files as `series: 8`. See BUG-014 and auto-memory
+  `card-data-series-is-pool-index.md`.
+- Live sync source: marvelsnapzone getinfo API only, filtered to `status === 'released'`
+  (index.html:1910); merge-not-replace into the curated DB.
+- Held (unreleased/event-only, auto-ingested when released — do not re-research): Spider-Sense.
+
+## Design Direction (2026-07-19, session #3)
+
+- **The Wow Arc** — hypothesis confirmed (screens restructured so cards are the subject);
+  compose Vault (home) + Forge (AI deck-maker flagship, "Cosmic Perspective" variant) +
+  Companion (narrated Dashboard/History). Canon: `docs/design-canon.md` → "The Wow Arc";
+  plan: `docs/plans/design-wow-2026-07-19.md`; Stitch authority project
+  `projects/12427902730037601641`.
 
 ---
 
