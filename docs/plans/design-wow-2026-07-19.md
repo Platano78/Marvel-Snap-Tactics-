@@ -1,7 +1,10 @@
 # The Wow Arc — implementation plan (tracked)
 
 **Created**: 2026-07-19, design session #3 (crew discipline)
-**Status**: PLANNED — no implementation started; owner review gate passed for direction only
+**Status**: IN FLIGHT — Phase 1 SHIPPED `2fe6a8e` + **owner-BLESSED (2026-07-20)**; Phase 2
+SHIPPED (engine `b910b9b` + ceremony `92e1c06`, both three-track verified, live-proven on the
+local model); Phase 3 dispatched 2026-07-20. Follow-on ticket: callLocal OpenAI-compat gap
+(chat provider; found during 2a).
 **Authority**: `docs/design-canon.md` → "The Wow Arc" section (owner rulings recorded there)
 **Stitch references**: authority project `projects/12427902730037601641`; exports
 `docs/stitch_designs/marvel_snap_mobile/concept_{vault_home,forge_flagship,companion_home}.html`
