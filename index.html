@@ -2242,10 +2242,12 @@
       const allCardNames = new Set(allCards.map(c => c.name));
       const ownedInDatabase = [...owned].filter(name => allCardNames.has(name)).length;
 
-      // Group missing by series
+      // Group missing by series — key by game vocabulary (Starter/Series 1-5/Spotlight),
+      // never the internal pool index: the AI repeats these keys verbatim to the user,
+      // and the game has no "Series 8".
       const missingBySeries = {};
       for (const card of missing) {
-        const series = card.series || 'Unknown';
+        const series = SERIES_TO_POOL[card.series] || 'Unknown';
         if (!missingBySeries[series]) missingBySeries[series] = [];
         missingBySeries[series].push(card.name);
       }
