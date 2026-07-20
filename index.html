@@ -714,6 +714,27 @@
       .forge-card-in, .forge-chip-in { animation: none !important; }
     }
 
+    /* THE COMPANION — Snapapoulous as a living voice (Phase 3). Avatar orb and momentum
+       ribbon are static (no animation, per design-canon "static glow is banned" +
+       Signature Layer rule 2) — pure CSS/SVG, no image asset, no continuous motion. */
+    .companion-orb {
+      background: radial-gradient(circle at 35% 30%, rgba(232, 179, 255, 0.9) 0%, rgba(173, 43, 238, 0.55) 45%, rgba(60, 20, 80, 0.9) 100%);
+      box-shadow: 0 0 16px rgba(173, 43, 238, 0.5), inset 0 0 12px rgba(0, 0, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+    .companion-orb::before,
+    .companion-orb::after,
+    .companion-orb span {
+      content: '';
+      position: absolute;
+      border-radius: 9999px;
+      background: #fff;
+    }
+    .companion-orb::before { width: 3px; height: 3px; top: 22%; left: 60%; opacity: 0.9; }
+    .companion-orb::after { width: 2px; height: 2px; top: 55%; left: 30%; opacity: 0.7; }
+    .companion-orb span { width: 2px; height: 2px; top: 65%; left: 70%; opacity: 0.6; }
+
     body {
       font-family: var(--font-ui);
       background-color: var(--ui-surface-base);
@@ -2067,6 +2088,84 @@
       }
       const winRate = totalGames > 0 ? Math.round((totalWins / totalGames) * 100) : 0;
       return { totalGames, totalWins, winRate, netCubes };
+    };
+
+    // THE COMPANION — Snapapoulous's per-match remark, shared by the Dashboard feed and
+    // Match History so both surfaces speak with one voice (Phase 3, design-canon "Wow Arc").
+    // Deterministic: a real note always wins; otherwise a stable hash of match.id picks
+    // among the generic pool so the same match reads the same remark on every reload.
+    const MATCH_REMARK_GENERIC_WIN = ['Clean win. Bank it.', 'Board control paid off.', 'Solid read all game.'];
+    const MATCH_REMARK_GENERIC_LOSS = ['Tough board — live to snap another day.', 'They out-teched you there.', 'Chalk it up and move on.'];
+    const getMatchRemark = (match) => {
+      if (match.notes && match.notes.trim()) {
+        return { text: match.notes.trim(), isNote: true };
+      }
+      const isWin = match.result === 'WIN';
+      if (isWin && match.cubes === 8) return { text: "Max cubes. That's how it's done.", isNote: false };
+      if (isWin && match.snapped === 'PLAYER') return { text: 'You snapped — called it.', isNote: false };
+      if (isWin && match.snapped === 'OPPONENT') return { text: 'They snapped. You made them pay.', isNote: false };
+      if (!isWin && match.cubes === 1) return { text: 'Cut to one cube — disciplined retreat.', isNote: false };
+      if (!isWin && match.cubes === 8) return { text: 'Full stakes lost — watch the snap next time.', isNote: false };
+      const hash = String(match.id || '').split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+      const pool = isWin ? MATCH_REMARK_GENERIC_WIN : MATCH_REMARK_GENERIC_LOSS;
+      return { text: pool[hash % pool.length], isNote: false };
+    };
+
+    // THE COMPANION — Dashboard headline: a template-computed sentence narrating TODAY's
+    // matches (local midnight boundary), never an AI call. Deterministic from the data
+    // itself (today's match count / net cubes / streak), so identical `matches` produce
+    // an identical headline on every reload.
+    const getCompanionHeadline = (matches) => {
+      const now = new Date();
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const todayMatches = matches.filter(m => new Date(m.timestamp) >= startOfToday);
+
+      if (todayMatches.length === 0) {
+        const variants = ['Quiet so far. The ladder awaits.', 'No games logged yet today. Ready when you are.'];
+        return variants[now.getDate() % variants.length];
+      }
+
+      const net = todayMatches.reduce((sum, m) => sum + (m.result === 'WIN' ? m.cubes : -m.cubes), 0);
+      const absNet = Math.abs(net);
+      const plural = absNet === 1 ? '' : 's';
+      let headline;
+
+      if (net >= 0) {
+        const variants = [
+          `You're up ${absNet} cube${plural} today.`,
+          `${absNet} cube${plural} banked today. Keep the pressure on.`,
+        ];
+        headline = variants[todayMatches.length % variants.length];
+        // The clause must never praise a losing deck: track each deck's own net cubes today,
+        // not just how often it was played, and only credit one that's actually net-positive.
+        const deckStats = {};
+        todayMatches.forEach(m => {
+          if (!m.deck) return;
+          if (!deckStats[m.deck]) deckStats[m.deck] = { count: 0, net: 0 };
+          deckStats[m.deck].count++;
+          deckStats[m.deck].net += m.result === 'WIN' ? m.cubes : -m.cubes;
+        });
+        const bestDeck = Object.entries(deckStats)
+          .filter(([, stats]) => stats.count >= 2 && stats.net > 0)
+          .sort((a, b) => b[1].net - a[1].net || b[1].count - a[1].count || a[0].localeCompare(b[0]))[0];
+        if (bestDeck) headline = `You're up ${absNet} cube${plural} today. Your ${bestDeck[0]} deck is carrying.`;
+      } else {
+        const variants = [
+          `Down ${absNet} today. The climb continues.`,
+          `${absNet} cube${plural} lost today — regroup for the next one.`,
+        ];
+        headline = variants[todayMatches.length % variants.length];
+      }
+
+      const sorted = [...matches].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      let streakCount = 0;
+      for (const m of sorted) {
+        if (m.result === 'WIN') streakCount++;
+        else break;
+      }
+      if (streakCount >= 3) headline += ` That's ${streakCount} in a row.`;
+
+      return headline;
     };
 
     const getOwnedCount = (collection) => {
@@ -4608,6 +4707,40 @@ RULES:
       };
       const streak = getStreak();
 
+      // THE COMPANION — conversational headline narrating today's story (template-computed, no AI call).
+      const companionHeadline = useMemo(() => getCompanionHeadline(matches), [matches]);
+
+      // THE COMPANION — momentum ribbon geometry for the visible Recent Matches window below
+      // (same newest-first order as the feed). Cumulative net cubes across the window drives
+      // horizontal displacement; null when there's nothing to draw a line between.
+      const recentVisible = matches.slice(-5).reverse();
+      const momentumRibbon = useMemo(() => {
+        if (recentVisible.length < 2) return null;
+        const chronological = [...recentVisible].reverse(); // oldest -> newest, for a running total
+        let running = 0;
+        const cumulativeById = {};
+        for (const m of chronological) {
+          running += m.result === 'WIN' ? m.cubes : -m.cubes;
+          cumulativeById[m.id] = running;
+        }
+        const values = Object.values(cumulativeById);
+        const minC = Math.min(0, ...values);
+        const maxC = Math.max(0, ...values);
+        const range = maxC - minC || 1;
+        const n = recentVisible.length;
+        const nodes = recentVisible.map((m, i) => {
+          const normalized = (cumulativeById[m.id] - minC) / range;
+          return {
+            id: m.id,
+            x: 4 + normalized * 16, // 4..20 within a 24-unit-wide gutter
+            y: (i + 0.5) / n * 100, // percent, node centered on its row
+            isWin: m.result === 'WIN',
+            isTopStreakNode: i === 0 && streak.type === 'WIN' && streak.count >= 3,
+          };
+        });
+        return { n, nodes };
+      }, [matches]);
+
       // THE VAULT — owned cards as the subject of the screen (design-canon.md, "The Wow Arc").
       const ownedSet = useMemo(() => new Set((collection.owned || []).map(n => n.toLowerCase())), [collection.owned]);
       const ownedCardObjects = useMemo(() => uniqueCards.filter(c => ownedSet.has((c.name || '').toLowerCase())), [ownedSet, cardDataVersion]);
@@ -4704,6 +4837,12 @@ RULES:
                 <p className="text-cosmic-purple-text font-annotation text-sm mt-1">Your Marvel Snap Companion</p>
               </div>
             )}
+          </div>
+
+          {/* THE COMPANION — Snapapoulous's conversational headline for tonight's story */}
+          <div className="flex items-start gap-3 mb-6">
+            <div className="companion-orb w-10 h-10 rounded-full shrink-0" aria-hidden="true"><span></span></div>
+            <p className="flex-1 pt-1.5 text-xl sm:text-2xl font-bold text-white leading-snug">{companionHeadline}</p>
           </div>
 
           {/* Your Arsenal — owned cards as a glossy shelf, stat chips riding the cards */}
@@ -4978,24 +5117,76 @@ RULES:
                 <p className="text-sm text-stitch-muted">No battles yet — log your first match above</p>
               </div>
             ) : (
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {matches.slice(-5).reverse().map(match => (
-                  <div key={match.id} className={`stitch-list-item flex items-center justify-between ${
-                    match.result === 'WIN' ? 'comic-panel-win' : 'comic-panel-loss'
-                  }`}>
-                    <div className="flex items-center gap-3">
-                      <span className={`stitch-badge ${match.result === 'WIN' ? 'bg-stitch-green/20 text-stitch-green' : 'bg-red-500/20 text-red-400'}`}>
-                        {match.result === 'WIN' ? '+' : '-'}{match.cubes}
-                      </span>
-                      <span className={`text-sm font-bold ${match.result === 'WIN' ? 'text-stitch-green' : 'text-red-400'}`}>
-                        {match.result === 'WIN' ? 'Victory' : 'Defeat'}
-                      </span>
-                    </div>
-                    <span className="text-stitch-muted text-xs">{formatDate(match.timestamp)}</span>
+              <div className="relative">
+                {/* THE COMPANION — momentum ribbon: static SVG polyline, horizontal
+                    displacement tracks cumulative net cubes across the visible window */}
+                {momentumRibbon && (
+                  <div className="absolute left-0 top-0 bottom-0 w-6 z-0" aria-hidden="true">
+                    <svg width="24" height="100%" viewBox={`0 0 24 ${momentumRibbon.n}`} preserveAspectRatio="none" className="absolute inset-0">
+                      <polyline
+                        points={momentumRibbon.nodes.map(node => `${node.x},${node.y * momentumRibbon.n / 100}`).join(' ')}
+                        fill="none"
+                        stroke="#ad2bee"
+                        strokeWidth="2"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </svg>
+                    {momentumRibbon.nodes.map(node => (
+                      <div
+                        key={node.id}
+                        className={`absolute w-2.5 h-2.5 rounded-full -translate-x-1/2 -translate-y-1/2 border border-white/20 ${
+                          node.isTopStreakNode ? 'bg-mcu-gold' : node.isWin ? 'bg-stitch-green' : 'bg-red-400'
+                        }`}
+                        style={{ left: `${(node.x / 24) * 100}%`, top: `${node.y}%` }}
+                      ></div>
+                    ))}
                   </div>
-                ))}
+                )}
+                <div className={`space-y-2 ${momentumRibbon ? 'pl-8' : ''}`}>
+                  {recentVisible.map(match => {
+                    const remark = getMatchRemark(match);
+                    return (
+                      <div key={match.id} className={`stitch-list-item flex flex-col gap-1.5 ${
+                        match.result === 'WIN' ? 'comic-panel-win' : 'comic-panel-loss'
+                      }`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className={`stitch-badge ${match.result === 'WIN' ? 'bg-stitch-green/20 text-stitch-green' : 'bg-red-500/20 text-red-400'}`}>
+                              {match.result === 'WIN' ? '+' : '-'}{match.cubes}
+                            </span>
+                            <span className={`text-sm font-bold ${match.result === 'WIN' ? 'text-stitch-green' : 'text-red-400'}`}>
+                              {match.result === 'WIN' ? 'Victory' : 'Defeat'}
+                            </span>
+                          </div>
+                          <span className="text-stitch-muted text-xs">{formatDate(match.timestamp)}</span>
+                        </div>
+                        <div className="cosmic-glass rounded-full px-3 py-1 w-max max-w-full">
+                          <p className="text-xs italic text-cosmic-purple-text truncate">
+                            {remark.isNote ? `“${remark.text}”` : remark.text}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
+          </div>
+
+          {/* THE COMPANION — reply pills, navigation only (no prefill plumbing) */}
+          <div className="flex flex-wrap gap-3 mt-4">
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'oracle' }))}
+              className="cosmic-glass rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-[box-shadow,transform] duration-150 ease-[var(--ease-snap)] hover:shadow-[0_0_15px_rgba(173,43,238,0.25)] active:scale-95"
+            >
+              Ask about my games
+            </button>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'decks' }))}
+              className="cosmic-glass rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-[box-shadow,transform] duration-150 ease-[var(--ease-snap)] hover:shadow-[0_0_15px_rgba(173,43,238,0.25)] active:scale-95"
+            >
+              Forge a counter deck
+            </button>
           </div>
         </div>
       );
@@ -5290,12 +5481,17 @@ RULES:
                           Deck: {match.deck}
                         </p>
                       )}
-                      {/* Notes — surfaced as a short quote line */}
-                      {match.notes && (
-                        <p className="text-[#b792c9]/70 text-xs italic truncate">
-                          &ldquo;{match.notes}&rdquo;
-                        </p>
-                      )}
+                      {/* THE COMPANION — Snapapoulous remark chip, shared helper with the Dashboard feed */}
+                      {(() => {
+                        const remark = getMatchRemark(match);
+                        return (
+                          <div className="cosmic-glass rounded-full px-2.5 py-1 mt-1.5 w-max max-w-full">
+                            <p className="text-xs italic text-cosmic-purple-text truncate">
+                              {remark.isNote ? `“${remark.text}”` : remark.text}
+                            </p>
+                          </div>
+                        );
+                      })()}
                     </div>
 
                     {/* Right meta */}
