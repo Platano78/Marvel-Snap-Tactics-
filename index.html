@@ -2900,6 +2900,137 @@ RESPONSE GUIDELINES:
       return fullText || 'No response';
     };
 
+    // ==================== FORGE ENGINE (AI Deck Maker) ====================
+    // Buffered-only — the Forge's strict-JSON contract streams badly, so every call here
+    // returns one complete response, never onChunk deltas (design ruling).
+
+    // Mirrors AIChat.sendMessage's provider switch (~L5846), but 'local' speaks the
+    // OpenAI-compatible chat/completions shape (LM Studio / vLLM / llama.cpp servers) instead
+    // of callLocal's Ollama-native /api/chat — matches AIProviders.local's own description
+    // ("Ollama, LM Studio, vLLM, or any OpenAI-compatible endpoint"); Ollama also serves this
+    // shape via its OpenAI-compat layer, so no runtime loses support.
+    const callProviderBuffered = async (provider, messages, model, aiConfig) => {
+      switch (provider) {
+        case 'gemini-oauth':
+          return await callGeminiOAuth(messages, model);
+        case 'gemini':
+          return await callGeminiAPIKey(messages, model, aiConfig.apiKeys && aiConfig.apiKeys.gemini);
+        case 'groq':
+          return await callGroq(messages, model, aiConfig.apiKeys && aiConfig.apiKeys.groq);
+        case 'claude':
+          return await callClaude(messages, model, aiConfig.apiKeys && aiConfig.apiKeys.claude);
+        case 'openai':
+          return await callOpenAI(messages, model, aiConfig.apiKeys && aiConfig.apiKeys.openai);
+        case 'local': {
+          const base = (aiConfig.localEndpoint || '').replace(/\/+$/, '');
+          const url = base.endsWith('/v1') ? `${base}/chat/completions` : `${base}/v1/chat/completions`;
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model, messages, stream: false })
+          });
+          if (!response.ok) throw new Error(`Local error: ${response.status}`);
+          const data = await response.json();
+          return safeGet(data, 'choices.0.message.content', '');
+        }
+        default:
+          throw new Error('Unknown provider');
+      }
+    };
+
+    // Tier list for the Forge's meta context — same fallback merge as MetaTierList's
+    // mergedData (~L7993); duplicated here as a plain function since that logic lives inside
+    // a component and this needs it before render.
+    const getForgeTierList = () => {
+      if (Array.isArray(META_CONTEXT.tierList) && META_CONTEXT.tierList.length > 0) return META_CONTEXT.tierList;
+      const liveMap = {};
+      (META_CONTEXT.topArchetypes || []).forEach(a => { liveMap[a.name] = a.tier; });
+      return TIER_STUB_DATA.map(d => ({ ...d, tier: liveMap[d.name] || d.tier }));
+    };
+
+    // Builds the Forge's strict-JSON contract prompt. Every card the model returns MUST come
+    // verbatim from the injected pool — no fabricated cards, ever.
+    const buildForgeSystemPrompt = ({ onlyOwned, metaAware, poolLines }) => {
+      const metaSection = metaAware ? `
+
+CURRENT META (${META_CONTEXT.season || 'Current Season'}):
+Top Archetypes: ${(META_CONTEXT.topArchetypes || []).map(a => `${a.name} (${a.tier})`).join(', ') || 'Unknown'}
+Tier List: ${getForgeTierList().map(d => `${d.name} (${d.tier}, ${d.archetype})`).join(', ')}` : '';
+
+      return `You are Snapapoulous, a Marvel Snap deck-building AI. Build a 12-card deck for the user's request.
+
+CANDIDATE POOL (you may ONLY use cards from this list, spelled exactly as shown — cost in parentheses)${onlyOwned ? ', limited to cards the user owns' : ''}:
+${poolLines}
+${metaSection}
+
+RULES:
+- Every one of the 12 cards MUST be copied verbatim from the candidate pool above. Never invent a card.
+- Return EXACTLY 12 unique cards.
+- Respond with STRICT JSON ONLY — no prose, no markdown code fences, no commentary before or after.
+- JSON shape:
+{"name": "<short deck name>", "cards": ["Card 1", "...", "Card 12"], "reasoning": [{"card": "Card 1", "note": "<=90 chars why it's in the deck"}], "synergies": [["Card A", "Card B"]]}`;
+    };
+
+    // Pure, unit-testable validator for the Forge's model response. Never trusts a card name
+    // at face value — every entry is resolved case-insensitively against the real card DB, so
+    // a hallucinated card always surfaces as a violation rather than silently entering a deck.
+    const validateForgeResponse = (rawText, { ownedSet, onlyOwned }) => {
+      let text = (rawText || '').trim();
+      const fenceMatch = text.match(/```(?:\w+)?\s*([\s\S]*?)```/i);
+      if (fenceMatch) text = fenceMatch[1].trim();
+
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch (e) {
+        return { ok: false, violations: [`Response was not valid JSON: ${e.message}`] };
+      }
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        return { ok: false, violations: ['Response JSON was not an object'] };
+      }
+      if (!Array.isArray(parsed.cards) || parsed.cards.some(c => typeof c !== 'string')) {
+        return { ok: false, violations: ['"cards" was missing or not an array of strings'] };
+      }
+
+      const lowerMap = new Map();
+      uniqueCards.forEach(c => lowerMap.set(c.name.toLowerCase(), c.name));
+
+      const resolved = [];
+      const violations = [];
+      parsed.cards.forEach(raw => {
+        const hit = lowerMap.get(String(raw).trim().toLowerCase());
+        if (hit) resolved.push(hit);
+        else violations.push(`Not a real card: "${raw}"`);
+      });
+
+      const uniqueResolved = Array.from(new Set(resolved));
+      if (uniqueResolved.length !== resolved.length) {
+        violations.push('Deck contained duplicate cards');
+      }
+      if (violations.length === 0 && uniqueResolved.length !== 12) {
+        violations.push(`Deck must have exactly 12 unique cards (got ${uniqueResolved.length})`);
+      }
+      if (onlyOwned && ownedSet) {
+        uniqueResolved
+          .filter(c => !ownedSet.has(c.toLowerCase()))
+          .forEach(c => violations.push(`Not in your collection: "${c}"`));
+      }
+
+      if (violations.length > 0) {
+        return { ok: false, violations, validSubset: uniqueResolved.slice(0, 12) };
+      }
+
+      const name = typeof parsed.name === 'string' && parsed.name.trim() ? parsed.name.trim() : 'AI Forged Deck';
+      const reasoning = Array.isArray(parsed.reasoning)
+        ? parsed.reasoning.filter(r => r && typeof r.card === 'string' && typeof r.note === 'string')
+        : [];
+      const synergies = Array.isArray(parsed.synergies)
+        ? parsed.synergies.filter(pair => Array.isArray(pair) && pair.length === 2)
+        : [];
+
+      return { ok: true, deck: { name, cards: uniqueResolved, reasoning, synergies } };
+    };
+
     // ==================== LOG PARSER ====================
     const LogParser = {
       parsePlayerLog(logContent) {
@@ -6837,8 +6968,8 @@ RESPONSE GUIDELINES:
     };
 
     // ==================== DECKS COMPONENT ====================
-    const Decks = ({ decks, setDecks, collection, settings }) => {
-      const [view, setView] = useState('list'); // list, create, edit, import
+    const Decks = ({ decks, setDecks, collection, settings, aiConfig }) => {
+      const [view, setView] = useState('list'); // list, create, edit, import, forge
       const [editingDeck, setEditingDeck] = useState(null);
       const [deckName, setDeckName] = useState('');
       const [selectedCards, setSelectedCards] = useState([]);
@@ -6848,6 +6979,15 @@ RESPONSE GUIDELINES:
       const [searchCard, setSearchCard] = useState('');
       const [seriesFilter, setSeriesFilter] = useState('all');
       const [deckToDelete, setDeckToDelete] = useState(null);
+
+      // Forge (AI deck maker) — see runForge() below
+      const [forgePrompt, setForgePrompt] = useState('');
+      const [forgeOnlyOwned, setForgeOnlyOwned] = useState(true);
+      const [forgeMetaAware, setForgeMetaAware] = useState(true);
+      const [forgeStatus, setForgeStatus] = useState('idle'); // idle | forging | result | error
+      const [forgeResult, setForgeResult] = useState(null); // { name, cards, reasoning, synergies }
+      const [forgeDeckName, setForgeDeckName] = useState('');
+      const [forgeError, setForgeError] = useState(null); // { message, violations?, validSubset? }
 
       // Creator Decks (Tier 1, offline-safe) — data/creators.json + data/creator-decks.json
       const [creators, setCreators] = useState([]);
@@ -6932,6 +7072,113 @@ RESPONSE GUIDELINES:
           setDeckToDelete(null);
         }
       }, [deckToDelete, setDecks]);
+
+      // Mirrors AIChat's isConfigured() (~L5799) — kept local since aiConfig here is a prop, not
+      // the chat component's own state.
+      const isForgeConfigured = () => {
+        if (!aiConfig || !aiConfig.provider) return false;
+        if (aiConfig.provider === 'gemini-oauth') return isGoogleTokenValid();
+        if (aiConfig.provider === 'local') return !!aiConfig.localEndpoint;
+        return !!(aiConfig.apiKeys && aiConfig.apiKeys[aiConfig.provider]);
+      };
+
+      // Forge a deck: build the candidate pool + contract prompt, call the configured
+      // provider once (buffered), validate the response, and — on failure — make exactly one
+      // corrective re-ask before surfacing an honest error. Never fabricates a card: every
+      // name in the final deck has been resolved against the real card DB by validateForgeResponse.
+      const runForge = async (promptText) => {
+        const trimmed = (promptText || '').trim();
+        if (!trimmed) return;
+        if (!isForgeConfigured()) {
+          setForgeStatus('error');
+          setForgeError({ message: 'Configure an AI provider in Settings first.' });
+          return;
+        }
+
+        setForgeStatus('forging');
+        setForgeError(null);
+        setForgeResult(null);
+        setForgeDeckName('');
+
+        const pool = forgeOnlyOwned
+          ? uniqueCards.filter(c => deckOwnedSet.has(c.name.toLowerCase()))
+          : uniqueCards;
+
+        if (forgeOnlyOwned && pool.length === 0) {
+          setForgeStatus('error');
+          setForgeError({ message: 'Your collection has no cards yet — turn off "Only my cards" or add some first.' });
+          return;
+        }
+
+        const poolLines = pool.map(c => `${c.name} (${c.cost})`).join('\n');
+        const systemPrompt = buildForgeSystemPrompt({ onlyOwned: forgeOnlyOwned, metaAware: forgeMetaAware, poolLines });
+        const baseMessages = [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: trimmed }
+        ];
+        const model = aiConfig.model || (AIProviders[aiConfig.provider] && AIProviders[aiConfig.provider].defaultModel);
+
+        try {
+          const raw1 = await callProviderBuffered(aiConfig.provider, baseMessages, model, aiConfig);
+          let result = validateForgeResponse(raw1, { ownedSet: deckOwnedSet, onlyOwned: forgeOnlyOwned });
+
+          if (!result.ok) {
+            // Exactly one corrective re-ask, enumerating what was wrong.
+            const correctionMessages = [
+              ...baseMessages,
+              { role: 'assistant', content: (raw1 && raw1.trim()) ? raw1 : '(the model returned an empty response)' },
+              { role: 'user', content: `These are not valid/available cards: ${result.violations.join('; ')} — replace ONLY those, return the full corrected JSON.` }
+            ];
+            const raw2 = await callProviderBuffered(aiConfig.provider, correctionMessages, model, aiConfig);
+            result = validateForgeResponse(raw2, { ownedSet: deckOwnedSet, onlyOwned: forgeOnlyOwned });
+
+            if (!result.ok) {
+              setForgeStatus('error');
+              setForgeError({
+                message: "The AI couldn't build a valid 12-card deck, even after a correction attempt.",
+                violations: result.violations,
+                validSubset: result.validSubset || []
+              });
+              return;
+            }
+          }
+
+          setForgeResult(result.deck);
+          setForgeDeckName(result.deck.name);
+          setForgeStatus('result');
+        } catch (e) {
+          setForgeStatus('error');
+          setForgeError({ message: e.message || 'Forge request failed' });
+        }
+      };
+
+      const saveForgedDeck = () => {
+        if (!forgeResult) return;
+        const newDeck = {
+          id: generateId(),
+          name: (forgeDeckName || forgeResult.name || 'AI Forged Deck').trim() || 'AI Forged Deck',
+          cards: forgeResult.cards,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        setDecks(prev => [...prev, newDeck]);
+        setForgeStatus('idle');
+        setForgeResult(null);
+        setForgePrompt('');
+        setView('list');
+      };
+
+      // Both corrective attempts still failed — hand the valid subset to the existing
+      // builder rather than discarding the AI's work entirely.
+      const openForgeInBuilder = () => {
+        const subset = (forgeError && forgeError.validSubset) || [];
+        setSelectedCards(subset.slice(0, 12));
+        setDeckName(forgeDeckName || 'AI Forged Deck (partial)');
+        setEditingDeck(null);
+        setForgeStatus('idle');
+        setForgeError(null);
+        setView('create');
+      };
 
       // Decode deck code (base64 encoded card list)
       // Game uses abbreviated defIds like "Fntmx8" for Fantomex
@@ -7225,6 +7472,11 @@ RESPONSE GUIDELINES:
               <button onClick={() => setView('import')}
                 className="flex-1 min-h-[44px] bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-white py-3 rounded-full font-bold text-sm hover:bg-[rgba(173,43,238,0.12)] transition-colors duration-200">
                 Import Deck
+              </button>
+              <button onClick={() => setView('forge')}
+                aria-label="Forge a deck with AI"
+                className="flex items-center justify-center min-h-[44px] w-14 shrink-0 rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-cosmic-purple-text hover:bg-[rgba(173,43,238,0.12)] hover:text-white transition-colors">
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">auto_awesome</span>
               </button>
             </div>
             {decks.length === 0 ? (
@@ -7539,6 +7791,148 @@ RESPONSE GUIDELINES:
               onConfirm={confirmDeleteDeck}
               onCancel={() => setDeckToDelete(null)}
             />
+          </div>
+        );
+      }
+
+      // Forge View — AI deck maker
+      if (view === 'forge') {
+        return (
+          <div className="px-4 pb-20">
+            <Header title="THE FORGE" />
+            <button onClick={() => { setView('list'); setForgeStatus('idle'); setForgeError(null); }}
+              className="inline-flex items-center gap-1 min-h-[44px] px-1 text-cosmic-purple-text hover:text-white transition-colors mb-2">
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">arrow_back</span>
+              <span className="text-sm font-semibold">Back to Decks</span>
+            </button>
+
+            {/* Prompt input + toggles — hidden only while mid-forge */}
+            {forgeStatus !== 'forging' && (
+              <div className="stitch-card p-5 mb-4">
+                <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Forge a Deck</h3>
+                <div className="flex items-center bg-[#1a1320] rounded-full px-4 py-1 mb-3 border-2 border-[rgba(173,43,238,0.3)] focus-within:border-cosmic-purple-text">
+                  <input
+                    type="text"
+                    value={forgePrompt}
+                    onChange={(e) => setForgePrompt(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') runForge(forgePrompt); }}
+                    placeholder="Forge me a deck around..."
+                    aria-label="Forge prompt"
+                    className="flex-1 bg-transparent text-white text-sm py-2 focus:outline-none focus:ring-0 border-none placeholder-white/40"
+                  />
+                  <button onClick={() => runForge(forgePrompt)}
+                    disabled={!forgePrompt.trim()}
+                    aria-label="Forge deck"
+                    className="flex items-center justify-center w-9 h-9 rounded-full bg-cosmic-purple text-white disabled:opacity-40 shrink-0">
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">auto_awesome</span>
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => setForgeOnlyOwned(o => !o)}
+                    aria-pressed={forgeOnlyOwned}
+                    className={`flex-1 min-h-[36px] rounded-full px-3 text-xs font-bold transition-colors ${forgeOnlyOwned ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}>
+                    Only my cards
+                  </button>
+                  <button onClick={() => setForgeMetaAware(m => !m)}
+                    aria-pressed={forgeMetaAware}
+                    className={`flex-1 min-h-[36px] rounded-full px-3 text-xs font-bold transition-colors ${forgeMetaAware ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}>
+                    Meta-aware
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Forging */}
+            {forgeStatus === 'forging' && (
+              <div className="flex flex-col items-center gap-4 py-14 text-center">
+                <div className="spinner" aria-hidden="true" />
+                <p className="text-white font-semibold text-sm">Forging your deck&hellip;</p>
+                <p className="text-stitch-muted text-xs max-w-xs">Snapapoulous is reading the meta and your collection.</p>
+              </div>
+            )}
+
+            {/* Error */}
+            {forgeStatus === 'error' && forgeError && (
+              <div className="stitch-card p-5 border border-red-500/25">
+                <p className="text-red-400 font-semibold text-sm mb-2">{forgeError.message}</p>
+                {forgeError.violations && forgeError.violations.length > 0 && (
+                  <ul className="text-xs text-stitch-muted list-disc list-inside mb-3 space-y-0.5">
+                    {forgeError.violations.map((v, i) => <li key={i}>{v}</li>)}
+                  </ul>
+                )}
+                <div className="flex gap-2">
+                  {forgeError.validSubset && forgeError.validSubset.length > 0 && (
+                    <button onClick={openForgeInBuilder}
+                      className="flex-1 min-h-[44px] bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-white py-2 rounded-full font-bold text-sm hover:bg-[rgba(173,43,238,0.12)] transition-colors">
+                      Open in Builder
+                    </button>
+                  )}
+                  <button onClick={() => { setForgeStatus('idle'); setForgeError(null); }}
+                    className="flex-1 min-h-[44px] bg-cosmic-purple-text text-white py-2 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(173,43,238,0.45)] transition-shadow duration-200">
+                    Try Again
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Result */}
+            {forgeStatus === 'result' && forgeResult && (
+              <div>
+                <div className="stitch-card p-5 mb-4">
+                  <label className="stitch-label mb-1 block">Deck Name</label>
+                  <input
+                    type="text"
+                    value={forgeDeckName}
+                    onChange={(e) => setForgeDeckName(e.target.value)}
+                    aria-label="Forged deck name"
+                    className="w-full bg-[#1a1320] text-white text-lg font-display font-semibold rounded-xl px-3 py-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20"
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  {forgeResult.cards.map(cardName => {
+                    const card = cardLookup.get(cardName);
+                    const artUrl = card ? getCardArtUrl(card) : null;
+                    const note = (forgeResult.reasoning || []).find(r => r.card === cardName);
+                    return (
+                      <div key={cardName} className="flex flex-col gap-1">
+                        <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden border border-[rgba(173,43,238,0.25)]">
+                          <div className="absolute inset-0 card-art card-art-fallback" style={{ zIndex: 0 }} />
+                          {artUrl && (
+                            <img src={artUrl} alt={cardName} loading="lazy"
+                              className="absolute inset-0 w-full h-full object-cover" style={{ zIndex: 1 }}
+                              onError={e => { e.currentTarget.style.display = 'none'; }} />
+                          )}
+                          <span className="absolute top-1 left-1 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-bold text-white shadow z-10">
+                            {card?.cost ?? '?'}
+                          </span>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                          <span className="absolute bottom-1 left-0.5 right-0.5 text-[9px] text-white text-center leading-tight truncate font-bold drop-shadow-lg z-10">
+                            {cardName}
+                          </span>
+                        </div>
+                        {note && (
+                          <span className="text-[9px] leading-snug text-cosmic-purple-text bg-[rgba(173,43,238,0.12)] border border-[rgba(173,43,238,0.25)] rounded-full px-2 py-0.5 text-center">
+                            {note.note}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="flex gap-2">
+                  <button onClick={() => setForgeStatus('idle')}
+                    className="flex-1 min-h-[44px] bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-white py-2 rounded-full font-bold text-sm hover:bg-[rgba(173,43,238,0.12)] transition-colors">
+                    Refine
+                  </button>
+                  <button onClick={saveForgedDeck}
+                    className="flex-1 min-h-[44px] bg-cosmic-purple-text text-white py-2 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(173,43,238,0.45)] transition-shadow duration-200">
+                    Save to My Decks
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         );
       }
@@ -13104,7 +13498,7 @@ RESPONSE GUIDELINES:
             )}
             {activeTab === 'decks' && (
               <ErrorBoundary>
-                <Decks decks={decks} setDecks={setDecks} collection={collection} settings={settings} />
+                <Decks decks={decks} setDecks={setDecks} collection={collection} settings={settings} aiConfig={aiConfig} />
               </ErrorBoundary>
             )}
             {activeTab === 'compare' && (
