@@ -2736,18 +2736,51 @@ RESPONSE GUIDELINES:
       return { systemText: systemTexts.join('\n\n'), chatMessages };
     };
 
+    const AI_CONNECT_TIMEOUT_MS = 20000;
+    const AI_STALL_TIMEOUT_MS = 45000;
+    const AI_BUFFERED_TIMEOUT_MS = 180000; // 3 min: buffered APIs generate fully before responding
+
+    // Combines an optional caller-supplied signal with an internal timeout that can be
+    // restarted (bumped) as stream chunks arrive. Returns the signal to hand to fetch,
+    // a bump() to reset the timer per chunk, and a cleanup() that MUST run in a finally.
+    const withAbort = (externalSignal, timeoutMs) => {
+      const ctrl = new AbortController();
+      let timer = null;
+      const arm = (ms) => {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => ctrl.abort(new DOMException('Timeout', 'TimeoutError')), ms);
+      };
+      const onAbort = () => ctrl.abort(externalSignal.reason);
+      if (externalSignal) {
+        if (externalSignal.aborted) ctrl.abort(externalSignal.reason);
+        else externalSignal.addEventListener('abort', onAbort, { once: true });
+      }
+      arm(timeoutMs);
+      return {
+        signal: ctrl.signal,
+        bump: (ms) => arm(ms ?? AI_STALL_TIMEOUT_MS),
+        cleanup: () => {
+          if (timer) clearTimeout(timer);
+          if (externalSignal) externalSignal.removeEventListener('abort', onAbort);
+        },
+      };
+    };
+
     // Shared incremental-line reader for SSE/NDJSON streaming responses.
     // Buffers partial lines (and partial multi-byte chars, via TextDecoder's
     // stream:true) so a delta split across two network chunks is never lost
     // or duplicated. onLine is called once per complete line, in order; any
-    // trailing unterminated line is flushed after the stream ends.
-    const readStream = async (response, onLine) => {
+    // trailing unterminated line is flushed after the stream ends. bump (optional)
+    // is called after every received chunk (not on done) to reset the caller's
+    // stall timeout.
+    const readStream = async (response, onLine, bump) => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
       while (true) {
         const { done, value } = await reader.read();
         if (value) {
+          if (bump) bump();
           buffer += decoder.decode(value, { stream: true });
           let newlineIndex;
           while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
@@ -2767,250 +2800,285 @@ RESPONSE GUIDELINES:
     // (required for the Test Connection path); when provided, the function
     // makes a streaming request, invokes onChunk(textDelta) per chunk, and
     // still returns the full accumulated text at the end either way.
-    const callGeminiOAuth = async (messages, model, onChunk) => {
-      // Get access token (will refresh if expired)
-      const accessToken = await getGoogleAccessToken();
+    const callGeminiOAuth = async (messages, model, onChunk, signal, timeoutMs) => {
+      const ac = withAbort(signal, timeoutMs ?? (onChunk ? AI_CONNECT_TIMEOUT_MS : AI_BUFFERED_TIMEOUT_MS));
+      try {
+        // Get access token (will refresh if expired)
+        const accessToken = await getGoogleAccessToken();
 
-      if (!accessToken) {
-        throw new Error('Not signed in to Google. Please sign in first.');
-      }
-
-      // Split system prompt from chat messages
-      const { systemText, chatMessages } = splitSystemAndChat(messages);
-
-      // Build request body with proper systemInstruction
-      const requestBody = {
-        contents: chatMessages.map(m => ({
-          role: m.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: m.content }]
-        })),
-        generationConfig: {
-          maxOutputTokens: 8192,
-          temperature: 0.7
+        if (!accessToken) {
+          throw new Error('Not signed in to Google. Please sign in first.');
         }
-      };
 
-      // Add system instruction if we have system context
-      if (systemText) {
-        requestBody.systemInstruction = {
-          parts: [{ text: systemText }]
+        // Split system prompt from chat messages
+        const { systemText, chatMessages } = splitSystemAndChat(messages);
+
+        // Build request body with proper systemInstruction
+        const requestBody = {
+          contents: chatMessages.map(m => ({
+            role: m.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: m.content }]
+          })),
+          generationConfig: {
+            maxOutputTokens: 8192,
+            temperature: 0.7
+          }
         };
+
+        // Add system instruction if we have system context
+        if (systemText) {
+          requestBody.systemInstruction = {
+            parts: [{ text: systemText }]
+          };
+        }
+
+        const verb = onChunk ? 'streamGenerateContent' : 'generateContent';
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:${verb}` + (onChunk ? '?alt=sse' : '');
+
+        const response = await fetch(
+          url,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody),
+            signal: ac.signal
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+
+          if (response.status === 401) {
+            // Token invalid - clear it
+            localStorage.removeItem('snap_google_access_token');
+            localStorage.removeItem('snap_google_token_expiry');
+            throw new Error('Google session expired. Please sign in again.');
+          }
+
+          throw new Error(`Gemini API error: ${response.status} - ${(errorData.error && errorData.error.message) || 'Unknown error'}`);
+        }
+        ac.bump(); // headers received: connect budget is over, switch to the stall budget
+
+        if (!onChunk) {
+          const data = await response.json();
+
+          if (!(data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text)) {
+            throw new Error('Invalid response from Gemini API');
+          }
+
+          return data.candidates[0].content.parts[0].text;
+        }
+
+        let fullText = '';
+        await readStream(response, (line) => {
+          if (!line.startsWith('data:')) return;
+          const jsonStr = line.slice(5).trim();
+          if (!jsonStr) return;
+          let parsed;
+          try { parsed = JSON.parse(jsonStr); } catch { return; }
+          const delta = safeGet(parsed, 'candidates.0.content.parts.0.text', '');
+          if (delta) { fullText += delta; onChunk(delta); }
+        }, ac.bump);
+
+        if (!fullText) throw new Error('Invalid response from Gemini API');
+        return fullText;
+      } finally {
+        ac.cleanup();
       }
+    };
 
-      const verb = onChunk ? 'streamGenerateContent' : 'generateContent';
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:${verb}` + (onChunk ? '?alt=sse' : '');
+    const callGeminiAPIKey = async (messages, model, apiKey, onChunk, signal, timeoutMs) => {
+      const ac = withAbort(signal, timeoutMs ?? (onChunk ? AI_CONNECT_TIMEOUT_MS : AI_BUFFERED_TIMEOUT_MS));
+      try {
+        // Split system prompt from chat messages
+        const { systemText, chatMessages } = splitSystemAndChat(messages);
 
-      const response = await fetch(
-        url,
-        {
+        // Build request body with proper systemInstruction
+        const requestBody = {
+          contents: chatMessages.map(m => ({
+            role: m.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: m.content }]
+          })),
+          generationConfig: {
+            maxOutputTokens: 8192,
+            temperature: 0.7
+          }
+        };
+
+        // Add system instruction if we have system context
+        if (systemText) {
+          requestBody.systemInstruction = {
+            parts: [{ text: systemText }]
+          };
+        }
+
+        const verb = onChunk ? 'streamGenerateContent' : 'generateContent';
+        let url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:${verb}?key=${apiKey}`;
+        if (onChunk) url += '&alt=sse';
+
+        const response = await fetch(
+          url,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody),
+            signal: ac.signal
+          }
+        );
+        if (!response.ok) throw new Error(`Gemini API error: ${response.status}`);
+        ac.bump(); // headers received: connect budget is over, switch to the stall budget
+
+        if (!onChunk) {
+          const data = await response.json();
+          return safeGet(data, 'candidates.0.content.parts.0.text', 'No response');
+        }
+
+        let fullText = '';
+        await readStream(response, (line) => {
+          if (!line.startsWith('data:')) return;
+          const jsonStr = line.slice(5).trim();
+          if (!jsonStr) return;
+          let parsed;
+          try { parsed = JSON.parse(jsonStr); } catch { return; }
+          const delta = safeGet(parsed, 'candidates.0.content.parts.0.text', '');
+          if (delta) { fullText += delta; onChunk(delta); }
+        }, ac.bump);
+        return fullText || 'No response';
+      } finally {
+        ac.cleanup();
+      }
+    };
+
+    const callGroq = async (messages, model, apiKey, onChunk, signal, timeoutMs) => {
+      const ac = withAbort(signal, timeoutMs ?? (onChunk ? AI_CONNECT_TIMEOUT_MS : AI_BUFFERED_TIMEOUT_MS));
+      try {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${accessToken}`,
+            'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(requestBody)
-        }
-      );
+          body: JSON.stringify({ model, messages, max_tokens: 32768, ...(onChunk ? { stream: true } : {}) }),
+          signal: ac.signal
+        });
+        if (!response.ok) throw new Error(`Groq error: ${response.status}`);
+        ac.bump(); // headers received: connect budget is over, switch to the stall budget
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-
-        if (response.status === 401) {
-          // Token invalid - clear it
-          localStorage.removeItem('snap_google_access_token');
-          localStorage.removeItem('snap_google_token_expiry');
-          throw new Error('Google session expired. Please sign in again.');
+        if (!onChunk) {
+          const data = await response.json();
+          return safeGet(data, 'choices.0.message.content', 'No response');
         }
 
-        throw new Error(`Gemini API error: ${response.status} - ${(errorData.error && errorData.error.message) || 'Unknown error'}`);
-      }
-
-      if (!onChunk) {
-        const data = await response.json();
-
-        if (!(data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text)) {
-          throw new Error('Invalid response from Gemini API');
-        }
-
-        return data.candidates[0].content.parts[0].text;
-      }
-
-      let fullText = '';
-      await readStream(response, (line) => {
-        if (!line.startsWith('data:')) return;
-        const jsonStr = line.slice(5).trim();
-        if (!jsonStr) return;
-        let parsed;
-        try { parsed = JSON.parse(jsonStr); } catch { return; }
-        const delta = safeGet(parsed, 'candidates.0.content.parts.0.text', '');
-        if (delta) { fullText += delta; onChunk(delta); }
-      });
-
-      if (!fullText) throw new Error('Invalid response from Gemini API');
-      return fullText;
-    };
-
-    const callGeminiAPIKey = async (messages, model, apiKey, onChunk) => {
-      // Split system prompt from chat messages
-      const { systemText, chatMessages } = splitSystemAndChat(messages);
-
-      // Build request body with proper systemInstruction
-      const requestBody = {
-        contents: chatMessages.map(m => ({
-          role: m.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: m.content }]
-        })),
-        generationConfig: {
-          maxOutputTokens: 8192,
-          temperature: 0.7
-        }
-      };
-
-      // Add system instruction if we have system context
-      if (systemText) {
-        requestBody.systemInstruction = {
-          parts: [{ text: systemText }]
-        };
-      }
-
-      const verb = onChunk ? 'streamGenerateContent' : 'generateContent';
-      let url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:${verb}?key=${apiKey}`;
-      if (onChunk) url += '&alt=sse';
-
-      const response = await fetch(
-        url,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        }
-      );
-      if (!response.ok) throw new Error(`Gemini API error: ${response.status}`);
-
-      if (!onChunk) {
-        const data = await response.json();
-        return safeGet(data, 'candidates.0.content.parts.0.text', 'No response');
-      }
-
-      let fullText = '';
-      await readStream(response, (line) => {
-        if (!line.startsWith('data:')) return;
-        const jsonStr = line.slice(5).trim();
-        if (!jsonStr) return;
-        let parsed;
-        try { parsed = JSON.parse(jsonStr); } catch { return; }
-        const delta = safeGet(parsed, 'candidates.0.content.parts.0.text', '');
-        if (delta) { fullText += delta; onChunk(delta); }
-      });
-      return fullText || 'No response';
-    };
-
-    const callGroq = async (messages, model, apiKey, onChunk) => {
-      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ model, messages, max_tokens: 32768, ...(onChunk ? { stream: true } : {}) })
-      });
-      if (!response.ok) throw new Error(`Groq error: ${response.status}`);
-
-      if (!onChunk) {
-        const data = await response.json();
-        return safeGet(data, 'choices.0.message.content', 'No response');
-      }
-
-      let fullText = '';
-      await readStream(response, (line) => {
-        if (!line.startsWith('data:')) return;
-        const payload = line.slice(5).trim();
-        if (!payload || payload === '[DONE]') return;
-        let parsed;
-        try { parsed = JSON.parse(payload); } catch { return; }
-        const delta = safeGet(parsed, 'choices.0.delta.content', '');
-        if (delta) { fullText += delta; onChunk(delta); }
-      });
-      return fullText || 'No response';
-    };
-
-    const callClaude = async (messages, model, apiKey, onChunk) => {
-      const systemMsg = messages.find(m => m.role === 'system');
-      const otherMsgs = messages.filter(m => m.role !== 'system');
-
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'Content-Type': 'application/json',
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: 8192,
-          system: (systemMsg && systemMsg.content) || '',
-          messages: otherMsgs,
-          ...(onChunk ? { stream: true } : {})
-        })
-      });
-      if (!response.ok) throw new Error(`Claude error: ${response.status}`);
-
-      if (!onChunk) {
-        const data = await response.json();
-        return safeGet(data, 'content.0.text', 'No response');
-      }
-
-      let fullText = '';
-      let currentEvent = null;
-      await readStream(response, (line) => {
-        if (line.startsWith('event:')) {
-          currentEvent = line.slice(6).trim();
-          return;
-        }
-        if (!line.startsWith('data:')) return;
-        const payload = line.slice(5).trim();
-        if (!payload) return;
-        let parsed;
-        try { parsed = JSON.parse(payload); } catch { return; }
-        if (currentEvent === 'error') {
-          throw new Error((parsed.error && parsed.error.message) || 'Claude streaming error');
-        }
-        if (currentEvent === 'content_block_delta') {
-          const delta = safeGet(parsed, 'delta.text', '');
+        let fullText = '';
+        await readStream(response, (line) => {
+          if (!line.startsWith('data:')) return;
+          const payload = line.slice(5).trim();
+          if (!payload || payload === '[DONE]') return;
+          let parsed;
+          try { parsed = JSON.parse(payload); } catch { return; }
+          const delta = safeGet(parsed, 'choices.0.delta.content', '');
           if (delta) { fullText += delta; onChunk(delta); }
-        }
-      });
-      return fullText || 'No response';
+        }, ac.bump);
+        return fullText || 'No response';
+      } finally {
+        ac.cleanup();
+      }
     };
 
-    const callOpenAI = async (messages, model, apiKey, onChunk) => {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ model, messages, max_tokens: 32768, ...(onChunk ? { stream: true } : {}) })
-      });
-      if (!response.ok) throw new Error(`OpenAI error: ${response.status}`);
+    const callClaude = async (messages, model, apiKey, onChunk, signal, timeoutMs) => {
+      const ac = withAbort(signal, timeoutMs ?? (onChunk ? AI_CONNECT_TIMEOUT_MS : AI_BUFFERED_TIMEOUT_MS));
+      try {
+        const systemMsg = messages.find(m => m.role === 'system');
+        const otherMsgs = messages.filter(m => m.role !== 'system');
 
-      if (!onChunk) {
-        const data = await response.json();
-        return safeGet(data, 'choices.0.message.content', 'No response');
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'Content-Type': 'application/json',
+            'anthropic-dangerous-direct-browser-access': 'true'
+          },
+          body: JSON.stringify({
+            model,
+            max_tokens: 8192,
+            system: (systemMsg && systemMsg.content) || '',
+            messages: otherMsgs,
+            ...(onChunk ? { stream: true } : {})
+          }),
+          signal: ac.signal
+        });
+        if (!response.ok) throw new Error(`Claude error: ${response.status}`);
+        ac.bump(); // headers received: connect budget is over, switch to the stall budget
+
+        if (!onChunk) {
+          const data = await response.json();
+          return safeGet(data, 'content.0.text', 'No response');
+        }
+
+        let fullText = '';
+        let currentEvent = null;
+        await readStream(response, (line) => {
+          if (line.startsWith('event:')) {
+            currentEvent = line.slice(6).trim();
+            return;
+          }
+          if (!line.startsWith('data:')) return;
+          const payload = line.slice(5).trim();
+          if (!payload) return;
+          let parsed;
+          try { parsed = JSON.parse(payload); } catch { return; }
+          if (currentEvent === 'error') {
+            throw new Error((parsed.error && parsed.error.message) || 'Claude streaming error');
+          }
+          if (currentEvent === 'content_block_delta') {
+            const delta = safeGet(parsed, 'delta.text', '');
+            if (delta) { fullText += delta; onChunk(delta); }
+          }
+        }, ac.bump);
+        return fullText || 'No response';
+      } finally {
+        ac.cleanup();
       }
+    };
 
-      let fullText = '';
-      await readStream(response, (line) => {
-        if (!line.startsWith('data:')) return;
-        const payload = line.slice(5).trim();
-        if (!payload || payload === '[DONE]') return;
-        let parsed;
-        try { parsed = JSON.parse(payload); } catch { return; }
-        const delta = safeGet(parsed, 'choices.0.delta.content', '');
-        if (delta) { fullText += delta; onChunk(delta); }
-      });
-      return fullText || 'No response';
+    const callOpenAI = async (messages, model, apiKey, onChunk, signal, timeoutMs) => {
+      const ac = withAbort(signal, timeoutMs ?? (onChunk ? AI_CONNECT_TIMEOUT_MS : AI_BUFFERED_TIMEOUT_MS));
+      try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ model, messages, max_tokens: 32768, ...(onChunk ? { stream: true } : {}) }),
+          signal: ac.signal
+        });
+        if (!response.ok) throw new Error(`OpenAI error: ${response.status}`);
+        ac.bump(); // headers received: connect budget is over, switch to the stall budget
+
+        if (!onChunk) {
+          const data = await response.json();
+          return safeGet(data, 'choices.0.message.content', 'No response');
+        }
+
+        let fullText = '';
+        await readStream(response, (line) => {
+          if (!line.startsWith('data:')) return;
+          const payload = line.slice(5).trim();
+          if (!payload || payload === '[DONE]') return;
+          let parsed;
+          try { parsed = JSON.parse(payload); } catch { return; }
+          const delta = safeGet(parsed, 'choices.0.delta.content', '');
+          if (delta) { fullText += delta; onChunk(delta); }
+        }, ac.bump);
+        return fullText || 'No response';
+      } finally {
+        ac.cleanup();
+      }
     };
 
     // AIProviders.local's description promises "Ollama, LM Studio, vLLM, or any
@@ -3021,81 +3089,111 @@ RESPONSE GUIDELINES:
     // failure (404, connection refused, etc.) at the same base URL. The failure that trips
     // the fallback always happens at the request/status stage, before any bytes are streamed
     // to onChunk, so there's no risk of double-emitting partial output.
-    const callLocalOllama = async (messages, model, base, onChunk) => {
-      const response = await fetch(`${base}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model, messages, stream: !!onChunk })
-      });
-      if (!response.ok) throw new Error(`${response.status}`);
+    const callLocalOllama = async (messages, model, base, onChunk, signal, timeoutMs) => {
+      const ac = withAbort(signal, timeoutMs ?? (onChunk ? AI_CONNECT_TIMEOUT_MS : AI_BUFFERED_TIMEOUT_MS));
+      try {
+        const response = await fetch(`${base}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model, messages, stream: !!onChunk }),
+          signal: ac.signal
+        });
+        if (!response.ok) throw new Error(`${response.status}`);
+        ac.bump(); // headers received: connect budget is over, switch to the stall budget
 
-      if (!onChunk) {
-        const data = await response.json();
-        return safeGet(data, 'message.content', 'No response');
+        if (!onChunk) {
+          const data = await response.json();
+          return safeGet(data, 'message.content', 'No response');
+        }
+
+        let fullText = '';
+        let stopped = false;
+        await readStream(response, (line) => {
+          if (stopped) return;
+          const trimmed = line.trim();
+          if (!trimmed) return;
+          let parsed;
+          try { parsed = JSON.parse(trimmed); } catch { return; }
+          const delta = safeGet(parsed, 'message.content', '');
+          if (delta) { fullText += delta; onChunk(delta); }
+          if (parsed.done) stopped = true;
+        }, ac.bump);
+        return fullText || 'No response';
+      } finally {
+        ac.cleanup();
       }
-
-      let fullText = '';
-      let stopped = false;
-      await readStream(response, (line) => {
-        if (stopped) return;
-        const trimmed = line.trim();
-        if (!trimmed) return;
-        let parsed;
-        try { parsed = JSON.parse(trimmed); } catch { return; }
-        const delta = safeGet(parsed, 'message.content', '');
-        if (delta) { fullText += delta; onChunk(delta); }
-        if (parsed.done) stopped = true;
-      });
-      return fullText || 'No response';
     };
 
-    const callLocalOpenAICompat = async (messages, model, base, onChunk) => {
-      const url = base.endsWith('/v1') ? `${base}/chat/completions` : `${base}/v1/chat/completions`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model, messages, ...(onChunk ? { stream: true } : {}) })
-      });
-      if (!response.ok) throw new Error(`${response.status}`);
+    const callLocalOpenAICompat = async (messages, model, base, onChunk, signal, timeoutMs) => {
+      const ac = withAbort(signal, timeoutMs ?? (onChunk ? AI_CONNECT_TIMEOUT_MS : AI_BUFFERED_TIMEOUT_MS));
+      try {
+        const url = base.endsWith('/v1') ? `${base}/chat/completions` : `${base}/v1/chat/completions`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model, messages, ...(onChunk ? { stream: true } : {}) }),
+          signal: ac.signal
+        });
+        if (!response.ok) throw new Error(`${response.status}`);
+        ac.bump(); // headers received: connect budget is over, switch to the stall budget
 
-      if (!onChunk) {
-        const data = await response.json();
-        return safeGet(data, 'choices.0.message.content', 'No response');
+        if (!onChunk) {
+          const data = await response.json();
+          return safeGet(data, 'choices.0.message.content', 'No response');
+        }
+
+        let fullText = '';
+        await readStream(response, (line) => {
+          if (!line.startsWith('data:')) return;
+          const payload = line.slice(5).trim();
+          if (!payload || payload === '[DONE]') return;
+          let parsed;
+          try { parsed = JSON.parse(payload); } catch { return; }
+          const delta = safeGet(parsed, 'choices.0.delta.content', '');
+          if (delta) { fullText += delta; onChunk(delta); }
+        }, ac.bump);
+        return fullText || 'No response';
+      } finally {
+        ac.cleanup();
       }
-
-      let fullText = '';
-      await readStream(response, (line) => {
-        if (!line.startsWith('data:')) return;
-        const payload = line.slice(5).trim();
-        if (!payload || payload === '[DONE]') return;
-        let parsed;
-        try { parsed = JSON.parse(payload); } catch { return; }
-        const delta = safeGet(parsed, 'choices.0.delta.content', '');
-        if (delta) { fullText += delta; onChunk(delta); }
-      });
-      return fullText || 'No response';
     };
 
-    const callLocal = async (messages, model, endpoint, onChunk) => {
+    // Rethrow without falling through to the other wire format only when the caller's OWN
+    // signal fired (user cancel or an upstream cap) — that's the one case where retrying is
+    // pointless (the signal already fired, so a fallback attempt would just abort again
+    // immediately). A timeout from THIS attempt's own internal withAbort timer is not that:
+    // signal.aborted stays false, so the fallback still gets a fresh timeout budget of its own.
+    const isAbortError = (e) => e && (e.name === 'AbortError' || e.name === 'TimeoutError');
+
+    const callLocal = async (messages, model, endpoint, onChunk, signal, timeoutMs) => {
       const base = (endpoint || '').replace(/\/+$/, '');
       const openaiUrl = base.endsWith('/v1') ? `${base}/chat/completions` : `${base}/v1/chat/completions`;
 
       // Endpoint already names an OpenAI-style API version — no need to probe Ollama first.
       if (base.endsWith('/v1')) {
         try {
-          return await callLocalOpenAICompat(messages, model, base, onChunk);
+          return await callLocalOpenAICompat(messages, model, base, onChunk, signal, timeoutMs);
         } catch (e) {
-          throw new Error(`Local endpoint unreachable at ${openaiUrl} (${e.message})`);
+          if (signal && signal.aborted) throw e;
+          const message = `Local endpoint unreachable at ${openaiUrl} (${e.message})`;
+          if (isAbortError(e)) throw new DOMException(message, 'TimeoutError');
+          throw new Error(message);
         }
       }
 
       try {
-        return await callLocalOllama(messages, model, base, onChunk);
+        return await callLocalOllama(messages, model, base, onChunk, signal, timeoutMs);
       } catch (ollamaErr) {
+        if (signal && signal.aborted) throw ollamaErr;
         try {
-          return await callLocalOpenAICompat(messages, model, base, onChunk);
+          return await callLocalOpenAICompat(messages, model, base, onChunk, signal, timeoutMs);
         } catch (openaiErr) {
-          throw new Error(`Local endpoint unreachable at both ${base}/api/chat (${ollamaErr.message}) and ${openaiUrl} (${openaiErr.message})`);
+          if (signal && signal.aborted) throw openaiErr;
+          const message = `Local endpoint unreachable at both ${base}/api/chat (${ollamaErr.message}) and ${openaiUrl} (${openaiErr.message})`;
+          if (isAbortError(ollamaErr) || isAbortError(openaiErr)) {
+            throw new DOMException(message, 'TimeoutError');
+          }
+          throw new Error(message);
         }
       }
     };
@@ -3108,20 +3206,20 @@ RESPONSE GUIDELINES:
     // (buffered — called with no onChunk) so the Forge gets the same Ollama-native /api/chat
     // with OpenAI-compatible fallback that the Chat path already uses, instead of a
     // hand-rolled OpenAI-compat-only request that fails on Ollama-only endpoints.
-    const callProviderBuffered = async (provider, messages, model, aiConfig) => {
+    const callProviderBuffered = async (provider, messages, model, aiConfig, signal, timeoutMs) => {
       switch (provider) {
         case 'gemini-oauth':
-          return await callGeminiOAuth(messages, model);
+          return await callGeminiOAuth(messages, model, undefined, signal, timeoutMs);
         case 'gemini':
-          return await callGeminiAPIKey(messages, model, aiConfig.apiKeys && aiConfig.apiKeys.gemini);
+          return await callGeminiAPIKey(messages, model, aiConfig.apiKeys && aiConfig.apiKeys.gemini, undefined, signal, timeoutMs);
         case 'groq':
-          return await callGroq(messages, model, aiConfig.apiKeys && aiConfig.apiKeys.groq);
+          return await callGroq(messages, model, aiConfig.apiKeys && aiConfig.apiKeys.groq, undefined, signal, timeoutMs);
         case 'claude':
-          return await callClaude(messages, model, aiConfig.apiKeys && aiConfig.apiKeys.claude);
+          return await callClaude(messages, model, aiConfig.apiKeys && aiConfig.apiKeys.claude, undefined, signal, timeoutMs);
         case 'openai':
-          return await callOpenAI(messages, model, aiConfig.apiKeys && aiConfig.apiKeys.openai);
+          return await callOpenAI(messages, model, aiConfig.apiKeys && aiConfig.apiKeys.openai, undefined, signal, timeoutMs);
         case 'local':
-          return await callLocal(messages, model, aiConfig.localEndpoint, undefined);
+          return await callLocal(messages, model, aiConfig.localEndpoint, undefined, signal, timeoutMs);
         default:
           throw new Error('Unknown provider');
       }
@@ -6208,6 +6306,9 @@ RULES:
       const [isLoading, setIsLoading] = useState(false);
       const [error, setError] = useState(null);
       const messagesEndRef = useRef(null);
+      // Holds the in-flight request's AbortController. A ref (not state) so setting/clearing
+      // it never triggers a re-render.
+      const abortRef = useRef(null);
 
       const scrollToBottom = () => {
         if (messagesEndRef.current) messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -6249,6 +6350,9 @@ RULES:
         setIsLoading(true);
         setError(null);
 
+        const ctrl = new AbortController();
+        abortRef.current = ctrl;
+
         // Tracks accumulated stream text outside React state so the catch
         // block can tell a mid-stream failure (partial text already
         // rendered) apart from a request that never started streaming.
@@ -6277,23 +6381,23 @@ RULES:
           switch (aiConfig.provider) {
             case 'gemini-oauth':
               // Pass full messages - callGeminiOAuth handles system instruction extraction
-              response = await callGeminiOAuth(apiMessages, model, onChunk);
+              response = await callGeminiOAuth(apiMessages, model, onChunk, ctrl.signal);
               break;
             case 'gemini':
               // Pass full messages - callGeminiAPIKey handles system instruction extraction
-              response = await callGeminiAPIKey(apiMessages, model, aiConfig.apiKeys && aiConfig.apiKeys.gemini, onChunk);
+              response = await callGeminiAPIKey(apiMessages, model, aiConfig.apiKeys && aiConfig.apiKeys.gemini, onChunk, ctrl.signal);
               break;
             case 'groq':
-              response = await callGroq(apiMessages, model, aiConfig.apiKeys && aiConfig.apiKeys.groq, onChunk);
+              response = await callGroq(apiMessages, model, aiConfig.apiKeys && aiConfig.apiKeys.groq, onChunk, ctrl.signal);
               break;
             case 'claude':
-              response = await callClaude(apiMessages, model, aiConfig.apiKeys && aiConfig.apiKeys.claude, onChunk);
+              response = await callClaude(apiMessages, model, aiConfig.apiKeys && aiConfig.apiKeys.claude, onChunk, ctrl.signal);
               break;
             case 'openai':
-              response = await callOpenAI(apiMessages, model, aiConfig.apiKeys && aiConfig.apiKeys.openai, onChunk);
+              response = await callOpenAI(apiMessages, model, aiConfig.apiKeys && aiConfig.apiKeys.openai, onChunk, ctrl.signal);
               break;
             case 'local':
-              response = await callLocal(apiMessages, model, aiConfig.localEndpoint, onChunk);
+              response = await callLocal(apiMessages, model, aiConfig.localEndpoint, onChunk, ctrl.signal);
               break;
             default:
               throw new Error('Unknown provider');
@@ -6301,23 +6405,37 @@ RULES:
 
           setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: response, streaming: false } : m));
         } catch (err) {
+          // A user cancel (Stop button) is not a failure: reuse the exact same
+          // finalization paths below, just suppress the error banner and the log.
+          const cancelled = err.name === 'AbortError';
           if (accumulated) {
-            // Mid-stream failure: chunks already arrived, so keep the
-            // partial text on screen and note the cut-off.
-            setError(`Response was cut off: ${err.message || 'connection lost'}`);
+            // Mid-stream failure (or cancel): chunks already arrived, so keep the
+            // partial text on screen and note the cut-off, unless it was a cancel.
+            if (!cancelled) {
+              const reason = err.name === 'TimeoutError' ? 'request timed out' : (err.message || 'connection lost');
+              setError(`Response was cut off: ${reason}`);
+            }
             setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, streaming: false } : m));
           } else {
-            // Failed before any chunk arrived - behaves exactly as before
+            // Failed/cancelled before any chunk arrived - behaves exactly as before
             // streaming existed: no assistant message is left behind (an
             // empty one would break the next request, e.g. Claude rejects
             // empty-content messages in history).
-            setError(err.message || 'Failed to get response');
+            if (!cancelled) {
+              const message = err.name === 'TimeoutError' ? 'Connection timed out' : (err.message || 'Failed to get response');
+              setError(message);
+            }
             setMessages(prev => prev.filter(m => m.id !== assistantId));
           }
-          console.error('AI error:', err);
+          if (!cancelled) console.error('AI error:', err);
         } finally {
           setIsLoading(false);
+          abortRef.current = null;
         }
+      };
+
+      const stopGenerating = () => {
+        if (abortRef.current) abortRef.current.abort();
       };
 
       const quickPrompts = [
@@ -6448,10 +6566,18 @@ RULES:
                 disabled={isLoading}
                 className="flex-1 bg-stark-surface text-white rounded-full px-5 py-3 border-2 border-[rgba(173,43,238,0.2)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 disabled:opacity-50"
               />
-              <button onClick={() => sendMessage()} disabled={isLoading || !input.trim()}
-                className="bg-cosmic-purple text-white px-6 py-3 rounded-full font-display font-medium hover:shadow-glow-blue transition-[background-color,box-shadow] duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-glass min-h-[44px]">
-                Send
-              </button>
+              {isLoading ? (
+                <button onClick={stopGenerating} aria-label="Stop generating"
+                  className="bg-cosmic-purple text-white px-6 py-3 rounded-full font-display font-medium hover:shadow-glow-blue transition-[background-color,box-shadow] duration-200 shadow-glass min-h-[44px] flex items-center gap-1.5">
+                  <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '20px' }}>stop_circle</span>
+                  Stop
+                </button>
+              ) : (
+                <button onClick={() => sendMessage()} disabled={!input.trim()}
+                  className="bg-cosmic-purple text-white px-6 py-3 rounded-full font-display font-medium hover:shadow-glow-blue transition-[background-color,box-shadow] duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-glass min-h-[44px]">
+                  Send
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -10380,6 +10506,7 @@ RULES:
       const testConnection = async (providerId) => {
         setTestStatus(prev => ({ ...prev, [providerId]: 'testing' }));
         setTestError(prev => ({ ...prev, [providerId]: null }));
+        const ctrl = new AbortController();
         try {
           const testMessages = [{ role: 'user', content: 'Say "Connection successful!" in 5 words or less.' }];
           const providerConfig = AIProviders[providerId] || {};
@@ -10391,29 +10518,32 @@ RULES:
               if (!isGoogleTokenValid()) {
                 throw new Error('Please sign in with Google first');
               }
-              await callGeminiOAuth(testMessages, model);
+              await callGeminiOAuth(testMessages, model, undefined, ctrl.signal, AI_CONNECT_TIMEOUT_MS);
               break;
             case 'gemini':
-              await callGeminiAPIKey(testMessages, model, apiKeys.gemini);
+              await callGeminiAPIKey(testMessages, model, apiKeys.gemini, undefined, ctrl.signal, AI_CONNECT_TIMEOUT_MS);
               break;
             case 'groq':
-              await callGroq(testMessages, model, apiKeys.groq);
+              await callGroq(testMessages, model, apiKeys.groq, undefined, ctrl.signal, AI_CONNECT_TIMEOUT_MS);
               break;
             case 'claude':
-              await callClaude(testMessages, model, apiKeys.claude);
+              await callClaude(testMessages, model, apiKeys.claude, undefined, ctrl.signal, AI_CONNECT_TIMEOUT_MS);
               break;
             case 'openai':
-              await callOpenAI(testMessages, model, apiKeys.openai);
+              await callOpenAI(testMessages, model, apiKeys.openai, undefined, ctrl.signal, AI_CONNECT_TIMEOUT_MS);
               break;
             case 'local':
-              await callLocal(testMessages, model, aiConfig.localEndpoint);
+              await callLocal(testMessages, model, aiConfig.localEndpoint, undefined, ctrl.signal, AI_CONNECT_TIMEOUT_MS);
               break;
           }
           setTestStatus(prev => ({ ...prev, [providerId]: 'success' }));
         } catch (err) {
           console.error('Test failed:', err);
           setTestStatus(prev => ({ ...prev, [providerId]: 'error' }));
-          setTestError(prev => ({ ...prev, [providerId]: err.message }));
+          const message = err.name === 'TimeoutError'
+            ? `Connection timed out after ${AI_CONNECT_TIMEOUT_MS / 1000}s`
+            : err.message;
+          setTestError(prev => ({ ...prev, [providerId]: message }));
         }
       };
 
