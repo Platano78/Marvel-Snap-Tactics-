@@ -10093,6 +10093,10 @@ RULES:
       const [mastery, setMastery] = useState(null);
       const [sortBy, setSortBy] = useState('netCubes');
       const [filterType, setFilterType] = useState('all');
+      const [sortDir, setSortDir] = useState('desc');
+      const [ownedOnly, setOwnedOnly] = useState(false);
+      const [showAll, setShowAll] = useState(false);
+      const [collection, setCollection] = useState(null);
 
       useEffect(() => {
         loadData();
@@ -10105,10 +10109,12 @@ RULES:
         setProfileStats(loadFromStorage('snap_profile_stats', null));
         setMissions(loadFromStorage('snap_missions', null));
         setMastery(loadFromStorage('snap_mastery', null));
+        setCollection(loadFromStorage('snap_collection', null));
       };
 
       const hasMissions = !!missions && (((missions.daily || []).length + (missions.weekly || []).length) > 0);
       const hasMastery = !!mastery && (mastery.cards || []).length > 0;
+      const ownedSet = React.useMemo(() => new Set(collection?.owned || []), [collection]);
 
       if (!performanceData && !profileStats && !hasMissions && !hasMastery) {
         return (
@@ -10145,17 +10151,21 @@ RULES:
       const cards = performanceData?.cards ? Object.entries(performanceData.cards)
         .map(([card, data]) => ({ card, ...data }))
         .filter(c => {
+          if (ownedOnly && !ownedSet.has(c.card)) return false;
           if (filterType === 'positive') return c.netCubes > 0;
           if (filterType === 'negative') return c.netCubes < 0;
           return true;
         })
         .sort((a, b) => {
-          if (sortBy === 'name') return a.card.localeCompare(b.card);
-          return b.netCubes - a.netCubes;
+          if (sortBy === 'name') return sortDir === 'asc' ? a.card.localeCompare(b.card) : b.card.localeCompare(a.card);
+          return sortDir === 'asc' ? a.netCubes - b.netCubes : b.netCubes - a.netCubes;
         }) : [];
 
-      const totalPositive = cards.filter(c => c.netCubes > 0).reduce((sum, c) => sum + c.netCubes, 0);
-      const totalNegative = cards.filter(c => c.netCubes < 0).reduce((sum, c) => sum + c.netCubes, 0);
+      // Lifetime totals are computed from the full unfiltered entry set so the
+      // Gained/Lost/Net tiles stay stable regardless of the active filter/owned-only toggle.
+      const allCardEntries = Object.values(performanceData?.cards || {});
+      const totalPositive = allCardEntries.filter(c => c.netCubes > 0).reduce((sum, c) => sum + c.netCubes, 0);
+      const totalNegative = allCardEntries.filter(c => c.netCubes < 0).reduce((sum, c) => sum + c.netCubes, 0);
 
       // Reward objects come straight from raw game JSON with no fixed schema —
       // only render a reward when both an amount and a currency/type are present.
@@ -10291,7 +10301,7 @@ RULES:
           )}
 
           {/* Card Performance */}
-          {performanceData && cards.length > 0 && (
+          {performanceData?.cards && Object.keys(performanceData.cards).length > 0 && (
             <div className="stitch-card p-5 mb-4">
               <div className="stitch-section-header">
                 <span className="material-symbols-outlined" aria-hidden="true">bar_chart</span>
@@ -10314,44 +10324,93 @@ RULES:
                 </div>
               </div>
 
-              <div className="flex gap-2 mb-3">
+              <div className="flex flex-wrap gap-2 mb-3">
                 <select
                   id="analytics-filter-type"
                   name="analytics-filter-type"
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="flex-1 rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/40"
+                  className="flex-1 min-w-[45%] rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/40"
                 >
                   <option value="all">All Cards ({Object.keys(performanceData.cards || {}).length})</option>
                   <option value="positive">Winners Only</option>
                   <option value="negative">Losers Only</option>
                 </select>
-                <select
-                  id="analytics-sort-by"
-                  name="analytics-sort-by"
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="flex-1 rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/40"
+                <div className="flex flex-1 min-w-[45%] gap-2">
+                  <select
+                    id="analytics-sort-by"
+                    name="analytics-sort-by"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="flex-1 rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/40"
+                  >
+                    <option value="netCubes">By Cubes</option>
+                    <option value="name">By Name</option>
+                  </select>
+                  <button
+                    onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}
+                    aria-label={sortDir === 'asc' ? 'Sort descending, tap to reverse' : 'Sort ascending, tap to reverse'}
+                    className="flex items-center justify-center w-11 min-h-[44px] rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-white shrink-0"
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">
+                      {sortDir === 'asc' ? 'arrow_upward' : 'arrow_downward'}
+                    </span>
+                  </button>
+                </div>
+                <button
+                  onClick={() => { setOwnedOnly(o => !o); setShowAll(false); }}
+                  aria-pressed={ownedOnly}
+                  className={`w-full min-h-[44px] rounded-full px-3 text-xs font-bold transition-colors ${ownedOnly ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}
                 >
-                  <option value="netCubes">By Cubes</option>
-                  <option value="name">By Name</option>
-                </select>
+                  Owned only
+                </button>
               </div>
 
-              <div className="space-y-1.5 max-h-[350px] overflow-y-auto">
-                {cards.map((card, i) => (
-                  <div
-                    key={card.card}
-                    className={`flex items-center gap-3 rounded-xl bg-stark-surface p-2.5 border-l-4 ${card.netCubes >= 0 ? 'border-stitch-green' : 'border-red-500'}`}
-                  >
-                    <span className="text-xs font-bold text-mcu-gold w-8 shrink-0">#{i + 1}</span>
-                    <span className="text-sm text-white flex-1 truncate">{card.card}</span>
-                    <span className={`text-sm font-bold shrink-0 ${card.netCubes >= 0 ? 'text-stitch-green' : 'text-red-400'}`}>
-                      {card.netCubes >= 0 ? '+' : ''}{card.netCubes}
-                    </span>
+              {cards.length === 0 ? (
+                <div className="text-center py-6 text-stitch-muted text-sm">
+                  <p>No cards match these filters.</p>
+                  {ownedOnly && ownedSet.size > 0 && (
+                    <p className="mt-1 text-xs">Try turning off Owned only.</p>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-1.5 max-h-[350px] overflow-y-auto">
+                    {cards.slice(0, showAll ? cards.length : 25).map((card, i) => (
+                      <div
+                        key={card.card}
+                        className={`flex items-center gap-3 rounded-xl bg-stark-surface p-2.5 border-l-4 ${card.netCubes >= 0 ? 'border-stitch-green' : 'border-red-500'}`}
+                      >
+                        <div className="w-9 aspect-[3/4] rounded-md overflow-hidden shrink-0 bg-stark-surface-2">
+                          <img src={getCardArtUrl({ name: card.card })} alt="" loading="lazy" className="w-full h-full object-cover"
+                               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                        </div>
+                        <span className="text-xs font-bold text-mcu-gold w-8 shrink-0">#{i + 1}</span>
+                        <span className="text-sm text-white flex-1 truncate">{card.card}</span>
+                        <span className={`text-sm font-bold shrink-0 tabular-nums ${card.netCubes >= 0 ? 'text-stitch-green' : 'text-red-400'}`}>
+                          {card.netCubes >= 0 ? '+' : ''}{card.netCubes}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                  {cards.length > 25 && !showAll && (
+                    <button
+                      onClick={() => setShowAll(true)}
+                      className="mt-2 w-full min-h-[44px] rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-cosmic-purple-text text-sm font-semibold"
+                    >
+                      Show all ({cards.length})
+                    </button>
+                  )}
+                  {showAll && cards.length > 25 && (
+                    <button
+                      onClick={() => setShowAll(false)}
+                      className="mt-2 w-full min-h-[44px] rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-cosmic-purple-text text-sm font-semibold"
+                    >
+                      Show less
+                    </button>
+                  )}
+                </>
+              )}
 
               <p className="text-center text-xs text-stitch-muted mt-3">
                 Data from: {new Date(performanceData.importedAt).toLocaleDateString()}
