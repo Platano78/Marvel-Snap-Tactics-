@@ -3104,11 +3104,10 @@ RESPONSE GUIDELINES:
     // Buffered-only — the Forge's strict-JSON contract streams badly, so every call here
     // returns one complete response, never onChunk deltas (design ruling).
 
-    // Mirrors AIChat.sendMessage's provider switch (~L5846), but 'local' speaks the
-    // OpenAI-compatible chat/completions shape (LM Studio / vLLM / llama.cpp servers) instead
-    // of callLocal's Ollama-native /api/chat — matches AIProviders.local's own description
-    // ("Ollama, LM Studio, vLLM, or any OpenAI-compatible endpoint"); Ollama also serves this
-    // shape via its OpenAI-compat layer, so no runtime loses support.
+    // Mirrors AIChat.sendMessage's provider switch (~L5846). 'local' delegates to callLocal
+    // (buffered — called with no onChunk) so the Forge gets the same Ollama-native /api/chat
+    // with OpenAI-compatible fallback that the Chat path already uses, instead of a
+    // hand-rolled OpenAI-compat-only request that fails on Ollama-only endpoints.
     const callProviderBuffered = async (provider, messages, model, aiConfig) => {
       switch (provider) {
         case 'gemini-oauth':
@@ -3121,18 +3120,8 @@ RESPONSE GUIDELINES:
           return await callClaude(messages, model, aiConfig.apiKeys && aiConfig.apiKeys.claude);
         case 'openai':
           return await callOpenAI(messages, model, aiConfig.apiKeys && aiConfig.apiKeys.openai);
-        case 'local': {
-          const base = (aiConfig.localEndpoint || '').replace(/\/+$/, '');
-          const url = base.endsWith('/v1') ? `${base}/chat/completions` : `${base}/v1/chat/completions`;
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model, messages, stream: false })
-          });
-          if (!response.ok) throw new Error(`Local error: ${response.status}`);
-          const data = await response.json();
-          return safeGet(data, 'choices.0.message.content', '');
-        }
+        case 'local':
+          return await callLocal(messages, model, aiConfig.localEndpoint, undefined);
         default:
           throw new Error('Unknown provider');
       }
@@ -4012,11 +4001,20 @@ RULES:
           importedAt: timestamp
         }));
 
-        // Card performance
+        // Card performance — parseProfile's CardStats keys are raw game CardDefIds, but every
+        // reader (Dashboard hero/arsenal, CardPerformanceView) looks up by display name, so
+        // resolve here at write time. Stores from before this fix keep defId keys until the
+        // next folder sync overwrites them (the sync is a full re-write, so this self-heals).
         if (data.profile.cardPerformance) {
+          const cardDb = CardDataLoader.cache || uniqueCards || [];
+          const defIdMap = new Map();
+          cardDb.forEach(card => {
+            if (card.defId) defIdMap.set(card.defId, card.name);
+            defIdMap.set(card.name, card.name);
+          });
           const performanceMap = {};
           data.profile.cardPerformance.all.forEach(({ card, netCubes }) => {
-            performanceMap[card] = { netCubes };
+            performanceMap[resolveCardDefId(card, defIdMap)] = { netCubes };
           });
           localStorage.setItem('snap_card_performance', JSON.stringify({
             cards: performanceMap,
@@ -5256,7 +5254,7 @@ RULES:
       const [artFailed, setArtFailed] = useState(false);
       return (
         <div
-          className="arsenal-tile snap-center shrink-0 w-[140px] h-[196px] rounded-lg overflow-hidden relative holo-foil holo-foil-active ring-1 ring-cosmic-purple-text/30 bg-stark-surface-2 transition-transform duration-150 ease-[var(--ease-snap)] active:scale-95"
+          className="snap-center shrink-0 w-[140px] h-[196px] rounded-lg overflow-hidden relative holo-foil holo-foil-active ring-1 ring-cosmic-purple-text/30 bg-stark-surface-2 transition-transform duration-150 ease-[var(--ease-snap)] active:scale-95"
           role="listitem"
           tabIndex="0"
           aria-label={`${card.name}${netCubes !== null ? `, ${netCubes >= 0 ? '+' : ''}${netCubes} net cubes` : ''}`}
