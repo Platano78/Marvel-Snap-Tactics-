@@ -1,7 +1,11 @@
 # Adoption Wave — competitive-research features (tracked plan)
 
 **Created**: 2026-07-20 (crew session; research provenance: `docs/research/competitive-positioning-2026-07-20.md`)
-**Status**: PLANNED — owner rulings collected, zero implementation started
+**Status**: PHASE 0 COMPLETE (2026-07-20) — P1/P2/P3 landed three-track-verified, Q1 live
+re-crawl GREEN. Adoption Slices 1-5 UNSTARTED. One gate remains before deploy: 10 commits
+(3b6f990..HEAD) are UNPUSHED on `main` (origin/main = deploy branch, confirmed lacks all 10)
+pending the owner's push call — crawl passed, but the P2b WebKit fetch-reason caveat is
+device-only and the automated crawl cannot settle it.
 **Owner rulings (2026-07-20, do not re-litigate)**:
 - Priority = data-ready first: MVP view → Cosmetics → Matchup grid → Completion cost → Recap recon.
 - Matchup grid's opponent-archetype capture = optional chip row on quick-match (skippable, never
@@ -159,20 +163,27 @@ verbatim command output — reject any "clean" verdict that ships without it.
 - SPEC-GAP note (not a defect): CLAUDE.md's "Mark all Series 1 owned" bulk action never
   shipped (deliberate simplification, flagged for awareness).
 
-**Q1 LIVE RE-CRAWL owed**: qa-home completed Q1 by static trace only (browser contention);
-live click-through pass (screenshots, Quick Match append propagation, console-after-nav,
-empty-state render, freshness show/hide, Arsenal re-render) must be re-run SERIALIZED.
-Fixture corpus: scratchpad `qa-fixtures.js` (node --check clean, all 14 keys, port-guard
-built in) — but scratchpad is session-scoped; next session should copy it into the repo under
-`docs/qa/` first (or regenerate from Q1's shapes documented in its header).
-- [ ] Fix waves executed under full crew discipline (three-track per slice; SW CACHE_NAME bump
-      on every index.html deploy).
-- [ ] Re-verification: each fixed area re-crawled (targeted, using the quadrant fixtures) before
-      Phase 0 closes.
-- [ ] Fixture library from the QA reports preserved (the Q1 agent's derived storage shapes) and
-      REUSED as the seed corpus for every adoption-slice gate below — and every new slice's spec
-      must include a crawl-grade gate: click every new control, verify every displayed number
-      against the fixture, empty-state pass, console pass, width pass.
+**Q1 LIVE RE-CRAWL — DONE, GREEN (2026-07-20 marathon #4 tail, chrome-devtools MCP).** Ran
+serialized against a local static server (127.0.0.1:8137), seeded from `docs/qa/qa-fixtures.js`,
+SW unregistered per pass to avoid stale caching. All core checks + V1-V12 fix re-verifications
+PASS; 2 pre-existing non-regression defects + 2 device-deferred items (details in the checklist
+above). 23 screenshots in the crawl scratchpad.
+- [x] Fix waves executed under full crew discipline (three-track per slice; SW CACHE_NAME bump
+      on every index.html deploy). P1/P2a/P2b/P2c/P3 all landed three-track-verified.
+- [x] Re-verification: each fixed area re-crawled live (chrome-devtools MCP, 2026-07-20 marathon
+      #4 tail). Q1 LIVE RE-CRAWL below is DONE — GREEN. Core crawl (12 routes, quick-match
+      propagation, Arsenal re-render, freshness show/hide, empty states) all PASS; fix
+      re-verification V1-V12 all PASS (incl. bonus stubbed-provider forge result-branch focus).
+      Two defects, both PRE-EXISTING non-regressions: (1) LOW — Oracle spotlight thumbnails use
+      the plain `onError→display:none` pattern (blank on 404), not P2c's icon fallback (~30
+      app-wide sites, out of P2c scope — candidate follow-up slice); (2) COSMETIC — Settings
+      "password field not in a form" advisory ×4. NO new regressions from any session commit.
+      Two items DEFERRED-TO-DEVICE (owner's phone): pinch-zoom, and P2b WebKit fetch-reason
+      fidelity (stop-mid-stream vs real 20s timeout banner) — headless cannot settle these.
+- [x] Fixture library preserved at `docs/qa/qa-fixtures.js` (all ~14 `snap_*` keys) and REUSED as
+      the crawl seed corpus. Every adoption-slice spec below must include a crawl-grade gate:
+      click every new control, verify every displayed number against the fixture, empty-state
+      pass, console pass, width pass.
 
 ## Slice 1 — Per-card MVP view (Analytics tab)
 Data: ready (`snap_card_performance` = `{cards: {[name]: {netCubes}}, importedAt}` + collection).
