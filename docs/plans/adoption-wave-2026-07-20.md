@@ -86,8 +86,28 @@ and gates.
       (Dispatch-site baseline is 18, not 19 — the orchestrator's original count wrongly included
       the addEventListener/removeEventListener lines.)
 
-**PHASE 0 STATUS: P1 + P2 COMPLETE. Remaining: P3 (all 4 bundles), Q1 live re-crawl, close-out.**
-**sw.js CACHE_NAME is now `v13` — next index.html-deploying commit bumps to v14.**
+- [x] **P3 — polish tail (all 4 bundles)** → `aa0afc0`. Located by content (numbers had
+      shifted ~500 lines). A: viewport pinch-zoom unblocked; Forge carousel tiles keyboard-
+      reachable (ArsenalTile passive pattern); hero card shows the gold synergy ring (`inSynergy`
+      was computed then discarded in the isHero branch); focus management added on Forge
+      state transitions (file had ZERO `.focus()` — ref+effect on `[forgeStatus]` moves focus
+      to result/error container). B: Dashboard completionPercent gains the totalCards>0 guard
+      Profile already had; CardPerformanceView `performanceData?.cards ?` (corrupt localStorage
+      without `.cards` no longer throws; else=[]). C: "Import from URL" demoted to genuinely
+      `disabled` + "Coming soon" chip. **C2 and C3 DROPPED as corrected premises** — C2's
+      Dormammu/Scream shared videoUrl is ONE legit weekly video (Coccia #192) covering both
+      decks per their own notes fields, not a copy-paste bug; C3's mid-stream "unreachable" was
+      already fixed by P2b (`0927fdd`) — catch block keeps partial content and says "cut off".
+      D: fake 65% season-sweep fallback → 0 (faint track only); 9px title-only reasoning chips →
+      11px wrapping; three 36px Forge touch targets → 44px; 21 form fields given matching
+      id/name (loop-rendered fields use prop-derived template ids — no dup ids); Collection
+      search clears on view-mode switch. **Verification**: sonnet implement → orchestrator
+      independent gate re-run + diff-read of every semantic seam (A4 effect deps, A3 ternary,
+      B2 both branches, D4 uniqueness, C1 disabled) + implementer Babel parse clean. Execution
+      track = the Q1 live crawl below (gates the held push).
+
+**PHASE 0 STATUS: P1 + P2 + P3 COMPLETE. Remaining: Q1 live re-crawl, close-out.**
+**sw.js CACHE_NAME is now `v14` — next index.html-deploying commit bumps to v15.**
 
 **VERIFICATION LESSON (carry forward, cost two HIGH defects to learn):** haiku is NOT sufficient
 for the adversarial track on anything semantic. It returned "clean, zero defects" on P2a and would
@@ -95,7 +115,8 @@ have on P2b; a sonnet adversary that extracted the real functions into Node harn
 them found two HIGH defects in code that had passed every gate. Use haiku only for mechanical
 checks (P1's token swap); use sonnet for anything requiring execution or real reasoning, and demand
 verbatim command output — reject any "clean" verdict that ships without it.
-- [ ] **P3 — polish tail. OWNER RULED 2026-07-20: implement ALL FOUR bundles, nothing skipped.**
+- [x] **P3 — polish tail. OWNER RULED 2026-07-20: implement ALL FOUR bundles, nothing skipped.**
+      → landed `aa0afc0` (see execution log above; C2/C3 dropped as corrected premises).
 
 **P1 — a11y criticals (next session):**
 - Nav tabs aria-controls → nonexistent `panel-*` ids, no tabpanels exist (index.html:4643,
