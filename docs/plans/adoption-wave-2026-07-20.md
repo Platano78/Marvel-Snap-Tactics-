@@ -10,7 +10,42 @@
 **Standing law**: single index.html / CDN-only / no build; design canon (`docs/design-canon.md`)
 binds; every slice = sonnet implement → haiku adversarial → orchestrator gates/diff → commit by
 orchestrator only; SW CACHE_NAME bump on every index.html-changing deploy (learned 2026-07-20).
-**Sequencing note**: this wave starts AFTER the 2026-07-20 QA-crawl defect triage is worked off.
+**Sequencing (owner ruling 2026-07-20): Phase 0 is a HARD GATE — no adoption slice starts
+until it closes.**
+
+## Phase 0 — QA stabilization gate (blocks Slices 1-5)
+
+The 2026-07-20 full-app crawl (4 QA quadrants + a11y specialist audit + mandated code review)
+must be fully worked off first. The crawl IS the foundation for the additional features — new
+surfaces get built on verified ground, and each new slice inherits the crawl's fixture library
+and gates.
+
+- [ ] All six reports collected (Q1 home/data ✅in-flight, Q2 cards ✅in-flight, Q3 decks
+      ✅in-flight, Q4 ai/meta/system ✅in-flight, a11y audit ✅DELIVERED, session code review
+      ✅DELIVERED).
+- [ ] Known defects already registered from the delivered reports:
+      - HIGH (code review): snap_card_performance keyed by raw CardDefId vs display-name reads —
+        hero/Arsenal/Analytics silently degraded on real synced data. Fix slice IN FLIGHT
+        (write-time resolution + real-write-path gate).
+      - MEDIUM (code review): Forge 'local' path lacked callLocal's dual-format fallback —
+        folded into the same fix slice.
+      - CRITICAL (a11y): nav tabs' aria-controls reference nonexistent panels (pre-existing,
+        global); Forge primary CTAs 3.22:1 contrast (text token misused as bg).
+      - SERIOUS (a11y): momentum ribbon has no screen-reader equivalent; History rows'
+        aria-label override hides remark/deck/snap content.
+      - MODERATE/MINOR (a11y): silent forge status transitions (needs aria-live), season sweep
+        visual-only, forge carousel not keyboard-traversable, user-scalable=no, "Forge a counter
+        deck" pill lands on Decks list not the Forge (needs view deep-link), 9px reasoning
+        chips, toggle-chip target size, focus loss on forge transitions.
+- [ ] Consolidated triage WITH OWNER: one ranked list, owner rules severity/skip per item.
+- [ ] Fix waves executed under full crew discipline (three-track per slice; SW CACHE_NAME bump
+      on every index.html deploy).
+- [ ] Re-verification: each fixed area re-crawled (targeted, using the quadrant fixtures) before
+      Phase 0 closes.
+- [ ] Fixture library from the QA reports preserved (the Q1 agent's derived storage shapes) and
+      REUSED as the seed corpus for every adoption-slice gate below — and every new slice's spec
+      must include a crawl-grade gate: click every new control, verify every displayed number
+      against the fixture, empty-state pass, console pass, width pass.
 
 ## Slice 1 — Per-card MVP view (Analytics tab)
 Data: ready (`snap_card_performance` = `{cards: {[name]: {netCubes}}, importedAt}` + collection).
