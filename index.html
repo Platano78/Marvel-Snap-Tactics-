@@ -4772,7 +4772,7 @@ RULES:
     );
 
     // Dashboard Component - Player OS Home
-    const Dashboard = ({ collection, matches, onQuickMatch, cardDataVersion }) => {
+    const Dashboard = ({ collection, matches, onQuickMatch, cardDataVersion, lastMatchId, updateMatch, onDismissLastMatch }) => {
       const [importedStats, setImportedStats] = useState(null);
       const [wallet, setWallet] = useState(null);
       const [rewards, setRewards] = useState(null);
@@ -5058,6 +5058,30 @@ RULES:
                 ))}
               </div>
             </div>
+            {lastMatchId && matches.find(m => m.id === lastMatchId) && (
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted">Tag opponent archetype (optional)</span>
+                  <button onClick={onDismissLastMatch}
+                    aria-label="Skip tagging opponent archetype"
+                    className="text-xs text-stitch-muted hover:text-white px-2 py-1 rounded-full transition-colors">
+                    Skip
+                  </button>
+                </div>
+                <div className="flex overflow-x-auto gap-2 pb-1 scrollbar-hide snap-x" role="group" aria-label="Opponent archetype">
+                  {[...getForgeTierList().map(d => d.name), 'Other'].map(name => {
+                    const active = matches.find(m => m.id === lastMatchId)?.opponentArchetype === name;
+                    return (
+                      <button key={name} onClick={() => updateMatch(lastMatchId, { opponentArchetype: name })}
+                        aria-pressed={active}
+                        className={`shrink-0 min-h-[44px] rounded-full px-4 text-xs font-bold whitespace-nowrap snap-start transition-colors ${active ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}>
+                        {active ? `✓ ${name}` : name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Player OS: Wallet Widget */}
@@ -5393,9 +5417,10 @@ RULES:
     };
 
     // Match History Standalone View
-    const MatchHistory = ({ matches }) => {
+    const MatchHistory = ({ matches, updateMatch }) => {
       const [filter, setFilter] = useState('all');
       const [selectedMatch, setSelectedMatch] = useState(null);
+      const [taggingId, setTaggingId] = useState(null);
 
       // Relative time helper matching Stitch "3m ago / 12m ago / 1h ago" format
       const relativeTime = (dateString) => {
@@ -5643,6 +5668,33 @@ RULES:
                           Deck: {match.deck}
                         </p>
                       )}
+                      {/* Opponent archetype — optional post-hoc tag, never opens the row overlay */}
+                      <div className="mt-1.5" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setTaggingId(taggingId === match.id ? null : match.id); }}
+                          aria-expanded={taggingId === match.id}
+                          className={`inline-flex items-center min-h-[44px] px-3 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${match.opponentArchetype ? 'bg-stark-surface-2 text-[#c75fff] border border-[rgba(173,43,238,0.25)]' : 'text-stitch-muted hover:text-white border border-dashed border-white/15'}`}>
+                          {match.opponentArchetype ? `vs ${match.opponentArchetype}` : '+ Tag archetype'}
+                        </button>
+                        {taggingId === match.id && (
+                          <div className="flex overflow-x-auto gap-2 mt-2 pb-1 scrollbar-hide snap-x" role="group" aria-label="Select opponent archetype">
+                            {[...getForgeTierList().map(d => d.name), 'Other'].map(name => (
+                              <button key={name}
+                                onClick={(e) => { e.stopPropagation(); updateMatch(match.id, { opponentArchetype: name }); setTaggingId(null); }}
+                                aria-pressed={match.opponentArchetype === name}
+                                className={`shrink-0 min-h-[44px] rounded-full px-4 text-xs font-bold whitespace-nowrap snap-start transition-colors ${match.opponentArchetype === name ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}>
+                                {name}
+                              </button>
+                            ))}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setTaggingId(null); }}
+                              aria-label="Close archetype picker"
+                              className="shrink-0 min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center text-stitch-muted hover:text-white bg-stark-surface-2 border border-[rgba(173,43,238,0.25)]">
+                              <span className="material-symbols-outlined text-sm" aria-hidden="true">close</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
                       {/* THE COMPANION — Snapapoulous remark chip, shared helper with the Dashboard feed */}
                       {(() => {
                         const remark = getMatchRemark(match);
@@ -13825,6 +13877,7 @@ RULES:
       const [deckInitialView, setDeckInitialView] = useState(null);
       const [collection, setCollection] = useState(() => loadFromStorage('snap_collection', { owned: [], lastUpdated: new Date().toISOString() }));
       const [matches, setMatches] = useState(() => loadFromStorage('snap_matches', []));
+      const [lastMatchId, setLastMatchId] = useState(null);
       const [decks, setDecks] = useState(() => loadFromStorage('snap_decks', []));
       const [settings, setSettings] = useState(() => loadFromStorage('snap_settings', { theme: 'dark', perfMode: 'auto', reducedMotion: false }));
       const [aiConfig, setAiConfig] = useState(() => loadFromStorage('snap_ai_config', {
@@ -14037,15 +14090,19 @@ RULES:
       };
 
       const handleQuickMatch = (result, cubes) => {
+        const id = generateId();
         setMatches(prev => [...prev, {
-          id: generateId(),
+          id,
           timestamp: new Date().toISOString(),
           result, cubes,
           opponent: '', deck: '', notes: '', snapped: 'NONE'
         }]);
+        setLastMatchId(id);
         // Trigger victory/defeat splash
         setVictorySplash({ show: true, result, cubes });
       };
+
+      const updateMatch = (id, patch) => setMatches(prev => prev.map(m => m.id === id ? { ...m, ...patch } : m));
 
       useEffect(() => {
         if ('serviceWorker' in navigator) {
@@ -14191,7 +14248,7 @@ RULES:
             <PageTransition activeTab={activeTab}>
             {activeTab === 'dashboard' && (
               <ErrorBoundary>
-                <Dashboard collection={collection} matches={matches} onQuickMatch={handleQuickMatch} cardDataVersion={cardDataVersion} />
+                <Dashboard collection={collection} matches={matches} onQuickMatch={handleQuickMatch} cardDataVersion={cardDataVersion} lastMatchId={lastMatchId} updateMatch={updateMatch} onDismissLastMatch={() => setLastMatchId(null)} />
               </ErrorBoundary>
             )}
             {activeTab === 'oracle' && (
@@ -14226,7 +14283,7 @@ RULES:
             )}
             {activeTab === 'history' && (
               <ErrorBoundary>
-                <MatchHistory matches={matches} />
+                <MatchHistory matches={matches} updateMatch={updateMatch} />
               </ErrorBoundary>
             )}
             {activeTab === 'analytics' && (
