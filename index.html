@@ -4773,10 +4773,12 @@ RULES:
         if (recentVisible.length < 2) return null;
         const chronological = [...recentVisible].reverse(); // oldest -> newest, for a running total
         let running = 0;
+        let wins = 0, losses = 0;
         const cumulativeById = {};
         for (const m of chronological) {
           running += m.result === 'WIN' ? m.cubes : -m.cubes;
           cumulativeById[m.id] = running;
+          if (m.result === 'WIN') wins++; else losses++;
         }
         const values = Object.values(cumulativeById);
         const minC = Math.min(0, ...values);
@@ -4793,7 +4795,7 @@ RULES:
             isTopStreakNode: i === 0 && streak.type === 'WIN' && streak.count >= 3,
           };
         });
-        return { n, nodes };
+        return { n, nodes, netCubes: running, wins, losses };
       }, [matches]);
 
       // THE VAULT — owned cards as the subject of the screen (design-canon.md, "The Wow Arc").
@@ -5176,26 +5178,31 @@ RULES:
                 {/* THE COMPANION — momentum ribbon: static SVG polyline, horizontal
                     displacement tracks cumulative net cubes across the visible window */}
                 {momentumRibbon && (
-                  <div className="absolute left-0 top-0 bottom-0 w-6 z-0" aria-hidden="true">
-                    <svg width="24" height="100%" viewBox={`0 0 24 ${momentumRibbon.n}`} preserveAspectRatio="none" className="absolute inset-0">
-                      <polyline
-                        points={momentumRibbon.nodes.map(node => `${node.x},${node.y * momentumRibbon.n / 100}`).join(' ')}
-                        fill="none"
-                        stroke="#ad2bee"
-                        strokeWidth="2"
-                        vectorEffect="non-scaling-stroke"
-                      />
-                    </svg>
-                    {momentumRibbon.nodes.map(node => (
-                      <div
-                        key={node.id}
-                        className={`absolute w-2.5 h-2.5 rounded-full -translate-x-1/2 -translate-y-1/2 border border-white/20 ${
-                          node.isTopStreakNode ? 'bg-mcu-gold' : node.isWin ? 'bg-stitch-green' : 'bg-red-400'
-                        }`}
-                        style={{ left: `${(node.x / 24) * 100}%`, top: `${node.y}%` }}
-                      ></div>
-                    ))}
-                  </div>
+                  <>
+                    <div className="absolute left-0 top-0 bottom-0 w-6 z-0" aria-hidden="true">
+                      <svg width="24" height="100%" viewBox={`0 0 24 ${momentumRibbon.n}`} preserveAspectRatio="none" className="absolute inset-0">
+                        <polyline
+                          points={momentumRibbon.nodes.map(node => `${node.x},${node.y * momentumRibbon.n / 100}`).join(' ')}
+                          fill="none"
+                          stroke="#ad2bee"
+                          strokeWidth="2"
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      </svg>
+                      {momentumRibbon.nodes.map(node => (
+                        <div
+                          key={node.id}
+                          className={`absolute w-2.5 h-2.5 rounded-full -translate-x-1/2 -translate-y-1/2 border border-white/20 ${
+                            node.isTopStreakNode ? 'bg-mcu-gold' : node.isWin ? 'bg-stitch-green' : 'bg-red-400'
+                          }`}
+                          style={{ left: `${(node.x / 24) * 100}%`, top: `${node.y}%` }}
+                        ></div>
+                      ))}
+                    </div>
+                    <span className="sr-only">
+                      Momentum over the last {momentumRibbon.n} matches: {momentumRibbon.wins} wins, {momentumRibbon.losses} losses, net {momentumRibbon.netCubes >= 0 ? '+' : ''}{momentumRibbon.netCubes} cubes.
+                    </span>
+                  </>
                 )}
                 <div className={`space-y-2 ${momentumRibbon ? 'pl-8' : ''}`}>
                   {recentVisible.map(match => {
@@ -5485,7 +5492,7 @@ RULES:
                     }}
                     role="button"
                     tabIndex={0}
-                    aria-label={`${isWin ? 'Victory' : 'Defeat'} ${cubeLabel}${match.opponent ? ` vs ${match.opponent}` : ''}`}
+                    aria-label={`${isWin ? 'Victory' : 'Defeat'} ${cubeLabel}${match.opponent ? ` vs ${match.opponent}` : ''}${match.deck ? `, deck ${match.deck}` : ''}${snap ? `, ${snap}` : ''}${match.notes ? `, note: ${match.notes}` : ''}`}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelectedMatch(match); }}
                     onClick={() => setSelectedMatch(match)}
                   >
@@ -8163,6 +8170,11 @@ RULES:
 
       // Forge View — AI deck maker
       if (view === 'forge') {
+        const forgeStatusAnnouncement = {
+          forging: 'Forging your deck. Snapapoulous is reading the meta and your collection.',
+          error: 'Deck forge failed.',
+          result: 'Deck forged.',
+        }[forgeStatus] || '';
         return (
           <div className="px-4 pb-20">
             <Header title="THE FORGE" />
@@ -8171,6 +8183,10 @@ RULES:
               <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">arrow_back</span>
               <span className="text-sm font-semibold">Back to Decks</span>
             </button>
+
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+              {forgeStatusAnnouncement}
+            </div>
 
             {/* Prompt input + toggles — hidden only while mid-forge */}
             {forgeStatus !== 'forging' && (
