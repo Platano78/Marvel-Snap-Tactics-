@@ -72,12 +72,29 @@ and gates.
       Defect 3 was the orchestrator re-reading its own spec. Defect 2 was a SPEC error, not an
       implementation error. Known gaps left: Forge has signal/timeoutMs plumbed but no cancel UI
       (it does get the 180s timeout); testConnection can't say which local wire-format timed out.
-- [ ] **P2c — art slug + fallbacks + Forge deep-link** (in flight). Diacritic strip verified
+- [x] **P2c — art slug + fallbacks + Forge deep-link** → `4b5b04a`. Diacritic strip verified
       against the LIVE CDN: `araa.webp`=404, `arana.webp`=200, so NFD-strip is provably right and
-      needs no SLUG_OVERRIDES; "Araña" is the only non-ASCII card. Deep-link carries a RACE the
-      triage missed: `Decks` is conditionally rendered so it mounts AFTER the tab switch — a
-      second event fires before its listener exists. Fixed via App-held state passed as a prop,
-      with `handleSetTab` made polymorphic to preserve all 19 bare-string dispatch sites.
+      needs no SLUG_OVERRIDES; "Araña" is the only non-ASCII card. Both art seams had a DEAD
+      fallback branch (`artUrl ? :` never falls through — getCardArtUrl always returns truthy);
+      converted to `<img onError>` + artFailed state, extracting `DatabaseCardTile` for per-tile
+      state. Deep-link carried a RACE the triage missed: `Decks` is conditionally rendered so it
+      mounts AFTER the tab switch — a second event would fire before its listener exists. Fixed
+      via App-held state passed as a PROP (exists before the child mounts), `handleSetTab` made
+      polymorphic to preserve the other 17 bare-string dispatch sites. **Race-freedom depends on
+      React 18 + `createRoot` batching both setters into one render — under legacy
+      `ReactDOM.render` a native listener wouldn't batch and the fix would silently no-op.**
+      (Dispatch-site baseline is 18, not 19 — the orchestrator's original count wrongly included
+      the addEventListener/removeEventListener lines.)
+
+**PHASE 0 STATUS: P1 + P2 COMPLETE. Remaining: P3 (all 4 bundles), Q1 live re-crawl, close-out.**
+**sw.js CACHE_NAME is now `v13` — next index.html-deploying commit bumps to v14.**
+
+**VERIFICATION LESSON (carry forward, cost two HIGH defects to learn):** haiku is NOT sufficient
+for the adversarial track on anything semantic. It returned "clean, zero defects" on P2a and would
+have on P2b; a sonnet adversary that extracted the real functions into Node harnesses and EXECUTED
+them found two HIGH defects in code that had passed every gate. Use haiku only for mechanical
+checks (P1's token swap); use sonnet for anything requiring execution or real reasoning, and demand
+verbatim command output — reject any "clean" verdict that ships without it.
 - [ ] **P3 — polish tail. OWNER RULED 2026-07-20: implement ALL FOUR bundles, nothing skipped.**
 
 **P1 — a11y criticals (next session):**
