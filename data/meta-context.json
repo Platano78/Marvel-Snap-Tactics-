@@ -22,21 +22,262 @@
     "Black Bolt: 5/7 -> 5/8 (buff, April 16 OTA)"
   ],
   "topArchetypes": [
-    {"name": "Lockdown Move", "tier": "S", "description": "The longest-running top Move deck; doesn't rely solely on movement for its win condition, giving it outs other Move decks lack. Boosted by the season's new Moveable-keyword cards (Spider-Man: Brand New Day, Mary Jane, Aunt May, reworked Spider-Man 2099)."},
-    {"name": "Fantomex / Morgan le Fay", "tier": "S", "description": "Current best-win-rate disruption deck; Fantomex + Morgan le Fay combine for strong points while the 3-Cost slot stays flexible for a final turn play."},
-    {"name": "Nimrolactus", "tier": "B (early-season spike)", "description": "Shines in week 1 of a season while the ladder hasn't adjusted to respect Nimrod yet; nets a few surprise 4-8 cube wins before players learn to play around it."}
+    {
+      "name": "Lockdown Move",
+      "tier": "S",
+      "description": "The longest-running top Move deck; doesn't rely solely on movement for its win condition, giving it outs other Move decks lack. Boosted by the season's new Moveable-keyword cards (Spider-Man: Brand New Day, Mary Jane, Aunt May, reworked Spider-Man 2099)."
+    },
+    {
+      "name": "Fantomex / Morgan le Fay",
+      "tier": "S",
+      "description": "Current best-win-rate disruption deck; Fantomex + Morgan le Fay combine for strong points while the 3-Cost slot stays flexible for a final turn play."
+    },
+    {
+      "name": "Nimrolactus",
+      "tier": "B (early-season spike)",
+      "description": "Shines in week 1 of a season while the ladder hasn't adjusted to respect Nimrod yet; nets a few surprise 4-8 cube wins before players learn to play around it."
+    }
   ],
-  "hotCards": ["Spider-Man: Brand New Day", "Mary Jane", "Aunt May", "Sinister Six", "Tarantula", "Boomerang", "Scorpion: Brand New Day", "Triton", "Tombstone"],
-  "techCards": ["Mercury", "Cosmo", "Stardust", "Mobius M. Mobius"],
+  "hotCards": [
+    "Spider-Man: Brand New Day",
+    "Mary Jane",
+    "Aunt May",
+    "Sinister Six",
+    "Tarantula",
+    "Boomerang",
+    "Scorpion: Brand New Day",
+    "Triton",
+    "Tombstone"
+  ],
+  "techCards": [
+    "Mercury",
+    "Cosmo",
+    "Stardust",
+    "Mobius M. Mobius"
+  ],
   "newSeasonCards": [
-    {"name": "Spider-Man: Brand New Day", "cost": 1, "note": "Season Pass card. Moveable twice. After this moves to a location, give one of your other cards there +1 Power."},
-    {"name": "Mary Jane", "cost": 3, "note": "Super Premium Pass. End of Turn: Give each of your cards that moved this turn +1 Power."},
-    {"name": "Aunt May", "cost": 2, "note": "2/4 (post-OTA). End of Turn card supporting the Moveable package."},
-    {"name": "Sinister Six", "cost": 6, "note": "12 Power. Game Start: The first 6 characters you draw are EVIL! After you play them all, merge them into this and add this to the last one's location."},
-    {"name": "Tombstone", "cost": 2, "note": "3 Power. On Reveal: Destroy your lowest-Power card at each other location."},
-    {"name": "Scorpion: Brand New Day", "cost": 6, "note": "8 Power. Ongoing: Double the Power reductions on all enemy cards."},
-    {"name": "Spider-Sense", "cost": 5, "note": "Skill card, reduces cost based on Moveable cards played."},
-    {"name": "Tarantula", "cost": 2, "note": "Grants power boosts when your side leads in power at the location."},
-    {"name": "Boomerang", "cost": 2, "note": "When this returns to your hand, randomly steal 4 Power from a character in your opponent's hand."}
+    {
+      "name": "Spider-Man: Brand New Day",
+      "cost": 1,
+      "note": "Season Pass card. Moveable twice. After this moves to a location, give one of your other cards there +1 Power."
+    },
+    {
+      "name": "Mary Jane",
+      "cost": 3,
+      "note": "Super Premium Pass. End of Turn: Give each of your cards that moved this turn +1 Power."
+    },
+    {
+      "name": "Aunt May",
+      "cost": 2,
+      "note": "2/4 (post-OTA). End of Turn card supporting the Moveable package."
+    },
+    {
+      "name": "Sinister Six",
+      "cost": 6,
+      "note": "12 Power. Game Start: The first 6 characters you draw are EVIL! After you play them all, merge them into this and add this to the last one's location."
+    },
+    {
+      "name": "Tombstone",
+      "cost": 2,
+      "note": "3 Power. On Reveal: Destroy your lowest-Power card at each other location."
+    },
+    {
+      "name": "Scorpion: Brand New Day",
+      "cost": 6,
+      "note": "8 Power. Ongoing: Double the Power reductions on all enemy cards."
+    },
+    {
+      "name": "Spider-Sense",
+      "cost": 5,
+      "note": "Skill card, reduces cost based on Moveable cards played."
+    },
+    {
+      "name": "Tarantula",
+      "cost": 2,
+      "note": "Grants power boosts when your side leads in power at the location."
+    },
+    {
+      "name": "Boomerang",
+      "cost": 2,
+      "note": "When this returns to your hand, randomly steal 4 Power from a character in your opponent's hand."
+    }
+  ],
+  "tierList": [
+    {
+      "tier": "S",
+      "name": "Scream Move",
+      "archetype": "Move",
+      "winRate": 58.5,
+      "avgCubes": 0.3,
+      "popularity": null,
+      "sampleCards": [
+        "Scream",
+        "Kraven",
+        "Sam Wilson Captain America",
+        "Miles Morales Spider-Man",
+        "Aero"
+      ],
+      "tag": "Trending"
+    },
+    {
+      "tier": "S",
+      "name": "Discard Combo",
+      "archetype": "Discard",
+      "winRate": 57.5,
+      "avgCubes": 0.55,
+      "popularity": null,
+      "sampleCards": [
+        "Wolverine",
+        "Daken",
+        "Moon Girl",
+        "Supergiant",
+        "Proxima Midnight"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "S",
+      "name": "Virused 10 Power",
+      "archetype": "Big Power",
+      "winRate": 56.5,
+      "avgCubes": 0.5,
+      "popularity": null,
+      "sampleCards": [
+        "Tarantula",
+        "Starbrand",
+        "Skaar",
+        "Wilson Fisk",
+        "Ares"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "S",
+      "name": "Disruptive Aurora",
+      "archetype": "Disruption",
+      "winRate": 58.5,
+      "avgCubes": 0.35,
+      "popularity": null,
+      "sampleCards": [
+        "Aurora",
+        "Venus",
+        "Cosmo",
+        "The Thing First Steps",
+        "Zombie Mister Fantastic"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "A",
+      "name": "Nimrod Destroy",
+      "archetype": "Destroy",
+      "winRate": 57,
+      "avgCubes": 0.4,
+      "popularity": null,
+      "sampleCards": [
+        "Nimrod",
+        "Knull",
+        "Death",
+        "Shang-Chi",
+        "Bucky Barnes"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "A",
+      "name": "Supergiant Rocks",
+      "archetype": "Ongoing",
+      "winRate": 57,
+      "avgCubes": 0.35,
+      "popularity": null,
+      "sampleCards": [
+        "Rhino",
+        "Debrii",
+        "Negasonic Teenage Warhead",
+        "Supergiant",
+        "Shadow King"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "A",
+      "name": "War Machine Ramp",
+      "archetype": "Ramp",
+      "winRate": 56.5,
+      "avgCubes": 0.35,
+      "popularity": null,
+      "sampleCards": [
+        "War Machine",
+        "Jubilee",
+        "Dragon Lord",
+        "The Infinaut",
+        "Astral Projection"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "A",
+      "name": "Lockdown Move",
+      "archetype": "Move",
+      "winRate": 56.5,
+      "avgCubes": 0.3,
+      "popularity": null,
+      "sampleCards": [
+        "Professor X",
+        "Spider-Man Brand New Day",
+        "Nightcrawler",
+        "Mary Jane",
+        "Silk"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "A",
+      "name": "Fantomex",
+      "archetype": "Disruption",
+      "winRate": 55.5,
+      "avgCubes": 0.35,
+      "popularity": null,
+      "sampleCards": [
+        "Fantomex",
+        "Killmonger",
+        "Shadow King",
+        "Gambit",
+        "Marrow"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "A",
+      "name": "Hela Discard",
+      "archetype": "Discard",
+      "winRate": 53.5,
+      "avgCubes": 0.45,
+      "popularity": null,
+      "sampleCards": [
+        "Hela",
+        "Death",
+        "Ghost Rider",
+        "Gambit",
+        "Lady Sif"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "B",
+      "name": "End of Turn 2099",
+      "archetype": "End of Turn",
+      "winRate": 56.5,
+      "avgCubes": 0.25,
+      "popularity": null,
+      "sampleCards": [
+        "Doctor Doom 2099",
+        "Iron Lad",
+        "Cosmic Ghost Rider",
+        "Sandman",
+        "Moondragon"
+      ],
+      "tag": null
+    }
   ]
 }

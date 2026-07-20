@@ -7903,9 +7903,11 @@ RESPONSE GUIDELINES:
     };
 
     // ==================== META TIER LIST ====================
-    // TODO: Replace TIER_STUB_DATA with real tier data from data/meta-context.json
-    //       when the meta-context API includes per-deck win rates, avg cubes, and sample card lists.
-    //       Field shape expected: { name, archetype, winRate, avgCubes, popularity, sampleCards: string[], tag }
+    // Live data: data/meta-context.json's `tierList` key (researched weekly from marvelsnapzone.com's
+    // Ranked Meta Tier List + cross-checked against Untapped.gg archetype data). Numbers are only ever
+    // what a source actually published — null where nobody publishes a figure, never fabricated.
+    // TIER_STUB_DATA below is fallback-only, used when tierList is absent/empty (e.g. a stale cached
+    // meta-context.json from before this shipped).
     const TIER_STUB_DATA = [
       // Tier S — Powerhouse Decks
       {
@@ -7976,17 +7978,22 @@ RESPONSE GUIDELINES:
     };
 
     const MetaTierList = () => {
-      const [activeBracket, setActiveBracket] = useState('Infinite');
-      const [timeFilter, setTimeFilter] = useState('Last 7 Days');
       const [sortBy, setSortBy] = useState('tier');
       const [expandedDeck, setExpandedDeck] = useState(null);
 
-      const brackets = ['Ranked', 'Infinite', 'Conquest', 'Global'];
-      const timeFilters = ['Last 24h', 'Last 7 Days', 'Last 30 Days'];
+      // Null-safe comparator: entries with no published number always sort last, regardless of direction.
+      const byNumberDesc = (key) => (a, b) => {
+        const av = typeof a[key] === 'number' ? a[key] : -Infinity;
+        const bv = typeof b[key] === 'number' ? b[key] : -Infinity;
+        return bv - av;
+      };
 
-      // Group archetypes by tier, using META_CONTEXT to keep live data in sync
-      // Merge stub data with any live tier overrides from META_CONTEXT.topArchetypes
+      // Live data from data/meta-context.json's tierList; falls back to TIER_STUB_DATA (merged with any
+      // live tier overrides from topArchetypes) if tierList is absent/empty, e.g. a stale cached file.
       const mergedData = React.useMemo(() => {
+        if (Array.isArray(META_CONTEXT.tierList) && META_CONTEXT.tierList.length > 0) {
+          return META_CONTEXT.tierList;
+        }
         const liveMap = {};
         (META_CONTEXT.topArchetypes || []).forEach(a => { liveMap[a.name] = a.tier; });
         return TIER_STUB_DATA.map(d => ({
@@ -8003,9 +8010,9 @@ RESPONSE GUIDELINES:
           g[t].push(deck);
         });
         if (sortBy === 'winRate') {
-          Object.keys(g).forEach(t => g[t].sort((a, b) => b.winRate - a.winRate));
+          Object.keys(g).forEach(t => g[t].sort(byNumberDesc('winRate')));
         } else if (sortBy === 'popularity') {
-          Object.keys(g).forEach(t => g[t].sort((a, b) => b.popularity - a.popularity));
+          Object.keys(g).forEach(t => g[t].sort(byNumberDesc('popularity')));
         }
         return g;
       }, [mergedData, sortBy]);
@@ -8018,40 +8025,10 @@ RESPONSE GUIDELINES:
       return (
         <div className="px-4 pb-20">
           {/* Header */}
-          <Header title="META TIER LIST" subtitle={`Last updated: ${lastUpdated} \u2022 ${META_CONTEXT.season || 'Current Season'}`} />
+          <Header title="META TIER LIST" subtitle={`Last updated: ${lastUpdated} \u00b7 refreshed monthly \u2022 ${META_CONTEXT.season || 'Current Season'}`} />
 
-          {/* Bracket tabs */}
-          <div className="flex gap-1 mb-3 overflow-x-auto no-scrollbar" role="tablist" aria-label="Game bracket">
-            {brackets.map(b => (
-              <button
-                key={b}
-                role="tab"
-                aria-selected={activeBracket === b}
-                onClick={() => setActiveBracket(b)}
-                className="shrink-0 px-4 py-2 rounded-full text-xs font-bold font-display transition-[background-color,box-shadow,color] duration-150 ease-[var(--ease-snap)] min-h-[36px]"
-                style={activeBracket === b
-                  ? { background: '#ad2bee', color: '#fff', boxShadow: '0 0 8px rgba(173,43,238,0.4)' }
-                  : { background: 'rgba(173,43,238,0.1)', color: '#b792c9', border: '1px solid rgba(173,43,238,0.2)' }}
-              >{b}</button>
-            ))}
-          </div>
-
-          {/* Filter chips row */}
-          <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
-            {timeFilters.map(f => (
-              <button
-                key={f}
-                onClick={() => setTimeFilter(f)}
-                className="shrink-0 flex items-center gap-1 h-9 px-3 rounded-full text-xs font-medium transition-[background-color,color] duration-150 ease-[var(--ease-snap)] min-h-[36px]"
-                style={timeFilter === f
-                  ? { background: '#ad2bee', color: '#fff' }
-                  : { background: 'rgba(173,43,238,0.1)', color: '#b792c9', border: '1px solid rgba(173,43,238,0.2)' }}
-              >
-                {f}
-                <span className="material-symbols-outlined" style={{ fontSize: '14px' }} aria-hidden="true">expand_more</span>
-              </button>
-            ))}
-            {/* Sort */}
+          {/* Sort toggle */}
+          <div className="flex gap-2 mb-4">
             <button
               onClick={() => setSortBy(s => s === 'tier' ? 'winRate' : s === 'winRate' ? 'popularity' : 'tier')}
               className="shrink-0 flex items-center gap-1 h-9 px-3 rounded-full text-xs font-medium transition-colors duration-150 ease-[var(--ease-snap)] min-h-[36px]"
@@ -8133,18 +8110,18 @@ RESPONSE GUIDELINES:
                                 style={{ background: `${cfg.color}18`, color: cfg.color, border: `1px solid ${cfg.border}` }}
                               >
                                 <span className="material-symbols-outlined" style={{ fontSize: '12px', verticalAlign: 'middle' }} aria-hidden="true">trending_up</span>
-                                {' '}Win Rate: {deck.winRate.toFixed(1)}%
+                                {' '}Win Rate: {typeof deck.winRate === 'number' ? `${deck.winRate.toFixed(1)}%` : '—'}
                               </span>
                               <span
                                 className="text-xs font-bold px-2 py-1 rounded-full"
                                 style={{ background: 'rgba(255,215,0,0.1)', color: '#ffd700', border: '1px solid rgba(255,215,0,0.25)' }}
                               >
                                 <span className="material-symbols-outlined" style={{ fontSize: '12px', verticalAlign: 'middle' }} aria-hidden="true">diamond</span>
-                                {' '}Avg Cubes: {deck.avgCubes >= 0 ? '+' : ''}{deck.avgCubes.toFixed(2)}
+                                {' '}Avg Cubes: {typeof deck.avgCubes === 'number' ? `${deck.avgCubes >= 0 ? '+' : ''}${deck.avgCubes.toFixed(2)}` : '—'}
                               </span>
                               <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'rgba(173,43,238,0.08)', color: '#b792c9', border: '1px solid rgba(173,43,238,0.15)' }}>
                                 <span className="material-symbols-outlined" style={{ fontSize: '12px', verticalAlign: 'middle' }} aria-hidden="true">bar_chart</span>
-                                {' '}{deck.popularity.toFixed(1)}% played
+                                {' '}{typeof deck.popularity === 'number' ? `${deck.popularity.toFixed(1)}% played` : '— played'}
                               </span>
                             </div>
 
@@ -8199,10 +8176,10 @@ RESPONSE GUIDELINES:
                                   )}
                                 </div>
                                 <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-xs" style={{ color: '#b792c9' }}>Win Rate: {deck.winRate.toFixed(1)}%</span>
+                                  <span className="text-xs" style={{ color: '#b792c9' }}>Win Rate: {typeof deck.winRate === 'number' ? `${deck.winRate.toFixed(1)}%` : '—'}</span>
                                   <span className="text-xs" style={{ color: '#ffd700' }}>
                                     <span className="material-symbols-outlined" style={{ fontSize: '11px', verticalAlign: 'middle' }} aria-hidden="true">diamond</span>
-                                    {' '}{deck.avgCubes >= 0 ? '+' : ''}{deck.avgCubes.toFixed(2)}
+                                    {' '}{typeof deck.avgCubes === 'number' ? `${deck.avgCubes >= 0 ? '+' : ''}${deck.avgCubes.toFixed(2)}` : '—'}
                                   </span>
                                 </div>
                               </div>
@@ -8226,7 +8203,7 @@ RESPONSE GUIDELINES:
                                 </div>
                                 <div className="flex items-center gap-1 mt-2">
                                   <span className="material-symbols-outlined text-xs" style={{ fontSize: '13px', color: '#b792c9' }} aria-hidden="true">bar_chart</span>
-                                  <span className="text-xs" style={{ color: '#b792c9' }}>{deck.popularity.toFixed(1)}% of games played</span>
+                                  <span className="text-xs" style={{ color: '#b792c9' }}>{typeof deck.popularity === 'number' ? `${deck.popularity.toFixed(1)}% of games played` : '— of games played'}</span>
                                 </div>
                               </div>
                             )}
