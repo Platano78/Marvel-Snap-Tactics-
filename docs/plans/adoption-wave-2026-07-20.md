@@ -185,13 +185,23 @@ above). 23 screenshots in the crawl scratchpad.
       click every new control, verify every displayed number against the fixture, empty-state
       pass, console pass, width pass.
 
-## Slice 1 — Per-card MVP view (Analytics tab)
+## Slice 1 — Per-card MVP view (Analytics tab) — DONE → `1d63f47`
 Data: ready (`snap_card_performance` = `{cards: {[name]: {netCubes}}, importedAt}` + collection).
-- [ ] Sortable table/section in Analytics (CardPerformanceView region): card art thumb + name +
-      net cubes, sort by netCubes desc default (asc toggle), owned-only filter toggle, count cap
-      with "show all". Reuse getCardArtUrl + onError fallback; tabular-nums; emerald/red on +/-.
-- [ ] Empty state when no perf data (folder sync never run) — card-art empty state, no barren panel.
-- Gates: math spot-check vs seeded fixture; console clean; 360/768 widths; empty state.
+- [x] Enhanced the EXISTING CardPerformanceView "Card Performance" section (did NOT duplicate):
+      card art thumb (getCardArtUrl + onError) + name + net cubes (tabular-nums, emerald/red);
+      asc/desc sort toggle on both By Cubes and By Name; owned-only filter toggle (loads
+      snap_collection, matches by display name); 25-row cap + "Show all (N)"/"Show less".
+- [x] Empty state: whole-view "Unlock Your Analytics" already existed (folder-sync-never-run);
+      ADDED an in-section empty state for zero-filtered-results, and re-gated the section on RAW
+      perf data so the owned-only toggle can't hide itself. Totals-honesty fix: Gained/Lost/Net
+      now reduce over the unfiltered set (stable "lifetime" tiles).
+- [x] Gates: crew three-track. **The first live crawl CAUGHT A P0** the Babel parse + diff-read
+      both missed — `ownedSet` useMemo placed AFTER the early-return guard = Rules-of-Hooks
+      violation (React #310), crashed the Analytics tab 100% with data present. Fixed (useMemo
+      moved above the guard); re-crawl passed all 23 checks (T1-T9: art/404, sort dir, owned-only,
+      totals stability, math vs fixture, count cap, empty state, 360/768 responsive, clean
+      console). **Lesson reaffirmed: execution beats inspection — a valid-parsing, correct-looking
+      diff still crashed at runtime; only the live crawl found it.** sw.js v14→v15.
 
 ## Slice 2 — Cosmetics tab
 Data: RECON FIRST — parseCollectionEnhanced captured OwnedAvatars/OwnedTitles/CardBacks/AllAlbumData

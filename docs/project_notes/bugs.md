@@ -124,6 +124,12 @@ Track recurring bugs with solutions and prevention strategies.
 - **Solution**: Data-freshness hint ("Game data as of <mtime>") added near rank on Dashboard + Profile so a stale source is self-diagnosing
 - **Prevention**: When app data disagrees with live reality, check the source files' mtimes before hunting an app bug
 
+### 2026-07-20 - BUG-018: Analytics tab crashed 100% (React #310) — hook after early return
+- **Issue**: Slice 1 added an owned-only filter to `CardPerformanceView`; the Analytics tab then crashed on every load whenever the user had any synced data, silently bouncing to the Advisor tab (no visible error).
+- **Root Cause**: The new `const ownedSet = React.useMemo(...)` was placed AFTER the component's early-return guard (`if (!performanceData && !profileStats && ...) return <EmptyState/>`). First render (all state null) took the early return and never called the hook; after `loadData` populated state, the re-render fell through and DID call it — a Rules-of-Hooks violation (React #310 "rendered fewer hooks than expected").
+- **Solution**: Moved the `useMemo` above the early-return guard so all hooks run unconditionally every render (fixed in 1d63f47).
+- **Prevention**: EVERY hook must sit above EVERY conditional `return` in a component. Babel/JSX parse and a static diff-read both PASS on this bug — it is invisible without RUNNING the component. Any component with an early-return empty state + a new hook must be exercised live (or grep `use[A-Z]` between the return and the component's end and confirm none). Execution beats inspection.
+
 ---
 
 ## Tips
