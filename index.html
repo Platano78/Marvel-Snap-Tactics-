@@ -3575,6 +3575,40 @@ RESPONSE GUIDELINES:
 
     // Auto-import all data without preview (for linked folder sync)
     // Player OS: Stores data for all features
+    // Shared deck merge: match by the game's stable deck id (falling back to a name
+    // match for legacy id-less entries), update matched decks, append new ones, and
+    // leave everything else in `existingDecks` untouched. Used by both the game-folder
+    // auto-import below (which additionally reconciles deletions afterward) and the
+    // full-vault cross-device import (Settings' handleImport), which doesn't.
+    const upsertDecksById = (existingDecks, incomingDecks, updatedAt) => {
+      let merged = [...existingDecks];
+      let addedCount = 0;
+      let updatedCount = 0;
+      const matchedIds = new Set();
+      incomingDecks.forEach(imported => {
+        let idx = merged.findIndex(d => d.id === imported.id);
+        if (idx === -1) idx = merged.findIndex(d => !d.id && d.name === imported.name);
+
+        if (idx === -1) {
+          merged.push(imported);
+          addedCount++;
+        } else {
+          merged[idx] = {
+            ...merged[idx],
+            id: imported.id,
+            name: imported.name,
+            cards: imported.cards,
+            createdAt: merged[idx].createdAt || imported.createdAt,
+            updatedAt,
+            imported: true
+          };
+          updatedCount++;
+        }
+        matchedIds.add(imported.id);
+      });
+      return { merged, addedCount, updatedCount, matchedIds };
+    };
+
     const autoImportAll = (data) => {
       const timestamp = new Date().toISOString();
       const results = [];
@@ -3722,31 +3756,8 @@ RESPONSE GUIDELINES:
         // before ids were tracked. Hand-made decks absent from this import are
         // never touched (id collision with a real game deck is not realistic).
         const existingDecks = JSON.parse(localStorage.getItem('snap_decks') || '[]');
-        let mergedDecks = [...existingDecks];
-        let addedCount = 0;
-        let updatedCount = 0;
-        const matchedIds = new Set();
-        importedDecks.forEach(imported => {
-          let idx = mergedDecks.findIndex(d => d.id === imported.id);
-          if (idx === -1) idx = mergedDecks.findIndex(d => !d.id && d.name === imported.name);
-
-          if (idx === -1) {
-            mergedDecks.push(imported);
-            addedCount++;
-          } else {
-            mergedDecks[idx] = {
-              ...mergedDecks[idx],
-              id: imported.id,
-              name: imported.name,
-              cards: imported.cards,
-              createdAt: mergedDecks[idx].createdAt || imported.createdAt,
-              updatedAt: timestamp,
-              imported: true
-            };
-            updatedCount++;
-          }
-          matchedIds.add(imported.id);
-        });
+        const { merged: mergedAfterUpsert, addedCount, updatedCount, matchedIds } =
+          upsertDecksById(existingDecks, importedDecks, timestamp);
 
         // Deletion reconciliation: a previously-imported deck absent from this
         // import was deleted in-game, so drop it. Hand-made decks (no `imported`
@@ -3755,8 +3766,8 @@ RESPONSE GUIDELINES:
         // > 0` guard already keeps this whole block (add/update/remove alike)
         // from running when the parse yields no decks, so `importedDecks` can
         // never be empty here.
-        const beforeCount = mergedDecks.length;
-        mergedDecks = mergedDecks.filter(d => !d.imported || matchedIds.has(d.id));
+        const beforeCount = mergedAfterUpsert.length;
+        const mergedDecks = mergedAfterUpsert.filter(d => !d.imported || matchedIds.has(d.id));
         const removedCount = beforeCount - mergedDecks.length;
 
         localStorage.setItem('snap_decks', JSON.stringify(mergedDecks));
@@ -3799,15 +3810,34 @@ RESPONSE GUIDELINES:
 
     // ==================== VAULT MANAGER ====================
     const VaultManager = {
+      // localStorage keys synced from the game folder that live outside the
+      // collection/matches/settings React state — kept in one list so the full-vault
+      // export/import round-trips every synced key. Deliberately excludes
+      // snap_ai_config (provider settings/API keys — export sanitizes secrets) and
+      // device-local/cache keys (snap_card_cache, snap_performance_mode,
+      // snap_card_performance, snap_google_*).
+      VAULT_SYNCED_KEYS: [
+        'snap_decks', 'snap_profile_stats', 'snap_rank', 'snap_wallet', 'snap_rewards',
+        'snap_collection_enhanced', 'snap_battlepass', 'snap_missions', 'snap_mastery', 'snap_timemodel'
+      ],
+
       exportFullVault(collection, matches, settings) {
         const { totalGames, totalWins, winRate, netCubes } = getMatchStats(matches);
 
+        const vault = {};
+        this.VAULT_SYNCED_KEYS.forEach(key => {
+          const raw = localStorage.getItem(key);
+          if (raw === null) return;
+          try { vault[key] = JSON.parse(raw); } catch { /* skip malformed entry */ }
+        });
+
         return {
-          version: '1.0',
+          version: '2.0',
           exportDate: new Date().toISOString(),
           collection: collection,
           matches: matches,
           settings: settings,
+          vault: vault,
           stats: {
             totalGames,
             wins: totalWins,
@@ -9627,6 +9657,34 @@ RESPONSE GUIDELINES:
             setMatches(data.matches);
             if (data.decks) setDecks(data.decks);
             if (data.settings) setSettings(data.settings);
+
+            // Full-vault (v2.0) payloads also carry raw localStorage snapshots for
+            // data synced from the game folder that never got lifted into Settings'
+            // own React state (rank, wallet, mastery, etc). Write those back
+            // directly and let mounted components refresh via the same
+            // snap-data-updated event the folder sync uses. v1.0 payloads have no
+            // `vault` field, so this is a no-op for them.
+            if (data.version === '2.0' && data.vault && typeof data.vault === 'object') {
+              const timestamp = new Date().toISOString();
+              Object.entries(data.vault).forEach(([key, value]) => {
+                // Defensive: never let an imported payload plant provider config or
+                // secrets, even though exportFullVault never writes this key itself.
+                if (key === 'snap_ai_config') return;
+
+                if (key === 'snap_decks') {
+                  // Reuse the folder-sync upsert semantics (upsertDecksById, also
+                  // used by autoImportAll): match by id, update matched, append
+                  // new, keep local hand-made decks absent from this payload.
+                  const existingDecks = JSON.parse(localStorage.getItem('snap_decks') || '[]');
+                  const { merged } = upsertDecksById(existingDecks, value, timestamp);
+                  localStorage.setItem('snap_decks', JSON.stringify(merged));
+                } else {
+                  localStorage.setItem(key, JSON.stringify(value));
+                }
+              });
+              window.dispatchEvent(new Event('snap-data-updated'));
+            }
+
             alert('Data imported successfully!');
           } else if (data.owned) {
             setCollection(data);
