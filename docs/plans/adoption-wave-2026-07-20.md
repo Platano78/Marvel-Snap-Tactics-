@@ -20,24 +20,71 @@ must be fully worked off first. The crawl IS the foundation for the additional f
 surfaces get built on verified ground, and each new slice inherits the crawl's fixture library
 and gates.
 
-- [ ] All six reports collected (Q1 home/data ✅in-flight, Q2 cards ✅in-flight, Q3 decks
-      ✅in-flight, Q4 ai/meta/system ✅in-flight, a11y audit ✅DELIVERED, session code review
-      ✅DELIVERED).
-- [ ] Known defects already registered from the delivered reports:
-      - HIGH (code review): snap_card_performance keyed by raw CardDefId vs display-name reads —
-        hero/Arsenal/Analytics silently degraded on real synced data. Fix slice IN FLIGHT
-        (write-time resolution + real-write-path gate).
-      - MEDIUM (code review): Forge 'local' path lacked callLocal's dual-format fallback —
-        folded into the same fix slice.
-      - CRITICAL (a11y): nav tabs' aria-controls reference nonexistent panels (pre-existing,
-        global); Forge primary CTAs 3.22:1 contrast (text token misused as bg).
-      - SERIOUS (a11y): momentum ribbon has no screen-reader equivalent; History rows'
-        aria-label override hides remark/deck/snap content.
-      - MODERATE/MINOR (a11y): silent forge status transitions (needs aria-live), season sweep
-        visual-only, forge carousel not keyboard-traversable, user-scalable=no, "Forge a counter
-        deck" pill lands on Decks list not the Forge (needs view deep-link), 9px reasoning
-        chips, toggle-chip target size, focus loss on forge transitions.
-- [ ] Consolidated triage WITH OWNER: one ranked list, owner rules severity/skip per item.
+- [x] All six reports collected (2026-07-20): Q1 home/data (static-trace; live re-crawl owed —
+      see below), Q2 cards, Q3 decks, Q4 ai/meta/system, a11y audit, session code review.
+- [x] Consolidated triage ruled by owner (2026-07-20): **P0 fixed immediately in-session;
+      P1-P3 executed by the next session off this list.**
+
+### CONSOLIDATED TRIAGE (all six reports, owner-ruled 2026-07-20)
+
+**FIXED IN-SESSION (2026-07-20):**
+- HIGH (code review): snap_card_performance defId-vs-display-name key mismatch → fixed b3aaf15
+  (write-time resolution; + Forge local unification + dead CSS hook).
+- P0-1 HIGH (Q4): "Export Full Vault" → import silently loses collection — handleImport sets
+  React state then dispatches snap-data-updated synchronously; listener re-reads STALE
+  localStorage and clobbers. Fix slice in flight (write-through before dispatch + listener
+  stale-clobber sweep). Repro: seed → export → clear → import → collection empty.
+- P0-2 MED-HIGH (Q2): Database series filter under-filters grouped pools (Starter 13/26,
+  Spotlight 1/6) — chip builder keeps first raw id only; rebuild on POOL_GROUPS like the
+  Collection tab (~6802-6806). Fix in same slice. Also fixes wrong chip order.
+
+**P1 — a11y criticals (next session):**
+- Nav tabs aria-controls → nonexistent `panel-*` ids, no tabpanels exist (index.html:4643,
+  Lighthouse-confirmed critical). Either add real panel ids/roles or drop the tab pattern.
+- Forge primary CTAs `bg-cosmic-purple-text text-white` = 3.22:1 (text token misused as bg):
+  "Save to My Decks" ~8335, "Try Again" ~8242, "Import from Code" ~8364, builder-save ~8133,
+  "Configure AI Provider". Swap bg to --cosmic-purple (#ad2bee) and re-verify ≥4.5:1.
+
+**P2 — serious/moderate (next session):**
+- Momentum ribbon SR-invisible (~5183): add visually-hidden trend summary or aria-label.
+- History rows' aria-label override hides remark/deck/snap from AT (~5490): append to label or
+  use aria-describedby. (Dashboard feed reads fine — inconsistent pair.)
+- No AbortController/timeout on ANY provider call (Q4): Test Connection hangs forever on
+  unresponsive endpoints; Advisor has no Stop control and isLoading locks input. Add timeout +
+  cancel affordance.
+- Art slug builder strips diacritics ("Araña" → araa.webp 404, index.html:~1737); Database tiles
+  + CardDetail hero use background-image with NO fallback path (dead fallback branch since
+  getCardArtUrl is always truthy) — transliterate (ñ→n etc.) or SLUG_OVERRIDES, and add real
+  onError fallbacks matching the Collection tab's working pattern.
+- Forge status transitions silent to AT (~8216): add aria-live/role=status (pattern exists at
+  the toast region ~9585).
+- "Forge a counter deck" reply pill lands on Decks LIST, not the Forge (~5244): needs a
+  forge-view deep-link (setActiveTab payload or event the Decks component consumes).
+
+**P3 — polish tail (next session, owner may skip items):**
+- user-scalable=no viewport meta (blocks pinch zoom, WCAG 1.4.4).
+- Forge carousel tiles not keyboard-traversable (no tabIndex — ArsenalTile has the right
+  pattern); hero card can't show its synergy gold ring (isHero branch excludes it, Q3).
+- Season-sweep arc value visual-only; 9px reasoning chips + title-only full text; toggle chips
+  36px vs 44px best practice; likely focus loss on forge state transitions.
+- Duplicate videoUrl: creator-decks.json Dormammu vs Scream (both t_vrJXXJZGM) — find correct
+  Scream URL or drop it.
+- "Import from URL" is a permanent no-op stub styled as functional (~7788) — label "coming
+  soon" or remove.
+- Q1 defensive gaps: Dashboard completionPercent lacks totalCards>0 guard (~4733, Profile's
+  ~11539 has it); CardPerformanceView unguarded Object.entries(performanceData.cards) (~9949).
+- Form fields lack id/name (16 inputs, recurring lint); Database chip order (fixed by P0-2);
+  mid-stream error says "unreachable" after content arrived (~3088); Collection search state
+  persists across view-mode switches (probably fine — owner call).
+- SPEC-GAP note (not a defect): CLAUDE.md's "Mark all Series 1 owned" bulk action never
+  shipped (deliberate simplification, flagged for awareness).
+
+**Q1 LIVE RE-CRAWL owed**: qa-home completed Q1 by static trace only (browser contention);
+live click-through pass (screenshots, Quick Match append propagation, console-after-nav,
+empty-state render, freshness show/hide, Arsenal re-render) must be re-run SERIALIZED.
+Fixture corpus: scratchpad `qa-fixtures.js` (node --check clean, all 14 keys, port-guard
+built in) — but scratchpad is session-scoped; next session should copy it into the repo under
+`docs/qa/` first (or regenerate from Q1's shapes documented in its header).
 - [ ] Fix waves executed under full crew discipline (three-track per slice; SW CACHE_NAME bump
       on every index.html deploy).
 - [ ] Re-verification: each fixed area re-crawled (targeted, using the quadrant fixtures) before
