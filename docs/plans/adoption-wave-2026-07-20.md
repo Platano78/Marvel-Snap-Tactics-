@@ -38,6 +38,48 @@ and gates.
   Spotlight 1/6) — chip builder keeps first raw id only; rebuild on POOL_GROUPS like the
   Collection tab (~6802-6806). Fix in same slice. Also fixes wrong chip order.
 
+### EXECUTION LOG (2026-07-20 evening session — crew, three-track per slice)
+
+- [x] **P1 — a11y criticals** → `3b6f990`. Owner ruled: DROP the tab pattern (not fabricate
+      tabpanels) — the nav is a bottom app-bar, `role="tablist"` was nested inside
+      `role="navigation"`, and primaryTabs has 5 entries vs 10 live routes so a tabset cannot
+      represent the route space. Owner also ruled contrast scope = the whole CLASS, not the
+      symptom: recon found the 3.22:1 defect on **22** text-bearing controls app-wide, not the 5
+      Forge CTAs the triage named. Swapped to `bg-cosmic-purple` = 4.82:1 (verified
+      programmatically). 9 decorative/large-text instances deliberately left at 3.22:1 — they
+      need only 3:1. Confirmed `cosmic-purple` exists in the Tailwind config, else every gate
+      would pass while the fix rendered nothing.
+- [x] **P2a — a11y trio** → `44f27da`. Momentum ribbon SR text (memo extended to return
+      netCubes/wins/losses; sr-only span placed as a SIBLING of the aria-hidden div — nesting it
+      inside would pass every grep while being silently unreadable). History row aria-label now
+      appends deck/snap/notes. Forge got a PERSISTENT sr-only `role="status"` live region outside
+      every status conditional (a region that mounts with its content is typically not announced).
+      `getMatchRemark`'s generated flavor text deliberately NOT announced — it restates fields the
+      label already carries.
+- [x] **P2b — AbortController timeout + cancel** → `0927fdd`. Was zero AbortController in the
+      file. **Four instances of one root confusion** ("connect timeout" vs "total timeout") found
+      only AFTER the first implementation passed every gate: (1) callLocal keyed its abort
+      short-circuit on error NAME, so an inner timeout was misread as a user cancel and killed the
+      Ollama→OpenAI-compat fallback, breaking LM Studio/vLLM; (2) buffered/Forge calls inherited
+      the 20s connect timer as a hard TOTAL timeout — they generate fully before sending headers,
+      so it would have failed deck generation that previously ran unbounded; (3) streaming kept
+      the 20s timer armed until the first chunk, killing slow local prefill; (4) the `/v1` branch
+      wrapped timeouts into a plain Error, destroying the name callers branch on.
+      Final semantics: 20s to headers → 45s to first chunk → 45s between chunks → 180s for
+      buffered → no total cap ever. Proven by three Node harnesses over the REAL extracted source.
+      **Process note:** defects 1+2 were caught only after escalating the adversarial pass from
+      haiku to sonnet — haiku had returned "clean, zero defects" on this class of work twice.
+      Defect 3 was the orchestrator re-reading its own spec. Defect 2 was a SPEC error, not an
+      implementation error. Known gaps left: Forge has signal/timeoutMs plumbed but no cancel UI
+      (it does get the 180s timeout); testConnection can't say which local wire-format timed out.
+- [ ] **P2c — art slug + fallbacks + Forge deep-link** (in flight). Diacritic strip verified
+      against the LIVE CDN: `araa.webp`=404, `arana.webp`=200, so NFD-strip is provably right and
+      needs no SLUG_OVERRIDES; "Araña" is the only non-ASCII card. Deep-link carries a RACE the
+      triage missed: `Decks` is conditionally rendered so it mounts AFTER the tab switch — a
+      second event fires before its listener exists. Fixed via App-held state passed as a prop,
+      with `handleSetTab` made polymorphic to preserve all 19 bare-string dispatch sites.
+- [ ] **P3 — polish tail. OWNER RULED 2026-07-20: implement ALL FOUR bundles, nothing skipped.**
+
 **P1 — a11y criticals (next session):**
 - Nav tabs aria-controls → nonexistent `panel-*` ids, no tabpanels exist (index.html:4643,
   Lighthouse-confirmed critical). Either add real panel ids/roles or drop the tab pattern.
