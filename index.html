@@ -6476,13 +6476,47 @@ RULES:
           .slice(0, 4);
       }, [card]);
 
-      // Counters: cards whose ability text references destruction, removal, or power reduction
+      // Counters: rule-based, derived from the SELECTED card's own profile — not a fixed
+      // list shared by every card. Each rule names real tech cards plus the reason they counter.
       const counters = React.useMemo(() => {
-        const keywords = ['destroy', 'remove', '-', 'discard', 'reduce'];
-        return uniqueCards
-          .filter(c => c.name !== card.name && c.ability &&
-            keywords.some(kw => c.ability.toLowerCase().includes(kw)))
-          .slice(0, 4);
+        const rules = [
+          { test: c => !!c.ability && c.ability.startsWith('Ongoing:'), names: ['Enchantress', 'Rogue'] },
+          { test: c => !!c.ability && c.ability.startsWith('On Reveal:'), names: ['Cosmo'] },
+          { test: c => c.power >= 10 || (!!c.ability && (/double/i.test(c.ability) || /\+\s?\d{2}\b/.test(c.ability))), names: ['Shang-Chi'] },
+          { test: c => c.cost <= 1, names: ['Killmonger'] },
+          { test: c => !!c.ability && /\bmove\b/i.test(c.ability), names: ['Professor X', 'Storm'] },
+        ];
+        const matchedNames = [];
+        rules.forEach(rule => {
+          if (rule.test(card)) {
+            rule.names.forEach(n => { if (!matchedNames.includes(n)) matchedNames.push(n); });
+          }
+        });
+        return matchedNames
+          .filter(n => n !== card.name)
+          .slice(0, 4)
+          .map(n => uniqueCards.find(c => c.name === n))
+          .filter(Boolean);
+      }, [card]);
+
+      const COUNTER_WHY = {
+        'Enchantress': 'Shuts off Ongoing effects',
+        'Rogue': 'Shuts off Ongoing effects',
+        'Cosmo': 'Blocks On Reveal abilities',
+        'Shang-Chi': 'Punishes big Power',
+        'Killmonger': 'Eats 1-Cost boards',
+        'Professor X': 'Locks the lane down',
+        'Storm': 'Locks the lane down',
+      };
+
+      // Live decks this card actually appears in, from META_CONTEXT.tierList.sampleCards
+      // (data/meta-context.json can be stale/absent — guard with Array.isArray, same pattern
+      // as MetaTierList's mergedData).
+      const seenInDecks = React.useMemo(() => {
+        if (!Array.isArray(META_CONTEXT.tierList)) return [];
+        return META_CONTEXT.tierList
+          .filter(deck => Array.isArray(deck.sampleCards) && deck.sampleCards.includes(card.name))
+          .slice(0, 3);
       }, [card]);
 
       // Strategy tips from ability text (fallback — real tips would come from AI)
@@ -6492,7 +6526,7 @@ RULES:
         if (a.startsWith('On Reveal')) return `Time ${card.name} carefully — On Reveal fires the moment it's played. Use Ghost to control exactly when it triggers.`;
         if (a.includes('destroy')) return `${card.name} pairs well with Destroy synergies. Carnage and Deathlok can chain with its destruction effect.`;
         if (a.includes('move')) return `${card.name} benefits from movement synergies. Iron Fist and Cloak can reposition it to the most advantageous lane.`;
-        return `${card.name} is a solid pick in its archetype. Consider pairing it with cards that amplify ${getSeriesDisplayName(card.series)} strategies.`;
+        return `${card.name} slots into decks that want its stat line — ${card.cost}-Cost for ${card.power} Power.`;
       }, [card]);
 
       return (
@@ -6559,9 +6593,11 @@ RULES:
                 {abilityType && (
                   <span className={`stitch-badge ${abilityType.cls}`}>{abilityType.label}</span>
                 )}
-                <span className={`stitch-badge ${getSeriesColorClass(card.series)}`}>
-                  {getSeriesDisplayName(card.series)}
-                </span>
+                {getSeriesDisplayName(card.series) !== 'Unknown' && (
+                  <span className={`stitch-badge ${getSeriesColorClass(card.series)}`}>
+                    {getSeriesDisplayName(card.series)}
+                  </span>
+                )}
                 <span className="text-[#b792c9] text-sm font-medium">
                   {card.cost} Energy • {card.power} Power
                 </span>
@@ -6574,6 +6610,26 @@ RULES:
                 <p className="text-slate-300 leading-relaxed text-sm">{card.ability || 'No ability text available.'}</p>
               </div>
             </section>
+
+            {/* Seen In — real decks this card appears in, from live tier list data */}
+            {seenInDecks.length > 0 && (
+              <section className="px-6 mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="material-symbols-outlined text-[#ad2bee]">trending_up</span>
+                  <h3 className="text-xl font-bold text-white">Seen In</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {seenInDecks.map(deck => (
+                    <span
+                      key={deck.name}
+                      className="text-[11px] font-semibold text-cosmic-purple-text bg-[rgba(173,43,238,0.12)] border border-[rgba(173,43,238,0.25)] rounded-full px-3 py-1"
+                    >
+                      {deck.name} ({deck.tier})
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Strategy Tips */}
             <section className="px-6 mb-8">
@@ -6639,6 +6695,7 @@ RULES:
                         <div className="flex flex-col min-w-0">
                           <span className="font-bold text-sm text-white truncate">{ctr.name}</span>
                           <span className="text-[10px] text-red-400 uppercase font-black">Counter</span>
+                          <span className="text-xs text-[#b792c9] truncate">{COUNTER_WHY[ctr.name]}</span>
                         </div>
                       </div>
                     );
@@ -8768,6 +8825,20 @@ RULES:
         <div className="px-4 pb-20">
           {/* Header */}
           <Header title="META TIER LIST" subtitle={`Last updated: ${lastUpdated} \u00b7 refreshed monthly \u2022 ${META_CONTEXT.season || 'Current Season'}`} />
+
+          {/* Context chips \u2014 truthful static labels restored in place of the old bracket/time
+              filter pills (those filtered nothing; these are non-interactive facts). */}
+          <div className="flex flex-wrap gap-2 mb-4" role="note" aria-label="Data context">
+            {['Ranked', `Week of ${lastUpdated}`, 'Refreshed monthly'].map(label => (
+              <span
+                key={label}
+                className="shrink-0 flex items-center h-9 px-3 rounded-full text-xs font-medium"
+                style={{ background: 'rgba(173,43,238,0.1)', color: '#b792c9', border: '1px solid rgba(173,43,238,0.2)' }}
+              >
+                {label}
+              </span>
+            ))}
+          </div>
 
           {/* Sort toggle */}
           <div className="flex gap-2 mb-4">
