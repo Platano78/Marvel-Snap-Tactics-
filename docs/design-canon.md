@@ -53,6 +53,39 @@ adds expression WITHIN them, it does not relax them.
 5. **Gold = reward**: spotlight keys, maxed mastery, max-stakes. Never chrome, always earned.
 6. **Annotation chips**: AI advisor tips as purple holo-notes (Spider-Verse DNA, cosmic-rendered).
 
+## The Wow Arc — structural restructure (owner rulings 2026-07-19, design session #3)
+
+The standing hypothesis is **CONFIRMED by the owner**: Full Holo added texture to screens that
+are structurally a generic stat dashboard; the fix is changing what the screens ARE — the
+player's cards/collection as the *subject* of every screen, not decoration around stat panels.
+All four wow ingredients are in play: card art as UI, motion & ceremony, a flagship experience,
+personality & voice.
+
+**Direction ruling: compose all three concepts** (not either/or). Stitch references live in the
+authority project (`projects/12427902730037601641`); tracked exports alongside this file:
+
+1. **THE VAULT** (home) — screen `9965615e4d6d4c7285df18e12f8f12d0`, export
+   `concept_vault_home.html`. Full-bleed holographic hero card owns the top of Home; rank +
+   season progress ride the card as an orbital arc, not a panel; "Your Arsenal" shelf of owned
+   cards with stat chips ON the cards; one "Ask Snapapoulous" pill.
+2. **THE FORGE** (Decks flagship — the AI deck maker) — screen
+   `55dc866d47d149c2802bb879654ce8a6` ("Cosmic Perspective", **owner's pick** over the
+   orchestrator-recommended "Ritual Arc"), export `concept_forge_flagship.html`. Ceremonial AI
+   deck-building: hero card materializing in a gold-glow frame, deck carousel behind, prompt
+   pill ("Forge me a deck around …"), "Only my cards" / "Meta-aware" toggles, AI reasoning as
+   purple holo annotation chips. Gold = synergy/reward only. The deck maker is a **design
+   pillar**, not a bolt-on (owner ruling).
+3. **THE COMPANION** (Dashboard/History voice) — screen `ab81954439ea4d2a8b328bfcba72633d`,
+   export `concept_companion_home.html`. Snapapoulous as a living presence: conversational
+   headline states the night's story; matches as an annotated feed with one-line advisor
+   remarks in holo speech chips; momentum ribbon visualizes the cube streak; stats appear
+   inside sentences and chips, never as panel grids.
+
+Rules 1-7 and the Signature Layer still bind. Implementation is a tracked arc:
+`docs/plans/design-wow-2026-07-19.md`. Losing variants (`fe184b12…` Ritual Arc,
+`274cf95f…` Geometric Zenith, original Forge draft `69cbfb19…`) remain in the Stitch project
+for reference but are non-canonical.
+
 ## Borrowed DNA (from the retired explorations, re-rendered in-world)
 
 - Victory/defeat splash micro-moment on cube logging (from Spider-Verse splashes) — SHIPPED (ae0aba7).

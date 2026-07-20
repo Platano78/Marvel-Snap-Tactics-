@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>THE VAULT - Marvel Snap Companion</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&amp;family=Spline+Sans:wght@400;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error": "#ffb4ab",
+                        "primary": "#e8b3ff",
+                        "tertiary-fixed": "#74f5ff",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary": "#00363a",
+                        "tertiary": "#00dbe7",
+                        "tertiary-fixed-dim": "#00dbe7",
+                        "surface": "#18111b",
+                        "surface-tint": "#e8b3ff",
+                        "on-secondary-container": "#725f00",
+                        "secondary-fixed": "#ffe16d",
+                        "surface-container-lowest": "#130c16",
+                        "on-error": "#690005",
+                        "tertiary-container": "#007f86",
+                        "on-tertiary-container": "#e6fdff",
+                        "surface-container-highest": "#3a323d",
+                        "outline-variant": "#4f4254",
+                        "background": "#18111b",
+                        "on-primary": "#500075",
+                        "on-surface-variant": "#d3c1d6",
+                        "secondary-fixed-dim": "#e9c400",
+                        "surface-variant": "#3a323d",
+                        "on-primary-container": "#fff6fd",
+                        "on-secondary-fixed-variant": "#544600",
+                        "inverse-primary": "#9600d5",
+                        "outline": "#9b8ba0",
+                        "on-tertiary-fixed": "#002022",
+                        "secondary-container": "#ffdb3c",
+                        "on-primary-fixed": "#310049",
+                        "on-background": "#ecdeed",
+                        "on-secondary-fixed": "#221b00",
+                        "on-primary-fixed-variant": "#7200a4",
+                        "on-secondary": "#3a3000",
+                        "primary-fixed": "#f6d9ff",
+                        "on-surface": "#ecdeed",
+                        "primary-fixed-dim": "#e8b3ff",
+                        "surface-dim": "#18111b",
+                        "surface-bright": "#3f3642",
+                        "surface-container": "#251d28",
+                        "surface-container-low": "#201923",
+                        "primary-container": "#ad2bee",
+                        "error-container": "#93000a",
+                        "secondary": "#fff9ef",
+                        "surface-container-high": "#2f2732",
+                        "inverse-on-surface": "#362d39",
+                        "inverse-surface": "#ecdeed",
+                        "on-tertiary-fixed-variant": "#004f54"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "12px",
+                        "container-padding": "20px",
+                        "unit": "4px",
+                        "card-gap": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Spline Sans"],
+                        "display-xl": ["Spline Sans"],
+                        "body-md": ["Spline Sans"],
+                        "stat-lg": ["JetBrains Mono"],
+                        "headline-lg": ["Spline Sans"],
+                        "label-caps": ["Spline Sans"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "display-xl": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "stat-lg": ["28px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.15em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #120818;
+            background-image: 
+                radial-gradient(circle at 50% 30%, rgba(173, 43, 238, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 80% 80%, rgba(116, 245, 255, 0.1) 0%, transparent 50%);
+            background-attachment: fixed;
+            color: #ecdeed;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .glass-panel {
+            background: rgba(60, 35, 72, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-card {
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out;
+            box-shadow: 0 0 40px rgba(173, 43, 238, 0.4), inset 0 0 20px rgba(255,255,255,0.2);
+        }
+
+        .hero-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(125deg, transparent 20%, rgba(255,255,255,0.3) 40%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0.3) 60%, transparent 80%);
+            background-size: 200% 200%;
+            mix-blend-mode: overlay;
+            border-radius: inherit;
+            pointer-events: none;
+            animation: shimmer 6s infinite linear;
+        }
+        
+        .legendary-border {
+            border: 1px solid #ffd700;
+            box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.3), 0 0 15px rgba(255, 215, 0, 0.2);
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% -200%; }
+            100% { background-position: 200% 200%; }
+        }
+
+        .orbital-arc {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(173, 43, 238, 0.3);
+            border-top-color: #ad2bee;
+            box-shadow: 0 0 15px rgba(173, 43, 238, 0.5);
+            animation: spin 10s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="min-h-screen relative font-body-md text-body-md">
+<!-- Deep Space Starfield Pattern -->
+<div class="fixed inset-0 pointer-events-none" style="background-image: radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px); background-size: 30px 30px; opacity: 0.3; z-index: -1;"></div>
+<!-- TopAppBar (From JSON) -->
+<header class="bg-surface/60 backdrop-blur-xl fixed top-0 w-full border-b border-white/10 shadow-[0_0_20px_rgba(173,43,238,0.3)] z-50">
+<div class="flex items-center justify-between px-container-padding h-16">
+<button class="text-primary hover:opacity-80 transition-opacity active:scale-95 duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary tracking-tighter uppercase">THE VAULT</h1>
+<button class="text-primary hover:opacity-80 transition-opacity active:scale-95 duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+</button>
+</div>
+</header>
+<main class="pt-20 pb-32 overflow-hidden flex flex-col items-center">
+<!-- Hero Section (Top 60%) -->
+<section class="relative w-full max-w-sm mx-auto h-[486px] mt-4 flex items-center justify-center perspective-1000">
+<!-- Orbital Progress Arc -->
+<div class="orbital-arc w-[110%] h-[90%] left-[-5%] top-[5%]"></div>
+<!-- Rank Info -->
+<div class="absolute top-4 right-4 z-20 glass-panel px-3 py-1 rounded-full border border-primary/30 flex items-center gap-2">
+<span class="font-label-caps text-label-caps text-on-surface">RANK</span>
+<span class="font-stat-lg text-stat-lg text-primary text-xl">94</span>
+</div>
+<!-- Hero Card -->
+<div class="hero-card relative w-[80%] h-[90%] rounded-xl overflow-hidden border border-white/20 z-10 cursor-pointer" id="heroCard">
+<img class="w-full h-full object-cover" data-alt="A highly detailed, imposing digital painting of a cosmic supervillain in dark, metallic purple armor. The character is posed dynamically in deep space, radiating immense magnetic energy. The art style is hyper-realistic with strong rim lighting, vibrant purple and gold energy flares, and a dramatic, high-contrast dark mode aesthetic fitting for a premium trading card. The background is a dense, swirling nebula of deep purples and blacks." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBSMqsDIqaSseSKEc6bsz04PZ8XCoa-0syjjI9L14rv9yQdfRtGHnbCKQAlOasrwsmNweiUV1rHe7MqAWAWOf6zXaGMDQJ136ddEDGmvyWe9_feSwGjJtHPlQRcHCxpG3d_X5U9UrV_rjIUdII7DvlCJfsnWdozWZpKyeDfLjJvyvTJtvJ-tFEOxnrt_QqmYKzBvRqRz2fydeps-CnJLEBsYqdn29AQ38Xq1d2RFy8bDM025EZYTOXllU8VkVK7Y87PNj2tJUTaWSK1"/>
+<!-- Card Overlay Info -->
+<div class="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+<h2 class="font-display-xl text-display-xl text-white text-3xl mb-1 drop-shadow-[0_0_10px_rgba(173,43,238,0.8)]">MAGNETO</h2>
+<div class="flex gap-2">
+<span class="glass-panel px-2 py-1 rounded font-label-caps text-label-caps text-primary border border-primary/20">VARIANT</span>
+<span class="glass-panel px-2 py-1 rounded font-label-caps text-label-caps text-tertiary-fixed border border-tertiary-fixed/20">INFINITY</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Shelf Section (Owned Cards) -->
+<section class="w-full mt-8 pl-container-padding">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-4">YOUR ARSENAL</h3>
+<div class="flex overflow-x-auto gap-card-gap pb-8 pr-container-padding hide-scrollbar snap-x snap-mandatory">
+<!-- Card 1 (Legendary/Gold Accent) -->
+<div class="snap-center shrink-0 w-[160px] h-[220px] rounded-lg overflow-hidden relative glass-panel legendary-border transform hover:scale-105 transition-transform duration-300">
+<img class="w-full h-full object-cover" data-alt="A premium digital artwork of a giant, cosmic titan character glowing with intense energy. The character holds an artifact radiating bright, ethereal light. The art style is hyper-detailed sci-fi fantasy, featuring deep cosmic purples, stark blacks, and striking gold highlights. The overall aesthetic is dark, moody, and highly polished, suitable for a rare collectible card in a high-end digital game interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3baRUDzXNxqlhLDpf1QEBbE0oq6PSlW-xO-9fQF36p4SU42mWAxaUeWtQNd03N17pztQcYirdRZuzFzkG-WsLlcpK3LD5GTmiuj76Jgp4TwSlGobHfbkjMsrPgCkb0o68KjLugpP3fWqOAGByI_Gw4E6HsH4jARh6ULgH_PTPWkH6bwF-UfDX6vDMefAZcR8Idntz-A35PaM0v2merAqu_rS4AoErI0bBVB3qopDP3NhlCyCh8DBZp4cjnEZeIII7SUFCiLMnFss5"/>
+<!-- Glass Stat Chip -->
+<div class="absolute top-2 right-2 glass-panel rounded px-1.5 py-0.5 border border-white/20 flex flex-col items-center">
+<span class="font-label-caps text-[8px] text-on-surface-variant">WIN RATE</span>
+<span class="font-stat-lg text-sm text-[#ffd700]">62%</span>
+</div>
+<div class="absolute bottom-2 left-2 right-2">
+<p class="font-headline-lg-mobile text-sm text-center font-bold tracking-widest uppercase text-white shadow-black drop-shadow-md">THANOS</p>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="snap-center shrink-0 w-[160px] h-[220px] rounded-lg overflow-hidden relative glass-panel border border-white/10 transform hover:scale-105 transition-transform duration-300">
+<img class="w-full h-full object-cover" data-alt="A dynamic, high-fidelity digital illustration of an agile, clawed mutant hero in a ferocious action pose. The scene is illuminated by dramatic, stylized lighting against a dark, gritty background with subtle glowing red accents. The rendering is ultra-crisp with a modern, high-contrast dark mode aesthetic, designed to look like a glossy holographic trading card." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRo77W4aanKseQTr2U9wvP4EG3ZVa1Fqt_ccFsMmhsEjw2G2l-ADsxK2JEqa_BNTTphWVlsuBmtnp5e1OtBqY6OR7rCBtmz0jDQzs1QZUwuzdfDEJ5yGMdMeAJrWSN3M7-eaoN6evC0Lfr7Psk2FepRueIgCGtg8_RP3tS4yTN5Fr3205Syv3LZPgET9mvE72N_i_wVvCGx6BtGr4mEr3TUgXMDOCG3LTPcXo44X3blZVJjCJqTcHZt-esg657NCdZhfccs4Ak_sR3"/>
+<div class="absolute top-2 right-2 glass-panel rounded px-1.5 py-0.5 border border-white/20 flex flex-col items-center">
+<span class="font-label-caps text-[8px] text-on-surface-variant">CUBES</span>
+<span class="font-stat-lg text-sm text-tertiary-fixed">+1.2</span>
+</div>
+<div class="absolute bottom-2 left-2 right-2">
+<p class="font-headline-lg-mobile text-sm text-center font-bold tracking-widest uppercase text-white shadow-black drop-shadow-md">WOLVERINE</p>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="snap-center shrink-0 w-[160px] h-[220px] rounded-lg overflow-hidden relative glass-panel border border-white/10 transform hover:scale-105 transition-transform duration-300">
+<img class="w-full h-full object-cover" data-alt="A surreal digital painting of a mystical sorcerer manipulating glowing geometric magic runes. The character is cloaked in deep crimson and navy blue, set against a dark void background. The magic effects provide a strong, glowing rim light. The style is highly polished, detailed, and atmospheric, perfectly matching a premium digital collectible card aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDut781btGZqHhSWXsrxNMq_qFKn7hz3Pxsj2eFvuwIYMThzV8Ofsevj4PDJCKRmGcz-qB7oCur5bBt_7XURMiveM-NWQ49_ZouZdxgFCrGvyrf5-u0ZRnyawXn8e3R3VWmtH4DYbRKi4wibs-sFG3otAvz125kEgc1V4i4r_f7YfmH4pWX40YdLDGJDTGgD-ZN9pv2d6MXQyyHhdH3k7tqodI3tgeXc5gprv-eg007vZtBhf4AbqrsXuFETAeXU8BGRpfK9WoqWobc"/>
+<div class="absolute top-2 right-2 glass-panel rounded px-1.5 py-0.5 border border-white/20 flex flex-col items-center">
+<span class="font-label-caps text-[8px] text-on-surface-variant">WIN RATE</span>
+<span class="font-stat-lg text-sm text-on-surface">54%</span>
+</div>
+<div class="absolute bottom-2 left-2 right-2">
+<p class="font-headline-lg-mobile text-sm text-center font-bold tracking-widest uppercase text-white shadow-black drop-shadow-md">DOCTOR STRANGE</p>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="snap-center shrink-0 w-[160px] h-[220px] rounded-lg overflow-hidden relative glass-panel border border-white/10 transform hover:scale-105 transition-transform duration-300">
+<img class="w-full h-full object-cover" data-alt="A sleek, futuristic depiction of an armored, high-tech flying hero. The armor gleams in crimson and gold against a dark, cloudy sky illuminated by arc-reactor blue light. The image features a shallow depth of field and high gloss finish, characteristic of a rare digital trading card. The overall tone is intense, action-oriented, and set in a dark-mode environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzkwGnqmQVbaGmzXOcmGUD9RbVvt8KFaKdsjKnHtwdIDcOOGJZbLLLrQhJSEfikMVxFFYqhPvbmR8uKHzpOpMjfp6oiMZMfThV5Gwq2Xm6Kslrl8ZxMxeRAu4Cq40wiXGdyl-XhkfzT3scBH1BvCfqptaTKIQ04mGgsOLPLJLY4y9MkkGrUFLibwxjgdYdKr7jhwR4la-bI-OoqMq6rQHH0Uoe_HUaCbwTiq56CRvyYSk8hkRqqUJ9GMiB_Q_q8-jaTlSUGIKxkgcu"/>
+<div class="absolute top-2 right-2 glass-panel rounded px-1.5 py-0.5 border border-white/20 flex flex-col items-center">
+<span class="font-label-caps text-[8px] text-on-surface-variant">CUBES</span>
+<span class="font-stat-lg text-sm text-on-surface">-0.4</span>
+</div>
+<div class="absolute bottom-2 left-2 right-2">
+<p class="font-headline-lg-mobile text-sm text-center font-bold tracking-widest uppercase text-white shadow-black drop-shadow-md">IRON MAN</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Centered FAB / Action Button -->
+<div class="mt-4 mb-8">
+<button class="relative glass-panel px-8 py-4 rounded-full font-headline-lg-mobile text-sm tracking-widest uppercase text-white overflow-hidden group border border-primary/50 shadow-[0_0_20px_rgba(173,43,238,0.3)] transition-all hover:scale-105 active:scale-95">
+<div class="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/40 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<span class="relative z-10 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">auto_awesome</span>
+                    Ask Snapapoulous
+                </span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar (From JSON) -->
+<nav class="bg-surface-container-lowest/80 backdrop-blur-2xl fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-6 pb-8 pt-4 rounded-t-xl border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.8)] md:hidden">
+<button class="flex items-center justify-center bg-primary-container/20 text-primary rounded-full p-3 shadow-[0_0_15px_rgba(232,179,255,0.4)] active:scale-110 duration-200 ease-out flex-col">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">grid_view</span>
+</button>
+<button class="flex items-center justify-center text-outline p-3 hover:text-primary-fixed transition-all flex-col">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">auto_awesome</span>
+</button>
+<button class="flex items-center justify-center text-outline p-3 hover:text-primary-fixed transition-all flex-col">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">smart_toy</span>
+</button>
+<button class="flex items-center justify-center text-outline p-3 hover:text-primary-fixed transition-all flex-col">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">leaderboard</span>
+</button>
+<button class="flex items-center justify-center text-outline p-3 hover:text-primary-fixed transition-all flex-col">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+</button>
+</nav>
+<script>
+        // Subtle 3D tilt effect for hero card
+        const card = document.getElementById('heroCard');
+        
+        document.addEventListener('mousemove', (e) => {
+            if(!card) return;
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left; // x position within the element.
+            const y = e.clientY - rect.top;  // y position within the element.
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            // Calculate rotation (small degrees for subtlety)
+            const rotateX = ((y - centerY) / centerY) * -5;
+            const rotateY = ((x - centerX) / centerX) * 5;
+
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+
+        document.addEventListener('mouseleave', () => {
+             if(!card) return;
+             card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
+        });
+    </script>
+</body></html>
