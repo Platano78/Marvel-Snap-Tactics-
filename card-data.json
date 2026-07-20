@@ -1668,7 +1668,7 @@
     "defId": "Taskmaster",
     "cost": 6,
     "power": 0,
-    "ability": "On Reveal: Set this card\u2019s Power equal to that of the last card you played. (if able)",
+    "ability": "On Reveal: Set this card’s Power equal to that of the last card you played. (if able)",
     "series": 6
   },
   {
@@ -2076,7 +2076,7 @@
     "defId": "MajesticWingbeat",
     "cost": 1,
     "power": 0,
-    "ability": "On Reveal: Give the leftmost card in your hand +2 Power. If it\u2019s 5-Cost or higher, -1 Cost too.",
+    "ability": "On Reveal: Give the leftmost card in your hand +2 Power. If it’s 5-Cost or higher, -1 Cost too.",
     "series": 7
   },
   {
@@ -2116,7 +2116,7 @@
     "defId": "MoleMan",
     "cost": 3,
     "power": 4,
-    "ability": "On Reveal: Banish the top card of your deck. Add 2 Rocks to your hand. Set their Power to the banished card\u2019s Cost.",
+    "ability": "On Reveal: Banish the top card of your deck. Add 2 Rocks to your hand. Set their Power to the banished card’s Cost.",
     "series": 7
   },
   {
@@ -2400,7 +2400,7 @@
     "series": 8
   },
   {
-    "name": "Ara\u00f1a",
+    "name": "Araña",
     "defId": "Arana",
     "cost": 1,
     "power": 2,
@@ -2636,7 +2636,7 @@
     "defId": "Firehair",
     "cost": 2,
     "power": 3,
-    "ability": "When one of your cards is destroyed, this uses that card\u2019s On Reveal.",
+    "ability": "When one of your cards is destroyed, this uses that card’s On Reveal.",
     "series": 8
   },
   {
@@ -2740,7 +2740,7 @@
     "defId": "HumanTorchFirstSteps",
     "cost": 3,
     "power": 2,
-    "ability": "End of Turn: +1 Power. Once per game, if your side here is full, double this card\u2019s Power instead.",
+    "ability": "End of Turn: +1 Power. Once per game, if your side here is full, double this card’s Power instead.",
     "series": 8
   },
   {
@@ -2780,7 +2780,7 @@
     "defId": "IronPatriot",
     "cost": 2,
     "power": 3,
-    "ability": "On Reveal: Add a random 4, 5, or\n6-Cost card to your hand. If you\u2019re winning here after next turn, give it -3 Cost.",
+    "ability": "On Reveal: Add a random 4, 5, or\n6-Cost card to your hand. If you’re winning here after next turn, give it -3 Cost.",
     "series": 8
   },
   {
@@ -2916,7 +2916,7 @@
     "defId": "Maverick",
     "cost": 3,
     "power": 3,
-    "ability": "Activate: Give the next card you play Power equal to this card\u2019s Power.",
+    "ability": "Activate: Give the next card you play Power equal to this card’s Power.",
     "series": 8
   },
   {
@@ -3036,7 +3036,7 @@
     "defId": "Prowler",
     "cost": 3,
     "power": 4,
-    "ability": "On Reveal: Add 2 Thief\u2019s Tools to your hand. Set their Costs to 0 if a card moved last turn.",
+    "ability": "On Reveal: Add 2 Thief’s Tools to your hand. Set their Costs to 0 if a card moved last turn.",
     "series": 8
   },
   {
@@ -3172,7 +3172,7 @@
     "defId": "Stardust",
     "cost": 4,
     "power": 6,
-    "ability": "Ongoing: Cards can\u2019t be added to locations except by playing\nor moving them.",
+    "ability": "Ongoing: Cards can’t be added to locations except by playing\nor moving them.",
     "series": 8
   },
   {
@@ -3292,7 +3292,7 @@
     "defId": "Viv",
     "cost": 3,
     "power": 3,
-    "ability": "At the start of each turn, give all cards in your hand +1 Power if you\u2019re winning here. Otherwise, move this to another location.",
+    "ability": "At the start of each turn, give all cards in your hand +1 Power if you’re winning here. Otherwise, move this to another location.",
     "series": 8
   },
   {
@@ -3428,7 +3428,7 @@
     "defId": "WildChild",
     "cost": 2,
     "power": 1,
-    "ability": "Ongoing: +4 Power if you\u2019ve discarded a card. +4 Power if one of your cards has been destroyed.",
+    "ability": "Ongoing: +4 Power if you’ve discarded a card. +4 Power if one of your cards has been destroyed.",
     "series": 10
   },
   {
@@ -3436,7 +3436,7 @@
     "defId": "ArchangelHorseman",
     "cost": 2,
     "power": 3,
-    "ability": "Objective: Your cards are destroyed 4 times \u2192 Resurrect one here with +5 Power. (0/4)",
+    "ability": "Objective: Your cards are destroyed 4 times → Resurrect one here with +5 Power. (0/4)",
     "series": 8
   },
   {
@@ -3444,7 +3444,7 @@
     "defId": "CalibanHorseman",
     "cost": 3,
     "power": 4,
-    "ability": "Objective: Have 3 cards that are 4-Cost or higher in play \u2192 Afflict the highest-Cost enemy card with -7 Power. (0/3)",
+    "ability": "Objective: Have 3 cards that are 4-Cost or higher in play → Afflict the highest-Cost enemy card with -7 Power. (0/3)",
     "series": 8
   },
   {
@@ -3452,7 +3452,7 @@
     "defId": "GambitHorseman",
     "cost": 3,
     "power": 3,
-    "ability": "Objective: Play 6 total Cost of created cards \u2192 Randomly destroy up to 3 total Cost of enemy cards. (0/6)",
+    "ability": "Objective: Play 6 total Cost of created cards → Randomly destroy up to 3 total Cost of enemy cards. (0/6)",
     "series": 8
   },
   {
@@ -3460,7 +3460,7 @@
     "defId": "WolverineHorseman",
     "cost": 4,
     "power": 3,
-    "ability": "Objective: This has 5 or more Power \u2192 Give one of your cards at each location +4 Power. (3/5)",
+    "ability": "Objective: This has 5 or more Power → Give one of your cards at each location +4 Power. (3/5)",
     "series": 8
   },
   {
@@ -3516,7 +3516,7 @@
     "defId": "PolarisHorseman",
     "cost": 2,
     "power": 2,
-    "ability": "Objective: Cards in play are afflicted with -5 Power \u2192 Put a card from your hand here. (0/5)",
+    "ability": "Objective: Cards in play are afflicted with -5 Power → Put a card from your hand here. (0/5)",
     "series": 8
   },
   {
@@ -3524,7 +3524,7 @@
     "defId": "StormHorseman",
     "cost": 3,
     "power": 1,
-    "ability": "Objective: End 2 turns in a row with unspent Energy \u2192 Give your other cards here and in your hand +2 Power. (0/2)",
+    "ability": "Objective: End 2 turns in a row with unspent Energy → Give your other cards here and in your hand +2 Power. (0/2)",
     "series": 8
   },
   {
@@ -3596,7 +3596,7 @@
     "defId": "Stryfe",
     "cost": 4,
     "power": 6,
-    "ability": "Objective: Play 3 On Reveal cards \u2192 Use the highest-Cost On Reveal in your hand. (0/3)",
+    "ability": "Objective: Play 3 On Reveal cards → Use the highest-Cost On Reveal in your hand. (0/3)",
     "series": 8
   },
   {
@@ -3660,7 +3660,15 @@
     "defId": "EnSabahNur",
     "cost": 4,
     "power": 6,
-    "ability": "Objective: Have a full front row at each location \u2192 Transform into Apocalypse, Celestials' Chosen. (0/6)",
+    "ability": "Objective: Have a full front row at each location → Transform into Apocalypse, Celestials' Chosen. (0/6)",
+    "series": 8
+  },
+  {
+    "name": "Magus",
+    "defId": "Magus",
+    "cost": 2,
+    "power": 4,
+    "ability": "Activate: Copy the text of a character in your deck with Cost equal to your unspent Energy. (without using its On Reveal)",
     "series": 8
   }
 ]
