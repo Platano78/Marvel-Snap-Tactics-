@@ -7120,13 +7120,14 @@ RULES:
 
       const allCards = uniqueCards;
 
-      // Series filter chips derived from card data
+      // Series filter chips derived from POOL_GROUPS (canonical pool order), mirroring
+      // the Collection tab's pool filter — chip ids are pool names, not raw series ids,
+      // since a pool (e.g. "Starter") spans multiple raw series numbers ([1,2,3]).
       const seriesOptions = React.useMemo(() => {
-        const seen = new Set();
         const opts = [{ id: 'all', label: 'All Series' }];
-        allCards.forEach(c => {
-          const disp = getSeriesDisplayName(c.series);
-          if (!seen.has(disp)) { seen.add(disp); opts.push({ id: String(c.series), label: disp }); }
+        Object.keys(POOL_GROUPS).forEach(pool => {
+          const hasCards = allCards.some(c => POOL_GROUPS[pool].includes(c.series));
+          if (hasCards) opts.push({ id: pool, label: pool });
         });
         return opts;
       }, [cardDataVersion]);
@@ -7144,10 +7145,10 @@ RULES:
           }
         }
 
-        // Series filter
+        // Series filter (seriesFilter is a pool name, e.g. "Starter" — expand to raw series ids)
         if (seriesFilter !== 'all') {
-          const s = parseInt(seriesFilter, 10);
-          cards = cards.filter(c => c.series === s);
+          const poolSeriesNums = POOL_GROUPS[seriesFilter] || [];
+          cards = cards.filter(c => poolSeriesNums.includes(c.series));
         }
 
         // Text search (name or ability)
@@ -10650,7 +10651,13 @@ RULES:
       const handleImport = () => {
         try {
           const data = JSON.parse(importData);
-          if (data.collection && data.matches) {
+          if (data.collection && Array.isArray(data.collection.owned) && Array.isArray(data.matches)) {
+            // Write-through before setCollection: the App-level persist effect
+            // (saveToStorage('snap_collection', collection)) is async and won't have
+            // flushed by the time the vault branch below dispatches snap-data-updated,
+            // so the App's listener would re-read the still-stale localStorage value
+            // and clobber the just-imported collection. Match saveToStorage's shape exactly.
+            localStorage.setItem('snap_collection', JSON.stringify(data.collection));
             setCollection(data.collection);
             setMatches(data.matches);
             if (data.decks) setDecks(data.decks);
