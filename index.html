@@ -4086,34 +4086,38 @@ RESPONSE GUIDELINES:
       return Array.from(series).sort((a, b) => a - b);
     };
 
-    // Map internal series numbers to player-friendly pool names
-    // Untapped.gg uses different numbering than in-game pools
+    // Map internal series numbers (card-data.json acquisition-pool index) to
+    // player-facing game-vocabulary groups. Players speak in Series 1-5, not
+    // pool numbers: index 1-3 (Starter Card, Collection Level, Recruit Season)
+    // are all "cards you begin with" and share one Starter bucket; 4-8 are
+    // game Series 1-5 one-to-one; 9-10 are the current Spotlight rotation.
     const POOL_GROUPS = {
-      'Pool 1': [1, 2, 3],
-      'Pool 2': [4, 5],
-      'Pool 3': [6],
-      'Pool 4': [7],
-      'Pool 5': [8],
+      'Starter': [1, 2, 3],
+      'Series 1': [4],
+      'Series 2': [5],
+      'Series 3': [6],
+      'Series 4': [7],
+      'Series 5': [8],
       'Spotlight': [9, 10]
     };
 
-    // Reverse lookup: internal series number -> pool name
+    // Reverse lookup: internal series number -> game-vocabulary group name
     const SERIES_TO_POOL = {};
     Object.entries(POOL_GROUPS).forEach(([pool, seriesNums]) => {
       seriesNums.forEach(s => { SERIES_TO_POOL[s] = pool; });
     });
 
-    const getSeriesDisplayName = (series) => SERIES_TO_POOL[series] || `Series ${series}`;
+    const getSeriesDisplayName = (series) => SERIES_TO_POOL[series] || 'Unknown';
 
     // Get series display label for UI (short form)
     const getSeriesLabel = (series) => {
       const labels = {
-        1: 'P1', 2: 'P1', 3: 'P1',
-        4: 'P2', 5: 'P2',
-        6: 'P3', 7: 'P4', 8: 'P5',
+        1: 'St', 2: 'St', 3: 'St',
+        4: 'S1', 5: 'S2',
+        6: 'S3', 7: 'S4', 8: 'S5',
         9: '⭐', 10: '⭐'
       };
-      return labels[series] || `S${series}`;
+      return labels[series] || '?';
     };
 
     // ==================== COMPONENTS ====================
@@ -6168,8 +6172,8 @@ RESPONSE GUIDELINES:
         ? collectionEnhanced.collectionScore.toLocaleString()
         : ownedCount.toString(); // fallback: owned card count
 
-      // Pool 3 stats for the Stitch progress bar
-      const pool3Stats = poolStats['Pool 3'] || { owned: 0, total: 0, percent: 0 };
+      // Series 3 stats for the Stitch progress bar
+      const series3Stats = poolStats['Series 3'] || { owned: 0, total: 0, percent: 0 };
 
       return (
         <div className="pb-24">
@@ -6193,22 +6197,22 @@ RESPONSE GUIDELINES:
             </div>
           </div>
 
-          {/* ── Stitch: Pool 3 Progress bar ── */}
+          {/* ── Stitch: Series 3 Progress bar ── */}
           <div className="flex flex-col gap-3 mx-4 mt-2 mb-4 rounded-2xl p-4" style={{ background: '#2a1833' }}>
             <div className="flex gap-6 justify-between">
-              <p className="text-white text-sm font-medium leading-normal">Pool 3 Progress</p>
+              <p className="text-white text-sm font-medium leading-normal">Series 3 Progress</p>
               <p className="text-sm font-bold leading-normal" style={{ color: '#ad2bee' }}>
-                {pool3Stats.owned}/{pool3Stats.total}
+                {series3Stats.owned}/{series3Stats.total}
               </p>
             </div>
             <div className="rounded-full h-2.5 w-full" style={{ background: '#553267' }}>
-              <div className="h-2.5 rounded-full" style={{ width: `${pool3Stats.percent}%`, background: '#ad2bee' }} />
+              <div className="h-2.5 rounded-full" style={{ width: `${series3Stats.percent}%`, background: '#ad2bee' }} />
             </div>
             {/* TODO: "credits to next Reserve" requires CurrencyState data not currently imported */}
             <p className="text-xs font-normal leading-normal italic" style={{ color: '#b792c9' }}>
-              {pool3Stats.percent < 100
-                ? `${pool3Stats.total - pool3Stats.owned} cards remaining in Pool 3`
-                : 'Pool 3 complete!'}
+              {series3Stats.percent < 100
+                ? `${series3Stats.total - series3Stats.owned} cards remaining in Series 3`
+                : 'Series 3 complete!'}
             </p>
           </div>
 
@@ -6492,11 +6496,15 @@ RESPONSE GUIDELINES:
         });
       };
 
-      // Border style based on series (mirrors Stitch rarity tiers)
+      // Border style based on game series (mirrors Stitch rarity tiers).
+      // Keyed on the raw card-data.json series index with its game meaning:
+      // 9/10 = Spotlight, 8 = Series 5, 7 = Series 4, 6 = Series 3.
+      // Starter/Series 1/Series 2 (index 1-5) stay unstyled.
       const getCardBorderStyle = (card) => {
-        if (card.series >= 5) return 'border-[#9d4edd] shadow-[0_0_15px_rgba(157,78,221,0.3)]';
-        if (card.series === 4) return 'border-[#ff9a00] shadow-[0_0_15px_rgba(255,154,0,0.3)]';
-        if (card.series === 3) return 'border-[#8B5CF6] shadow-[0_0_12px_rgba(139,92,246,0.25)]';
+        if (card.series === 9 || card.series === 10) return 'border-[#F97316] shadow-[0_0_15px_rgba(249,115,22,0.3)]';
+        if (card.series === 8) return 'border-[#EF4444] shadow-[0_0_15px_rgba(239,68,68,0.3)]';
+        if (card.series === 7) return 'border-[#ff9a00] shadow-[0_0_15px_rgba(255,154,0,0.3)]';
+        if (card.series === 6) return 'border-[#8B5CF6] shadow-[0_0_12px_rgba(139,92,246,0.25)]';
         return 'border-white/20';
       };
 
@@ -9670,6 +9678,14 @@ RESPONSE GUIDELINES:
                 // Defensive: never let an imported payload plant provider config or
                 // secrets, even though exportFullVault never writes this key itself.
                 if (key === 'snap_ai_config') return;
+
+                // Defensive: every legitimate vault key holds an object or array;
+                // reject primitives/null so a crafted payload can't type-poison a
+                // reader that expects to JSON.parse an object back out of localStorage.
+                if (typeof value !== 'object' || value === null) {
+                  console.warn(`Skipping vault import for "${key}": expected object/array, got ${typeof value}`);
+                  return;
+                }
 
                 if (key === 'snap_decks') {
                   // Reuse the folder-sync upsert semantics (upsertDecksById, also
