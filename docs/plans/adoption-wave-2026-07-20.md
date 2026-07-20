@@ -223,10 +223,17 @@ Do NOT build a hollow counts-only tab (adds nothing over Profile) or a blind ID-
 - Gates: seeded-fixture render per category; empty state; console; widths.
 
 ## Slice 3 — Matchup grid (two sub-slices, sequential)
-- [ ] 3a Logging capture: optional archetype chip row on quick-match (chips = current
-      META_CONTEXT.tierList names + "Other"; single-select, skippable, one tap, appears after a
-      cube button is pressed without blocking; stores `opponentArchetype` on the match record).
-      Also add the same tagging affordance on History rows (post-hoc tagging, same field).
+- [x] 3a Logging capture → `9fb378c`. Optional archetype chip row on quick-match (chips =
+      `getForgeTierList()` names + "Other" — reuses the meta fallback, NOT raw META_CONTEXT;
+      single-select, Skip button, appears after a cube button without blocking the instant log;
+      stores `opponentArchetype`). Same inline tag affordance on History rows (post-hoc). Built
+      the app's FIRST in-place `updateMatch(id, patch)` (none existed). Tag controls stopPropagation
+      on click AND keydown (keyboard Enter would otherwise open the row overlay). Old/log-imported
+      records (no field, deck-vs-deckId heterogeneity) render untagged, never crash. Three-track:
+      sonnet impl → live crawl (Playwright 10/10) → orchestrator gates+diff. sw v15→v16.
+      **3b TRAP (recon R6): `deck` is `''` on essentially every quick-logged match** — the
+      "MY deck × archetype" pivot will be mostly empty rows unless deck identity is solved
+      first. 3b must confront this at spec time (pivot on something present, or add deck capture).
 - [ ] 3b Grid view (History or Analytics — decide at spec time by space): pivot MY deck ×
       opponentArchetype → win rate + net cubes + n; minimum n=3 per cell to render a number
       (below that show n only, no percentage — small-sample honesty); untagged matches excluded,
