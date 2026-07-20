@@ -203,10 +203,19 @@ Data: ready (`snap_card_performance` = `{cards: {[name]: {netCubes}}, importedAt
       console). **Lesson reaffirmed: execution beats inspection — a valid-parsing, correct-looking
       diff still crashed at runtime; only the live crawl found it.** sw.js v14→v15.
 
-## Slice 2 — Cosmetics tab
-Data: RECON FIRST — parseCollectionEnhanced captured OwnedAvatars/OwnedTitles/CardBacks/AllAlbumData
-per the Feb 28 audit, but `snap_collection_enhanced` may store only COUNTS. If lists aren't
-persisted, extend the parser to store them (folder-sync slice) before the view.
+## Slice 2 — Cosmetics tab — BLOCKED (owner ruled 2026-07-20: skip to Slice 3)
+**RECON VERDICT (2026-07-20, dd80148):** `snap_collection_enhanced` stores **COUNTS ONLY** — no
+cosmetic list is ever persisted. `parseCollectionEnhanced` (index.html:3919-3930) takes `.length`
+of `OwnedAvatars`/`OwnedTitles`/`CardBacks` and `Object.keys(AllAlbumData).length`, storing bare
+numbers (verified against the storage write at ~4067 and the fixture at qa-fixtures.js:174). Profile
+(~11924) + a Dashboard preview (~5105) already render those 4 counts; NO list-rendering exists.
+Building a gallery requires (1) extending the parser to persist the arrays — a folder-sync change —
+AND (2) a **real exported `CollectionState.json`** to learn the per-item field names, which does NOT
+exist anywhere in the repo (`data/` has no collection-shaped file). Album "X/Y complete" is a hard
+honest gap — `AllAlbumData`'s entry shape is unknown from code or data. **DEFERRED pending a real
+CollectionState.json from the owner's game folder.** Route pattern when unblocked: MatchHistory-style
+3-point registration (router switch ~14192, More-Features button ~11009, URL whitelist ~14006).
+Do NOT build a hollow counts-only tab (adds nothing over Profile) or a blind ID-list gallery.
 - [ ] View under Settings "More Features" grid (route pattern like Hall of Armor): sections per
       category (Avatars / Titles / Card Backs / Albums) with counts + galleries where lists exist.
 - [ ] Album completion states from AllAlbumData if shape supports it (recon decides; honest-gap
