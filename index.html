@@ -4575,7 +4575,7 @@ RULES:
       return (
         <div className="mx-4 mt-4 rounded-xl bg-stark-surface-2 border border-cosmic-purple-text/30 text-white px-4 py-3 text-sm flex items-center justify-between gap-3">
           <span>Install Snapapoulous Prime as an app</span>
-          <button onClick={handleInstall} className="shrink-0 px-3 py-1.5 rounded-lg bg-cosmic-purple-text text-white font-semibold">
+          <button onClick={handleInstall} className="shrink-0 px-3 py-1.5 rounded-lg bg-cosmic-purple text-white font-semibold">
             Install
           </button>
         </div>
@@ -4632,13 +4632,11 @@ RULES:
 
       return (
         <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-stitch-border" style={{background: 'rgba(28,16,34,0.95)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)'}} role="navigation" aria-label="Main navigation">
-          <div className="relative flex justify-around items-center h-16 max-w-lg mx-auto" role="tablist" aria-label="App sections">
+          <div className="relative flex justify-around items-center h-16 max-w-lg mx-auto">
             <span className="absolute bottom-1 w-6 h-0.5 rounded-full bg-cosmic-purple" style={indicatorStyle} aria-hidden="true" />
             {primaryTabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                role="tab"
-                aria-selected={activeTab === tab.id}
-                aria-controls={`panel-${tab.id}`}
+                aria-current={activeTab === tab.id ? 'page' : undefined}
                 id={`tab-${tab.id}`}
                 className={`relative flex flex-col items-center justify-center w-full h-full min-w-[44px] min-h-[44px] transition-colors duration-200 ${
                   activeTab === tab.id
@@ -6339,7 +6337,7 @@ RULES:
             <div className="mx-4 mb-4 bg-stark-surface border border-[rgba(173,43,238,0.25)] rounded-2xl p-4">
               <p className="text-stitch-muted text-sm mb-3">AI not configured yet!</p>
               <button onClick={() => setActiveTab('settings')}
-                className="bg-cosmic-purple-text text-white px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-[#b84eff] transition-colors min-h-[44px]">
+                className="bg-cosmic-purple text-white px-5 py-2.5 rounded-full font-semibold text-sm hover:bg-[#b84eff] transition-colors min-h-[44px]">
                 Configure AI Provider
               </button>
             </div>
@@ -6444,7 +6442,7 @@ RULES:
                 className="flex-1 bg-stark-surface text-white rounded-full px-5 py-3 border-2 border-[rgba(173,43,238,0.2)] focus:border-mcu-blue focus:outline-none focus:ring-2 focus:ring-mcu-blue/20 disabled:opacity-50"
               />
               <button onClick={() => sendMessage()} disabled={isLoading || !input.trim()}
-                className="bg-cosmic-purple-text text-white px-6 py-3 rounded-full font-display font-medium hover:shadow-glow-blue transition-[background-color,box-shadow] duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-glass min-h-[44px]">
+                className="bg-cosmic-purple text-white px-6 py-3 rounded-full font-display font-medium hover:shadow-glow-blue transition-[background-color,box-shadow] duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-glass min-h-[44px]">
                 Send
               </button>
             </div>
@@ -7069,7 +7067,7 @@ RULES:
                 </div>
                 <button
                   onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'settings' }))}
-                  className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple-text hover:bg-[#b84eff] transition-colors min-h-[44px]"
+                  className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple hover:bg-[#b84eff] transition-colors min-h-[44px]"
                 >
                   Link Game Folder
                 </button>
@@ -7868,7 +7866,7 @@ RULES:
                 </div>
                 <button
                   onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'database' }))}
-                  className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple-text hover:bg-[#b84eff] transition-colors min-h-[44px]"
+                  className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple hover:bg-[#b84eff] transition-colors min-h-[44px]"
                 >
                   Browse Card Database
                 </button>
@@ -8129,7 +8127,7 @@ RULES:
                           <div className="flex gap-2">
                             {names && (
                               <button onClick={() => importCreatorDeck(deck)}
-                                className="flex-1 min-h-[44px] bg-cosmic-purple-text text-white py-2 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(173,43,238,0.45)] transition-shadow duration-200">
+                                className="flex-1 min-h-[44px] bg-cosmic-purple text-white py-2 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(173,43,238,0.45)] transition-shadow duration-200">
                                 Import This Deck
                               </button>
                             )}
@@ -8238,7 +8236,7 @@ RULES:
                     </button>
                   )}
                   <button onClick={() => { setForgeStatus('idle'); setForgeError(null); }}
-                    className="flex-1 min-h-[44px] bg-cosmic-purple-text text-white py-2 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(173,43,238,0.45)] transition-shadow duration-200">
+                    className="flex-1 min-h-[44px] bg-cosmic-purple text-white py-2 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(173,43,238,0.45)] transition-shadow duration-200">
                     Try Again
                   </button>
                 </div>
@@ -8331,7 +8329,7 @@ RULES:
                     Refine
                   </button>
                   <button onClick={saveForgedDeck}
-                    className="flex-1 min-h-[44px] bg-cosmic-purple-text text-white py-2 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(173,43,238,0.45)] transition-shadow duration-200">
+                    className="flex-1 min-h-[44px] bg-cosmic-purple text-white py-2 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(173,43,238,0.45)] transition-shadow duration-200">
                     Save to My Decks
                   </button>
                 </div>
@@ -8360,7 +8358,7 @@ RULES:
                 rows={6}
                 className="w-full bg-[#1a1320] text-white rounded-xl px-3 py-2 mb-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20 font-mono text-sm" />
               <button onClick={importFromCode}
-                className="w-full min-h-[44px] bg-cosmic-purple-text text-white py-2 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(173,43,238,0.45)] transition-shadow duration-200">
+                className="w-full min-h-[44px] bg-cosmic-purple text-white py-2 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(173,43,238,0.45)] transition-shadow duration-200">
                 Import from Code
               </button>
             </div>
@@ -9936,7 +9934,7 @@ RULES:
               </div>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'settings' }))}
-                className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple-text hover:bg-[#b84eff] transition-colors min-h-[44px]"
+                className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple hover:bg-[#b84eff] transition-colors min-h-[44px]"
               >
                 Link Game Folder
               </button>
@@ -10818,7 +10816,7 @@ RULES:
 
             <button
               onClick={generateSyncQR}
-              className="w-full min-h-[44px] bg-cosmic-purple-text text-white py-3 rounded-full font-medium hover:bg-[#b84eff] transition-colors duration-200 mb-3"
+              className="w-full min-h-[44px] bg-cosmic-purple text-white py-3 rounded-full font-medium hover:bg-[#b84eff] transition-colors duration-200 mb-3"
             >
               📱 Generate Sync QR Code
             </button>
@@ -10937,7 +10935,7 @@ RULES:
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-white font-medium">Google (Gemini)</span>
-                  <span className="bg-cosmic-purple-text text-white text-xs px-2 py-0.5 rounded-full">Recommended</span>
+                  <span className="bg-cosmic-purple text-white text-xs px-2 py-0.5 rounded-full">Recommended</span>
                 </div>
                 <StatusBadge status={testStatus['gemini-oauth']} />
               </div>
@@ -10950,7 +10948,7 @@ RULES:
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     <button onClick={() => selectProvider('gemini-oauth')}
-                      className={`flex-1 min-h-[44px] py-2 rounded-full font-medium transition-colors duration-150 ${aiConfig.provider === 'gemini-oauth' ? 'bg-cosmic-purple-text text-white' : 'bg-stark-surface-2 text-gray-300'}`}>
+                      className={`flex-1 min-h-[44px] py-2 rounded-full font-medium transition-colors duration-150 ${aiConfig.provider === 'gemini-oauth' ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-gray-300'}`}>
                       {aiConfig.provider === 'gemini-oauth' ? 'Selected' : 'Use This'}
                     </button>
                     <button onClick={() => testConnection('gemini-oauth')}
@@ -11004,7 +11002,7 @@ RULES:
                     className="flex-1 bg-stark-surface-2 text-white rounded-xl px-3 py-2 text-sm border-2 border-[rgba(173,43,238,0.25)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20" />
                   <button onClick={() => { selectProvider(provider.id); testConnection(provider.id); }}
                     disabled={!aiConfig.apiKeys?.[provider.id]}
-                    className="min-h-[44px] bg-cosmic-purple-text text-white px-3 py-2 rounded-full text-sm hover:bg-[#b84eff] transition-colors duration-150 disabled:opacity-50">
+                    className="min-h-[44px] bg-cosmic-purple text-white px-3 py-2 rounded-full text-sm hover:bg-[#b84eff] transition-colors duration-150 disabled:opacity-50">
                     Test
                   </button>
                 </div>
@@ -11145,7 +11143,7 @@ RULES:
                 onClick={() => handlePerformanceModeChange('auto')}
                 className={`min-h-[44px] py-3 rounded-full font-medium text-sm transition-colors ${
                   performanceMode === 'auto'
-                    ? 'bg-cosmic-purple-text text-white'
+                    ? 'bg-cosmic-purple text-white'
                     : 'bg-[#1a1320] text-gray-300 hover:bg-stark-surface-2'
                 }`}
               >
@@ -11295,7 +11293,7 @@ RULES:
                 <span>📦</span> Export Full Vault (Recommended)
               </button>
               <div className="grid grid-cols-4 gap-2">
-                <button onClick={() => handleExport('all')} className="min-h-[44px] bg-cosmic-purple-text text-white py-2 rounded-full text-sm hover:bg-[#b84eff] transition-colors duration-150">Backup</button>
+                <button onClick={() => handleExport('all')} className="min-h-[44px] bg-cosmic-purple text-white py-2 rounded-full text-sm hover:bg-[#b84eff] transition-colors duration-150">Backup</button>
                 <button onClick={() => handleExport('collection')} className="min-h-[44px] bg-series-3 text-white py-2 rounded-full text-sm hover:opacity-80">Collection</button>
                 <button onClick={() => handleExport('matches')} className="min-h-[44px] bg-series-2 text-white py-2 rounded-full text-sm hover:opacity-80">Matches</button>
                 <button onClick={() => handleExport('decks')} className="min-h-[44px] bg-series-4 text-black py-2 rounded-full text-sm hover:opacity-80">Decks</button>
@@ -11313,7 +11311,7 @@ RULES:
                   placeholder="Paste JSON data here..."
                   className="w-full h-24 bg-[#1a1320] text-white rounded-xl px-3 py-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20 text-sm" />
                 <div className="flex gap-2">
-                  <button onClick={handleImport} className="flex-1 min-h-[44px] bg-cosmic-purple-text text-white py-2 rounded-full hover:bg-[#b84eff] transition-colors duration-150">Import</button>
+                  <button onClick={handleImport} className="flex-1 min-h-[44px] bg-cosmic-purple text-white py-2 rounded-full hover:bg-[#b84eff] transition-colors duration-150">Import</button>
                   <button onClick={() => { setShowImport(false); setImportData(''); }} className="flex-1 min-h-[44px] bg-stark-surface-2 text-white py-2 rounded-full hover:bg-stitch-accent">Cancel</button>
                 </div>
               </div>
@@ -11928,7 +11926,7 @@ RULES:
               </div>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'decks' }))}
-                className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple-text hover:bg-[#b84eff] transition-colors min-h-[44px]"
+                className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple hover:bg-[#b84eff] transition-colors min-h-[44px]"
               >
                 Go to Decks
               </button>
@@ -12930,7 +12928,7 @@ RULES:
 
           <div className="flex flex-wrap gap-2 mb-4">
             <button onClick={newGame} disabled={!deckIsValid}
-                    className="px-4 py-2 rounded-full text-xs font-bold text-white bg-cosmic-purple-text hover:bg-[#b84eff] transition-colors duration-150 ease-[var(--ease-snap)] disabled:opacity-40 disabled:cursor-not-allowed min-h-[36px]">
+                    className="px-4 py-2 rounded-full text-xs font-bold text-white bg-cosmic-purple hover:bg-[#b84eff] transition-colors duration-150 ease-[var(--ease-snap)] disabled:opacity-40 disabled:cursor-not-allowed min-h-[36px]">
               New Game
             </button>
             <button onClick={drawNext} disabled={!current || current.turn >= 6 || isAutoPlaying}
@@ -13248,7 +13246,7 @@ RULES:
               </div>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'decks' }))}
-                className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple-text hover:bg-[#b84eff] transition-colors min-h-[44px]"
+                className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple hover:bg-[#b84eff] transition-colors min-h-[44px]"
               >
                 Build a Deck
               </button>
@@ -13367,7 +13365,7 @@ RULES:
                 <span className="material-symbols-outlined" aria-hidden="true">settings</span>
                 Advanced Rules
                 {isAdvancedModified && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cosmic-purple-text text-white normal-case tracking-normal">Modified</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cosmic-purple text-white normal-case tracking-normal">Modified</span>
                 )}
               </span>
               <span className="material-symbols-outlined" aria-hidden="true">{showAdvanced ? 'expand_less' : 'expand_more'}</span>
@@ -13422,7 +13420,7 @@ RULES:
               <button
                 onClick={runSimulation}
                 disabled={!deckIsValid || (mode === 'combo' && comboCards.length < SIMULATOR_MIN_COMBO_CARDS)}
-                className="w-full min-h-[44px] rounded-full font-bold text-white bg-cosmic-purple-text hover:bg-[#b84eff] transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full min-h-[44px] rounded-full font-bold text-white bg-cosmic-purple hover:bg-[#b84eff] transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Run Simulation
               </button>
