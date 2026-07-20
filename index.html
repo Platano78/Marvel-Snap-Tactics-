@@ -672,6 +672,48 @@
       .holo-foil-hover::after { transition: none; }
     }
 
+    /* THE FORGE — ceremony (Phase 2b). Energy well is a state-driven loop that only
+       exists while forgeStatus === 'forging' (unmounts on resolve, so it can't run past
+       its state); the result reveal is a one-shot staggered entrance via per-index
+       animation-delay. Hero card reuses .holo-foil/.holo-foil-active — no new static glow. */
+    @keyframes forge-energy-pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.55; }
+      50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.85; }
+    }
+    .forge-energy-well {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 160px;
+      height: 160px;
+      background: radial-gradient(circle, rgba(173, 43, 238, 0.55) 0%, rgba(173, 43, 238, 0) 70%);
+      filter: blur(24px);
+      animation: forge-energy-pulse 2.6s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes forge-card-in {
+      0% { opacity: 0; transform: translateY(10px) scale(0.92); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .forge-card-in {
+      animation: forge-card-in 0.4s var(--ease-snap) both;
+    }
+    @keyframes forge-chip-in {
+      0% { opacity: 0; transform: translateY(4px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .forge-chip-in {
+      animation: forge-chip-in 0.35s var(--ease-snap) both;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .forge-energy-well { animation: none; opacity: 0.7; }
+      /* The global animation-duration:0.01ms rule (see L327-336) doesn't touch
+         animation-delay — without this, staggered idx*60ms delays + fill-mode:both
+         would hold cards at opacity 0 for up to ~0.9s. Killing the animation outright
+         renders the elements' natural (final) styles instantly, making the delay inert. */
+      .forge-card-in, .forge-chip-in { animation: none !important; }
+    }
+
     body {
       font-family: var(--font-ui);
       background-color: var(--ui-surface-base);
@@ -7013,6 +7055,21 @@ RULES:
         return map;
       }, [uniqueCards]);
 
+      // Forge synergies come straight from the AI response — validateForgeResponse only
+      // length-filters them, never name-validates. Canonicalize against the deck's own 12
+      // card names (case-insensitive) and drop any pair where either side doesn't resolve
+      // (wrong case, or a name the deck doesn't actually contain). Render-side only —
+      // the engine's forgeResult is untouched.
+      const displaySynergies = useMemo(() => {
+        if (!forgeResult) return [];
+        const canonicalByLower = new Map((forgeResult.cards || []).map(c => [c.toLowerCase(), c]));
+        return (forgeResult.synergies || [])
+          .map(pair => [canonicalByLower.get(String(pair[0]).toLowerCase()), canonicalByLower.get(String(pair[1]).toLowerCase())])
+          .filter(([a, b]) => a && b);
+      }, [forgeResult]);
+
+      const synergyCardSet = useMemo(() => new Set(displaySynergies.flat()), [displaySynergies]);
+
       // Resolve a deck card name to its canonical display name (handles raw CardDefId from imports)
       const resolveToDisplayName = (cardName) => {
         const card = cardLookup.get(cardName);
@@ -7842,12 +7899,14 @@ RULES:
               </div>
             )}
 
-            {/* Forging */}
+            {/* Forging — energy well loops only while this block is mounted (status==='forging');
+                it vanishes the instant the state resolves, so the ceremony can't outlive its state. */}
             {forgeStatus === 'forging' && (
-              <div className="flex flex-col items-center gap-4 py-14 text-center">
-                <div className="spinner" aria-hidden="true" />
-                <p className="text-white font-semibold text-sm">Forging your deck&hellip;</p>
-                <p className="text-stitch-muted text-xs max-w-xs">Snapapoulous is reading the meta and your collection.</p>
+              <div className="relative flex flex-col items-center justify-center gap-3 py-14 text-center overflow-hidden">
+                <div className="forge-energy-well" aria-hidden="true" />
+                <span className="material-symbols-outlined relative z-10 text-4xl text-cosmic-purple-text" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">auto_awesome</span>
+                <p className="relative z-10 text-xs uppercase tracking-[0.15em] font-semibold text-cosmic-purple-text">Forging&hellip;</p>
+                <p className="relative z-10 text-stitch-muted text-xs max-w-xs">Snapapoulous is reading the meta and your collection.</p>
               </div>
             )}
 
@@ -7889,14 +7948,28 @@ RULES:
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 mb-4">
-                  {forgeResult.cards.map(cardName => {
+                {/* Deck carousel — hero card (first in the deck) dominant and holo-framed,
+                    rest scroll behind it. Each tile settles in with a staggered one-shot
+                    entrance; reasoning chips fade in just after their card. */}
+                <div className="flex overflow-x-auto gap-3 pb-3 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory mb-2" role="list" aria-label="Forged deck">
+                  {forgeResult.cards.map((cardName, idx) => {
                     const card = cardLookup.get(cardName);
                     const artUrl = card ? getCardArtUrl(card) : null;
                     const note = (forgeResult.reasoning || []).find(r => r.card === cardName);
+                    const isHero = idx === 0;
+                    const inSynergy = synergyCardSet.has(cardName);
                     return (
-                      <div key={cardName} className="flex flex-col gap-1">
-                        <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden border border-[rgba(173,43,238,0.25)]">
+                      <div
+                        key={cardName}
+                        role="listitem"
+                        className={`forge-card-in flex flex-col gap-1 shrink-0 snap-center ${isHero ? 'w-[152px]' : 'w-[112px]'}`}
+                        style={{ animationDelay: `${idx * 60}ms` }}
+                      >
+                        <div className={`relative w-full aspect-[3/4] rounded-xl overflow-hidden ${
+                          isHero
+                            ? 'holo-foil holo-foil-active shadow-2xl border-4 border-[#ad2bee]/50'
+                            : `holo-foil-hover border ${inSynergy ? 'ring-1 ring-[#ffd700]/70 border-transparent' : 'border-[rgba(173,43,238,0.25)]'}`
+                        }`}>
                           <div className="absolute inset-0 card-art card-art-fallback" style={{ zIndex: 0 }} />
                           {artUrl && (
                             <img src={artUrl} alt={cardName} loading="lazy"
@@ -7907,12 +7980,16 @@ RULES:
                             {card?.cost ?? '?'}
                           </span>
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                          <span className="absolute bottom-1 left-0.5 right-0.5 text-[9px] text-white text-center leading-tight truncate font-bold drop-shadow-lg z-10">
+                          <span className={`absolute bottom-1 left-0.5 right-0.5 text-white text-center leading-tight truncate font-bold drop-shadow-lg z-10 ${isHero ? 'text-xs' : 'text-[9px]'}`}>
                             {cardName}
                           </span>
                         </div>
                         {note && (
-                          <span className="text-[9px] leading-snug text-cosmic-purple-text bg-[rgba(173,43,238,0.12)] border border-[rgba(173,43,238,0.25)] rounded-full px-2 py-0.5 text-center">
+                          <span
+                            className="forge-chip-in cosmic-glass text-[9px] leading-snug text-cosmic-purple-text px-2 py-0.5 text-center truncate"
+                            style={{ animationDelay: `${idx * 60 + 200}ms` }}
+                            title={note.note}
+                          >
                             {note.note}
                           </span>
                         )}
@@ -7920,6 +7997,22 @@ RULES:
                     );
                   })}
                 </div>
+
+                {/* Synergies — gold is the signal here, used nowhere else in the Forge.
+                    Rendered from displaySynergies (canonicalized), so a wrong-case or
+                    hallucinated pair from the AI response simply doesn't show up. */}
+                {displaySynergies.length > 0 && (
+                  <div className="mb-4">
+                    <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2 px-0.5">Synergies</div>
+                    <div className="flex flex-wrap gap-2">
+                      {displaySynergies.map(([a, b], i) => (
+                        <span key={i} className="text-[11px] font-semibold px-3 py-1 rounded-full cosmic-glass border border-[#ffd700]/50 text-[#ffd700]">
+                          {a} <span aria-hidden="true">⚡</span> {b}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex gap-2">
                   <button onClick={() => setForgeStatus('idle')}
