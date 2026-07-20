@@ -1,5 +1,5 @@
 // Snapapoulous Prime Service Worker
-const CACHE_NAME = 'snapapoulous-stitch-v12';
+const CACHE_NAME = 'snapapoulous-stitch-v13';
 const FONT_CACHE = 'snap-fonts-v1';
 const ART_CACHE = 'snap-card-art-v1';
 // Stable (unversioned) name so version-pinned CDN runtime assets (React/Babel/Tailwind)

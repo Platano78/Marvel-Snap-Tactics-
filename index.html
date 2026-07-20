@@ -1735,6 +1735,8 @@
       // Build slug from display name: "Iron Man" -> "iron-man", "Spider-Man 2099" -> "spider-man-2099"
       // Deliberately use card.name (not card.defId) — CDN slugs match display names.
       const slug = cardName
+        .normalize('NFD')                       // decompose accented Latin letters (e.g. "ñ" -> "n" + combining tilde)
+        .replace(/[̀-ͯ]/g, '')                    // strip the combining marks left behind by NFD
         .replace(/([a-z])([A-Z])/g, '$1-$2')  // camelCase -> camel-case (for any camel names)
         .replace(/\s+/g, '-')                   // spaces -> hyphens
         .replace(/[^a-zA-Z0-9-]/g, '')          // remove periods, apostrophes, ampersands, etc.
@@ -5342,7 +5344,7 @@ RULES:
               Ask about my games
             </button>
             <button
-              onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'decks' }))}
+              onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: { tab: 'decks', view: 'forge' } }))}
               className="cosmic-glass rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-[box-shadow,transform] duration-150 ease-[var(--ease-snap)] hover:shadow-[0_0_15px_rgba(173,43,238,0.25)] active:scale-95"
             >
               Forge a counter deck
@@ -6589,6 +6591,7 @@ RULES:
     // Primary reference: 06_card_details_strategy_b.html
     const CardDetail = ({ card, isOwned, onClose, onToggleOwned, editMode = false }) => {
       const artUrl = getCardArtUrl(card);
+      const [artFailed, setArtFailed] = useState(false);
 
       // Derive ability keyword badge
       const abilityType = React.useMemo(() => {
@@ -6697,8 +6700,14 @@ RULES:
             {/* Hero Card Art */}
             <div className="px-4 py-6">
               <div className="holo-foil holo-foil-active relative w-full aspect-[3/4] max-w-xs mx-auto bg-[#2b1933] rounded-xl overflow-hidden shadow-2xl border-4 border-[#ad2bee]/50">
-                {artUrl ? (
-                  <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${artUrl})` }} />
+                {!artFailed ? (
+                  <img
+                    src={artUrl}
+                    alt=""
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={() => setArtFailed(true)}
+                  />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center text-[#b792c9]">
                     <span className="material-symbols-outlined text-6xl">style</span>
@@ -7240,6 +7249,52 @@ RULES:
       );
     };
 
+    // Database grid tile — one card, art-as-UI with owned indicator; per-tile artFailed state
+    // (extracted so each grid cell can independently fall back on a 404 without re-rendering the grid).
+    const DatabaseCardTile = ({ card, owned, borderCls, onSelect }) => {
+      const [artFailed, setArtFailed] = useState(false);
+      return (
+        <button
+          onClick={onSelect}
+          className={`holo-foil-hover group relative aspect-[3/4] rounded-xl overflow-hidden border-2 ${borderCls} transition-[transform,box-shadow] duration-150 ease-[var(--ease-snap)] active:scale-95 hover:ring-2 hover:ring-cosmic-purple-text/60 text-left`}
+          aria-label={`${card.name}, ${card.cost} energy, ${card.power} power${owned ? ', in collection' : ''}`}
+        >
+          {/* Art */}
+          {!artFailed ? (
+            <img
+              src={getCardArtUrl(card)}
+              alt=""
+              loading="lazy"
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={() => setArtFailed(true)}
+            />
+          ) : (
+            <div className="absolute inset-0 bg-[#2b1933] flex items-center justify-center text-[#b792c9]">
+              <span className="material-symbols-outlined text-4xl">style</span>
+            </div>
+          )}
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+          {/* Energy badge — z-10 keeps it above the discovery sheen */}
+          <div className="absolute top-2 left-2 z-10 flex items-center justify-center h-7 w-7 rounded-full bg-blue-600 border border-white/20 text-[12px] font-bold text-white">
+            {card.cost}
+          </div>
+          {/* Power badge — z-10 keeps it above the discovery sheen */}
+          <div className="absolute top-2 right-2 z-10 flex items-center justify-center h-7 w-7 rounded-full bg-orange-500 border border-white/20 text-[12px] font-bold text-white">
+            {card.power}
+          </div>
+          {/* Owned indicator */}
+          {owned && (
+            <div className="absolute bottom-7 right-2 z-10">
+              <span className="material-symbols-outlined text-[#0bda76] text-base bg-black/60 rounded-full" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+            </div>
+          )}
+          {/* Name — z-10 keeps it above the discovery sheen */}
+          <p className="absolute bottom-2 left-2 right-2 z-10 text-white text-xs font-bold truncate">{card.name}</p>
+        </button>
+      );
+    };
+
     // ==================== CARD DATABASE COMPONENT (Stitch 02) ====================
     // Informational card browser — shows ALL cards (owned or not) with ability text inline.
     // Primary reference: 02_card_database.html
@@ -7393,46 +7448,15 @@ RULES:
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-2">
-                {filteredCards.map(card => {
-                  const artUrl = getCardArtUrl(card);
-                  const owned = ownedSet.has(card.name);
-                  const borderCls = getCardBorderStyle(card);
-                  return (
-                    <button
-                      key={card.name}
-                      onClick={() => setSelectedCard(card)}
-                      className={`holo-foil-hover group relative aspect-[3/4] rounded-xl overflow-hidden border-2 ${borderCls} transition-[transform,box-shadow] duration-150 ease-[var(--ease-snap)] active:scale-95 hover:ring-2 hover:ring-cosmic-purple-text/60 text-left`}
-                      aria-label={`${card.name}, ${card.cost} energy, ${card.power} power${owned ? ', in collection' : ''}`}
-                    >
-                      {/* Art */}
-                      {artUrl ? (
-                        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${artUrl})` }} />
-                      ) : (
-                        <div className="absolute inset-0 bg-[#2b1933] flex items-center justify-center text-[#b792c9]">
-                          <span className="material-symbols-outlined text-4xl">style</span>
-                        </div>
-                      )}
-                      {/* Gradient overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                      {/* Energy badge — z-10 keeps it above the discovery sheen */}
-                      <div className="absolute top-2 left-2 z-10 flex items-center justify-center h-7 w-7 rounded-full bg-blue-600 border border-white/20 text-[12px] font-bold text-white">
-                        {card.cost}
-                      </div>
-                      {/* Power badge — z-10 keeps it above the discovery sheen */}
-                      <div className="absolute top-2 right-2 z-10 flex items-center justify-center h-7 w-7 rounded-full bg-orange-500 border border-white/20 text-[12px] font-bold text-white">
-                        {card.power}
-                      </div>
-                      {/* Owned indicator */}
-                      {owned && (
-                        <div className="absolute bottom-7 right-2 z-10">
-                          <span className="material-symbols-outlined text-[#0bda76] text-base bg-black/60 rounded-full" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                        </div>
-                      )}
-                      {/* Name — z-10 keeps it above the discovery sheen */}
-                      <p className="absolute bottom-2 left-2 right-2 z-10 text-white text-xs font-bold truncate">{card.name}</p>
-                    </button>
-                  );
-                })}
+                {filteredCards.map(card => (
+                  <DatabaseCardTile
+                    key={card.name}
+                    card={card}
+                    owned={ownedSet.has(card.name)}
+                    borderCls={getCardBorderStyle(card)}
+                    onSelect={() => setSelectedCard(card)}
+                  />
+                ))}
               </div>
             )}
           </div>
@@ -7452,8 +7476,12 @@ RULES:
     };
 
     // ==================== DECKS COMPONENT ====================
-    const Decks = ({ decks, setDecks, collection, settings, aiConfig }) => {
-      const [view, setView] = useState('list'); // list, create, edit, import, forge
+    const Decks = ({ decks, setDecks, collection, settings, aiConfig, initialView, onInitialViewConsumed }) => {
+      // Seeded once from the App-level deep-link intent (e.g. "Forge a counter deck"); the local
+      // state is independent of the prop after this initial read, so clearing initialView below
+      // cannot reset an already-mounted view back to 'list'.
+      const [view, setView] = useState(initialView || 'list'); // list, create, edit, import, forge
+      useEffect(() => { if (initialView) onInitialViewConsumed && onInitialViewConsumed(); }, []);
       const [editingDeck, setEditingDeck] = useState(null);
       const [deckName, setDeckName] = useState('');
       const [selectedCards, setSelectedCards] = useState([]);
@@ -13680,6 +13708,9 @@ RULES:
 
     const App = () => {
       const [activeTab, setActiveTab] = useState('ai');
+      // Seeded intent for the Decks tab's initial internal view (e.g. jump straight to the Forge)
+      // — passed as a prop so it exists before Decks mounts, avoiding a race with a second event.
+      const [deckInitialView, setDeckInitialView] = useState(null);
       const [collection, setCollection] = useState(() => loadFromStorage('snap_collection', { owned: [], lastUpdated: new Date().toISOString() }));
       const [matches, setMatches] = useState(() => loadFromStorage('snap_matches', []));
       const [decks, setDecks] = useState(() => loadFromStorage('snap_decks', []));
@@ -14015,9 +14046,16 @@ RULES:
         window.scrollTo({ top: 0, behavior: 'instant' });
       }, [activeTab]);
 
-      // Listen for custom tab navigation events (from Settings quick links)
+      // Listen for custom tab navigation events (from Settings quick links).
+      // detail is either a bare tab-id string, or { tab, view } to also seed the target
+      // tab's initial internal view (e.g. deep-linking straight to the Decks Forge).
       useEffect(() => {
-        const handleSetTab = (e) => setActiveTab(e.detail);
+        const handleSetTab = (e) => {
+          const d = e.detail;
+          if (typeof d === 'string') { setActiveTab(d); return; }
+          setActiveTab(d.tab);
+          if (d.tab === 'decks' && d.view) setDeckInitialView(d.view);
+        };
         window.addEventListener('setActiveTab', handleSetTab);
         return () => window.removeEventListener('setActiveTab', handleSetTab);
       }, []);
@@ -14066,7 +14104,7 @@ RULES:
             )}
             {activeTab === 'decks' && (
               <ErrorBoundary>
-                <Decks decks={decks} setDecks={setDecks} collection={collection} settings={settings} aiConfig={aiConfig} />
+                <Decks decks={decks} setDecks={setDecks} collection={collection} settings={settings} aiConfig={aiConfig} initialView={deckInitialView} onInitialViewConsumed={() => setDeckInitialView(null)} />
               </ErrorBoundary>
             )}
             {activeTab === 'compare' && (
