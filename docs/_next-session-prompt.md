@@ -20,7 +20,20 @@ Phase 0 P1 + P2 are COMPLETE — 5 commits, all three-track verified:
   4b5b04a  P2c art-slug diacritics, real art fallbacks, race-free Forge deep-link
   c3dc41f  docs Phase 0 execution log
 **sw.js CACHE_NAME is at v13. Next index.html-deploying commit MUST bump to v14.**
-Nothing is uncommitted. `docs/_next-session-prompt.md` (this file) is the only untracked path.
+Working tree is clean — nothing uncommitted.
+
+⚠️ **ALL 6 COMMITS ARE UNPUSHED, DELIBERATELY. Owner ruled 2026-07-20: hold the deploy until the
+Q1 live re-crawl passes.** They are NOT forgotten and NOT broken — the crawl (task 2 below) exists
+to verify this session's fixes in a real browser, and nothing here has been exercised in an actual
+page load. Push only after the crawl is green.
+
+The one genuinely unproven assumption, which the crawl must settle on a REAL device: P2b's whole
+cancel-vs-timeout distinction depends on `fetch` rejecting with `signal.reason` so `.name` survives
+to the catch site. That is spec-mandated and true in evergreen engines, but WebKit has historically
+lagged on exactly that fidelity, and this is a mobile-first PWA. If it does NOT hold on the owner's
+phone, a timeout degrades silently into a user-cancel (partial content kept, NO error banner shown)
+rather than surfacing "Connection timed out". Test on device: press Stop mid-stream, and point the
+`local` provider at a dead endpoint and wait 20s.
 
 NEXT TASK (priority order):
 
