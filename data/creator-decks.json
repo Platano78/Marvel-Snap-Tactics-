@@ -38,5 +38,19 @@
     "publishedDate": "2026-07-18",
     "videoUrl": "https://www.youtube.com/watch?v=BMhWb8QzX6o",
     "notes": "Isca Buff deck from Bynx's 7/18/26 spotlight video. Unbenched by the 2026-07-19 web-lane card sweep (Stick added); 12/12 cards verified in card-data.json."
+  },
+  {
+    "deckCode": "QW50TWFuLEdvbGlhdGgsTHVrZUNhZ2UsQXJtb3IsR29yZ29uLFNhbVdpbHNvbixBc3RyYWxQcm9qZWN0aW9uLENhcHRhaW5BbWVyaWNhLENvc21vLE1vYml1c01Nb2JpdXMsTWVyY3VyeSxTcGVjdHJ1bQ==",
+    "deckName": "Ongoing (Dekkster)",
+    "creatorId": "snapstertv",
+    "publishedDate": "2026-07-17",
+    "notes": "From Dekkster's live untapped.gg profile (his standing DekksDecks link) — 58.3% win rate over 24 games at rank 70+, last played 7/17/26. Extracted 2026-07-19; 12/12 cards verified in card-data.json."
+  },
+  {
+    "deckCode": "U3BpZGVyTWFuQnJhbmROZXdEYXksTmlnaHRjcmF3bGVyLE1hZGFtZVdlYixTYW1XaWxzb24sQXVudE1heSxEaWFtb25kYmFjayxIeWRyYVN0b21wZXIsUm9ja2V0QW5kR3Jvb3QsU3BpZGVyUHVuayxNZXJjdXJ5LE5vY3R1cm5lLFNwaWRlck1hbjIwOTk=",
+    "deckName": "Butt Wood (BND Move)",
+    "creatorId": "snapstertv",
+    "publishedDate": "2026-07-17",
+    "notes": "Spider-Man: Brand New Day Moveable-package deck from Dekkster's live untapped.gg profile, last played 7/17/26. Extracted 2026-07-19; 12/12 cards verified in card-data.json. No videoUrl: sourced from his profile feed, not a specific video."
   }
 ]
