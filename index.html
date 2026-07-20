@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#120818" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#120818" media="(prefers-color-scheme: dark)">
   <meta name="description" content="Marvel Snap AI Companion & Tracker - Track your collection, log matches, and get tactical advice">
@@ -4826,7 +4826,7 @@ RULES:
 
       const totalCards = uniqueCards.length;
       const ownedInDatabase = getOwnedCount(collection);
-      const completionPercent = Math.min(100, Math.round((ownedInDatabase / totalCards) * 100));
+      const completionPercent = totalCards > 0 ? Math.min(100, Math.round((ownedInDatabase / totalCards) * 100)) : 0;
       const today = new Date().toDateString();
       const todayMatches = matches.filter(m => new Date(m.timestamp).toDateString() === today);
       const todayCubes = todayMatches.reduce((sum, m) => sum + (m.result === 'WIN' ? m.cubes : -m.cubes), 0);
@@ -4940,7 +4940,7 @@ RULES:
 
       // Decorative season-progress sweep for the rank arc — real when we have a games-played
       // count, a fixed illustrative sweep otherwise (no total-games-per-season field exists).
-      const seasonSweep = rank?.gamesPlayedInSeason ? Math.min(1, rank.gamesPlayedInSeason / 100) : 0.65;
+      const seasonSweep = rank?.gamesPlayedInSeason ? Math.min(1, rank.gamesPlayedInSeason / 100) : 0;
       const rankArcRadius = 27;
       const rankArcCircumference = 2 * Math.PI * rankArcRadius;
 
@@ -6562,7 +6562,7 @@ RULES:
 
           <div className="p-4 bg-gray-900 border-t border-[rgba(173,43,238,0.2)]">
             <div className="flex gap-2">
-              <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
+              <input type="text" id="ai-chat-message" name="ai-chat-message" value={input} onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                 placeholder="Ask Snapapoulous..."
                 disabled={isLoading}
@@ -7040,6 +7040,8 @@ RULES:
               <span className="material-symbols-outlined absolute left-4 text-[#b792c9] pointer-events-none" style={{ fontSize: '20px' }} aria-hidden="true">search</span>
               <input
                 type="text"
+                id="collection-search"
+                name="collection-search"
                 placeholder={viewMode === 'owned' ? 'Search cards by name or ability' : 'Search cards to add...'}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -7053,7 +7055,7 @@ RULES:
           <div className="flex gap-3 px-4 pb-2 overflow-x-auto no-scrollbar">
             {/* View mode: Owned / All */}
             <button
-              onClick={() => { setViewMode('owned'); setSeriesFilter('all'); setEditMode(false); }}
+              onClick={() => { setViewMode('owned'); setSeriesFilter('all'); setEditMode(false); setSearch(''); }}
               className={`flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium transition-colors ${
                 viewMode === 'owned'
                   ? 'bg-cosmic-purple text-white'
@@ -7063,7 +7065,7 @@ RULES:
               Owned ({ownedCount})
             </button>
             <button
-              onClick={() => { setViewMode('all'); setSeriesFilter('all'); setEditMode(false); }}
+              onClick={() => { setViewMode('all'); setSeriesFilter('all'); setEditMode(false); setSearch(''); }}
               className={`flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium transition-colors ${
                 viewMode === 'all'
                   ? 'bg-cosmic-purple text-white'
@@ -7392,6 +7394,8 @@ RULES:
               <span className="material-symbols-outlined absolute left-4 text-[#b792c9] pointer-events-none text-xl" aria-hidden="true">search</span>
               <input
                 type="search"
+                id="collection-add-search"
+                name="collection-add-search"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search by name or ability..."
@@ -7500,6 +7504,12 @@ RULES:
       const [forgeResult, setForgeResult] = useState(null); // { name, cards, reasoning, synergies }
       const [forgeDeckName, setForgeDeckName] = useState('');
       const [forgeError, setForgeError] = useState(null); // { message, violations?, validSubset? }
+      const forgeAnnounceRef = React.useRef(null);
+      React.useEffect(() => {
+        if ((forgeStatus === 'result' || forgeStatus === 'error') && forgeAnnounceRef.current) {
+          forgeAnnounceRef.current.focus();
+        }
+      }, [forgeStatus]);
 
       // Creator Decks (Tier 1, offline-safe) — data/creators.json + data/creator-decks.json
       const [creators, setCreators] = useState([]);
@@ -8349,6 +8359,8 @@ RULES:
                 <div className="flex items-center bg-[#1a1320] rounded-full px-4 py-1 mb-3 border-2 border-[rgba(173,43,238,0.3)] focus-within:border-cosmic-purple-text">
                   <input
                     type="text"
+                    id="forge-prompt"
+                    name="forge-prompt"
                     value={forgePrompt}
                     onChange={(e) => setForgePrompt(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') runForge(forgePrompt); }}
@@ -8359,19 +8371,19 @@ RULES:
                   <button onClick={() => runForge(forgePrompt)}
                     disabled={!forgePrompt.trim()}
                     aria-label="Forge deck"
-                    className="flex items-center justify-center w-9 h-9 rounded-full bg-cosmic-purple text-white disabled:opacity-40 shrink-0">
+                    className="flex items-center justify-center w-11 h-11 rounded-full bg-cosmic-purple text-white disabled:opacity-40 shrink-0">
                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">auto_awesome</span>
                   </button>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => setForgeOnlyOwned(o => !o)}
                     aria-pressed={forgeOnlyOwned}
-                    className={`flex-1 min-h-[36px] rounded-full px-3 text-xs font-bold transition-colors ${forgeOnlyOwned ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}>
+                    className={`flex-1 min-h-[44px] rounded-full px-3 text-xs font-bold transition-colors ${forgeOnlyOwned ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}>
                     Only my cards
                   </button>
                   <button onClick={() => setForgeMetaAware(m => !m)}
                     aria-pressed={forgeMetaAware}
-                    className={`flex-1 min-h-[36px] rounded-full px-3 text-xs font-bold transition-colors ${forgeMetaAware ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}>
+                    className={`flex-1 min-h-[44px] rounded-full px-3 text-xs font-bold transition-colors ${forgeMetaAware ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}>
                     Meta-aware
                   </button>
                 </div>
@@ -8391,7 +8403,7 @@ RULES:
 
             {/* Error */}
             {forgeStatus === 'error' && forgeError && (
-              <div className="stitch-card p-5 border border-red-500/25">
+              <div ref={forgeAnnounceRef} tabIndex={-1} className="stitch-card p-5 border border-red-500/25 focus:outline-none">
                 <p className="text-red-400 font-semibold text-sm mb-2">{forgeError.message}</p>
                 {forgeError.violations && forgeError.violations.length > 0 && (
                   <ul className="text-xs text-stitch-muted list-disc list-inside mb-3 space-y-0.5">
@@ -8415,11 +8427,13 @@ RULES:
 
             {/* Result */}
             {forgeStatus === 'result' && forgeResult && (
-              <div>
+              <div ref={forgeAnnounceRef} tabIndex={-1} className="focus:outline-none">
                 <div className="stitch-card p-5 mb-4">
                   <label className="stitch-label mb-1 block">Deck Name</label>
                   <input
                     type="text"
+                    id="forge-deck-name"
+                    name="forge-deck-name"
                     value={forgeDeckName}
                     onChange={(e) => setForgeDeckName(e.target.value)}
                     aria-label="Forged deck name"
@@ -8441,12 +8455,14 @@ RULES:
                       <div
                         key={cardName}
                         role="listitem"
+                        tabIndex="0"
+                        aria-label={cardName}
                         className={`forge-card-in flex flex-col gap-1 shrink-0 snap-center ${isHero ? 'w-[152px]' : 'w-[112px]'}`}
                         style={{ animationDelay: `${idx * 60}ms` }}
                       >
                         <div className={`relative w-full aspect-[3/4] rounded-xl overflow-hidden ${
                           isHero
-                            ? 'holo-foil holo-foil-active shadow-2xl border-4 border-[#ad2bee]/50'
+                            ? `holo-foil holo-foil-active shadow-2xl border-4 ${inSynergy ? 'border-[#ffd700]/70' : 'border-[#ad2bee]/50'}`
                             : `holo-foil-hover border ${inSynergy ? 'ring-1 ring-[#ffd700]/70 border-transparent' : 'border-[rgba(173,43,238,0.25)]'}`
                         }`}>
                           <div className="absolute inset-0 card-art card-art-fallback" style={{ zIndex: 0 }} />
@@ -8465,7 +8481,7 @@ RULES:
                         </div>
                         {note && (
                           <span
-                            className="forge-chip-in cosmic-glass text-[9px] leading-snug text-cosmic-purple-text px-2 py-0.5 text-center truncate"
+                            className="forge-chip-in cosmic-glass text-[11px] leading-snug text-cosmic-purple-text px-2 py-0.5 text-center"
                             style={{ animationDelay: `${idx * 60 + 200}ms` }}
                             title={note.note}
                           >
@@ -8524,6 +8540,8 @@ RULES:
               <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Import from Deck Code</h3>
               <p className="text-stitch-muted text-sm mb-2">Paste the full deck export from the game (includes # comments and code)</p>
               <textarea placeholder="# (1) Iron Man&#10;# (2) Hulk&#10;...&#10;base64code&#10;#"
+                id="import-deck-code"
+                name="import-deck-code"
                 value={importCode} onChange={(e) => setImportCode(e.target.value)}
                 rows={6}
                 className="w-full bg-[#1a1320] text-white rounded-xl px-3 py-2 mb-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20 font-mono text-sm" />
@@ -8534,14 +8552,21 @@ RULES:
             </div>
 
             <div className="stitch-card p-5">
-              <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Import from URL</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-display font-semibold text-[#c75fff]">Import from URL</h3>
+                <span className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted">Coming soon</span>
+              </div>
               <p className="text-stitch-muted text-sm mb-2">Paste a MarvelSnapZone or Untapped.gg deck URL</p>
               <input type="text" placeholder="https://marvelsnapzone.com/decks/..."
+                id="import-deck-url"
+                name="import-deck-url"
                 value={importUrl} onChange={(e) => setImportUrl(e.target.value)}
                 aria-label="Deck URL"
-                className="w-full bg-[#1a1320] text-white rounded-xl px-3 py-2 mb-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20" />
+                disabled
+                className="w-full bg-[#1a1320] text-white rounded-xl px-3 py-2 mb-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20 disabled:opacity-50 disabled:cursor-not-allowed" />
               <button onClick={importFromUrl}
-                className="w-full min-h-[44px] bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-white py-2 rounded-full font-bold text-sm hover:bg-[rgba(173,43,238,0.12)] transition-colors duration-200">
+                disabled
+                className="w-full min-h-[44px] bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-white py-2 rounded-full font-bold text-sm hover:bg-[rgba(173,43,238,0.12)] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
                 Import from URL
               </button>
             </div>
@@ -8579,6 +8604,8 @@ RULES:
               {/* Editable deck name inline */}
               <input
                 type="text"
+                id="deckbuilder-name"
+                name="deckbuilder-name"
                 value={deckName}
                 onChange={(e) => setDeckName(e.target.value)}
                 placeholder="New Deck"
@@ -8717,6 +8744,8 @@ RULES:
                   </div>
                   <input
                     type="text"
+                    id="deckbuilder-card-search"
+                    name="deckbuilder-card-search"
                     placeholder="Search collection..."
                     value={searchCard}
                     onChange={(e) => setSearchCard(e.target.value)}
@@ -10113,7 +10142,7 @@ RULES:
         );
       }
 
-      const cards = performanceData ? Object.entries(performanceData.cards)
+      const cards = performanceData?.cards ? Object.entries(performanceData.cards)
         .map(([card, data]) => ({ card, ...data }))
         .filter(c => {
           if (filterType === 'positive') return c.netCubes > 0;
@@ -10287,15 +10316,19 @@ RULES:
 
               <div className="flex gap-2 mb-3">
                 <select
+                  id="analytics-filter-type"
+                  name="analytics-filter-type"
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
                   className="flex-1 rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/40"
                 >
-                  <option value="all">All Cards ({Object.keys(performanceData.cards).length})</option>
+                  <option value="all">All Cards ({Object.keys(performanceData.cards || {}).length})</option>
                   <option value="positive">Winners Only</option>
                   <option value="negative">Losers Only</option>
                 </select>
                 <select
+                  id="analytics-sort-by"
+                  name="analytics-sort-by"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   className="flex-1 rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-white text-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/40"
@@ -11135,6 +11168,8 @@ RULES:
                     <div className="mt-2">
                       <label className="text-stitch-muted text-xs mb-1 block">Select Model:</label>
                       <select
+                        id="settings-gemini-model"
+                        name="settings-gemini-model"
                         value={aiConfig.model || AIProviders['gemini-oauth'].defaultModel}
                         onChange={(e) => setAiConfig(prev => ({ ...prev, model: e.target.value }))}
                         className="w-full bg-stark-surface-2 text-white rounded-xl px-3 py-2 text-sm border-2 border-[rgba(173,43,238,0.3)] focus:border-cosmic-purple-text focus:outline-none">
@@ -11170,6 +11205,8 @@ RULES:
                 <p className="text-stitch-muted text-xs mb-2">{provider.description}</p>
                 <div className="flex gap-2">
                   <input type="password" placeholder="API Key..."
+                    id={`settings-api-key-${provider.id}`}
+                    name={`settings-api-key-${provider.id}`}
                     value={aiConfig.apiKeys?.[provider.id] || ''}
                     onChange={(e) => setApiKey(provider.id, e.target.value)}
                     aria-label={provider.name + ' API Key'}
@@ -11182,7 +11219,9 @@ RULES:
                 </div>
                 {aiConfig.provider === provider.id && (
                   <div className="mt-2">
-                    <select value={aiConfig.model || provider.defaultModel}
+                    <select id={`settings-provider-model-${provider.id}`}
+                      name={`settings-provider-model-${provider.id}`}
+                      value={aiConfig.model || provider.defaultModel}
                       onChange={(e) => setAiConfig(prev => ({ ...prev, model: e.target.value }))}
                       className="w-full bg-stark-surface-2 text-white rounded-xl px-2 py-1 text-sm border-2 border-[rgba(173,43,238,0.25)]">
                       {provider.models.map(m => <option key={m} value={m}>{m}</option>)}
@@ -11213,6 +11252,8 @@ RULES:
                     <p className="text-stitch-muted text-xs mb-2">{provider.description}</p>
                     <div className="flex gap-2">
                       <input type="text"
+                        id={`settings-local-endpoint-${provider.id}`}
+                        name={`settings-local-endpoint-${provider.id}`}
                         placeholder="http://localhost:11434"
                         value={aiConfig.localEndpoint || ''}
                         onChange={(e) => setAiConfig(prev => ({ ...prev, localEndpoint: e.target.value }))}
@@ -11223,6 +11264,8 @@ RULES:
                     <p className="text-gray-500 text-xs mt-1">Common ports: Ollama (11434), LM Studio (1234), vLLM (8000)</p>
                     {aiConfig.provider === provider.id && (
                       <input type="text" placeholder="Model name..."
+                        id={`settings-local-model-${provider.id}`}
+                        name={`settings-local-model-${provider.id}`}
                         value={aiConfig.model || ''}
                         onChange={(e) => setAiConfig(prev => ({ ...prev, model: e.target.value }))}
                         className="w-full mt-2 bg-stark-surface-2 text-white rounded-xl px-3 py-2 text-sm border-2 border-[rgba(173,43,238,0.25)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20" />
@@ -11482,6 +11525,8 @@ RULES:
             ) : (
               <div className="space-y-2">
                 <textarea value={importData} onChange={(e) => setImportData(e.target.value)}
+                  id="data-import-export"
+                  name="data-import-export"
                   placeholder="Paste JSON data here..."
                   className="w-full h-24 bg-[#1a1320] text-white rounded-xl px-3 py-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20 text-sm" />
                 <div className="flex gap-2">
@@ -11960,6 +12005,8 @@ RULES:
         </div>
         <div className="relative">
           <select
+            id={`deck-selector-${label.toLowerCase().replace(/\s+/g, '-')}`}
+            name={`deck-selector-${label.toLowerCase().replace(/\s+/g, '-')}`}
             value={value}
             onChange={e => onChange(e.target.value)}
             className="w-full appearance-none rounded-full px-4 py-3 pr-10 text-sm font-medium text-white border focus:outline-none focus:ring-2 focus:ring-offset-0 truncate"
@@ -13493,6 +13540,8 @@ RULES:
               ))}
               <input
                 type="number"
+                id="calc-custom-runs"
+                name="calc-custom-runs"
                 min={SIMULATOR_MIN_RUNS}
                 max={SIMULATOR_MAX_RUNS}
                 placeholder="Custom"
@@ -13518,6 +13567,8 @@ RULES:
               {useSeed && (
                 <input
                   type="number"
+                  id="calc-seed"
+                  name="calc-seed"
                   value={seed}
                   onChange={(e) => setSeed(parseInt(e.target.value, 10) || 0)}
                   aria-label="RNG seed"
@@ -13563,6 +13614,8 @@ RULES:
                     <label className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted">{field.label}</label>
                     <input
                       type="number"
+                      id={`calc-${field.label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}
+                      name={`calc-${field.label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}`}
                       min={field.min}
                       max={field.max}
                       value={field.value}
