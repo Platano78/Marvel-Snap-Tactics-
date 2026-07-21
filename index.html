@@ -4855,6 +4855,7 @@ RULES:
       const [battlePass, setBattlePass] = useState(null);
       const [cardPerformance, setCardPerformance] = useState(null);
       const [featuredArtFailed, setFeaturedArtFailed] = useState(false);
+      const [missions, setMissions] = useState(null);
 
       // Deterministic "card of the day" — stable across reloads for the same calendar day, no Math.random.
       // Depends on cardDataVersion because uniqueCards is a reassignable module-level `let` refreshed
@@ -4878,6 +4879,7 @@ RULES:
           setCollectionEnhanced(loadFromStorage('snap_collection_enhanced', null));
           setBattlePass(loadFromStorage('snap_battlepass', null));
           setCardPerformance(loadFromStorage('snap_card_performance', null));
+          setMissions(loadFromStorage('snap_missions', null));
         };
         loadPlayerData();
         window.addEventListener('snap-data-updated', loadPlayerData);
@@ -5016,6 +5018,41 @@ RULES:
       const seasonSweep = rank?.gamesPlayedInSeason ? Math.min(1, rank.gamesPlayedInSeason / 100) : 0;
       const rankArcRadius = 27;
       const rankArcCircumference = 2 * Math.PI * rankArcRadius;
+
+      // Reward objects come straight from raw game JSON with no fixed schema —
+      // only render a reward when both an amount and a currency/type are present.
+      const rewardLabel = (reward) => {
+        if (!reward || typeof reward !== 'object') return null;
+        const amount = reward.Amount ?? reward.Quantity ?? reward.Count;
+        const currency = reward.Currency ?? reward.CurrencyType ?? reward.Type;
+        if (amount == null || !currency) return null;
+        return `${amount} ${currency}`;
+      };
+
+      const renderMission = (m, i) => {
+        const target = m.target || 1;
+        const pct = Math.min(100, ((m.progress || 0) / target) * 100);
+        const reward = rewardLabel(m.reward);
+        return (
+          <div key={`${m.id}-${i}`} className={`rounded-xl bg-stark-surface p-3 ${m.completed ? 'opacity-50' : ''}`}>
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2 min-w-0">
+                {m.completed && (
+                  <span className="material-symbols-outlined text-stitch-green shrink-0" style={{ fontSize: '18px' }} aria-hidden="true">check_circle</span>
+                )}
+                <span className={`text-sm font-medium truncate ${m.completed ? 'text-stitch-muted line-through' : 'text-white'}`}>
+                  {m.description || 'Mission'}
+                </span>
+              </div>
+              <span className="text-xs font-bold text-white shrink-0">{m.progress}/{target}</span>
+            </div>
+            <div className="stitch-progress"><div className="stitch-progress-fill bg-cosmic-purple" style={{ width: `${pct}%` }} /></div>
+            {reward && <div className="mt-2 text-xs text-mcu-gold font-semibold">+{reward}</div>}
+          </div>
+        );
+      };
+
+      const hasMissions = !!missions && (((missions.daily || []).length + (missions.weekly || []).length) > 0);
 
       return (
         <div className="px-4 pb-20">
@@ -5345,6 +5382,38 @@ RULES:
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Missions */}
+          {hasMissions && (
+            <div className="stitch-card p-5 mb-4">
+              <div className="stitch-section-header">
+                <span className="material-symbols-outlined" aria-hidden="true">task_alt</span>
+                Missions
+              </div>
+              {missions.daily?.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted">Daily</span>
+                    <span className="text-xs text-stitch-muted">{missions.dailyCompleted ?? missions.daily.filter(m => m.completed).length}/{missions.daily.length}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {missions.daily.map(renderMission)}
+                  </div>
+                </div>
+              )}
+              {missions.weekly?.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted">Weekly</span>
+                    <span className="text-xs text-stitch-muted">{missions.weeklyCompleted ?? missions.weekly.filter(m => m.completed).length}/{missions.weekly.length}</span>
+                  </div>
+                  <div className="space-y-2">
+                    {missions.weekly.map(renderMission)}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -9829,9 +9898,6 @@ RULES:
     // Phase 5: Card Performance View (Analytics Tab)
     const CardPerformanceView = () => {
       const [performanceData, setPerformanceData] = useState(null);
-      const [profileStats, setProfileStats] = useState(null);
-      const [missions, setMissions] = useState(null);
-      const [mastery, setMastery] = useState(null);
       const [sortBy, setSortBy] = useState('netCubes');
       const [filterType, setFilterType] = useState('all');
       const [sortDir, setSortDir] = useState('desc');
@@ -9839,7 +9905,6 @@ RULES:
       const [showAll, setShowAll] = useState(false);
       const [collection, setCollection] = useState(null);
       const [matches, setMatches] = useState([]);
-      const [snapshots, setSnapshots] = useState([]);
 
       useEffect(() => {
         loadData();
@@ -9849,16 +9914,10 @@ RULES:
 
       const loadData = () => {
         setPerformanceData(loadFromStorage('snap_card_performance', null));
-        setProfileStats(loadFromStorage('snap_profile_stats', null));
-        setMissions(loadFromStorage('snap_missions', null));
-        setMastery(loadFromStorage('snap_mastery', null));
         setCollection(loadFromStorage('snap_collection', null));
         setMatches(loadFromStorage('snap_matches', []));
-        setSnapshots(loadFromStorage('snap_snapshots', []));
       };
 
-      const hasMissions = !!missions && (((missions.daily || []).length + (missions.weekly || []).length) > 0);
-      const hasMastery = !!mastery && (mastery.cards || []).length > 0;
       const ownedSet = React.useMemo(() => new Set(collection?.owned || []), [collection]);
 
       const matchups = React.useMemo(() => {
@@ -9878,7 +9937,7 @@ RULES:
         return { rows, untagged, taggedCount: matches.length - untagged };
       }, [matches]);
 
-      if (!performanceData && !profileStats && !hasMissions && !hasMastery && matches.length === 0) {
+      if ((!performanceData || Object.keys(performanceData.cards || {}).length === 0) && matchups.taggedCount === 0) {
         return (
           <div className="px-4 pb-20">
             <Header title="ANALYTICS" />
@@ -9896,7 +9955,7 @@ RULES:
               <div>
                 <p className="text-white font-bold text-lg mb-1">Unlock Your Analytics</p>
                 <p className="text-[#b792c9] text-sm max-w-xs mx-auto">
-                  Sync your game folder to unlock analytics — lifetime stats, per-card performance, missions, and mastery progress.
+                  Sync your game folder to unlock analytics — per-card performance and matchup breakdowns.
                 </p>
               </div>
               <button
@@ -9929,243 +9988,9 @@ RULES:
       const totalPositive = allCardEntries.filter(c => c.netCubes > 0).reduce((sum, c) => sum + c.netCubes, 0);
       const totalNegative = allCardEntries.filter(c => c.netCubes < 0).reduce((sum, c) => sum + c.netCubes, 0);
 
-      // Reward objects come straight from raw game JSON with no fixed schema —
-      // only render a reward when both an amount and a currency/type are present.
-      const rewardLabel = (reward) => {
-        if (!reward || typeof reward !== 'object') return null;
-        const amount = reward.Amount ?? reward.Quantity ?? reward.Count;
-        const currency = reward.Currency ?? reward.CurrencyType ?? reward.Type;
-        if (amount == null || !currency) return null;
-        return `${amount} ${currency}`;
-      };
-
-      const renderMission = (m, i) => {
-        const target = m.target || 1;
-        const pct = Math.min(100, ((m.progress || 0) / target) * 100);
-        const reward = rewardLabel(m.reward);
-        return (
-          <div key={`${m.id}-${i}`} className={`rounded-xl bg-stark-surface p-3 ${m.completed ? 'opacity-50' : ''}`}>
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <div className="flex items-center gap-2 min-w-0">
-                {m.completed && (
-                  <span className="material-symbols-outlined text-stitch-green shrink-0" style={{ fontSize: '18px' }} aria-hidden="true">check_circle</span>
-                )}
-                <span className={`text-sm font-medium truncate ${m.completed ? 'text-stitch-muted line-through' : 'text-white'}`}>
-                  {m.description || 'Mission'}
-                </span>
-              </div>
-              <span className="text-xs font-bold text-white shrink-0">{m.progress}/{target}</span>
-            </div>
-            <div className="stitch-progress"><div className="stitch-progress-fill bg-cosmic-purple" style={{ width: `${pct}%` }} /></div>
-            {reward && <div className="mt-2 text-xs text-mcu-gold font-semibold">+{reward}</div>}
-          </div>
-        );
-      };
-
-      const masterySummary = mastery ? {
-        totalCards: mastery.cards.length,
-        avgLevel: mastery.cards.length > 0 ? (mastery.cards.reduce((sum, c) => sum + (c.level || 0), 0) / mastery.cards.length).toFixed(1) : '0',
-        maxedCards: mastery.cards.filter(c => c.level >= (c.levelCap || 30)).length
-      } : null;
-
-      // Denominator for the derived Career Dossier tiles below — "recorded outcomes"
-      // (wins + losses + ties), not "matches played." Guards div-by-zero with '—'.
-      const recordedOutcomes = profileStats
-        ? (profileStats.totalGames || ((profileStats.wins || 0) + (profileStats.losses || 0) + (profileStats.ties || 0)))
-        : 0;
-      const pctOfOutcomes = (n) => (recordedOutcomes > 0 ? `${Math.round(((n || 0) / recordedOutcomes) * 100)}%` : '—');
-
-      // Time Stone deltas — "Since Last Sync". Two field classes:
-      // cumulative fields only ever increase, so a negative delta means a reset/source
-      // change, not real gameplay, and gets flagged instead of rendered as a loss.
-      // Season-scoped fields (rank, SR) can legitimately go down (season reset, laddering
-      // down) so their deltas render signed with no flag.
-      const CUMULATIVE_DELTA_FIELDS = [
-        { key: 'wins', label: 'Wins' },
-        { key: 'losses', label: 'Losses' },
-        { key: 'ties', label: 'Ties' },
-        { key: 'snaps', label: 'Snaps' },
-        { key: 'concedes', label: 'Retreats' },
-        { key: 'opponentConcedes', label: 'Opponent Retreats' },
-        { key: 'collectionScore', label: 'Collection Score' },
-        { key: 'masteryXpTotal', label: 'Mastery XP' }
-      ];
-      const SEASON_DELTA_FIELDS = [
-        { key: 'currentRank', label: 'Rank' },
-        { key: 'skillRating', label: 'Skill Rating' }
-      ];
-      const latestSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null;
-      const previousSnapshot = snapshots.length > 1 ? snapshots[snapshots.length - 2] : null;
-      const snapshotDeltas = previousSnapshot
-        ? [...CUMULATIVE_DELTA_FIELDS, ...SEASON_DELTA_FIELDS]
-            .filter(f => latestSnapshot[f.key] != null && previousSnapshot[f.key] != null)
-            .map(f => {
-              const delta = latestSnapshot[f.key] - previousSnapshot[f.key];
-              const isCumulative = CUMULATIVE_DELTA_FIELDS.some(c => c.key === f.key);
-              return { ...f, delta, anomalous: isCumulative && delta < 0 };
-            })
-        : [];
-
       return (
         <div className="px-4 pb-20">
           <Header title="ANALYTICS" />
-
-          {/* Since Last Sync (Time Stone) */}
-          {previousSnapshot && (
-            <div className="stitch-card p-5 mb-4">
-              <div className="stitch-section-header">
-                <span className="material-symbols-outlined" aria-hidden="true">history</span>
-                Since Last Sync
-              </div>
-              <p className="text-xs text-stitch-muted mb-3">
-                {formatRelativeTime(latestSnapshot.syncedAt)} — the interval between your last two
-                syncs, not a single match (Snapapoulous doesn't log per-match history).
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {snapshotDeltas.map(d => (
-                  <div key={d.key} className="rounded-2xl bg-stark-surface p-4">
-                    <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">{d.label}</div>
-                    {d.anomalous ? (
-                      <div className="flex items-center gap-1 text-sm font-bold text-red-400">
-                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }} aria-hidden="true">warning</span>
-                        reset or source change
-                      </div>
-                    ) : (
-                      <div className={`text-3xl font-bold tabular-nums ${d.delta > 0 ? 'text-stitch-green' : d.delta < 0 ? 'text-red-400' : 'text-white'}`}>
-                        {d.delta > 0 ? '+' : ''}{d.delta.toLocaleString()}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {!previousSnapshot && (
-            <p className="text-xs text-stitch-muted text-center mb-4">
-              Sync again to start tracking your progress over time.
-            </p>
-          )}
-
-          {/* Lifetime Stats */}
-          {profileStats && (
-            <div className="stitch-card p-5 mb-4">
-              <div className="stitch-section-header">
-                <span className="material-symbols-outlined" aria-hidden="true">military_tech</span>
-                Lifetime Stats
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="rounded-2xl bg-stark-surface p-4">
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Total Games</div>
-                  <div className="text-3xl font-bold text-white">{((profileStats.totalGames || (profileStats.wins || 0) + (profileStats.losses || 0))).toLocaleString()}</div>
-                </div>
-                <div className="rounded-2xl bg-stark-surface p-4">
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Win Rate</div>
-                  <div className="text-3xl font-bold text-mcu-gold">{profileStats.winRate}%</div>
-                </div>
-                <div className="rounded-2xl bg-stark-surface p-4">
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Wins</div>
-                  <div className="text-3xl font-bold text-stitch-green">{(profileStats.wins || 0).toLocaleString()}</div>
-                </div>
-                <div className="rounded-2xl bg-stark-surface p-4">
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Snaps</div>
-                  <div className="text-3xl font-bold text-white">{(profileStats.snaps || 0).toLocaleString()}</div>
-                </div>
-                <div className="rounded-2xl bg-stark-surface p-4">
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Ties</div>
-                  <div className="text-3xl font-bold text-white tabular-nums">{(profileStats.ties || 0).toLocaleString()}</div>
-                </div>
-                <div className="rounded-2xl bg-stark-surface p-4">
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Snap Rate</div>
-                  <div className="text-3xl font-bold text-white tabular-nums">{pctOfOutcomes(profileStats.snaps)}</div>
-                </div>
-                <div className="rounded-2xl bg-stark-surface p-4">
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Intimidation Index</div>
-                  <div className="text-3xl font-bold text-mcu-gold tabular-nums">{pctOfOutcomes(profileStats.opponentConcedes)}</div>
-                </div>
-                <div className="rounded-2xl bg-stark-surface p-4">
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Retreat Rate</div>
-                  <div className="text-3xl font-bold text-white tabular-nums">{pctOfOutcomes(profileStats.concedes)}</div>
-                </div>
-              </div>
-              {profileStats.snapId && (
-                <p className="text-xs text-stitch-muted text-right mt-3">
-                  {profileStats.snapId} • Imported {new Date(profileStats.importedAt || Date.now()).toLocaleDateString()}
-                </p>
-              )}
-              <details className="mt-3 group">
-                <summary
-                  className="text-xs text-stitch-muted cursor-pointer select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-cosmic-purple rounded"
-                  aria-label="Show the exact formulas used for the derived Career Dossier stats"
-                >
-                  Methodology
-                </summary>
-                <ul className="mt-2 space-y-1 text-xs text-stitch-muted list-disc pl-4">
-                  <li>Win Rate = Wins ÷ (Wins + Losses)</li>
-                  <li>Snap Rate = Snaps ÷ Recorded Outcomes</li>
-                  <li>Intimidation Index = Opponent Concedes ÷ Recorded Outcomes (opponents who retreated)</li>
-                  <li>Retreat Rate = Your Concedes ÷ Recorded Outcomes</li>
-                  <li>Recorded Outcomes = Wins + Losses + Ties</li>
-                </ul>
-              </details>
-            </div>
-          )}
-
-          {/* Season Stats */}
-          {profileStats?.rankData && (
-            <div className="stitch-card p-5 mb-4">
-              <div className="stitch-section-header">
-                <span className="material-symbols-outlined" aria-hidden="true">workspace_premium</span>
-                Season Stats
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="rounded-2xl bg-stark-surface p-4">
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Rank {profileStats.rankData.currentRank}</div>
-                  <div className="text-3xl font-bold text-mcu-gold">{profileStats.rankData.tier}</div>
-                </div>
-                {profileStats.skillRating > 0 && (
-                  <div className="rounded-2xl bg-stark-surface p-4">
-                    <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Skill Rating</div>
-                    <div className="text-3xl font-bold text-white">{profileStats.skillRating}</div>
-                  </div>
-                )}
-                <div className="rounded-2xl bg-stark-surface p-4">
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Season Games</div>
-                  <div className="text-3xl font-bold text-white">{profileStats.rankData.gamesPlayedInSeason || 0}</div>
-                </div>
-                <div className="rounded-2xl bg-stark-surface p-4">
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Season Best ({profileStats.rankData.highWatermark || 0})</div>
-                  <div className="text-3xl font-bold text-stitch-green">{profileStats.rankData.highWatermarkTier || '—'}</div>
-                </div>
-              </div>
-              {profileStats.rankData.seasonId && (
-                <p className="text-xs text-stitch-muted mt-3">{profileStats.rankData.seasonId}</p>
-              )}
-            </div>
-          )}
-
-          {/* Currency Stats */}
-          {profileStats?.currencies && (
-            <div className="stitch-card p-5 mb-4">
-              <div className="stitch-section-header">
-                <span className="material-symbols-outlined" aria-hidden="true">payments</span>
-                Currencies
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="rounded-2xl bg-stark-surface p-4 text-center">
-                  <div className="text-2xl font-bold text-stitch-green">{(profileStats.currencies.credits || 0).toLocaleString()}</div>
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Credits</div>
-                </div>
-                <div className="rounded-2xl bg-stark-surface p-4 text-center">
-                  <div className="text-2xl font-bold text-mcu-gold">{(profileStats.currencies.gold || 0).toLocaleString()}</div>
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Gold</div>
-                </div>
-                <div className="rounded-2xl bg-stark-surface p-4 text-center">
-                  <div className="text-2xl font-bold text-cosmic-purple-text">{(profileStats.currencies.tokens || 0).toLocaleString()}</div>
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Tokens</div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Card Performance */}
           {performanceData?.cards && Object.keys(performanceData.cards).length > 0 && (
@@ -10320,67 +10145,6 @@ RULES:
             </div>
           )}
 
-          {/* Missions */}
-          {hasMissions && (
-            <div className="stitch-card p-5 mb-4">
-              <div className="stitch-section-header">
-                <span className="material-symbols-outlined" aria-hidden="true">task_alt</span>
-                Missions
-              </div>
-              {missions.daily?.length > 0 && (
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted">Daily</span>
-                    <span className="text-xs text-stitch-muted">{missions.dailyCompleted ?? missions.daily.filter(m => m.completed).length}/{missions.daily.length}</span>
-                  </div>
-                  <div className="space-y-2">
-                    {missions.daily.map(renderMission)}
-                  </div>
-                </div>
-              )}
-              {missions.weekly?.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted">Weekly</span>
-                    <span className="text-xs text-stitch-muted">{missions.weeklyCompleted ?? missions.weekly.filter(m => m.completed).length}/{missions.weekly.length}</span>
-                  </div>
-                  <div className="space-y-2">
-                    {missions.weekly.map(renderMission)}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Mastery */}
-          {hasMastery && (
-            <div className="stitch-card p-5 mb-4">
-              <div className="stitch-section-header">
-                <span className="material-symbols-outlined" aria-hidden="true">military_tech</span>
-                Mastery
-              </div>
-              <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="rounded-2xl bg-stark-surface p-3 text-center">
-                  <div className="text-2xl font-bold text-white">{masterySummary.totalCards}</div>
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Cards</div>
-                </div>
-                <div className="rounded-2xl bg-stark-surface p-3 text-center">
-                  <div className="text-2xl font-bold text-mcu-gold">{masterySummary.avgLevel}</div>
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Avg Level</div>
-                </div>
-                <div className="rounded-2xl bg-stark-surface p-3 text-center">
-                  <div className="text-2xl font-bold text-stitch-green">{masterySummary.maxedCards}</div>
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Maxed</div>
-                </div>
-              </div>
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'mastery' }))}
-                className="w-full min-h-[44px] rounded-full bg-cosmic-purple hover:bg-[#b84eff] transition-colors text-white text-sm font-semibold"
-              >
-                Open Mastery Forge →
-              </button>
-            </div>
-          )}
         </div>
       );
     };
@@ -12056,6 +11820,7 @@ RULES:
       const [importedStats, setImportedStats] = useState(null);
       const [decks, setDecks] = useState([]);
       const [collEnhanced, setCollEnhanced] = useState(null);
+      const [snapshots, setSnapshots] = useState([]);
 
       // Load Player OS data on mount and when a sync writes fresh data.
       useEffect(() => {
@@ -12064,6 +11829,7 @@ RULES:
           setImportedStats(loadFromStorage('snap_profile_stats', null));
           setDecks(loadFromStorage('snap_decks', []));
           setCollEnhanced(loadFromStorage('snap_collection_enhanced', null));
+          setSnapshots(loadFromStorage('snap_snapshots', []));
         };
         loadProfileData();
         window.addEventListener('snap-data-updated', loadProfileData);
@@ -12102,6 +11868,33 @@ RULES:
       }, [collEnhanced]);
 
       const hasHallOfArmor = !!collEnhanced && ((collEnhanced.variantCount || 0) > 0 || (collEnhanced.totalBoosters || 0) > 0);
+
+      // Career Dossier denominators (moved from Analytics). recordedOutcomes = wins+losses+ties.
+      const recordedOutcomes = importedStats
+        ? (importedStats.totalGames || ((importedStats.wins || 0) + (importedStats.losses || 0) + (importedStats.ties || 0)))
+        : 0;
+      const pctOfOutcomes = (n) => (recordedOutcomes > 0 ? `${Math.round(((n || 0) / recordedOutcomes) * 100)}%` : '—');
+      // Time Stone deltas — cumulative fields flag negative as reset/source change; season fields render signed.
+      const CUMULATIVE_DELTA_FIELDS = [
+        { key: 'wins', label: 'Wins' }, { key: 'losses', label: 'Losses' }, { key: 'ties', label: 'Ties' },
+        { key: 'snaps', label: 'Snaps' }, { key: 'concedes', label: 'Retreats' },
+        { key: 'opponentConcedes', label: 'Opponent Retreats' }, { key: 'collectionScore', label: 'Collection Score' },
+        { key: 'masteryXpTotal', label: 'Mastery XP' }
+      ];
+      const SEASON_DELTA_FIELDS = [
+        { key: 'currentRank', label: 'Rank' }, { key: 'skillRating', label: 'Skill Rating' }
+      ];
+      const latestSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null;
+      const previousSnapshot = snapshots.length > 1 ? snapshots[snapshots.length - 2] : null;
+      const snapshotDeltas = previousSnapshot
+        ? [...CUMULATIVE_DELTA_FIELDS, ...SEASON_DELTA_FIELDS]
+            .filter(f => latestSnapshot[f.key] != null && previousSnapshot[f.key] != null)
+            .map(f => {
+              const delta = latestSnapshot[f.key] - previousSnapshot[f.key];
+              const isCumulative = CUMULATIVE_DELTA_FIELDS.some(c => c.key === f.key);
+              return { ...f, delta, anomalous: isCumulative && delta < 0 };
+            })
+        : [];
 
       return (
         <div className="px-4 pb-20">
@@ -12153,6 +11946,163 @@ RULES:
               <div className="text-xs text-stitch-muted">This season ({rank?.highWatermark || rank?.currentRank || 0})</div>
             </div>
           </div>
+
+          {/* Lifetime Stats */}
+          {importedStats && (
+            <div className="stitch-card p-5 mb-4">
+              <div className="stitch-section-header">
+                <span className="material-symbols-outlined" aria-hidden="true">military_tech</span>
+                Lifetime Stats
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Total Games</div>
+                  <div className="text-3xl font-bold text-white">{((importedStats.totalGames || (importedStats.wins || 0) + (importedStats.losses || 0))).toLocaleString()}</div>
+                </div>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Win Rate</div>
+                  <div className="text-3xl font-bold text-mcu-gold">{importedStats.winRate}%</div>
+                </div>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Wins</div>
+                  <div className="text-3xl font-bold text-stitch-green">{(importedStats.wins || 0).toLocaleString()}</div>
+                </div>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Snaps</div>
+                  <div className="text-3xl font-bold text-white">{(importedStats.snaps || 0).toLocaleString()}</div>
+                </div>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Ties</div>
+                  <div className="text-3xl font-bold text-white tabular-nums">{(importedStats.ties || 0).toLocaleString()}</div>
+                </div>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Snap Rate</div>
+                  <div className="text-3xl font-bold text-white tabular-nums">{pctOfOutcomes(importedStats.snaps)}</div>
+                </div>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Intimidation Index</div>
+                  <div className="text-3xl font-bold text-mcu-gold tabular-nums">{pctOfOutcomes(importedStats.opponentConcedes)}</div>
+                </div>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Retreat Rate</div>
+                  <div className="text-3xl font-bold text-white tabular-nums">{pctOfOutcomes(importedStats.concedes)}</div>
+                </div>
+              </div>
+              {importedStats.snapId && (
+                <p className="text-xs text-stitch-muted text-right mt-3">
+                  {importedStats.snapId} • Imported {new Date(importedStats.importedAt || Date.now()).toLocaleDateString()}
+                </p>
+              )}
+              <details className="mt-3 group">
+                <summary
+                  className="text-xs text-stitch-muted cursor-pointer select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-cosmic-purple rounded"
+                  aria-label="Show the exact formulas used for the derived Career Dossier stats"
+                >
+                  Methodology
+                </summary>
+                <ul className="mt-2 space-y-1 text-xs text-stitch-muted list-disc pl-4">
+                  <li>Win Rate = Wins ÷ (Wins + Losses)</li>
+                  <li>Snap Rate = Snaps ÷ Recorded Outcomes</li>
+                  <li>Intimidation Index = Opponent Concedes ÷ Recorded Outcomes (opponents who retreated)</li>
+                  <li>Retreat Rate = Your Concedes ÷ Recorded Outcomes</li>
+                  <li>Recorded Outcomes = Wins + Losses + Ties</li>
+                </ul>
+              </details>
+            </div>
+          )}
+
+          {/* Since Last Sync (Time Stone) */}
+          {previousSnapshot && (
+            <div className="stitch-card p-5 mb-4">
+              <div className="stitch-section-header">
+                <span className="material-symbols-outlined" aria-hidden="true">history</span>
+                Since Last Sync
+              </div>
+              <p className="text-xs text-stitch-muted mb-3">
+                {formatRelativeTime(latestSnapshot.syncedAt)} — the interval between your last two
+                syncs, not a single match (Snapapoulous doesn't log per-match history).
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {snapshotDeltas.map(d => (
+                  <div key={d.key} className="rounded-2xl bg-stark-surface p-4">
+                    <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">{d.label}</div>
+                    {d.anomalous ? (
+                      <div className="flex items-center gap-1 text-sm font-bold text-red-400">
+                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }} aria-hidden="true">warning</span>
+                        reset or source change
+                      </div>
+                    ) : (
+                      <div className={`text-3xl font-bold tabular-nums ${d.delta > 0 ? 'text-stitch-green' : d.delta < 0 ? 'text-red-400' : 'text-white'}`}>
+                        {d.delta > 0 ? '+' : ''}{d.delta.toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {!previousSnapshot && (
+            <p className="text-xs text-stitch-muted text-center mb-4">
+              Sync again to start tracking your progress over time.
+            </p>
+          )}
+
+          {/* Season Stats */}
+          {importedStats?.rankData && (
+            <div className="stitch-card p-5 mb-4">
+              <div className="stitch-section-header">
+                <span className="material-symbols-outlined" aria-hidden="true">workspace_premium</span>
+                Season Stats
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Rank {importedStats.rankData.currentRank}</div>
+                  <div className="text-3xl font-bold text-mcu-gold">{importedStats.rankData.tier}</div>
+                </div>
+                {importedStats.skillRating > 0 && (
+                  <div className="rounded-2xl bg-stark-surface p-4">
+                    <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Skill Rating</div>
+                    <div className="text-3xl font-bold text-white">{importedStats.skillRating}</div>
+                  </div>
+                )}
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Season Games</div>
+                  <div className="text-3xl font-bold text-white">{importedStats.rankData.gamesPlayedInSeason || 0}</div>
+                </div>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Season Best ({importedStats.rankData.highWatermark || 0})</div>
+                  <div className="text-3xl font-bold text-stitch-green">{importedStats.rankData.highWatermarkTier || '—'}</div>
+                </div>
+              </div>
+              {importedStats.rankData.seasonId && (
+                <p className="text-xs text-stitch-muted mt-3">{importedStats.rankData.seasonId}</p>
+              )}
+            </div>
+          )}
+
+          {/* Currency Stats */}
+          {importedStats?.currencies && (
+            <div className="stitch-card p-5 mb-4">
+              <div className="stitch-section-header">
+                <span className="material-symbols-outlined" aria-hidden="true">payments</span>
+                Currencies
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-2xl bg-stark-surface p-4 text-center">
+                  <div className="text-2xl font-bold text-stitch-green">{(importedStats.currencies.credits || 0).toLocaleString()}</div>
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Credits</div>
+                </div>
+                <div className="rounded-2xl bg-stark-surface p-4 text-center">
+                  <div className="text-2xl font-bold text-mcu-gold">{(importedStats.currencies.gold || 0).toLocaleString()}</div>
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Gold</div>
+                </div>
+                <div className="rounded-2xl bg-stark-surface p-4 text-center">
+                  <div className="text-2xl font-bold text-cosmic-purple-text">{(importedStats.currencies.tokens || 0).toLocaleString()}</div>
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Tokens</div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Collection Score & Cosmetics */}
           {collEnhanced?.collectionScore > 0 && (
