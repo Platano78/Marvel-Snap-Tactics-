@@ -55,7 +55,11 @@
  *
  * snap_collection_enhanced     {collectionScore, cosmetics: {avatars, titles, cardBacks,
  *                             albums}, variantCount, godSplitCount, totalBoosters,
- *                             cards: [{cardDefId, variants: string[], boosters, splitLevel}]}
+ *                             cards: [{cardDefId, variants: string[], boosters, splitLevel}],
+ *                             avatarCardDefIds: string[] (unique CardDefId per owned avatar —
+ *                             feeds Cosmetics tab's Avatars gallery via getCardArtUrl),
+ *                             albumCompletion: [{name, owned, total}] (feeds Cosmetics tab's
+ *                             Albums progress bars; owned===total marks a complete album)}
  *                             hasHallOfArmor (Profile tab) requires variantCount>0 OR
  *                             totalBoosters>0.
  *
@@ -181,6 +185,14 @@ function seedSnapapoulousFixtures() {
       { cardDefId: 'Cyclops', variants: ['v1','v2'], boosters: 90, splitLevel: 1 },
       { cardDefId: 'Hawkeye', variants: [], boosters: 160, splitLevel: 0 },
       { cardDefId: 'Hulk', variants: [], boosters: 50, splitLevel: 0 }
+    ],
+    // defIds that exist in card-data.json so getCardArtUrl resolves real art in the gallery.
+    avatarCardDefIds: ['FinFangFoom','Abomination','Cyclops','Hawkeye','Hulk','Uatu','Mirage','OmegaRed'],
+    // At least one COMPLETE album (owned===total) so the full-state check-mark renders.
+    albumCompletion: [
+      { name: 'Venomized Villains', owned: 2, total: 12 },
+      { name: 'Staying Hipp', owned: 9, total: 12 },
+      { name: 'Pixel Discarder', owned: 9, total: 9 }
     ],
     importedAt: iso(now)
   }));
