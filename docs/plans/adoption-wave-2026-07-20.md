@@ -248,13 +248,20 @@ Do NOT build a hollow counts-only tab (adds nothing over Profile) or a blind ID-
 - Gates: fixture with known distribution → hand-computed cell values match; skip-path leaves
   quick-log latency unchanged; old records without the field never crash.
 
-## Slice 4 — Series completion-cost projection
-- [ ] RESEARCH GATE first (small, 2-source): current acquisition economics — collector-token
-      prices per series/spotlight era, key costs. If sources conflict or era is in flux, record
-      honest ranges.
-- [ ] View: per pool (game vocabulary via SERIES_TO_POOL, never raw index): missing-card count ×
-      researched cost → tokens/keys needed; surface beside Collection pool breakdown.
-- Gates: math vs hand-computed fixture; research citations recorded in the commit.
+## Slice 4 — Series completion-cost projection — DONE → `2ceb0e2`
+- [x] RESEARCH GATE → `docs/research/acquisition-economics-2026-07-20.md` (2 sources: official
+      marvelsnap.com + marvelsnapzone via search). **KEY FINDING: Spotlight Key/Cache gacha
+      RETIRED Apr 29 2025 — tokens-only, no key UI.** Direct per-card costs S3=1000/S4=3000/
+      S5=6000 (Snap Packs cheaper: 650/2000/4000); Series 1/2/Starter NOT token-purchasable
+      (Collection Level track); series assignment is now card-by-card dynamic → projection is a
+      snapshot.
+- [x] View → "Series Completion Cost" section in the Collection tab: per pool (via SERIES_TO_POOL,
+      not raw index), missing × authored `SERIES_TOKEN_COST` → tokens needed; grand total of
+      token pools; non-token pools show count + "Collection Level" (honest gap); Complete state;
+      snapshot caveat footer. Derived from existing `poolStats` — ZERO new hooks.
+- [x] Gates: live crawl (Playwright 7/7) verified EXACT arithmetic independently computed from
+      card-data.json (empty-collection grand total 1,313,000 tokens to the digit; partial/
+      complete/full all exact); citations recorded in the commit + research doc. sw v17→v18.
 
 ## Slice 5 — Match recap in Companion feed (RECON GATE — may be infeasible)
 Feb 28 audit ground truth: GameState.json played-cards arrays are EMPTY post-game. 
