@@ -60,5 +60,8 @@ thresholds** (RewardTrackSeeds unverified). Once Slice B ships, add "mastery XP 
 - **Mission War Room** — not selected this wave (owner ruling 2026-07-21). MissionState is real + already
   thinly rendered; deepen later if wanted.
 - **Flight Recorder / Pity Watch / Comic Annual** — depend on Slice B or are niche/polish; revisit after.
-- **CLEANUP (honesty debt)**: `MatchTurnAnalysis` (index.html:5772) renders HARDCODED fake per-location
-  scores (`24/28/18/24/30/40/18`) — dead Slice-5 scaffolding. Cut or gate behind a "no real data" notice.
+- **CLEANUP (honesty debt) — DONE 2026-07-21 → `e6d3d97`**: `MatchTurnAnalysis` was rendering a
+  FABRICATED turn-by-turn replay (invented cards, simulated scores, hardcoded `24/28/18` board
+  literals) — dead Slice-5 scaffolding. Cut all fabrication; renamed to "Match Detail"; kept the real
+  logged summary (result/cubes/snap/opponent/date + deck/archetype/notes) + an honest "per-turn data
+  isn't available from the game files" notice.
