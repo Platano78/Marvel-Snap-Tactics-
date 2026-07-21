@@ -6492,7 +6492,7 @@ RULES:
     };
 
     // ==================== CARD DETAIL COMPONENT (Stitch 06) ====================
-    // Full-screen overlay shown when any card is tapped in Collection or CardDatabase.
+    // Full-screen overlay shown when any card is tapped in Collection.
     // Primary reference: 06_card_details_strategy_b.html
     const CardDetail = ({ card, isOwned, onClose, onToggleOwned, editMode = false }) => {
       const artUrl = getCardArtUrl(card);
@@ -6895,9 +6895,6 @@ RULES:
         ? collectionEnhanced.collectionScore.toLocaleString()
         : ownedCount.toString(); // fallback: owned card count
 
-      // Series 3 stats for the Stitch progress bar
-      const series3Stats = poolStats['Series 3'] || { owned: 0, total: 0, percent: 0 };
-
       // Series Completion Cost: per-pool missing-card count × direct Token Shop cost per card.
       // Derived inline from poolStats (already memoized above) — no new hook needed.
       const seriesCompletionCost = Object.keys(POOL_GROUPS)
@@ -6931,25 +6928,6 @@ RULES:
               <p className="text-xs uppercase tracking-widest font-bold" style={{ color: '#b792c9' }}>Completion</p>
               <p className="text-white text-3xl font-bold leading-tight tracking-tight">{cardDataVersion === 0 ? '—' : `${completionPct}%`}</p>
             </div>
-          </div>
-
-          {/* ── Stitch: Series 3 Progress bar ── */}
-          <div className="flex flex-col gap-3 mx-4 mt-2 mb-4 rounded-2xl p-4" style={{ background: '#2a1833' }}>
-            <div className="flex gap-6 justify-between">
-              <p className="text-white text-sm font-medium leading-normal">Series 3 Progress</p>
-              <p className="text-sm font-bold leading-normal" style={{ color: '#ad2bee' }}>
-                {series3Stats.owned}/{series3Stats.total}
-              </p>
-            </div>
-            <div className="rounded-full h-2.5 w-full" style={{ background: '#553267' }}>
-              <div className="h-2.5 rounded-full" style={{ width: `${series3Stats.percent}%`, background: '#ad2bee' }} />
-            </div>
-            {/* TODO: "credits to next Reserve" requires CurrencyState data not currently imported */}
-            <p className="text-xs font-normal leading-normal italic" style={{ color: '#b792c9' }}>
-              {series3Stats.percent < 100
-                ? `${series3Stats.total - series3Stats.owned} cards remaining in Series 3`
-                : 'Series 3 complete!'}
-            </p>
           </div>
 
           {/* ── Stitch: Series Completion Cost ── */}
@@ -7215,234 +7193,6 @@ RULES:
             onConfirm={confirmClearCollection}
             onCancel={() => setConfirmDialog({ isOpen: false, action: null })}
           />
-        </div>
-      );
-    };
-
-    // Database grid tile — one card, art-as-UI with owned indicator; per-tile artFailed state
-    // (extracted so each grid cell can independently fall back on a 404 without re-rendering the grid).
-    const DatabaseCardTile = ({ card, owned, borderCls, onSelect }) => {
-      const [artFailed, setArtFailed] = useState(false);
-      return (
-        <button
-          onClick={onSelect}
-          className={`holo-foil-hover group relative aspect-[3/4] rounded-xl overflow-hidden border-2 ${borderCls} transition-[transform,box-shadow] duration-150 ease-[var(--ease-snap)] active:scale-95 hover:ring-2 hover:ring-cosmic-purple-text/60 text-left`}
-          aria-label={`${card.name}, ${card.cost} energy, ${card.power} power${owned ? ', in collection' : ''}`}
-        >
-          {/* Art */}
-          {!artFailed ? (
-            <img
-              src={getCardArtUrl(card)}
-              alt=""
-              loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover"
-              onError={() => setArtFailed(true)}
-            />
-          ) : (
-            <div className="absolute inset-0 bg-[#2b1933] flex items-center justify-center text-[#b792c9]">
-              <span className="material-symbols-outlined text-4xl">style</span>
-            </div>
-          )}
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-          {/* Energy badge — z-10 keeps it above the discovery sheen */}
-          <div className="absolute top-2 left-2 z-10 flex items-center justify-center h-7 w-7 rounded-full bg-blue-600 border border-white/20 text-[12px] font-bold text-white">
-            {card.cost}
-          </div>
-          {/* Power badge — z-10 keeps it above the discovery sheen */}
-          <div className="absolute top-2 right-2 z-10 flex items-center justify-center h-7 w-7 rounded-full bg-orange-500 border border-white/20 text-[12px] font-bold text-white">
-            {card.power}
-          </div>
-          {/* Owned indicator */}
-          {owned && (
-            <div className="absolute bottom-7 right-2 z-10">
-              <span className="material-symbols-outlined text-[#0bda76] text-base bg-black/60 rounded-full" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-            </div>
-          )}
-          {/* Name — z-10 keeps it above the discovery sheen */}
-          <p className="absolute bottom-2 left-2 right-2 z-10 text-white text-xs font-bold truncate">{card.name}</p>
-        </button>
-      );
-    };
-
-    // ==================== CARD DATABASE COMPONENT (Stitch 02) ====================
-    // Informational card browser — shows ALL cards (owned or not) with ability text inline.
-    // Primary reference: 02_card_database.html
-    const CardDatabase = ({ collection, setCollection, cardDataVersion }) => {
-      const [search, setSearch] = useState('');
-      const [energyFilter, setEnergyFilter] = useState('all'); // 'all' | 0-6 (6 = 6+)
-      const [seriesFilter, setSeriesFilter] = useState('all');
-      const [selectedCard, setSelectedCard] = useState(null);
-
-      const allCards = uniqueCards;
-
-      // Series filter chips derived from POOL_GROUPS (canonical pool order), mirroring
-      // the Collection tab's pool filter — chip ids are pool names, not raw series ids,
-      // since a pool (e.g. "Starter") spans multiple raw series numbers ([1,2,3]).
-      const seriesOptions = React.useMemo(() => {
-        const opts = [{ id: 'all', label: 'All Series' }];
-        Object.keys(POOL_GROUPS).forEach(pool => {
-          const hasCards = allCards.some(c => POOL_GROUPS[pool].includes(c.series));
-          if (hasCards) opts.push({ id: pool, label: pool });
-        });
-        return opts;
-      }, [cardDataVersion]);
-
-      const filteredCards = React.useMemo(() => {
-        let cards = allCards;
-
-        // Energy filter
-        if (energyFilter !== 'all') {
-          const e = parseInt(energyFilter, 10);
-          if (energyFilter === '6') {
-            cards = cards.filter(c => c.cost >= 6);
-          } else {
-            cards = cards.filter(c => c.cost === e);
-          }
-        }
-
-        // Series filter (seriesFilter is a pool name, e.g. "Starter" — expand to raw series ids)
-        if (seriesFilter !== 'all') {
-          const poolSeriesNums = POOL_GROUPS[seriesFilter] || [];
-          cards = cards.filter(c => poolSeriesNums.includes(c.series));
-        }
-
-        // Text search (name or ability)
-        if (search.trim()) {
-          const q = search.toLowerCase();
-          cards = cards.filter(c =>
-            c.name.toLowerCase().includes(q) ||
-            (c.ability && c.ability.toLowerCase().includes(q))
-          );
-        }
-
-        return cards;
-      }, [search, energyFilter, seriesFilter, cardDataVersion]);
-
-      const ownedSet = React.useMemo(() => new Set(collection.owned || []), [collection.owned]);
-
-      const toggleCard = (cardName) => {
-        setCollection(prev => {
-          const isOwned = prev.owned.includes(cardName);
-          return {
-            owned: isOwned ? prev.owned.filter(c => c !== cardName) : [...prev.owned, cardName],
-            lastUpdated: new Date().toISOString()
-          };
-        });
-      };
-
-      // Border style based on game series (mirrors Stitch rarity tiers).
-      // Keyed on the raw card-data.json series index with its game meaning:
-      // 9/10 = Spotlight, 8 = Series 5, 7 = Series 4, 6 = Series 3.
-      // Starter/Series 1/Series 2 (index 1-5) stay unstyled.
-      const getCardBorderStyle = (card) => {
-        if (card.series === 9 || card.series === 10) return 'border-[#F97316] shadow-[0_0_15px_rgba(249,115,22,0.3)]';
-        if (card.series === 8) return 'border-[#EF4444] shadow-[0_0_15px_rgba(239,68,68,0.3)]';
-        if (card.series === 7) return 'border-[#ff9a00] shadow-[0_0_15px_rgba(255,154,0,0.3)]';
-        if (card.series === 6) return 'border-[#8B5CF6] shadow-[0_0_12px_rgba(139,92,246,0.25)]';
-        return 'border-white/20';
-      };
-
-      return (
-        <div className="flex flex-col min-h-screen pb-20">
-          {/* Header */}
-          <div className="flex items-center bg-[#1c1022] p-4 pb-2 justify-between sticky top-0 z-20 border-b border-white/10">
-            <div className="flex size-10 items-center justify-center rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.25)]">
-              <span className="material-symbols-outlined text-cosmic-purple">search</span>
-            </div>
-            <h2 className="text-white text-xl font-bold leading-tight tracking-tight flex-1 text-center">Card Database</h2>
-            <div className="flex size-10 items-center justify-center">
-              <span className="text-[#b792c9] text-xs font-bold">{filteredCards.length}</span>
-            </div>
-          </div>
-
-          {/* Search bar */}
-          <div className="px-4 pt-3 pb-2">
-            <label className="relative flex items-center w-full h-11">
-              <span className="material-symbols-outlined absolute left-4 text-[#b792c9] pointer-events-none text-xl" aria-hidden="true">search</span>
-              <input
-                type="search"
-                id="collection-add-search"
-                name="collection-add-search"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search by name or ability..."
-                aria-label="Search cards"
-                className="w-full h-full rounded-full text-white focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/40 bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] placeholder:text-[#b792c9] pl-11 pr-4 text-sm"
-              />
-            </label>
-          </div>
-
-          {/* Filter chips — series */}
-          <div className="flex gap-2 px-4 py-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-            {seriesOptions.map(opt => (
-              <button
-                key={opt.id}
-                onClick={() => setSeriesFilter(opt.id)}
-                className={`flex h-8 shrink-0 items-center justify-center rounded-full px-4 text-xs font-semibold transition-colors ${
-                  seriesFilter === opt.id
-                    ? 'bg-cosmic-purple text-white'
-                    : 'bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-[#b792c9] hover:bg-[rgba(173,43,238,0.1)]'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Energy selector */}
-          <div className="px-4 py-2">
-            <div className="flex h-11 w-full items-center justify-between rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] p-1" role="group" aria-label="Filter by energy cost">
-              {['all', '0', '1', '2', '3', '4', '5', '6'].map(e => (
-                <button
-                  key={e}
-                  onClick={() => setEnergyFilter(e)}
-                  aria-pressed={energyFilter === e}
-                  className={`flex-1 flex h-full items-center justify-center rounded-full text-xs font-bold transition-colors ${
-                    energyFilter === e
-                      ? 'bg-cosmic-purple text-white'
-                      : 'text-[#b792c9] hover:text-white'
-                  }`}
-                >
-                  {e === 'all' ? 'All' : e === '6' ? '6+' : e}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Card grid */}
-          <div className="flex-1 px-4 pb-4">
-            {filteredCards.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-[#b792c9]">
-                <span className="material-symbols-outlined text-5xl mb-3">search_off</span>
-                <p className="font-bold text-lg mb-1">No cards found</p>
-                <p className="text-sm">Try a different search or filter</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-2">
-                {filteredCards.map(card => (
-                  <DatabaseCardTile
-                    key={card.name}
-                    card={card}
-                    owned={ownedSet.has(card.name)}
-                    borderCls={getCardBorderStyle(card)}
-                    onSelect={() => setSelectedCard(card)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Card Detail overlay */}
-          {selectedCard && (
-            <CardDetail
-              card={selectedCard}
-              isOwned={ownedSet.has(selectedCard.name)}
-              onClose={() => setSelectedCard(null)}
-              onToggleOwned={() => { toggleCard(selectedCard.name); setSelectedCard(null); }}
-              editMode={true}
-            />
-          )}
         </div>
       );
     };
@@ -8000,14 +7750,14 @@ RULES:
                 <div>
                   <p className="text-white font-bold text-lg mb-1">Build Your Arsenal</p>
                   <p className="text-[#b792c9] text-sm max-w-xs mx-auto">
-                    Create your first deck above, or browse the Card Database to see what you can build with.
+                    Create your first deck above, or browse Cards to see what you can build with.
                   </p>
                 </div>
                 <button
-                  onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'database' }))}
+                  onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'collection' }))}
                   className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple hover:bg-[#b84eff] transition-colors min-h-[44px]"
                 >
-                  Browse Card Database
+                  Browse Cards
                 </button>
               </div>
             ) : (
@@ -11468,13 +11218,6 @@ RULES:
                 <span className="text-white text-sm">Profile</span>
               </button>
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'database' }))}
-                className="stitch-list-item p-3 min-h-[44px] flex flex-col items-center"
-              >
-                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">database</span>
-                <span className="text-white text-sm">Database</span>
-              </button>
-              <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'compare' }))}
                 className="stitch-list-item p-3 min-h-[44px] flex flex-col items-center"
               >
@@ -14478,7 +14221,7 @@ RULES:
         const tab = params.get('tab');
         const action = params.get('action');
 
-        if (tab && ['dashboard', 'ai', 'collection', 'database', 'decks', 'compare', 'settings', 'oracle', 'history', 'profile', 'analytics', 'simulator', 'cosmetics', 'mastery'].includes(tab)) {
+        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'compare', 'settings', 'oracle', 'history', 'profile', 'analytics', 'simulator', 'cosmetics', 'mastery'].includes(tab)) {
           setActiveTab(tab);
         }
 
@@ -14686,11 +14429,6 @@ RULES:
             {activeTab === 'collection' && (
               <ErrorBoundary>
                 <Collection collection={collection} setCollection={setCollection} cardDataVersion={cardDataVersion} />
-              </ErrorBoundary>
-            )}
-            {activeTab === 'database' && (
-              <ErrorBoundary>
-                <CardDatabase collection={collection} setCollection={setCollection} cardDataVersion={cardDataVersion} />
               </ErrorBoundary>
             )}
             {activeTab === 'decks' && (
