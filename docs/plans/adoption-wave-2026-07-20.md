@@ -204,7 +204,24 @@ Data: ready (`snap_card_performance` = `{cards: {[name]: {netCubes}}, importedAt
       console). **Lesson reaffirmed: execution beats inspection — a valid-parsing, correct-looking
       diff still crashed at runtime; only the live crawl found it.** sw.js v14→v15.
 
-## Slice 2 — Cosmetics tab — BLOCKED (owner ruled 2026-07-20: skip to Slice 3)
+## Slice 2 — Cosmetics tab — UNBLOCKED 2026-07-21 (real CollectionState.json located)
+**The real file exists** at `/mnt/c/Users/Aldwin/AppData/LocalLow/Second Dinner/SNAP/Standalone/
+States/nvprod/CollectionState.json` (~2 MB, live). Inspected the actual cosmetic shapes under
+`ServerState`:
+- **AvatarInventory.OwnedAvatars** (list) — each `{ CardArtAvatar: { CardDefId, ArtVariantDefId? }, Id, TimeUsed, ... }`. Avatars ARE card art → a real gallery is buildable via `getCardArtUrl({name: CardDefId})` (+ variant). BUILDABLE.
+- **AllAlbumData** (list of ~80) — each `{ AlbumStats: { AlbumDefId, Seen, AcknowledgedVariants[], AlbumRewardStatsList[] }, AlbumDef, AllAlbumRewardData }`. Per-album completion (owned vs total variants) is derivable from AlbumStats vs AlbumDef — one more build-time dig into `AlbumDef` confirms the total-variant field. LIKELY BUILDABLE.
+- **TitleInventory.OwnedTitles** (list) — each `{ TitleDefId }` only (opaque, e.g. "Title83"). No display-name map in the app → COUNT + honest-gap (or raw IDs).
+- **CardBacks** (list) — each `{ CardBackDefId }` (e.g. "Warbound_02"). No card-back art source in the app → COUNT + honest-gap.
+
+**Revised verdict:** the old "counts-only, dead" call was because `parseCollectionEnhanced`
+DISCARDS these lists at sync time (stores only `.length`). The source data is rich. Slice 2 is a
+TWO-PARTER: (1) extend `parseCollectionEnhanced` to PERSIST the avatar CardDefIds + album
+completion into `snap_collection_enhanced` (a folder-sync/parser change), (2) build a Cosmetics
+view (Avatars gallery via card art + Album completion bars; Titles/CardBacks as honest counts).
+Route pattern: MatchHistory-style 3-point registration (router switch + More-Features button + URL
+whitelist). NOT started — a clean fresh-session build now that the data is confirmed.
+
+### (superseded) prior blocked note — owner ruled 2026-07-20: skip to Slice 3
 **RECON VERDICT (2026-07-20, dd80148):** `snap_collection_enhanced` stores **COUNTS ONLY** — no
 cosmetic list is ever persisted. `parseCollectionEnhanced` (index.html:3919-3930) takes `.length`
 of `OwnedAvatars`/`OwnedTitles`/`CardBacks` and `Object.keys(AllAlbumData).length`, storing bare
