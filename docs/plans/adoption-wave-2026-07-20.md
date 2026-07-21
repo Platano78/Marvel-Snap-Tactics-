@@ -1,11 +1,12 @@
 # Adoption Wave — competitive-research features (tracked plan)
 
 **Created**: 2026-07-20 (crew session; research provenance: `docs/research/competitive-positioning-2026-07-20.md`)
-**Status**: PHASE 0 COMPLETE (2026-07-20) — P1/P2/P3 landed three-track-verified, Q1 live
-re-crawl GREEN. Adoption Slices 1-5 UNSTARTED. One gate remains before deploy: 10 commits
-(3b6f990..HEAD) are UNPUSHED on `main` (origin/main = deploy branch, confirmed lacks all 10)
-pending the owner's push call — crawl passed, but the P2b WebKit fetch-reason caveat is
-device-only and the automated crawl cannot settle it.
+**Status**: ADOPTION WAVE RESOLVED (2026-07-20). Phase 0 complete + pushed. Slices: **1 SHIPPED**
+(per-card MVP), **2 BLOCKED** (Cosmetics — needs a real CollectionState.json from the owner),
+**3a+3b SHIPPED** (archetype capture + matchup table), **4 SHIPPED** (completion-cost projection),
+**5 DEAD** (match recap — no honest per-location data; closed per kill criterion). 4 of 5 buildable
+slices shipped; the 2 non-ships are honest data-gaps, not failures. SW at v18. As of the Slice 4
+commit, 3 commits (research doc + Slice 4 + docs) may be unpushed pending the owner's push call.
 **Owner rulings (2026-07-20, do not re-litigate)**:
 - Priority = data-ready first: MVP view → Cosmetics → Matchup grid → Completion cost → Recap recon.
 - Matchup grid's opponent-archetype capture = optional chip row on quick-match (skippable, never
@@ -263,13 +264,20 @@ Do NOT build a hollow counts-only tab (adds nothing over Profile) or a blind ID-
       card-data.json (empty-collection grand total 1,313,000 tokens to the digit; partial/
       complete/full all exact); citations recorded in the commit + research doc. sw v17→v18.
 
-## Slice 5 — Match recap in Companion feed (RECON GATE — may be infeasible)
-Feb 28 audit ground truth: GameState.json played-cards arrays are EMPTY post-game. 
-- [ ] Recon: re-probe the real state files (GameState/PlayState/ProfileState) for any per-location
-      final scores or last-match summary. If nothing: this slice DIES — record the finding and
-      close it; do NOT build a fake recap from manual logs.
-- [ ] Only if data exists: one recap line per synced match in the Companion feed (location scores),
-      template-voiced like the existing remarks.
+## Slice 5 — Match recap in Companion feed — DEAD (recon 2026-07-20, per the plan's kill criterion)
+- [x] Recon verdict: **DIE.** GameState.json / PlayState.json are NOT parsed at all today (absent
+      from the sync `fileMap` at index.html:10072; `parsePlayState` was removed). Only aggregate
+      stats persist (rank/cubes/wins/collection) — no per-location or turn-by-turn structure in any
+      parsed state file or persisted record. `MatchTurnAnalysis` (index.html:5772) renders
+      ENTIRELY FABRICATED per-location scores (hardcoded literals `24/28/18/24/30/40/18`, its own
+      comment says "Replace with real match.turns[] when the data model is extended"). No sample
+      GameState/PlayState/ProfileState JSON exists in the repo. Building a "Won at Kyln 12–8" recap
+      would require fabricating numbers — which this slice's own spec forbids. **CLOSED.**
+- [x] Not built (no honest data source).
+- **NOTE for a future session:** a DIFFERENT, smaller feature IS honestly buildable from existing
+      aggregate fields — a one-line recap like "Beat Destroy for +8 cubes" / "Lost to Bounce, -4,
+      they snapped" from `snap_matches` (result/cubes/opponentArchetype/snapped), WITHOUT any
+      location-score claim. That is a new scope, not this slice; propose separately if wanted.
 
 ## Explicitly not chased (architecture can't win — research verdict, owner-endorsed)
 Live in-match overlay; population-scale own-data meta stats; zero-touch match capture.
