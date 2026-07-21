@@ -10149,6 +10149,7 @@ RULES:
       const [ownedOnly, setOwnedOnly] = useState(false);
       const [showAll, setShowAll] = useState(false);
       const [collection, setCollection] = useState(null);
+      const [matches, setMatches] = useState([]);
 
       useEffect(() => {
         loadData();
@@ -10162,13 +10163,31 @@ RULES:
         setMissions(loadFromStorage('snap_missions', null));
         setMastery(loadFromStorage('snap_mastery', null));
         setCollection(loadFromStorage('snap_collection', null));
+        setMatches(loadFromStorage('snap_matches', []));
       };
 
       const hasMissions = !!missions && (((missions.daily || []).length + (missions.weekly || []).length) > 0);
       const hasMastery = !!mastery && (mastery.cards || []).length > 0;
       const ownedSet = React.useMemo(() => new Set(collection?.owned || []), [collection]);
 
-      if (!performanceData && !profileStats && !hasMissions && !hasMastery) {
+      const matchups = React.useMemo(() => {
+        const groups = {};
+        let untagged = 0;
+        (matches || []).forEach(m => {
+          const key = m.opponentArchetype;
+          if (!key) { untagged++; return; }
+          const g = groups[key] || (groups[key] = { archetype: key, n: 0, wins: 0, netCubes: 0 });
+          g.n++;
+          if (m.result === 'WIN') { g.wins++; g.netCubes += m.cubes; }
+          else { g.netCubes -= m.cubes; }
+        });
+        const rows = Object.values(groups)
+          .map(g => ({ ...g, winRate: Math.round((g.wins / g.n) * 100) }))
+          .sort((a, b) => b.n - a.n || b.netCubes - a.netCubes);
+        return { rows, untagged, taggedCount: matches.length - untagged };
+      }, [matches]);
+
+      if (!performanceData && !profileStats && !hasMissions && !hasMastery && matches.length === 0) {
         return (
           <div className="px-4 pb-20">
             <Header title="ANALYTICS" />
@@ -10467,6 +10486,41 @@ RULES:
               <p className="text-center text-xs text-stitch-muted mt-3">
                 Data from: {new Date(performanceData.importedAt).toLocaleDateString()}
               </p>
+            </div>
+          )}
+
+          {/* Matchup Performance */}
+          {matchups.taggedCount > 0 && (
+            <div className="stitch-card p-5 mb-4">
+              <div className="stitch-section-header">
+                <span className="material-symbols-outlined" aria-hidden="true">swords</span>
+                Matchup Performance
+              </div>
+              <p className="text-xs text-stitch-muted mb-3">Win rate & net cubes by opponent archetype</p>
+
+              <div className="space-y-1.5">
+                {matchups.rows.map((r) => (
+                  <div
+                    key={r.archetype}
+                    className={`flex items-center gap-3 rounded-xl bg-stark-surface p-2.5 border-l-4 ${r.netCubes >= 0 ? 'border-stitch-green' : 'border-red-500'}`}
+                  >
+                    <span className="text-sm text-white flex-1 truncate">{r.archetype}</span>
+                    <span className="text-sm font-bold shrink-0 tabular-nums text-mcu-gold w-12 text-right">
+                      {r.n >= 3 ? `${r.winRate}%` : <span className="text-stitch-muted font-normal">n&lt;3</span>}
+                    </span>
+                    <span className={`text-sm font-bold shrink-0 tabular-nums w-14 text-right ${r.netCubes >= 0 ? 'text-stitch-green' : 'text-red-400'}`}>
+                      {r.netCubes >= 0 ? '+' : ''}{r.netCubes}
+                    </span>
+                    <span className="text-xs text-stitch-muted shrink-0 w-16 text-right">{r.n} game{r.n === 1 ? '' : 's'}</span>
+                  </div>
+                ))}
+              </div>
+
+              {matchups.untagged > 0 && (
+                <p className="text-center text-xs text-stitch-muted mt-3">
+                  {matchups.untagged} untagged match{matchups.untagged === 1 ? '' : 'es'} excluded — tag opponents on the Dashboard or in History to include them.
+                </p>
+              )}
             </div>
           )}
 
