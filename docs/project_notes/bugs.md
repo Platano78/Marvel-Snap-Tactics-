@@ -130,6 +130,18 @@ Track recurring bugs with solutions and prevention strategies.
 - **Solution**: Moved the `useMemo` above the early-return guard so all hooks run unconditionally every render (fixed in 1d63f47).
 - **Prevention**: EVERY hook must sit above EVERY conditional `return` in a component. Babel/JSX parse and a static diff-read both PASS on this bug — it is invisible without RUNNING the component. Any component with an early-return empty state + a new hook must be exercised live (or grep `use[A-Z]` between the return and the component's end and confirm none). Execution beats inspection.
 
+### 2026-07-20 - BUG-019: 30px horizontal overflow at 360px on every route
+- **Issue**: A page-level horizontal scroll of exactly 30px appeared at 360px (primary mobile width) on every route — surfaced by the post-wave full-app integration crawl.
+- **Root Cause**: The shared `PageTransition` wrapper's `.slide-left` entrance animation uses `transform: translateX(30px)` for its first ~180ms. `body` had `overflow-x: hidden` but `html` did NOT, so the transient bleed propagated to `document.documentElement.scrollWidth` on every route/nav.
+- **Solution**: Added `html { overflow-x: hidden; }` adjacent to the body rule (fixed in 69dc73f). Animation untouched.
+- **Prevention**: When an entrance animation translates content outside its box, BOTH `html` and `body` need `overflow-x: hidden` — clipping `body` alone doesn't contain `documentElement.scrollWidth`. Measure `scrollWidth - clientWidth` DURING the animation window (immediately after nav), not just after settle — the bug is a timing race and post-settle reads miss it ~80% of the time.
+
+### 2026-07-20 - BUG-020: completion-% flashes wrong value during card-data load
+- **Issue**: Dashboard vs Collection vs Profile could show disagreeing collection-completion percentages during page load (e.g. 40% then 7%) — a completion view visible during the async card-data fetch showed a wrong number.
+- **Root Cause**: `uniqueCards` initializes to the 57-card offline `CARD_DATA_FALLBACK`; `CardDataLoader` fetches `card-data.json` (~459 cards) async and swaps it in. Completion-% consumers computed `completionPercent = ownedCount / uniqueCards.length` unguarded on every render, so whichever view was visible during the load window computed against 57 cards.
+- **Solution**: Gate the completion-% DISPLAY on `cardDataVersion === 0` (App state that increments once the load settles — on success OR offline fallback), showing "—" until settled, in Dashboard/Collection/UserProfile (fixed in 69dc73f). Offline-safe (fallback resolves fast, never stuck on "—"). No new hooks.
+- **Prevention**: Any stat derived from `uniqueCards.length` is racing the async card-data load. `cardDataVersion === 0` is the "data not settled yet" signal — gate load-window-sensitive displays on it. Offline-first apps must keep the fallback working, so gate the DISPLAY, don't block the render.
+
 ---
 
 ## Tips
