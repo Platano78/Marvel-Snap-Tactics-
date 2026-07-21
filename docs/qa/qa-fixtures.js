@@ -102,6 +102,19 @@
  * snap_decks                     [{id, name, cards: string[] (card names)}] — feeds
  *                             Profile's "Favorite Decks" strip.
  *
+ * snap_snapshots                 Array<{schemaVersion, syncedAt: ISO string, wins, losses,
+ *                             ties, snaps, concedes, opponentConcedes, currentRank,
+ *                             skillRating, collectionScore, masteryXpTotal}>. Appended
+ *                             once per real profile sync (autoImportAll), capped at the
+ *                             last 30, deduped against an identical cumulative-fields
+ *                             re-sync. Analytics' "Since Last Sync" card (Time Stone)
+ *                             diffs the LAST TWO entries — needs >=2 to render; wins/
+ *                             losses/ties/snaps/concedes/opponentConcedes/
+ *                             collectionScore/masteryXpTotal are lifetime-cumulative
+ *                             (a negative delta flags "reset or source change" instead
+ *                             of rendering as a loss); currentRank/skillRating are
+ *                             season-scoped and render signed deltas with no flag.
+ *
  * ROUTING NOTE (2026-07-20): Battle Pass, Missions, Mastery, and Hall of Armor are NOT
  * separate tabs/routes. The url-param whitelist (index.html ~line 13714) only allows:
  * dashboard, ai, collection, database, decks, compare, settings, oracle, history,
@@ -126,6 +139,10 @@
  *   - Mastery summary: totalCards=8, avgLevel="18.8", maxedCards=3.
  *   - momentum ribbon: gold node on the newest visible match (m9), since the current
  *     streak is WIN and >=3.
+ *   - snap_snapshots (2 entries, Time Stone "Since Last Sync" card): deltas must equal
+ *     wins +54, losses +40, ties 0, snaps +11, concedes +6, opponentConcedes +16,
+ *     rank +7, SR +115, collectionScore +1000, masteryXP +800 — all rendered as normal
+ *     (no anomaly flag), since every lifetime-cumulative field only increased.
  */
 function seedSnapapoulousFixtures() {
   // Swap '8130' for whichever port you're actually testing against.
@@ -253,6 +270,18 @@ function seedSnapapoulousFixtures() {
 
   localStorage.setItem('snap_decks', JSON.stringify([
     { id:'d1', name:'Shuri OTA', cards:['Fin Fang Foom','Cyclops','Hawkeye','Iron Man','Medusa'] }
+  ]));
+
+  // Time Stone — exactly 2 snapshots so the "Since Last Sync" delta card renders.
+  // Deltas are hand-verifiable: wins +54, losses +40, ties 0, snaps +11, concedes +6,
+  // opponentConcedes +16, rank +7, SR +115, collectionScore +1000, masteryXP +800.
+  localStorage.setItem('snap_snapshots', JSON.stringify([
+    { schemaVersion:1, syncedAt: iso(now - 2*D),
+      wins:9800, losses:6620, ties:70, snaps:1390, concedes:775, opponentConcedes:2240,
+      currentRank:88, skillRating:4100, collectionScore:124000, masteryXpTotal:50000 },
+    { schemaVersion:1, syncedAt: iso(now),
+      wins:9854, losses:6660, ties:70, snaps:1401, concedes:781, opponentConcedes:2256,
+      currentRank:95, skillRating:4215, collectionScore:125000, masteryXpTotal:50800 }
   ]));
 
   // Force React to reload player-OS state without a full navigation, where the

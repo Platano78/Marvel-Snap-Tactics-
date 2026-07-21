@@ -4252,6 +4252,42 @@ RULES:
         results.push(`Decks: ${addedCount} added, ${updatedCount} updated, ${removedCount} removed (${mergedDecks.length} total)`);
       }
 
+      // Time Stone: append a compact cumulative snapshot on every real profile sync.
+      // This is the app's moat — a private longitudinal record untapped.gg can't
+      // reconstruct (no per-match log exists here, only intervals between two observed
+      // states). Analytics' "Since Last Sync" card diffs the last two entries.
+      if (data.profile) {
+        try {
+          const stats = data.profile.stats || {};
+          const snapshot = {
+            schemaVersion: 1,
+            syncedAt: timestamp,
+            wins: stats.wins || 0,
+            losses: stats.losses || 0,
+            ties: stats.ties || 0,
+            snaps: stats.snaps || 0,
+            concedes: stats.concedes || 0,
+            opponentConcedes: stats.opponentConcedes || 0,
+            currentRank: data.profile.rankData?.currentRank ?? null,
+            skillRating: data.profile.skillRating ?? null,
+            collectionScore: data.collectionEnhanced?.collectionScore ?? null,
+            masteryXpTotal: data.mastery ? data.mastery.cards.reduce((sum, c) => sum + (c.experience || 0), 0) : null
+          };
+          const CUMULATIVE_SNAPSHOT_FIELDS = ['wins', 'losses', 'ties', 'snaps', 'concedes', 'opponentConcedes', 'collectionScore', 'masteryXpTotal'];
+          const snapshots = loadFromStorage('snap_snapshots', []);
+          const last = snapshots[snapshots.length - 1];
+          // A re-sync with zero gameplay change (e.g. re-linking the same folder) would
+          // otherwise clutter the history with a redundant entry — skip it.
+          const isDuplicate = last && CUMULATIVE_SNAPSHOT_FIELDS.every(f => last[f] === snapshot[f]);
+          if (!isDuplicate) {
+            localStorage.setItem('snap_snapshots', JSON.stringify([...snapshots, snapshot].slice(-30)));
+            results.push('Snapshot: recorded');
+          }
+        } catch (e) {
+          console.warn('Snapshot append failed:', e);
+        }
+      }
+
       return results;
     };
 
@@ -10252,6 +10288,7 @@ RULES:
       const [showAll, setShowAll] = useState(false);
       const [collection, setCollection] = useState(null);
       const [matches, setMatches] = useState([]);
+      const [snapshots, setSnapshots] = useState([]);
 
       useEffect(() => {
         loadData();
@@ -10266,6 +10303,7 @@ RULES:
         setMastery(loadFromStorage('snap_mastery', null));
         setCollection(loadFromStorage('snap_collection', null));
         setMatches(loadFromStorage('snap_matches', []));
+        setSnapshots(loadFromStorage('snap_snapshots', []));
       };
 
       const hasMissions = !!missions && (((missions.daily || []).length + (missions.weekly || []).length) > 0);
@@ -10386,9 +10424,76 @@ RULES:
         : 0;
       const pctOfOutcomes = (n) => (recordedOutcomes > 0 ? `${Math.round(((n || 0) / recordedOutcomes) * 100)}%` : '—');
 
+      // Time Stone deltas — "Since Last Sync". Two field classes:
+      // cumulative fields only ever increase, so a negative delta means a reset/source
+      // change, not real gameplay, and gets flagged instead of rendered as a loss.
+      // Season-scoped fields (rank, SR) can legitimately go down (season reset, laddering
+      // down) so their deltas render signed with no flag.
+      const CUMULATIVE_DELTA_FIELDS = [
+        { key: 'wins', label: 'Wins' },
+        { key: 'losses', label: 'Losses' },
+        { key: 'ties', label: 'Ties' },
+        { key: 'snaps', label: 'Snaps' },
+        { key: 'concedes', label: 'Retreats' },
+        { key: 'opponentConcedes', label: 'Opponent Retreats' },
+        { key: 'collectionScore', label: 'Collection Score' },
+        { key: 'masteryXpTotal', label: 'Mastery XP' }
+      ];
+      const SEASON_DELTA_FIELDS = [
+        { key: 'currentRank', label: 'Rank' },
+        { key: 'skillRating', label: 'Skill Rating' }
+      ];
+      const latestSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null;
+      const previousSnapshot = snapshots.length > 1 ? snapshots[snapshots.length - 2] : null;
+      const snapshotDeltas = previousSnapshot
+        ? [...CUMULATIVE_DELTA_FIELDS, ...SEASON_DELTA_FIELDS]
+            .filter(f => latestSnapshot[f.key] != null && previousSnapshot[f.key] != null)
+            .map(f => {
+              const delta = latestSnapshot[f.key] - previousSnapshot[f.key];
+              const isCumulative = CUMULATIVE_DELTA_FIELDS.some(c => c.key === f.key);
+              return { ...f, delta, anomalous: isCumulative && delta < 0 };
+            })
+        : [];
+
       return (
         <div className="px-4 pb-20">
           <Header title="ANALYTICS" />
+
+          {/* Since Last Sync (Time Stone) */}
+          {previousSnapshot && (
+            <div className="stitch-card p-5 mb-4">
+              <div className="stitch-section-header">
+                <span className="material-symbols-outlined" aria-hidden="true">history</span>
+                Since Last Sync
+              </div>
+              <p className="text-xs text-stitch-muted mb-3">
+                {formatRelativeTime(latestSnapshot.syncedAt)} — the interval between your last two
+                syncs, not a single match (Snapapoulous doesn't log per-match history).
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {snapshotDeltas.map(d => (
+                  <div key={d.key} className="rounded-2xl bg-stark-surface p-4">
+                    <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">{d.label}</div>
+                    {d.anomalous ? (
+                      <div className="flex items-center gap-1 text-sm font-bold text-red-400">
+                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }} aria-hidden="true">warning</span>
+                        reset or source change
+                      </div>
+                    ) : (
+                      <div className={`text-3xl font-bold tabular-nums ${d.delta > 0 ? 'text-stitch-green' : d.delta < 0 ? 'text-red-400' : 'text-white'}`}>
+                        {d.delta > 0 ? '+' : ''}{d.delta.toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {!previousSnapshot && (
+            <p className="text-xs text-stitch-muted text-center mb-4">
+              Sync again to start tracking your progress over time.
+            </p>
+          )}
 
           {/* Lifetime Stats */}
           {profileStats && (
