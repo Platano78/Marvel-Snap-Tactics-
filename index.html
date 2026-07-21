@@ -4786,12 +4786,10 @@ RULES:
     // Navigation Bar with sliding indicator
     const NavBar = ({ activeTab, setActiveTab }) => {
       const primaryTabs = [
-        { id: 'ai', label: 'Advisor', icon: 'smart_toy' },
+        { id: 'dashboard', label: 'Home', icon: 'home' },
         { id: 'collection', label: 'Cards', icon: 'style' },
-        { id: 'database', label: 'Database', icon: 'database' },
         { id: 'decks', label: 'Decks', icon: 'auto_fix_high' },
-        { id: 'compare', label: 'Compare', icon: 'compare_arrows' },
-        { id: 'history', label: 'History', icon: 'history' },
+        { id: 'ai', label: 'Advisor', icon: 'smart_toy' },
         { id: 'settings', label: 'More', icon: 'menu' }
       ];
 
@@ -11470,11 +11468,18 @@ RULES:
                 <span className="text-white text-sm">Profile</span>
               </button>
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'dashboard' }))}
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'database' }))}
                 className="stitch-list-item p-3 min-h-[44px] flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">home</span>
-                <span className="text-white text-sm">Dashboard</span>
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">database</span>
+                <span className="text-white text-sm">Database</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'compare' }))}
+                className="stitch-list-item p-3 min-h-[44px] flex flex-col items-center"
+              >
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">compare_arrows</span>
+                <span className="text-white text-sm">Compare</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'oracle' }))}
@@ -14288,7 +14293,7 @@ RULES:
     };
 
     const App = () => {
-      const [activeTab, setActiveTab] = useState('ai');
+      const [activeTab, setActiveTab] = useState('dashboard');
       // Seeded intent for the Decks tab's initial internal view (e.g. jump straight to the Forge)
       // — passed as a prop so it exists before Decks mounts, avoiding a race with a second event.
       const [deckInitialView, setDeckInitialView] = useState(null);
