@@ -7,7 +7,15 @@ owner rulings (two AskUserQuestion rounds, all recorded here — do not re-litig
 **Standing law**: single `index.html` / CDN-only / no build; design canon binds; every slice =
 sonnet implement → adversarial verify → orchestrator gates/diff → commit by orchestrator only;
 **SW CACHE_NAME bump on every index.html-deploying commit** (currently `snapapoulous-stitch-v24` →
-next **v28** — currently v27 after S1(v25)/S2(v26)/S3(v27); increment per slice).
+next **v28** — currently **v30** after S1(v25)/S2(v26)/S3(v27)/S4(v28)/S5(v29)/S6(v30); increment per slice).
+
+> **STATUS 2026-07-21: ALL SIX SLICES SHIPPED.** S4 `447c36a`, S5 `c6984c0`, S6 `3fb555f`
+> (S1–S3 earlier: `3cdcd82`/`1fed28c`/`2180e26`). Each verified 3 ways (sonnet implement + live
+> Playwright crawl → haiku adversarial → orchestrator gate re-run + diff read). Two owner rulings
+> resolved plan gaps during execution: **S4** Season Stats + Currencies → Profile (plan named only 4
+> strip-cards; these two were unlisted); **S6** the two Dashboard Oracle deep-links → Advisor **Meta**
+> mode (preserve offline Oracle behavior). Residual out-of-scope debt noted: stale `TAB_INDEX`
+> `database:2`/`compare:4` keys (S2/S3), and the Settings "Card Database" `refreshCardData` widget label.
 
 ## Owner rulings (LOCKED)
 1. **Home**: default tab → `dashboard` (was `ai`); Dashboard added to bottom nav as "Home". No new
@@ -58,13 +66,13 @@ next **v28** — currently v27 after S1(v25)/S2(v26)/S3(v27); increment per slic
 - **S3 — Compare into Decks** — SHIPPED `2180e26` (added `cardDataVersion` to Decks; Compare = new `view` mode gated >=2 decks). (ruling 3): Compare mode inside Decks (pass cardDataVersion to Decks if
   needed); remove `compare` route + DeckComparison standalone wiring + nav ref. Gate: Compare mode
   renders inside Decks; no `compare` route refs remain.
-- **S4 — Stats homes** (ruling 4): move Dossier + Time Stone cards Analytics→Profile; move missions
+- **S4 — Stats homes** — SHIPPED `447c36a` (sw v28; +Season Stats & Currencies→Profile per owner ruling). (ruling 4): move Dossier + Time Stone cards Analytics→Profile; move missions
   Analytics→Dashboard; strip mastery/cosmetics summary from Analytics. Preserve hook order (BUG-018)
   in every touched component. Gate: each stat appears in exactly one home; Analytics = perf+matchup
   only; no duplicate renders; empty states intact.
-- **S5 — Quick fixes bundle** (ruling 5): the 4 fixes PLUS this stray-prose loose-end from S2: Collection's no-cards empty state (~index.html:7155) still says "browse the Card Database" — relabel to "browse Cards" (Cards IS the browser now). Gate: back affordance gone/replaced; Creators
+- **S5 — Quick fixes bundle** — SHIPPED `c6984c0` (sw v29). (ruling 5): the 4 fixes PLUS this stray-prose loose-end from S2: Collection's no-cards empty state (~index.html:7155) still says "browse the Card Database" — relabel to "browse Cards" (Cards IS the browser now). Gate: back affordance gone/replaced; Creators
   reaches creator content; mobile CTA relabeled + wired to vault import; headers unified.
-- **S6 — Oracle fold-in** (ruling 6): Advisor Ask/Meta modes; drop `oracle` route. Gate: Advisor Meta
+- **S6 — Oracle fold-in** — SHIPPED `3fb555f` (sw v30; Dashboard deep-links→Advisor Meta per owner ruling). (ruling 6): Advisor Ask/Meta modes; drop `oracle` route. Gate: Advisor Meta
   mode shows spotlight/tier; no `oracle` route refs; Advisor chat unaffected.
 
 **Sequencing note**: S1 first (nav shell, safe). S2/S3 remove routes S1 demoted. S4 is the
