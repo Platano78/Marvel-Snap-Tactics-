@@ -735,6 +735,9 @@
     .companion-orb::after { width: 2px; height: 2px; top: 55%; left: 30%; opacity: 0.7; }
     .companion-orb span { width: 2px; height: 2px; top: 65%; left: 70%; opacity: 0.6; }
 
+    html {
+      overflow-x: hidden;
+    }
     body {
       font-family: var(--font-ui);
       background-color: var(--ui-surface-base);
@@ -5234,7 +5237,7 @@ RULES:
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
             <div className="rounded-2xl bg-stark-surface p-4">
               <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Collection</div>
-              <div className="text-3xl font-bold text-white">{completionPercent}%</div>
+              <div className="text-3xl font-bold text-white">{cardDataVersion === 0 ? '—' : `${completionPercent}%`}</div>
               <div className="text-xs text-stitch-muted mt-1">{ownedInDatabase}/{totalCards}</div>
             </div>
             <div className="rounded-2xl bg-stark-surface p-4">
@@ -7083,7 +7086,7 @@ RULES:
             <div className="flex min-w-[140px] flex-1 flex-col gap-2 rounded-2xl p-5"
                  style={{ background: 'rgba(173,43,238,0.10)', border: '1px solid rgba(173,43,238,0.20)' }}>
               <p className="text-xs uppercase tracking-widest font-bold" style={{ color: '#b792c9' }}>Completion</p>
-              <p className="text-white text-3xl font-bold leading-tight tracking-tight">{completionPct}%</p>
+              <p className="text-white text-3xl font-bold leading-tight tracking-tight">{cardDataVersion === 0 ? '—' : `${completionPct}%`}</p>
             </div>
           </div>
 
@@ -11990,7 +11993,7 @@ RULES:
     };
 
     // ==================== USER PROFILE COMPONENT ====================
-    const UserProfile = ({ collection, matches }) => {
+    const UserProfile = ({ collection, matches, cardDataVersion }) => {
       const totalCards = uniqueCards.length;
       const ownedCount = getOwnedCount(collection);
       const completionPercent = totalCards > 0 ? Math.round((ownedCount / totalCards) * 100) : 0;
@@ -12073,7 +12076,7 @@ RULES:
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="stitch-stat p-4 text-center">
               <div className="stitch-label mb-1">Collection</div>
-              <div className="text-3xl font-display font-bold text-white">{completionPercent}%</div>
+              <div className="text-3xl font-display font-bold text-white">{cardDataVersion === 0 ? '—' : `${completionPercent}%`}</div>
               <div className="text-xs text-stitch-muted">{ownedCount} / {totalCards} cards</div>
             </div>
             <div className="stitch-stat p-4 text-center">
@@ -14422,7 +14425,7 @@ RULES:
             )}
             {activeTab === 'profile' && (
               <ErrorBoundary>
-                <UserProfile collection={collection} matches={matches} />
+                <UserProfile collection={collection} matches={matches} cardDataVersion={cardDataVersion} />
               </ErrorBoundary>
             )}
             {activeTab === 'settings' && (
