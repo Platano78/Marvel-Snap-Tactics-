@@ -1,49 +1,28 @@
 READ FIRST:
-- ~/.claude/docs/solutions/Marvel-Snap-Tactics-20260721-handoff.md  (this session's full handoff)
-  — or Serena memory `session-handoff-20260721-0102.md`
-- docs/plans/adoption-wave-2026-07-20.md — THE work queue. Slice 2 section is now **UNBLOCKED**
-  with the real cosmetic data shapes captured. Slices 1/3a/3b/4 SHIPPED, 5 DEAD.
-- docs/project_notes/bugs.md — BUG-018 (hooks above early returns — INVISIBLE to parse+diff,
-  only a live run catches it), BUG-019/020 (this session's fixes).
-- docs/design-canon.md (design law) + AGENTS.md (router — grep section banners, NEVER read the
-  whole ~14k-line index.html).
+- ~/.claude/docs/solutions/Marvel-Snap-Tactics-20260721-ia-handoff.md  (this session's handoff)
+  — or Serena memory `session-handoff-20260721-1530.md`
+- docs/plans/ia-refactor-2026-07-21.md — DECISION-COMPLETE spec for S4–S6, owner rulings LOCKED
+  (do not re-litigate). Also docs/project_notes/bugs.md (BUG-018 hook-order), docs/design-canon.md.
 
-STATE (2026-07-21): everything pushed to origin/main (HEAD c5b9c42). **sw.js CACHE_NAME = v19 —
-next index.html-deploying commit MUST bump to v20.** Adoption wave: 4/5 shipped; Slice 2 is the
-last buildable slice, now unblocked.
+STATE (2026-07-21): S1/S2/S3 SHIPPED + pushed to origin/main (HEAD dae6f6d). sw.js CACHE_NAME = v27 —
+next index.html-deploying commit MUST bump to v28. Nav is now Home·Cards·Decks·Advisor·More.
 
 INVOCATION:
-/crew Build Slice 2 — Cosmetics tab (two-parter): extend parseCollectionEnhanced to persist the
-cosmetic lists, then build the Cosmetics view.
+/crew Execute the IA-refactor slices S4–S6 from docs/plans/ia-refactor-2026-07-21.md
 
 LANE ROUTING:
 Route bulk work to the loaded local model per FLEET-STATE (session-start injection). If local is
-empty, use coder :8084. Escalate to haiku/sonnet only as needed. (Crew: sonnet implements, live
-Playwright crawls execute-verify via the webapp-testing skill — chrome-devtools MCP is flaky.)
+empty, use coder :8084. Crew: sonnet implements, live Playwright crawls verify (webapp-testing skill —
+chrome-devtools flaky; serve on port 8130 to match the qa-fixtures :8130 guard; navigate via the
+in-app setActiveTab CustomEvent, seed via addInitScript to survive the SW self-reload). Orchestrator
+commits after three-track (haiku/sonnet adversary + independent gate re-run + diff-read).
 
-NEXT TASK — SLICE 2 (Cosmetics), the two-parter:
-Real data source (live): /mnt/c/Users/Aldwin/AppData/LocalLow/Second Dinner/SNAP/Standalone/
-States/nvprod/CollectionState.json (~2 MB — inspect shapes with a bounded python script reading
-only the cosmetic sub-structures; do NOT read the whole file into context).
-
-Confirmed shapes (ServerState):
-- AvatarInventory.OwnedAvatars[] = { CardArtAvatar: { CardDefId, ArtVariantDefId? } } → Avatars
-  gallery via card art. BUILDABLE.
-- AllAlbumData[] (~80) = { AlbumStats: { AlbumDefId, AcknowledgedVariants[], AlbumRewardStatsList[] },
-  AlbumDef, AllAlbumRewardData } → album completion (one build-time dig into AlbumDef for the
-  total-variant count). LIKELY BUILDABLE.
-- OwnedTitles[] = { TitleDefId } opaque, CardBacks[] = { CardBackDefId } opaque → COUNT only
-  (honest gap, no name/art map).
-
-Part 1: extend parseCollectionEnhanced (index.html ~3919-3930, currently .length only; storage
-write ~4067) to persist avatar CardDefIds (+variant) and per-album completion into
-snap_collection_enhanced; KEEP the existing counts (Profile/Dashboard read them). Verify against
-the REAL file.
-Part 2: Cosmetics view — MatchHistory-style 3-point route registration (router switch ~14192,
-More-Features button ~11009, URL whitelist ~14006 → add 'cosmetics'). Sections: Avatars gallery
-(getCardArtUrl), Album completion bars, Titles/Card Backs as honest counts. Gates: crawl-grade
-(real-shaped fixture per category, empty state, console, 360/768), SW bump v19→v20.
-
-BUILD TRAP: getCardArtUrl(card) reads card.name, but avatars store CardDefId (defId, e.g. "Uatu").
-card-data.json has BOTH name and defId — resolve defId→name (or defId→art) for avatar thumbnails
-(see b3aaf15 for the prior defId↔display-name fix).
+NEXT TASK — S4 (do first, HEAVY — 3 components, BUG-018 trap):
+Move the Career Dossier (Lifetime Stats + Snap Rate/Intimidation Index/Retreat Rate + methodology)
+AND the Time Stone "Since Last Sync" card from Analytics (CardPerformanceView ~10240+) → Profile
+(UserProfile ~12286); move missions → Dashboard; strip the mastery-summary + "Open Mastery Forge"
+link from Analytics (Mastery/Cosmetics tabs already cover those). Analytics = card performance +
+matchup ONLY afterward. **Every hook before every early return in EACH touched component** — grep
+`use[A-Z]` vs early `return`. Gate: each stat in exactly one home; no duplicate renders; empty
+states intact; live crawl 360/768. Then S5 (quick-fixes bundle + stray "Card Database" prose ~7155)
+and S6 (Oracle → Advisor Ask/Meta toggle, drop the oracle route). SW bump per slice (→ v28…).
