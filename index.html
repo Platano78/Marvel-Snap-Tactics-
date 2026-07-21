@@ -5821,18 +5821,14 @@ RULES:
       );
     };
 
-    // ==================== MATCH TURN ANALYSIS COMPONENT (Stitch 11) ====================
+    // ==================== MATCH DETAIL COMPONENT (Stitch 11) ====================
     // Full-screen overlay shown when a match row in MatchHistory is tapped.
     // Primary reference: 11_match_turn_analysis_b.html
     //
-    // TODO — Schema extension needed: real turn-by-turn data requires `match.turns: Turn[]` where
-    //   Turn = { turn: number, label: string, status: 'STABLE'|'SNAP'|'RETREAT'|'CLUTCH',
-    //            snapEvent?: 'PLAYER'|'OPPONENT'|'BOTH', retreatEvent?: boolean,
-    //            playerCards: { name: string, location: 1|2|3 }[],
-    //            opponentCards: { name: string, location: 1|2|3 }[],
-    //            locationScores: { loc1: [player, opp], loc2: [player, opp], loc3: [player, opp] },
-    //            isFinal?: boolean, finalBoard?: { l1: number, l2: number, l3: number, wins: boolean[] } }
-    //   Until that is stored, this component generates illustrative placeholder turns from the match summary.
+    // Marvel Snap's exported game files carry no per-match board or turn data —
+    // ProfileState.MatchHistory is empty and GameState isn't parsed by this app. This is a
+    // hard data gap, not a pending feature: there is nothing to schema-extend or wire up.
+    // This component only ever shows the fields the user actually logged for the match.
     //
     // TODO — AI Verdict: the "What to learn" section is stubbed. Wire to AIChat with
     //   buildSystemPrompt({ role:'match_analyst' }) + the match context to generate a real verdict.
@@ -5858,72 +5854,6 @@ RULES:
         return null;
       };
 
-      // ── Illustrative placeholder turns ──────────────────────────────────────
-      // These are generated from available match fields so the UI is non-empty.
-      // Replace with real match.turns[] when the data model is extended.
-      const PLACEHOLDER_CARDS_YOU  = ['Sunspot', 'Iron Man', 'Shang-Chi', 'Sera', 'Collector', 'Sentinel'];
-      const PLACEHOLDER_CARDS_OPP  = ['Misty Knight', 'Scorpion', 'Devil Dinosaur', 'Wong', 'Moon Girl', 'White Queen'];
-      const KNOWN_DECK_CARDS = match.deck ? [match.deck] : [];
-
-      const placeholderTurns = useMemo(() => {
-        const totalTurns = match.snapped !== 'NONE' ? 6 : 5;
-        const snapTurn  = match.snapped && match.snapped !== 'NONE' ? 3 : null;
-
-        const turns = [];
-        for (let t = 1; t <= totalTurns; t++) {
-          const isFinal = t === totalTurns;
-          const isSnap  = snapTurn && t === snapTurn;
-          const youCard  = PLACEHOLDER_CARDS_YOU[(t - 1) % PLACEHOLDER_CARDS_YOU.length];
-          const oppCard  = PLACEHOLDER_CARDS_OPP[(t - 1) % PLACEHOLDER_CARDS_OPP.length];
-
-          // Simulated score ramp based on match result
-          const baseScoreYou = t * (isWin ? 4 : 2);
-          const baseScoreOpp = t * (isWin ? 2 : 4);
-
-          turns.push({
-            turn: t,
-            label: isFinal ? (isWin ? 'The Swing' : 'Final Stand') : t === 1 ? 'Opening Move' : t === 2 ? 'Pressure Applied' : `Turn ${t}`,
-            status: isSnap ? (match.snapped === 'OPPONENT' ? 'OPP_SNAP' : 'YOU_SNAP') : isFinal ? (isWin ? 'CLUTCH' : 'DEFEAT') : 'STABLE',
-            snapEvent: isSnap ? match.snapped : null,
-            playerCards: [{ name: KNOWN_DECK_CARDS.length > 0 && t === totalTurns ? KNOWN_DECK_CARDS[0] : youCard, abbr: youCard.slice(0, 3).toUpperCase() }],
-            opponentCards: [{ name: oppCard, abbr: oppCard.slice(0, 3).toUpperCase() }],
-            isFinalTurn: isFinal,
-            scores: {
-              loc1: [baseScoreYou,        Math.max(0, baseScoreOpp - 2)],
-              loc2: [baseScoreYou - 1,    baseScoreOpp],
-              loc3: [Math.max(0, baseScoreYou - 4), baseScoreOpp + 2],
-            },
-            finalBoard: isFinal ? {
-              l1: { you: 24, opp: isWin ? 10 : 28, win: isWin },
-              l2: { you: 18, opp: isWin ? 12 : 24, win: isWin },
-              l3: { you: 30, opp: isWin ? 40 : 18, win: !isWin },
-            } : null,
-          });
-        }
-        return turns;
-      }, [match]);
-
-      // ── Status badge helper ─────────────────────────────────────────────────
-      const statusBadge = (status, snapEvent) => {
-        if (status === 'OPP_SNAP' || (snapEvent === 'OPPONENT')) {
-          return { label: 'Opponent Snapped', bg: 'rgba(239,68,68,0.20)', color: '#f87171', border: 'rgba(239,68,68,0.40)' };
-        }
-        if (status === 'YOU_SNAP' || (snapEvent === 'PLAYER')) {
-          return { label: 'You Snapped', bg: 'rgba(173,43,238,0.20)', color: '#c75fff', border: 'rgba(173,43,238,0.40)' };
-        }
-        if (status === 'CLUTCH') {
-          return { label: 'Clutch Win', bg: 'rgba(173,43,238,0.30)', color: '#ad2bee', border: 'rgba(173,43,238,0.50)' };
-        }
-        if (status === 'DEFEAT') {
-          return { label: 'GG', bg: 'rgba(239,68,68,0.10)', color: '#f87171', border: 'rgba(239,68,68,0.20)' };
-        }
-        return { label: 'Stable', bg: 'rgba(11,218,118,0.15)', color: '#0bda76', border: 'rgba(11,218,118,0.30)' };
-      };
-
-      // ── Card color abbreviation (same rainbow as Stitch mockup) ─────────────
-      const ABBR_COLORS = ['#4f46e5', '#f97316', '#16a34a', '#ef4444', '#3b82f6', '#8b5cf6'];
-      const abbColor = (idx) => ABBR_COLORS[idx % ABBR_COLORS.length];
-
       // ── Key decision analysis (stubbed — see TODO above) ───────────────────
       const keyDecisions = useMemo(() => {
         const decisions = [];
@@ -5945,17 +5875,8 @@ RULES:
             grade: isWin ? 'GOOD' : 'INFO',
           });
         }
-        decisions.push({
-          icon: 'flag',
-          iconColor: '#fbbf24',
-          title: `Turn ${placeholderTurns.length} — Final Play`,
-          body: isWin
-            ? `Your final placement secured 2 of 3 locations. ${match.deck ? `Playing the ${match.deck} archetype correctly leverages late-game burst power.` : 'Solid endgame execution.'}`
-            : `You lost 2 of 3 locations on the final turn. Review whether retreating earlier for 2 cubes was the better line.`,
-          grade: isWin ? 'GOOD' : 'REVIEW',
-        });
         return decisions;
-      }, [match, placeholderTurns, isWin]);
+      }, [match, isWin]);
 
       const gradeStyle = (grade) => {
         if (grade === 'GOOD')   return { color: '#0bda76', bg: 'rgba(11,218,118,0.15)' };
@@ -5971,7 +5892,7 @@ RULES:
           style={{ background: '#1c1022' }}
           role="dialog"
           aria-modal="true"
-          aria-label="Match Turn Analysis"
+          aria-label="Match Detail"
         >
           {/* ── Top App Bar ─────────────────────────────────────────────────── */}
           <div
@@ -5995,7 +5916,7 @@ RULES:
 
             {/* Title */}
             <div className="flex flex-col items-center">
-              <h2 className="text-white text-lg font-bold leading-tight tracking-tight">Match Analysis</h2>
+              <h2 className="text-white text-lg font-bold leading-tight tracking-tight">Match Detail</h2>
               <span className="text-xs font-medium" style={{ color: '#ad2bee' }}>
                 {match.opponent ? `vs. ${match.opponent}` : 'Unknown Opponent'} · {formatDate(match.timestamp)}
               </span>
@@ -6067,189 +5988,48 @@ RULES:
               </div>
               <p className="text-sm leading-relaxed" style={{ color: '#d1c4e9' }}>
                 {isWin
-                  ? `Your final turn sealed 2 of 3 locations${match.deck ? ` using the ${match.deck} gameplan` : ''}. The cube gain of +${cubes} reflects clean execution.`
-                  : `You were outpowered this match, losing ${cubes} cubes. Review Turn ${Math.max(1, placeholderTurns.length - 2)} for an earlier retreat line.`}
+                  ? `You won +${cubes} cubes${match.deck ? ` with your ${match.deck} deck` : ''}.`
+                  : `You lost ${cubes} cubes${match.opponentArchetype ? ` to ${match.opponentArchetype}` : ''}.`}
               </p>
-              {/* TODO: Replace with AI-generated key play from match.turns data when available */}
             </div>
           </div>
 
-          {/* ── Turn-by-Turn Breakdown ──────────────────────────────────────── */}
-          <div className="flex items-center justify-between px-4 pt-4 pb-2">
-            <h3 className="text-white text-lg font-bold leading-tight tracking-tight">Turn-by-Turn</h3>
-            <span
-              className="text-xs px-2 py-1 rounded-full"
-              style={{ background: 'rgba(255,255,255,0.05)', color: '#b792c9' }}
-            >
-              {placeholderTurns.length} turns
-            </span>
+          {/* ── Honest data notice — per-turn replay is a hard data gap, not a stub ─ */}
+          <div className="px-4 pt-4 pb-2">
+            <div className="stitch-card p-4 flex items-start gap-3">
+              <span className="material-symbols-outlined text-base mt-0.5" style={{ color: '#b792c9' }} aria-hidden="true">info</span>
+              <p className="text-xs leading-relaxed text-stitch-muted">
+                Per-turn replay isn't available. Marvel Snap's exported game files don't include per-match board or turn data — this view shows the match result you logged.
+              </p>
+            </div>
           </div>
 
-          <div className="space-y-3 px-4 pb-2">
-            {placeholderTurns.map((t) => {
-              const badge = statusBadge(t.status, t.snapEvent);
-              const isSnapTurn = t.snapEvent !== null;
-              const cardBg = t.isFinalTurn ? '#3c2348' : '#2b1933';
-              const cardBorder = t.isFinalTurn
-                ? '1px solid rgba(173,43,238,0.40)'
-                : isSnapTurn
-                  ? '1px solid rgba(239,68,68,0.30)'
-                  : '1px solid rgba(255,255,255,0.05)';
-              const borderLeft = isSnapTurn && !t.isFinalTurn ? '4px solid #ef4444' : undefined;
-
-              return (
-                <div
-                  key={t.turn}
-                  className="flex flex-col gap-3 rounded-2xl p-4 relative overflow-hidden"
-                  style={{ background: cardBg, border: cardBorder, borderLeft }}
-                >
-                  {/* Snap pulse icon in corner */}
-                  {isSnapTurn && !t.isFinalTurn && (
-                    <div className="absolute top-3 right-3">
-                      <span
-                        className="material-symbols-outlined text-red-400 animate-pulse"
-                        style={{ fontSize: 20 }}
-                        aria-hidden="true"
-                      >filter_vintage</span>
-                    </div>
-                  )}
-
-                  {/* Turn header row */}
-                  <div className="flex justify-between items-start">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-xs font-bold uppercase" style={{ color: '#ad2bee' }}>Turn {t.turn}</span>
-                      <p className="text-white font-bold text-sm leading-tight">{t.label}</p>
-                    </div>
-                    <span
-                      className="text-[10px] font-bold uppercase tracking-tight px-2 py-0.5 rounded"
-                      style={{ background: badge.bg, color: badge.color, border: `1px solid ${badge.border}` }}
-                    >
-                      {badge.label}
-                    </span>
+          {/* ── Details — only the fields the user actually logged ──────────── */}
+          {(match.deck || match.opponentArchetype || match.notes) && (
+            <div className="px-4 pt-2 pb-2">
+              <h3 className="text-white text-lg font-bold leading-tight tracking-tight mb-3">Details</h3>
+              <div className="stitch-card p-4 flex flex-col gap-2">
+                {match.deck && (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-stitch-muted">Deck</span>
+                    <span className="text-sm text-white text-right">{match.deck}</span>
                   </div>
-
-                  {/* Cards played grid */}
-                  {!t.isFinalTurn ? (
-                    <div className="grid grid-cols-2 gap-3">
-                      {/* Player column */}
-                      <div className="flex flex-col gap-1">
-                        <p className="text-[10px] uppercase" style={{ color: '#b792c9' }}>You</p>
-                        {t.playerCards.map((c, i) => (
-                          <div
-                            key={c.name}
-                            className="flex items-center gap-2 p-2 rounded-lg"
-                            style={{ background: 'rgba(255,255,255,0.05)' }}
-                          >
-                            <div
-                              className="shrink-0 flex items-center justify-center text-[9px] font-bold text-white rounded"
-                              style={{ width: 32, height: 40, background: abbColor(i) }}
-                              aria-hidden="true"
-                            >{c.abbr}</div>
-                            <span className="text-sm font-medium text-white leading-tight truncate">{c.name}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Opponent column */}
-                      <div className="flex flex-col gap-1">
-                        <p className="text-[10px] uppercase" style={{ color: '#b792c9' }}>Opponent</p>
-                        {t.opponentCards.map((c, i) => (
-                          <div
-                            key={c.name}
-                            className="flex items-center gap-2 p-2 rounded-lg"
-                            style={{ background: 'rgba(255,255,255,0.05)' }}
-                          >
-                            <div
-                              className="shrink-0 flex items-center justify-center text-[9px] font-bold text-white rounded"
-                              style={{ width: 32, height: 40, background: '#4b5563' }}
-                              aria-hidden="true"
-                            >{c.abbr}</div>
-                            <span className="text-sm font-medium text-white leading-tight truncate">{c.name}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    /* Final turn — show all your moves + opponent side by side */
-                    <div className="flex flex-col gap-2">
-                      <p className="text-[10px] uppercase" style={{ color: '#b792c9' }}>Your Final Moves</p>
-                      <div className="flex gap-2">
-                        {t.playerCards.map((c, i) => (
-                          <div
-                            key={c.name}
-                            className="flex-1 flex items-center gap-2 p-2 rounded-lg"
-                            style={{ background: 'rgba(173,43,238,0.20)', border: '1px solid rgba(173,43,238,0.30)' }}
-                          >
-                            <div
-                              className="shrink-0 flex items-center justify-center text-[9px] font-bold text-white rounded"
-                              style={{ width: 32, height: 40, background: abbColor(i) }}
-                              aria-hidden="true"
-                            >{c.abbr}</div>
-                            <span className="text-sm font-bold text-white leading-tight truncate">{c.name}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Location score row — lane power chips as pills */}
-                  {!t.isFinalTurn ? (
-                    <div
-                      className="flex justify-around gap-2 pt-3 mt-1"
-                      style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
-                    >
-                      {[
-                        { key: 'loc1', label: 'L1', scores: t.scores.loc1 },
-                        { key: 'loc2', label: 'L2', scores: t.scores.loc2 },
-                        { key: 'loc3', label: 'L3', scores: t.scores.loc3 },
-                      ].map(({ key, label, scores: [you, opp] }) => {
-                        const youWin = you > opp;
-                        const tied   = you === opp;
-                        const color  = tied ? '#9ca3af' : youWin ? '#0bda76' : '#f87171';
-                        return (
-                          <span
-                            key={key}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold"
-                            style={{ background: `${color}1a`, border: `1px solid ${color}4d`, color }}
-                          >
-                            {label} {you}:{opp}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  ) : t.finalBoard && (
-                    /* Final board state — lane power pills */
-                    <div
-                      className="p-3 rounded-lg mt-1"
-                      style={{ background: 'rgba(0,0,0,0.25)' }}
-                    >
-                      <p className="text-[10px] text-center font-bold uppercase mb-2" style={{ color: '#ad2bee' }}>Final Board State</p>
-                      <div className="flex justify-around items-center gap-2 flex-wrap">
-                        {[
-                          { label: 'L1', data: t.finalBoard.l1 },
-                          { label: 'L2', data: t.finalBoard.l2 },
-                          { label: 'L3', data: t.finalBoard.l3 },
-                        ].map(({ label, data }) => {
-                          const youWin = data.you > data.opp;
-                          const color = youWin ? '#0bda76' : '#f87171';
-                          return (
-                            <span
-                              key={label}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-black"
-                              style={{ background: `${color}22`, border: `1px solid ${color}4d`, color }}
-                            >
-                              {label} {data.you}
-                              <span className="text-[10px] font-normal" style={{ color: '#b792c9' }}>vs {data.opp}</span>
-                            </span>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                )}
+                {match.opponentArchetype && (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-stitch-muted">Opponent Archetype</span>
+                    <span className="text-sm text-white text-right">{match.opponentArchetype}</span>
+                  </div>
+                )}
+                {match.notes && (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-stitch-muted">Notes</span>
+                    <span className="text-sm text-white text-right">{match.notes}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* ── Key Decisions ───────────────────────────────────────────────── */}
           <div className="px-4 pt-4 pb-2">
@@ -6319,7 +6099,7 @@ RULES:
                 </p>
               ) : (
                 <p className="text-xs leading-relaxed" style={{ color: '#b792c9' }}>
-                  {`On Turn ${Math.max(1, placeholderTurns.length - 2)}, evaluating an early retreat could have saved ${Math.max(1, cubes - 1)} cubes. When you are behind on 2 of 3 locations by mid-game, retreating for 2 is almost always better than calling a snap.`}
+                  {`You lost ${cubes} cubes this match${match.opponentArchetype ? ` against ${match.opponentArchetype}` : ''}. When you're clearly behind, retreating early for a smaller loss is often the better line than pushing to the final turn.`}
                 </p>
               )}
 
