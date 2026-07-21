@@ -32,7 +32,7 @@ is already surfaced (Slice 1 CardPerformanceView). `ProfileState.MatchHistory` i
 - Sync writes ~16 `snap_*` keys; all are read somewhere (no truly dead parse). "Fell to the wayside"
   = depth/prominence gaps, not dead code.
 
-## Slice A — S.H.I.E.L.D. Player Dossier — SELECTED (do first: cheap, standalone)
+## Slice A — S.H.I.E.L.D. Player Dossier — SHIPPED 2026-07-21 → `23ce860`
 Extend the Analytics "Lifetime Stats" card (10387) — data already in `profileStats`. Add derived,
 honest metrics with tap-to-reveal exact formula: recorded outcomes (totalGames), snap rate
 (snaps/totalGames), **intimidation index** (opponentConcedes/totalGames), retreat rate
@@ -40,7 +40,7 @@ honest metrics with tap-to-reveal exact formula: recorded outcomes (totalGames),
 opponent concedes were *caused* by snapping. Empty/partial safe (all `|| 0`).
 - Gates: crawl-grade (fixture with known stats → hand-verified derived values; empty state; console; 360/768).
 
-## Slice B — Time Stone (snapshot engine) — SELECTED (keystone; do second)
+## Slice B — Time Stone (snapshot engine) — SHIPPED 2026-07-21 → `9476681`
 On each successful folder sync, append a compact timestamped snapshot (ring buffer, bounded retention)
 to a new `snap_snapshots` key: `{syncedAt, wins, losses, ties, snaps, concedes, opponentConcedes,
 rank, skillRating, masteryXpTotal, pity:{...}}`. A "Since last sync" delta view (label intervals
@@ -50,7 +50,7 @@ resets. Add `schemaVersion` + `syncedAt` to the snapshot record. NO card play-co
 - Gates: seed 2 snapshots → deltas exactly match arithmetic; single-snapshot empty state; negative-delta
   flagging; retention cap; console; widths.
 
-## Slice C — Mastery Forge — SELECTED (do third; richer once B exists)
+## Slice C — Mastery Forge — SHIPPED 2026-07-21 → `2d73f9e` (also fixed a defId art bug)
 Deepen MasteryView into a roster-development screen: highest-XP cards, `LastClaimedLevel`/30 bars,
 unmastered owned cards, maxed count. **Raw XP + LastClaimedLevel/30 only — do NOT invent XP-to-next
 thresholds** (RewardTrackSeeds unverified). Once Slice B ships, add "mastery XP gained since last sync".
