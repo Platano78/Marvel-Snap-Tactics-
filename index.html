@@ -2055,6 +2055,7 @@
     // uniqueCards - mutable array that updates when card data loads
     let uniqueCards = [...CARD_DATA_FALLBACK];
     let uniqueCardsUpdateCallbacks = [];
+    let pendingScrollToCreators = false;
 
     // Function to update uniqueCards and notify listeners
     const updateUniqueCards = (newCards) => {
@@ -5626,30 +5627,7 @@ RULES:
 
       return (
         <div className="pb-24 relative">
-          {/* Top App Bar — matches Stitch exactly */}
-          <div
-            className="flex items-center justify-between p-4 pb-2 sticky top-0 z-10"
-            style={{ background: 'rgba(28,16,34,0.92)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(173,43,238,0.15)' }}
-          >
-            {/* Back button — 48×48 touch target */}
-            <div className="size-12 flex items-center justify-center text-[#b792c9]" aria-label="Back">
-              <span className="material-symbols-outlined" aria-hidden="true">arrow_back_ios</span>
-            </div>
-            <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">
-              Match History
-            </h2>
-            {/* Filter icon button */}
-            <button
-              className="flex items-center justify-center rounded-full size-10 bg-[#ad2bee]/10 text-[#ad2bee]"
-              aria-label="Filter options"
-              onClick={() => {
-                const next = { all: 'wins', wins: 'losses', losses: 'all' }[filter];
-                setFilter(next);
-              }}
-            >
-              <span className="material-symbols-outlined" aria-hidden="true">filter_list</span>
-            </button>
-          </div>
+          <Header title="MATCH HISTORY" />
 
           {/* Summary Stats — canon 3-card stitch-stat pattern (matches Deck Builder / Profile stat grids) */}
           <div className="grid grid-cols-3 gap-3 p-4">
@@ -7221,7 +7199,7 @@ RULES:
                 <div>
                   <p className="text-white font-bold text-lg mb-1">Assemble Your Collection</p>
                   <p className="text-[#b792c9] text-sm max-w-xs mx-auto">
-                    Link your game data folder in Settings to import your owned cards automatically, or browse the Card Database to explore what's out there.
+                    Link your game data folder in Settings to import your owned cards automatically, or browse Cards to explore what's out there.
                   </p>
                 </div>
                 <button
@@ -7684,6 +7662,22 @@ RULES:
         return () => { cancelled = true; };
       }, [settings?.enableCreatorVideos, creators]);
 
+      // Pending "Creators" More-tile deep-link (set by the tile's onClick before the tab switch).
+      // Decks mounts fresh on tab switch (key={activeTab}), so this fires reliably on the default
+      // list view where the Creator Decks section lives.
+      useEffect(() => {
+        if (!pendingScrollToCreators) return;
+        let raf, tries = 0;
+        const attempt = () => {
+          const el = document.getElementById('creator-decks-section');
+          if (el) { pendingScrollToCreators = false; el.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+          if (tries++ < 30) raf = requestAnimationFrame(attempt);
+          else pendingScrollToCreators = false;
+        };
+        raf = requestAnimationFrame(attempt);
+        return () => { if (raf) cancelAnimationFrame(raf); };
+      }, []);
+
       const relativeVideoDate = (iso) => {
         if (!iso) return '';
         const diffMs = Date.now() - new Date(iso).getTime();
@@ -7923,7 +7917,7 @@ RULES:
 
             {/* Creator Decks — Tier 1 (offline-safe curated decks from vetted creators) */}
             {!creatorsError && creators.length > 0 && (
-              <div className="mt-6">
+              <div id="creator-decks-section" className="mt-6">
                 <div className="stitch-section-header">
                   <span className="material-symbols-outlined" aria-hidden="true">movie</span>
                   Creators
@@ -9938,6 +9932,7 @@ RULES:
       }, [matches]);
 
       if ((!performanceData || Object.keys(performanceData.cards || {}).length === 0) && matchups.taggedCount === 0) {
+        const canLinkFolder = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
         return (
           <div className="px-4 pb-20">
             <Header title="ANALYTICS" />
@@ -9962,8 +9957,13 @@ RULES:
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'settings' }))}
                 className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple hover:bg-[#b84eff] transition-colors min-h-[44px]"
               >
-                Link Game Folder
+                {canLinkFolder ? 'Link Game Folder' : 'Import Vault Data'}
               </button>
+              {!canLinkFolder && (
+                <p className="text-xs text-stitch-muted mt-2 max-w-xs mx-auto">
+                  On mobile: export your vault on desktop, then import it here.
+                </p>
+              )}
             </div>
           </div>
         );
@@ -10187,6 +10187,7 @@ RULES:
 
       // ── Empty state: folder sync never run, or run before this feature shipped ──
       if (!mastery || !hasMastery) {
+        const canLinkFolder = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
         return (
           <div className="px-4 pb-20">
             <Header title="MASTERY FORGE" />
@@ -10211,8 +10212,13 @@ RULES:
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'settings' }))}
                 className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple hover:bg-[#b84eff] transition-colors min-h-[44px]"
               >
-                Link Game Folder
+                {canLinkFolder ? 'Link Game Folder' : 'Import Vault Data'}
               </button>
+              {!canLinkFolder && (
+                <p className="text-xs text-stitch-muted mt-2 max-w-xs mx-auto">
+                  On mobile: export your vault on desktop, then import it here.
+                </p>
+              )}
             </div>
           </div>
         );
@@ -10352,6 +10358,7 @@ RULES:
 
       // ── Empty state: folder sync never run, or run before this feature shipped ──
       if (!collEnhanced || !hasCosmetics) {
+        const canLinkFolder = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
         return (
           <div className="px-4 pb-20">
             <Header title="COSMETICS" />
@@ -10376,8 +10383,13 @@ RULES:
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'settings' }))}
                 className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple hover:bg-[#b84eff] transition-colors min-h-[44px]"
               >
-                Link Game Folder
+                {canLinkFolder ? 'Link Game Folder' : 'Import Vault Data'}
               </button>
+              {!canLinkFolder && (
+                <p className="text-xs text-stitch-muted mt-2 max-w-xs mx-auto">
+                  On mobile: export your vault on desktop, then import it here.
+                </p>
+              )}
             </div>
           </div>
         );
@@ -11033,7 +11045,7 @@ RULES:
                 <span className="text-white text-sm">Simulator</span>
               </button>
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'decks' }))}
+                onClick={() => { pendingScrollToCreators = true; window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'decks' })); }}
                 className="stitch-list-item p-3 min-h-[44px] flex flex-col items-center"
               >
                 <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">movie</span>
