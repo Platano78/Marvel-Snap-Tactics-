@@ -7198,11 +7198,11 @@ RULES:
     };
 
     // ==================== DECKS COMPONENT ====================
-    const Decks = ({ decks, setDecks, collection, settings, aiConfig, initialView, onInitialViewConsumed }) => {
+    const Decks = ({ decks, setDecks, collection, settings, aiConfig, initialView, onInitialViewConsumed, cardDataVersion }) => {
       // Seeded once from the App-level deep-link intent (e.g. "Forge a counter deck"); the local
       // state is independent of the prop after this initial read, so clearing initialView below
       // cannot reset an already-mounted view back to 'list'.
-      const [view, setView] = useState(initialView || 'list'); // list, create, edit, import, forge
+      const [view, setView] = useState(initialView || 'list'); // list, create, edit, import, forge, compare
       useEffect(() => { if (initialView) onInitialViewConsumed && onInitialViewConsumed(); }, []);
       const [editingDeck, setEditingDeck] = useState(null);
       const [deckName, setDeckName] = useState('');
@@ -7733,6 +7733,13 @@ RULES:
                 className="flex items-center justify-center min-h-[44px] w-14 shrink-0 rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-cosmic-purple-text hover:bg-[rgba(173,43,238,0.12)] hover:text-white transition-colors">
                 <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">auto_awesome</span>
               </button>
+              {decks.length >= 2 && (
+                <button onClick={() => setView('compare')}
+                  aria-label="Compare two decks"
+                  className="flex items-center justify-center min-h-[44px] w-14 shrink-0 rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-cosmic-purple-text hover:bg-[rgba(173,43,238,0.12)] hover:text-white transition-colors">
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">compare_arrows</span>
+                </button>
+              )}
             </div>
             {decks.length === 0 ? (
               /* No decks yet — art-forward teaser, not a barren panel */
@@ -8240,6 +8247,22 @@ RULES:
               </div>
             )}
           </div>
+        );
+      }
+
+      // Compare View — DeckComparison renders its own Header, so just prepend the back control
+      if (view === 'compare') {
+        return (
+          <>
+            <div className="px-4 pt-4">
+              <button onClick={() => setView('list')}
+                className="inline-flex items-center gap-1 min-h-[44px] px-1 text-cosmic-purple-text hover:text-white transition-colors mb-2">
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">arrow_back</span>
+                <span className="text-sm font-semibold">Back to Decks</span>
+              </button>
+            </div>
+            <DeckComparison decks={decks} cardDataVersion={cardDataVersion} />
+          </>
         );
       }
 
@@ -11216,13 +11239,6 @@ RULES:
               >
                 <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">person</span>
                 <span className="text-white text-sm">Profile</span>
-              </button>
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'compare' }))}
-                className="stitch-list-item p-3 min-h-[44px] flex flex-col items-center"
-              >
-                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">compare_arrows</span>
-                <span className="text-white text-sm">Compare</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'oracle' }))}
@@ -14221,7 +14237,7 @@ RULES:
         const tab = params.get('tab');
         const action = params.get('action');
 
-        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'compare', 'settings', 'oracle', 'history', 'profile', 'analytics', 'simulator', 'cosmetics', 'mastery'].includes(tab)) {
+        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'settings', 'oracle', 'history', 'profile', 'analytics', 'simulator', 'cosmetics', 'mastery'].includes(tab)) {
           setActiveTab(tab);
         }
 
@@ -14433,12 +14449,7 @@ RULES:
             )}
             {activeTab === 'decks' && (
               <ErrorBoundary>
-                <Decks decks={decks} setDecks={setDecks} collection={collection} settings={settings} aiConfig={aiConfig} initialView={deckInitialView} onInitialViewConsumed={() => setDeckInitialView(null)} />
-              </ErrorBoundary>
-            )}
-            {activeTab === 'compare' && (
-              <ErrorBoundary>
-                <DeckComparison decks={decks} cardDataVersion={cardDataVersion} />
+                <Decks decks={decks} setDecks={setDecks} collection={collection} settings={settings} aiConfig={aiConfig} initialView={deckInitialView} onInitialViewConsumed={() => setDeckInitialView(null)} cardDataVersion={cardDataVersion} />
               </ErrorBoundary>
             )}
             {activeTab === 'history' && (
