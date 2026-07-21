@@ -7,7 +7,7 @@ owner rulings (two AskUserQuestion rounds, all recorded here — do not re-litig
 **Standing law**: single `index.html` / CDN-only / no build; design canon binds; every slice =
 sonnet implement → adversarial verify → orchestrator gates/diff → commit by orchestrator only;
 **SW CACHE_NAME bump on every index.html-deploying commit** (currently `snapapoulous-stitch-v24` →
-next v25, increment per slice).
+next **v28** — currently v27 after S1(v25)/S2(v26)/S3(v27); increment per slice).
 
 ## Owner rulings (LOCKED)
 1. **Home**: default tab → `dashboard` (was `ai`); Dashboard added to bottom nav as "Home". No new
@@ -47,22 +47,22 @@ next v25, increment per slice).
   Configure AI Provider" card renders above the chat when `!isConfigured()` (index.html:6370-6378).
 
 ## Slices (sequential — one implementing agent per repo)
-- **S1 — Nav shell + Home**: primaryTabs → 5 (ruling 1); default `dashboard`; indicator math for 5
+- **S1 — Nav shell + Home** — SHIPPED `3cdcd82`: primaryTabs → 5 (ruling 1); default `dashboard`; indicator math for 5
   tabs (index.html ~4788/4801/4803). Verify demoted tabs (History/Database/Compare/etc.) stay
   reachable via the More-Features grid. Routes for database/compare STAY alive this slice (removed in
   S2/S3). Gate: nav renders 5, opens on Dashboard, indicator tracks, More reaches everything.
-- **S2 — Cards merge + Series 3 bar removal** (ruling 2): fold ability search into Collection; remove
+- **S2 — Cards merge + Series 3 bar removal** — SHIPPED `1fed28c` (pure removal — Collection already searched ability text; also added Database tile to More in S1 to avoid stranding). (ruling 2): fold ability search into Collection; remove
   `database` route from switch + whitelist + CardDatabase/DatabaseCardTile (if unused elsewhere) +
   the "Database" More/nav ref; delete the Series 3 bar. Gate: ability search works in Cards; no
   `database` refs remain; Series 3 bar gone; owned/all/pool/energy filters intact.
-- **S3 — Compare into Decks** (ruling 3): Compare mode inside Decks (pass cardDataVersion to Decks if
+- **S3 — Compare into Decks** — SHIPPED `2180e26` (added `cardDataVersion` to Decks; Compare = new `view` mode gated >=2 decks). (ruling 3): Compare mode inside Decks (pass cardDataVersion to Decks if
   needed); remove `compare` route + DeckComparison standalone wiring + nav ref. Gate: Compare mode
   renders inside Decks; no `compare` route refs remain.
 - **S4 — Stats homes** (ruling 4): move Dossier + Time Stone cards Analytics→Profile; move missions
   Analytics→Dashboard; strip mastery/cosmetics summary from Analytics. Preserve hook order (BUG-018)
   in every touched component. Gate: each stat appears in exactly one home; Analytics = perf+matchup
   only; no duplicate renders; empty states intact.
-- **S5 — Quick fixes bundle** (ruling 5): the 4 fixes. Gate: back affordance gone/replaced; Creators
+- **S5 — Quick fixes bundle** (ruling 5): the 4 fixes PLUS this stray-prose loose-end from S2: Collection's no-cards empty state (~index.html:7155) still says "browse the Card Database" — relabel to "browse Cards" (Cards IS the browser now). Gate: back affordance gone/replaced; Creators
   reaches creator content; mobile CTA relabeled + wired to vault import; headers unified.
 - **S6 — Oracle fold-in** (ruling 6): Advisor Ask/Meta modes; drop `oracle` route. Gate: Advisor Meta
   mode shows spotlight/tier; no `oracle` route refs; Advisor chat unaffected.
