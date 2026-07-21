@@ -234,10 +234,17 @@ Do NOT build a hollow counts-only tab (adds nothing over Profile) or a blind ID-
       **3b TRAP (recon R6): `deck` is `''` on essentially every quick-logged match** — the
       "MY deck × archetype" pivot will be mostly empty rows unless deck identity is solved
       first. 3b must confront this at spec time (pivot on something present, or add deck capture).
-- [ ] 3b Grid view (History or Analytics — decide at spec time by space): pivot MY deck ×
-      opponentArchetype → win rate + net cubes + n; minimum n=3 per cell to render a number
-      (below that show n only, no percentage — small-sample honesty); untagged matches excluded,
-      with a visible "N untagged" note.
+- [x] 3b view → `062324a`. **Owner ruled 2026-07-20: 1D breakdown, NOT a 2D grid** — quick-logged
+      matches have no deck, so a MY-deck × archetype grid would be near-empty. Shipped a "Matchup
+      Performance" section in Analytics (CardPerformanceView): per opponent archetype → win rate %
+      (gold, suppressed to "n<3" below 3 games — small-sample honesty) + net cubes (green/red) + n,
+      sorted by n desc; untagged excluded with a count note. Math mirrors the canonical
+      `getMatchStats` convention EXACTLY (cubes = unsigned magnitude, sign from result, no TIE).
+      Empty-state gate fixed to include `matches.length` so a manual-only logger reaches Analytics.
+      Both new hooks placed above the early-return guard (BUG-018 discipline). Three-track: sonnet
+      impl → live crawl (Playwright 8/8, EXACT math vs hand-computed distribution) → orchestrator
+      gates+diff+hook-order proof. sw v16→v17. **The 2D MY-deck × archetype grid remains a future
+      option if deck capture is ever added (see 3a trap note).**
 - Gates: fixture with known distribution → hand-computed cell values match; skip-path leaves
   quick-log latency unchanged; old records without the field never crash.
 
