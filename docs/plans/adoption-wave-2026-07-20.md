@@ -204,7 +204,17 @@ Data: ready (`snap_card_performance` = `{cards: {[name]: {netCubes}}, importedAt
       console). **Lesson reaffirmed: execution beats inspection — a valid-parsing, correct-looking
       diff still crashed at runtime; only the live crawl found it.** sw.js v14→v15.
 
-## Slice 2 — Cosmetics tab — UNBLOCKED 2026-07-21 (real CollectionState.json located)
+## Slice 2 — Cosmetics tab — SHIPPED 2026-07-21 → `7db6b8c`
+**Built** (two-parter, crew three-track): Part 1 extended `parseCollectionEnhanced` to persist
+`avatarCardDefIds` (234 unique) + `albumCompletion` (`[{name,owned,total}]`) into
+`snap_collection_enhanced`; Part 2 = `CosmeticsView` (Avatars gallery / Album bars / Titles +
+Card Backs count-only) + 3-point route registration. **Album completion uses owned-variant ∩
+`AlbumDef.AlbumVariants`, NOT `AcknowledgedVariants`** (that flag undercounts ownership in 32/80
+real albums). Ground truth reproduced by independent Python recon + Node harness (avatars 234/428,
+albums 80, 140/879 variants, 0 complete). Live crawl 39/39 @ 360/768. sw.js v19→v20. Titles/Card
+Backs stay honest count-only (opaque IDs, no name/art source). Historical unblock notes below.
+
+### (historical) UNBLOCKED 2026-07-21 (real CollectionState.json located)
 **The real file exists** at `/mnt/c/Users/Aldwin/AppData/LocalLow/Second Dinner/SNAP/Standalone/
 States/nvprod/CollectionState.json` (~2 MB, live). Inspected the actual cosmetic shapes under
 `ServerState`:
