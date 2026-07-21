@@ -63,9 +63,10 @@
  *                             hasHallOfArmor (Profile tab) requires variantCount>0 OR
  *                             totalBoosters>0.
  *
- * snap_profile_stats           {wins, losses, totalGames, winRate, snaps, snapId,
- *                             currencies: {credits, gold, tokens}, rankData: <same shape
- *                             as snap_rank>, skillRating, importedAt}. This is what
+ * snap_profile_stats           {wins, losses, ties, totalGames, winRate, snaps, concedes,
+ *                             opponentConcedes, snapId, currencies: {credits, gold, tokens},
+ *                             rankData: <same shape as snap_rank>, skillRating, importedAt}.
+ *                             This is what
  *                             Dashboard's "Lifetime Stats" and Analytics' "Season
  *                             Stats"/"Currencies" blocks read — independent of
  *                             snap_matches (local match tracking); Dashboard prefers
@@ -198,7 +199,8 @@ function seedSnapapoulousFixtures() {
   }));
 
   localStorage.setItem('snap_profile_stats', JSON.stringify({
-    wins: 7, losses: 3, totalGames: 10, winRate: 70, snaps: 15, snapId: 'Snapapoulous#1234',
+    wins: 7, losses: 3, ties: 0, totalGames: 10, winRate: 70, snaps: 4, concedes: 1, opponentConcedes: 2,
+    snapId: 'Snapapoulous#1234',
     currencies: { credits: 50000, gold: 3200, tokens: 875 },
     rankData: rank, skillRating: 1450, importedAt: iso(now)
   }));

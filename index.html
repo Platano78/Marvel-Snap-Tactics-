@@ -10379,6 +10379,13 @@ RULES:
         maxedCards: mastery.cards.filter(c => c.level >= (c.levelCap || 30)).length
       } : null;
 
+      // Denominator for the derived Career Dossier tiles below — "recorded outcomes"
+      // (wins + losses + ties), not "matches played." Guards div-by-zero with '—'.
+      const recordedOutcomes = profileStats
+        ? (profileStats.totalGames || ((profileStats.wins || 0) + (profileStats.losses || 0) + (profileStats.ties || 0)))
+        : 0;
+      const pctOfOutcomes = (n) => (recordedOutcomes > 0 ? `${Math.round(((n || 0) / recordedOutcomes) * 100)}%` : '—');
+
       return (
         <div className="px-4 pb-20">
           <Header title="ANALYTICS" />
@@ -10407,12 +10414,43 @@ RULES:
                   <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Snaps</div>
                   <div className="text-3xl font-bold text-white">{(profileStats.snaps || 0).toLocaleString()}</div>
                 </div>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Ties</div>
+                  <div className="text-3xl font-bold text-white tabular-nums">{(profileStats.ties || 0).toLocaleString()}</div>
+                </div>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Snap Rate</div>
+                  <div className="text-3xl font-bold text-white tabular-nums">{pctOfOutcomes(profileStats.snaps)}</div>
+                </div>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Intimidation Index</div>
+                  <div className="text-3xl font-bold text-mcu-gold tabular-nums">{pctOfOutcomes(profileStats.opponentConcedes)}</div>
+                </div>
+                <div className="rounded-2xl bg-stark-surface p-4">
+                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Retreat Rate</div>
+                  <div className="text-3xl font-bold text-white tabular-nums">{pctOfOutcomes(profileStats.concedes)}</div>
+                </div>
               </div>
               {profileStats.snapId && (
                 <p className="text-xs text-stitch-muted text-right mt-3">
                   {profileStats.snapId} • Imported {new Date(profileStats.importedAt || Date.now()).toLocaleDateString()}
                 </p>
               )}
+              <details className="mt-3 group">
+                <summary
+                  className="text-xs text-stitch-muted cursor-pointer select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-cosmic-purple rounded"
+                  aria-label="Show the exact formulas used for the derived Career Dossier stats"
+                >
+                  Methodology
+                </summary>
+                <ul className="mt-2 space-y-1 text-xs text-stitch-muted list-disc pl-4">
+                  <li>Win Rate = Wins ÷ (Wins + Losses)</li>
+                  <li>Snap Rate = Snaps ÷ Recorded Outcomes</li>
+                  <li>Intimidation Index = Opponent Concedes ÷ Recorded Outcomes (opponents who retreated)</li>
+                  <li>Retreat Rate = Your Concedes ÷ Recorded Outcomes</li>
+                  <li>Recorded Outcomes = Wins + Losses + Ties</li>
+                </ul>
+              </details>
             </div>
           )}
 
