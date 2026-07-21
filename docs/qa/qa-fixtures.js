@@ -83,7 +83,10 @@
  *                             when BOTH an amount (Amount|Quantity|Count) and a
  *                             currency (Currency|CurrencyType|Type) key are present.
  *
- * snap_mastery                  {cards: [{card, level, levelCap}], importedAt}.
+ * snap_mastery                  {cards: [{card, experience, level, levelCap}], importedAt}.
+ *                             `card` is a game defId (e.g. "FinFangFoom"), NOT the display
+ *                             name — Mastery Forge resolves it via CARD_DATA's defId->name
+ *                             map before building art URLs (getCardArtUrl slugs by name).
  *                             hasMastery requires cards.length > 0. avgLevel =
  *                             (sum(level)/count).toFixed(1); maxedCards = count where
  *                             level >= (levelCap || 30).
@@ -136,7 +139,9 @@
  *   - heroCard should be "Fin Fang Foom" (+45 netCubes, best among the 8 owned cards
  *     with performance data).
  *   - Card Performance totals: totalPositive=+112, totalNegative=-37, Net=+75.
- *   - Mastery summary: totalCards=8, avgLevel="18.8", maxedCards=3.
+ *   - Mastery summary: totalCards=6, avgLevel="13.3", maxedCards=1 (FinFangFoom only;
+ *     ZZZNotARealDefId is a deliberately-unresolvable defId to exercise the Mastery
+ *     Forge art-fallback tile).
  *   - momentum ribbon: gold node on the newest visible match (m9), since the current
  *     streak is WIN and >=3.
  *   - snap_snapshots (2 entries, Time Stone "Since Last Sync" card): deltas must equal
@@ -242,14 +247,12 @@ function seedSnapapoulousFixtures() {
 
   localStorage.setItem('snap_mastery', JSON.stringify({
     cards: [
-      { card:'Fin Fang Foom', level:30, levelCap:30 },
-      { card:'Abomination', level:25, levelCap:30 },
-      { card:'Cyclops', level:18, levelCap:30 },
-      { card:'Hawkeye', level:30, levelCap:30 },
-      { card:'Hulk', level:10, levelCap:30 },
-      { card:'Iron Man', level:5, levelCap:30 },
-      { card:'Medusa', level:30, levelCap:30 },
-      { card:'Misty Knight', level:2, levelCap:30 }
+      { card:'FinFangFoom', experience:14000, level:30, levelCap:30 },
+      { card:'Abomination', experience:9000, level:25, levelCap:30 },
+      { card:'InvisibleWoman', experience:190, level:11, levelCap:30 },
+      { card:'Cyclops', experience:1200, level:8, levelCap:30 },
+      { card:'Hulk', experience:600, level:5, levelCap:30 },
+      { card:'ZZZNotARealDefId', experience:50, level:1, levelCap:30 }
     ],
     importedAt: iso(now)
   }));

@@ -10822,28 +10822,177 @@ RULES:
                   <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Maxed</div>
                 </div>
               </div>
-              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Top Cards</div>
-              <div className="grid grid-cols-3 gap-2">
-                {mastery.cards.slice(0, 10).map((c) => {
-                  const isMaxed = c.level >= (c.levelCap || 30);
-                  return (
-                    <div key={c.card} className={`relative w-full aspect-[3/4] rounded-lg overflow-hidden border shrink-0${isMaxed ? ' holo-foil' : ''}`} style={{ borderColor: 'rgba(173,43,238,0.25)' }}>
-                      <img src={getCardArtUrl({ name: c.card })} alt="" loading="lazy" className="w-full h-full object-cover"
-                           onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'mastery' }))}
+                className="w-full min-h-[44px] rounded-full bg-cosmic-purple hover:bg-[#b84eff] transition-colors text-white text-sm font-semibold"
+              >
+                Open Mastery Forge →
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // Mastery Forge Component — full roster mastery progress from parseMastery (snap_mastery)
+    const MasteryForgeView = ({ cardDataVersion }) => {
+      // ── Hooks (ALL hooks before any early return — BUG-018 / React #310) ──
+      const [mastery, setMastery] = useState(null);
+      const [sortMode, setSortMode] = useState('level'); // 'level' | 'xp'
+      const [showAll, setShowAll] = useState(false);
+
+      useEffect(() => {
+        const loadData = () => setMastery(loadFromStorage('snap_mastery', null));
+        loadData();
+        window.addEventListener('snap-data-updated', loadData);
+        return () => window.removeEventListener('snap-data-updated', loadData);
+      }, []);
+
+      // defId -> display name lookup for art resolution; rebuilds once real
+      // card-data.json replaces the ~25-card fallback (BUG-020 lesson).
+      const defIdNameMap = useMemo(() => {
+        const m = new Map();
+        CARD_DATA.forEach(c => { if (c.defId) m.set(c.defId, c.name); });
+        return m;
+      }, [cardDataVersion]);
+
+      const masteryCards = mastery?.cards || [];
+
+      const resolvedCards = useMemo(() => (
+        masteryCards.map(c => ({ ...c, name: defIdNameMap.get(c.card) || c.card }))
+      ), [masteryCards, defIdNameMap]);
+
+      const sortedCards = useMemo(() => (
+        [...resolvedCards].sort((a, b) => (
+          sortMode === 'xp' ? (b.experience || 0) - (a.experience || 0) : (b.level || 0) - (a.level || 0)
+        ))
+      ), [resolvedCards, sortMode]);
+
+      const hasMastery = masteryCards.length > 0;
+
+      // ── Empty state: folder sync never run, or run before this feature shipped ──
+      if (!mastery || !hasMastery) {
+        return (
+          <div className="px-4 pb-20">
+            <Header title="MASTERY FORGE" />
+            <div className="flex flex-col items-center gap-4 px-6 py-10 text-center mt-8">
+              <div className="flex -space-x-4" aria-hidden="true">
+                {['Iron Man', 'Hulk', 'Wolverine'].map((name, i) => (
+                  <div key={name}
+                       className="relative w-16 aspect-[3/4] rounded-lg overflow-hidden border-2 border-gray-600 bg-[#2b1933] shrink-0 grayscale opacity-70"
+                       style={{ transform: `rotate(${(i - 1) * 8}deg)` }}>
+                    <img src={getCardArtUrl({ name })} alt="" loading="lazy" className="w-full h-full object-cover"
+                         onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                  </div>
+                ))}
+              </div>
+              <div>
+                <p className="text-white font-bold text-lg mb-1">Unlock Your Mastery</p>
+                <p className="text-[#b792c9] text-sm max-w-xs mx-auto">
+                  Sync your game folder to unlock mastery — per-card level progress and XP across your roster.
+                </p>
+              </div>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'settings' }))}
+                className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple hover:bg-[#b84eff] transition-colors min-h-[44px]"
+              >
+                Link Game Folder
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      const totalCards = mastery.totalCards ?? masteryCards.length;
+      const avgLevel = mastery.avgLevel ?? (masteryCards.length > 0 ? (masteryCards.reduce((sum, c) => sum + (c.level || 0), 0) / masteryCards.length).toFixed(1) : '0');
+      const maxedCards = mastery.maxedCards ?? masteryCards.filter(c => c.level >= (c.levelCap || 30)).length;
+      const visibleCards = showAll ? sortedCards : sortedCards.slice(0, 60);
+
+      return (
+        <div className="px-4 pb-20">
+          <Header title="MASTERY FORGE" />
+
+          {/* Summary */}
+          <div className="stitch-card p-5 mb-4">
+            <div className="grid grid-cols-3 gap-3">
+              <div className="rounded-2xl bg-stark-surface p-3 text-center">
+                <div className="text-2xl font-bold text-white tabular-nums">{totalCards}</div>
+                <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Cards</div>
+              </div>
+              <div className="rounded-2xl bg-stark-surface p-3 text-center">
+                <div className="text-2xl font-bold text-mcu-gold tabular-nums">{avgLevel}</div>
+                <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Avg Level</div>
+              </div>
+              <div className="rounded-2xl bg-stark-surface p-3 text-center">
+                <div className="text-2xl font-bold text-stitch-green tabular-nums">{maxedCards}</div>
+                <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Maxed</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sort toggle */}
+          <div className="flex items-center gap-2 mb-4" role="group" aria-label="Sort roster by">
+            <button
+              onClick={() => setSortMode('level')}
+              aria-pressed={sortMode === 'level'}
+              className={`min-h-[44px] px-4 rounded-full text-xs font-bold transition-colors ${sortMode === 'level' ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}
+            >
+              By Level
+            </button>
+            <button
+              onClick={() => setSortMode('xp')}
+              aria-pressed={sortMode === 'xp'}
+              className={`min-h-[44px] px-4 rounded-full text-xs font-bold transition-colors ${sortMode === 'xp' ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}
+            >
+              By XP
+            </button>
+          </div>
+
+          {/* Roster */}
+          <div className="stitch-card p-5 mb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {visibleCards.map((c) => {
+                const cap = c.levelCap || 30;
+                const isMaxed = c.level >= cap;
+                const pct = Math.min(100, ((c.level || 0) / cap) * 100);
+                return (
+                  <div key={c.card} className="rounded-xl bg-stark-surface p-2.5">
+                    <div className={`relative w-full aspect-[3/4] rounded-lg overflow-hidden border mb-2${isMaxed ? ' holo-foil' : ''}`} style={{ borderColor: 'rgba(173,43,238,0.25)' }}>
+                      <div className="absolute inset-0 card-art card-art-fallback" />
+                      <img
+                        src={getCardArtUrl({ name: c.name })}
+                        alt={c.name}
+                        loading="lazy"
+                        className="absolute inset-0 w-full h-full object-cover"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
                       {isMaxed && (
                         <div className="absolute bottom-0 left-0 z-10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black" style={{ background: '#ffd700' }}>
                           Max
                         </div>
                       )}
-                      <div className="absolute bottom-0 right-0 z-10 px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ background: 'rgba(173,43,238,0.85)' }}>
-                        {c.level}
-                      </div>
                     </div>
-                  );
-                })}
-              </div>
+                    <p className="text-sm text-white font-medium truncate mb-1">{c.name}</p>
+                    <div className="flex items-center justify-between gap-2 mb-1 text-xs tabular-nums">
+                      <span className={isMaxed ? 'text-mcu-gold font-bold' : 'text-stitch-muted'}>Lvl {c.level} / {cap}</span>
+                      <span className="text-stitch-muted">{(c.experience || 0).toLocaleString()} XP</span>
+                    </div>
+                    <div className="stitch-progress">
+                      <div className="stitch-progress-fill" style={{ width: `${pct}%`, background: isMaxed ? '#ffd700' : 'var(--cosmic-purple)' }} />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
+            {sortedCards.length > 60 && (
+              <button
+                onClick={() => setShowAll(a => !a)}
+                className="mt-3 w-full min-h-[44px] rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-cosmic-purple-text text-sm font-semibold"
+              >
+                {showAll ? 'Show less' : `Show all (${sortedCards.length})`}
+              </button>
+            )}
+          </div>
         </div>
       );
     };
@@ -11588,6 +11737,13 @@ RULES:
               >
                 <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">palette</span>
                 <span className="text-white text-sm">Cosmetics</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'mastery' }))}
+                className="stitch-list-item p-3 min-h-[44px] flex flex-col items-center"
+              >
+                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">workspace_premium</span>
+                <span className="text-white text-sm">Mastery Forge</span>
               </button>
             </div>
           </div>
@@ -14537,7 +14693,7 @@ RULES:
         const tab = params.get('tab');
         const action = params.get('action');
 
-        if (tab && ['dashboard', 'ai', 'collection', 'database', 'decks', 'compare', 'settings', 'oracle', 'history', 'profile', 'analytics', 'simulator', 'cosmetics'].includes(tab)) {
+        if (tab && ['dashboard', 'ai', 'collection', 'database', 'decks', 'compare', 'settings', 'oracle', 'history', 'profile', 'analytics', 'simulator', 'cosmetics', 'mastery'].includes(tab)) {
           setActiveTab(tab);
         }
 
@@ -14775,6 +14931,11 @@ RULES:
             {activeTab === 'cosmetics' && (
               <ErrorBoundary>
                 <CosmeticsView cardDataVersion={cardDataVersion} />
+              </ErrorBoundary>
+            )}
+            {activeTab === 'mastery' && (
+              <ErrorBoundary>
+                <MasteryForgeView cardDataVersion={cardDataVersion} />
               </ErrorBoundary>
             )}
             {activeTab === 'simulator' && (
