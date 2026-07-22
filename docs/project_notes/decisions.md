@@ -236,8 +236,9 @@ Track architectural and technology decisions with context and rationale.
    well (wallet/shop/vault/tickets, missions, battle pass, reset timers as HQs); it surfaces the private
    longitudinal data the game hides. New features are measured against this before build.
 2. **Remove the display surfaces** for Currencies (BOTH the Dashboard Wallet Widget and the Profile
-   Currencies card), Missions (Dashboard), and Battle Pass (Dashboard), plus the Dashboard-local state,
-   loaders, and helpers those widgets orphaned.
+   Currencies card), Missions (Dashboard), Battle Pass (Dashboard), and — added same session by owner
+   follow-up — the Dashboard **Reset Timers & Collection Score** card, plus the Dashboard-local state,
+   loaders, and helpers those widgets orphaned (`getTimeUntil`, `timeModel`, `collectionEnhanced`).
 3. **Keep the parse/sync/export layer intact** — `GameDataParser` (mission/battlepass/wallet parsing),
    the folder-sync `localStorage.setItem` writes, and `VAULT_SYNCED_KEYS` are UNCHANGED. The keys go
    write-only again (the same posture Economy HQ's data took), so the removal is reversible and
@@ -251,9 +252,11 @@ Track architectural and technology decisions with context and rationale.
   strictly — wallet is game-visible, and a lone glance still duplicates the game.
 - Rip out the parsers / sync writes for the removed surfaces → rejected; keep them write-only for
   reversibility and export completeness (same reasoning as ADR-006's "don't tear out the plumbing").
-- Also pull the remaining game-adjacent glanceables (Reset Timers, Collection Score) → deferred; owner
-  named only Currencies/Missions/Battle Pass. Not expanding scope. (Pity Counters/Spotlight, imported
-  Lifetime Stats, Analytics, History, Dossier, Time Stone are moat surfaces — explicitly retained.)
+- Leave the remaining game-adjacent Dashboard glanceables (Reset Timers, Collection Score) → **rejected
+  on owner follow-up ("PULL THEM TOO") — the Reset Timers & Collection Score card was also removed.**
+  (Pity Counters/Spotlight, imported Lifetime Stats, Analytics, History, Dossier, Time Stone are moat
+  surfaces — explicitly retained. Profile's own Collection Score & Cosmetics card stays: it bundles
+  cosmetic-completion aggregation the game doesn't surface.)
 
 **Consequences:**
 - (+) The app honors its own thesis; less surface area to track the Cosmic Purple canon (ADR-005).
