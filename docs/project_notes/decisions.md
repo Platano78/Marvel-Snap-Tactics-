@@ -176,7 +176,7 @@ Track architectural and technology decisions with context and rationale.
 
 ### ADR-006: Feature-Restore Ruling — Analytics, Missions, Mastery, Battle Pass, Hall of Armor (2026-07-19)
 
-**Status**: Accepted
+**Status**: Accepted — **Missions & Battle Pass restores partially superseded by ADR-007 (2026-07-21)**; Analytics, Mastery, and Hall of Armor stand.
 
 **Context:**
 - The EOS audit (`docs/plans/eos-audit-2026-07-19.md`) flagged several components as dead code because
@@ -208,6 +208,59 @@ Track architectural and technology decisions with context and rationale.
 - (-) Analytics/Missions/Mastery/Battle Pass/Hall of Armor each add surface area that must track the
   Cosmic Purple canon (ADR-005) going forward
 - (-) Deck Simulator rebuild is explicitly deferred, so its git-history spec must survive until that arc starts
+
+---
+
+### ADR-007: Companion Rule — "Don't Duplicate In-Game Data"; remove Currencies, Missions, Battle Pass surfaces (2026-07-21)
+
+**Status**: Accepted
+
+**Context:**
+- A long-standing product principle had lived only in conversation transcripts, never as a durable
+  decision. Canonical statement, from the March 1, 2026 plan *"Trim Filler Features + AI Advisor as
+  Home Tab"*: *"The app has accumulated features that duplicate in-game data (conquest tickets, daily
+  shop, vault, wallet breakdown) without adding companion-app value."* Its positive inversion (Jul 19,
+  2026): Marvel Snap *"shows the player a sliver"* of its own ServerState — the app's moat is the
+  private, longitudinal data the game HIDES (per-card cube performance, snap/retreat rates, sync-to-sync
+  deltas, matchup history), NOT a re-render of screens the game already shows well.
+- This rule killed "Economy HQ" (shop/vault/wallet HQ) on March 1 and has been re-affirmed since
+  (see ADR-006: "Economy HQ STAYS DEAD").
+- Drift check (2026-07-21, post IA-refactor): three game-visible surfaces were live in the app.
+  **Currencies/wallet breakdown** — literally on the March-1 cut list — had crept back into TWO homes:
+  the Dashboard Wallet Widget AND (added by the S4 IA-refactor move) the Profile Currencies card.
+  **Missions** and **Battle Pass** — restored as UI in ADR-006 — are prominently shown on the game's own
+  screens. Owner ruling: *"I won't go to that in app, I will visit it on the game screens."*
+
+**Decision:**
+1. **Adopt the rule as durable law:** the companion app does NOT rebuild surfaces the game already shows
+   well (wallet/shop/vault/tickets, missions, battle pass, reset timers as HQs); it surfaces the private
+   longitudinal data the game hides. New features are measured against this before build.
+2. **Remove the display surfaces** for Currencies (BOTH the Dashboard Wallet Widget and the Profile
+   Currencies card), Missions (Dashboard), and Battle Pass (Dashboard), plus the Dashboard-local state,
+   loaders, and helpers those widgets orphaned.
+3. **Keep the parse/sync/export layer intact** — `GameDataParser` (mission/battlepass/wallet parsing),
+   the folder-sync `localStorage.setItem` writes, and `VAULT_SYNCED_KEYS` are UNCHANGED. The keys go
+   write-only again (the same posture Economy HQ's data took), so the removal is reversible and
+   full-vault export/import stays complete.
+4. **Partially supersedes ADR-006:** its Missions and Battle Pass restores are reversed. Its Analytics,
+   Mastery, and Hall of Armor restores STAND — those are the moat (data the game hides) or aggregations
+   the game doesn't offer, not duplicates.
+
+**Alternatives Considered:**
+- De-duplicate Currencies to a single home (keep the Dashboard glance) → rejected; owner applied the rule
+  strictly — wallet is game-visible, and a lone glance still duplicates the game.
+- Rip out the parsers / sync writes for the removed surfaces → rejected; keep them write-only for
+  reversibility and export completeness (same reasoning as ADR-006's "don't tear out the plumbing").
+- Also pull the remaining game-adjacent glanceables (Reset Timers, Collection Score) → deferred; owner
+  named only Currencies/Missions/Battle Pass. Not expanding scope. (Pity Counters/Spotlight, imported
+  Lifetime Stats, Analytics, History, Dossier, Time Stone are moat surfaces — explicitly retained.)
+
+**Consequences:**
+- (+) The app honors its own thesis; less surface area to track the Cosmic Purple canon (ADR-005).
+- (+) The rule is now a decision, not folklore — future sessions won't silently re-add wallet-type
+  features (the exact drift this ADR corrects).
+- (−) Two of ADR-006's five restores are undone ~2 days later (churn); mitigated by leaving the data
+  pipeline untouched, so it's a display-layer flip, not lost work.
 
 ---
 
