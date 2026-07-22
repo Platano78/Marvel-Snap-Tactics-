@@ -4776,7 +4776,7 @@ RULES:
 
 
     // Phase 1: Directional page transition wrapper
-    const TAB_INDEX = {dashboard:0, collection:1, decks:2, ai:3, settings:4, history:5, analytics:6, cosmetics:7, profile:9, simulator:10};
+    const TAB_INDEX = {dashboard:0, collection:1, decks:2, ai:3, settings:4, history:5, analytics:6, profile:9, simulator:10};
     const PageTransition = ({ activeTab, children }) => {
       const prevTab = useRef(activeTab);
       const [direction, setDirection] = useState('slide-left');
@@ -6423,7 +6423,7 @@ RULES:
         return () => window.removeEventListener('snap-data-updated', load);
       }, []);
 
-      // defId -> display name lookup (mirrors MasteryForgeView/CosmeticsView resolution)
+      // defId -> display name lookup (mirrors MasteryForgeView resolution)
       const defIdNameMap = useMemo(() => {
         const m = new Map();
         CARD_DATA.forEach(c => { if (c.defId) m.set(c.defId, c.name); });
@@ -10304,187 +10304,6 @@ RULES:
       );
     };
 
-    // Cosmetics Component — avatars, albums, titles, card backs from parseCollectionEnhanced
-    const CosmeticsView = ({ cardDataVersion }) => {
-      // ── Hooks (ALL hooks before any early return — BUG-018 / React #310) ──
-      const [collEnhanced, setCollEnhanced] = useState(null);
-      const [showAllAvatars, setShowAllAvatars] = useState(false);
-
-      useEffect(() => {
-        const loadData = () => setCollEnhanced(loadFromStorage('snap_collection_enhanced', null));
-        loadData();
-        window.addEventListener('snap-data-updated', loadData);
-        return () => window.removeEventListener('snap-data-updated', loadData);
-      }, []);
-
-      // defId -> display name lookup for avatar art resolution; rebuilds once real
-      // card-data.json replaces the ~25-card fallback (BUG-020 lesson).
-      const defIdNameMap = useMemo(() => {
-        const m = new Map();
-        CARD_DATA.forEach(c => { if (c.defId) m.set(c.defId, c.name); });
-        return m;
-      }, [cardDataVersion]);
-
-      const avatarCardDefIds = collEnhanced?.avatarCardDefIds || [];
-      const albumCompletion = collEnhanced?.albumCompletion || [];
-
-      const avatarList = useMemo(() => (
-        avatarCardDefIds.map(defId => ({ defId, name: defIdNameMap.get(defId) || defId }))
-      ), [avatarCardDefIds, defIdNameMap]);
-
-      const sortedAlbums = useMemo(() => (
-        [...albumCompletion].sort((a, b) => {
-          const ratioA = a.total > 0 ? a.owned / a.total : 0;
-          const ratioB = b.total > 0 ? b.owned / b.total : 0;
-          return ratioB - ratioA || b.owned - a.owned;
-        })
-      ), [albumCompletion]);
-
-      const hasCosmetics = avatarCardDefIds.length > 0 || albumCompletion.length > 0;
-
-      // ── Empty state: folder sync never run, or run before this feature shipped ──
-      if (!collEnhanced || !hasCosmetics) {
-        const canLinkFolder = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
-        return (
-          <div className="px-4 pb-20">
-            <Header title="COSMETICS" />
-            <div className="flex flex-col items-center gap-4 px-6 py-10 text-center mt-8">
-              <div className="flex -space-x-4" aria-hidden="true">
-                {['Iron Man', 'Hulk', 'Wolverine'].map((name, i) => (
-                  <div key={name}
-                       className="relative w-16 aspect-[3/4] rounded-lg overflow-hidden border-2 border-gray-600 bg-[#2b1933] shrink-0 grayscale opacity-70"
-                       style={{ transform: `rotate(${(i - 1) * 8}deg)` }}>
-                    <img src={getCardArtUrl({ name })} alt="" loading="lazy" className="w-full h-full object-cover"
-                         onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                  </div>
-                ))}
-              </div>
-              <div>
-                <p className="text-white font-bold text-lg mb-1">Unlock Your Cosmetics</p>
-                <p className="text-[#b792c9] text-sm max-w-xs mx-auto">
-                  Sync your game folder to unlock cosmetics — avatars, album completion, titles, and card backs.
-                </p>
-              </div>
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'settings' }))}
-                className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple hover:bg-[#b84eff] transition-colors min-h-[44px]"
-              >
-                {canLinkFolder ? 'Link Game Folder' : 'Import Vault Data'}
-              </button>
-              {!canLinkFolder && (
-                <p className="text-xs text-stitch-muted mt-2 max-w-xs mx-auto">
-                  On mobile: export your vault on desktop, then import it here.
-                </p>
-              )}
-            </div>
-          </div>
-        );
-      }
-
-      const cosmetics = collEnhanced.cosmetics || {};
-      const completeAlbumCount = sortedAlbums.filter(a => a.total > 0 && a.owned === a.total).length;
-      const grandOwned = sortedAlbums.reduce((sum, a) => sum + a.owned, 0);
-      const grandTotal = sortedAlbums.reduce((sum, a) => sum + a.total, 0);
-      const visibleAvatars = showAllAvatars ? avatarList : avatarList.slice(0, 60);
-
-      return (
-        <div className="px-4 pb-20">
-          <Header title="COSMETICS" />
-
-          {/* Avatars */}
-          <div className="stitch-card p-5 mb-4">
-            <div className="stitch-section-header">
-              <span className="material-symbols-outlined" aria-hidden="true">face</span>
-              Avatars
-            </div>
-            <p className="text-xs text-stitch-muted mb-3 tabular-nums">
-              {avatarList.length} unique cards · {cosmetics.avatars || 0} total avatars owned
-            </p>
-            <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
-              {visibleAvatars.map(({ defId, name }) => (
-                <div key={defId} className="relative w-full aspect-[3/4] rounded-lg overflow-hidden border border-[rgba(173,43,238,0.25)]">
-                  <div className="absolute inset-0 card-art card-art-fallback" />
-                  <img
-                    src={getCardArtUrl({ name })}
-                    alt={name}
-                    loading="lazy"
-                    className="absolute inset-0 w-full h-full object-cover"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                  />
-                </div>
-              ))}
-            </div>
-            {avatarList.length > 60 && (
-              <button
-                onClick={() => setShowAllAvatars(a => !a)}
-                className="mt-3 w-full min-h-[44px] rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-cosmic-purple-text text-sm font-semibold"
-              >
-                {showAllAvatars ? 'Show less' : `Show all (${avatarList.length})`}
-              </button>
-            )}
-            <p className="text-xs text-stitch-muted mt-3">
-              Base card art shown — variant avatar frames aren't fetchable from this source.
-            </p>
-          </div>
-
-          {/* Albums */}
-          <div className="stitch-card p-5 mb-4">
-            <div className="stitch-section-header">
-              <span className="material-symbols-outlined" aria-hidden="true">collections_bookmark</span>
-              Albums
-            </div>
-            <p className="text-xs text-stitch-muted mb-3 tabular-nums">
-              {completeAlbumCount} / {sortedAlbums.length} complete · {grandOwned} / {grandTotal} variants owned
-            </p>
-            <div className="space-y-2.5">
-              {sortedAlbums.map((album) => {
-                const isComplete = album.total > 0 && album.owned === album.total;
-                const pct = album.total > 0 ? Math.min(100, (album.owned / album.total) * 100) : 0;
-                return (
-                  <div key={album.name} className="rounded-xl bg-stark-surface p-2.5">
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <span className="text-sm text-white truncate flex items-center gap-1.5">
-                        {isComplete && (
-                          <span className="material-symbols-outlined text-mcu-gold shrink-0" style={{ fontSize: '16px' }} aria-hidden="true">check_circle</span>
-                        )}
-                        {album.name}
-                      </span>
-                      <span className={`text-xs font-bold shrink-0 tabular-nums ${isComplete ? 'text-mcu-gold' : 'text-white'}`}>
-                        {album.owned} / {album.total}
-                      </span>
-                    </div>
-                    <div className="stitch-progress">
-                      <div className="stitch-progress-fill" style={{ width: `${pct}%`, background: isComplete ? '#ffd700' : 'var(--cosmic-purple)' }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Titles */}
-          <div className="stitch-card p-5 mb-4">
-            <div className="stitch-section-header">
-              <span className="material-symbols-outlined" aria-hidden="true">badge</span>
-              Titles
-            </div>
-            <div className="text-3xl font-display font-bold text-white tabular-nums">{cosmetics.titles || 0}</div>
-            <p className="text-xs text-stitch-muted mt-1">Title names not exported by the game files.</p>
-          </div>
-
-          {/* Card Backs */}
-          <div className="stitch-card p-5 mb-4">
-            <div className="stitch-section-header">
-              <span className="material-symbols-outlined" aria-hidden="true">style</span>
-              Card Backs
-            </div>
-            <div className="text-3xl font-display font-bold text-white tabular-nums">{cosmetics.cardBacks || 0}</div>
-            <p className="text-xs text-stitch-muted mt-1">Card-back art not available from this source.</p>
-          </div>
-        </div>
-      );
-    };
-
     // Settings Component
     const StatusBadge = ({ status }) => {
       if (!status) return null;
@@ -11029,13 +10848,6 @@ RULES:
               >
                 <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">movie</span>
                 <span className="text-white text-sm">Creators</span>
-              </button>
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'cosmetics' }))}
-                className="stitch-list-item p-3 min-h-[44px] flex flex-col items-center"
-              >
-                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">palette</span>
-                <span className="text-white text-sm">Cosmetics</span>
               </button>
             </div>
           </div>
@@ -11833,26 +11645,6 @@ RULES:
         return list;
       }, [ownedCount, totalGames, winRate, netCubes]);
 
-      // Hall of Armor: defId -> display name lookup for variant art rendering
-      const armorDefIdMap = useMemo(() => {
-        const m = new Map();
-        uniqueCards.forEach(c => {
-          if (c.defId) m.set(c.defId, c.name);
-          m.set(c.name, c.name);
-        });
-        return m;
-      }, []);
-
-      const hallOfArmorCards = useMemo(() => {
-        if (!collEnhanced?.cards) return [];
-        return [...collEnhanced.cards]
-          .filter(c => (c.variants || []).length > 0)
-          .sort((a, b) => (b.variants?.length || 0) - (a.variants?.length || 0))
-          .slice(0, 6);
-      }, [collEnhanced]);
-
-      const hasHallOfArmor = !!collEnhanced && ((collEnhanced.variantCount || 0) > 0 || (collEnhanced.totalBoosters || 0) > 0);
-
       // Career Dossier denominators (moved from Analytics). recordedOutcomes = wins+losses+ties.
       const recordedOutcomes = importedStats
         ? (importedStats.totalGames || ((importedStats.wins || 0) + (importedStats.losses || 0) + (importedStats.ties || 0)))
@@ -12064,76 +11856,13 @@ RULES:
             </div>
           )}
 
-          {/* Collection Score & Cosmetics */}
+          {/* Collection Score */}
           {collEnhanced?.collectionScore > 0 && (
             <div className="stitch-card p-4 mb-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="stitch-label">Collection Score</span>
                 <span className="text-xl font-display font-bold text-mcu-gold">{collEnhanced.collectionScore.toLocaleString()}</span>
               </div>
-              {collEnhanced.cosmetics && (
-                <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                  <div>
-                    <div className="text-white font-bold">{collEnhanced.cosmetics.avatars}</div>
-                    <div className="text-stitch-muted">Avatars</div>
-                  </div>
-                  <div>
-                    <div className="text-white font-bold">{collEnhanced.cosmetics.titles}</div>
-                    <div className="text-stitch-muted">Titles</div>
-                  </div>
-                  <div>
-                    <div className="text-white font-bold">{collEnhanced.cosmetics.cardBacks}</div>
-                    <div className="text-stitch-muted">Backs</div>
-                  </div>
-                  <div>
-                    <div className="text-white font-bold">{collEnhanced.cosmetics.albums}</div>
-                    <div className="text-stitch-muted">Albums</div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Hall of Armor: variant showcase */}
-          {hasHallOfArmor && (
-            <div className="stitch-card p-5 mb-4">
-              <div className="stitch-section-header">
-                <span className="material-symbols-outlined" aria-hidden="true">shield</span>
-                Hall of Armor
-              </div>
-              <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="rounded-2xl bg-stark-surface p-3 text-center">
-                  <div className="text-2xl font-bold text-white">{collEnhanced.variantCount || 0}</div>
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Variants</div>
-                </div>
-                <div className="rounded-2xl bg-stark-surface p-3 text-center">
-                  <div className="text-2xl font-bold text-mcu-gold">{collEnhanced.godSplitCount || 0}</div>
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">God Splits</div>
-                </div>
-                <div className="rounded-2xl bg-stark-surface p-3 text-center">
-                  <div className="text-2xl font-bold text-white">{collEnhanced.totalBoosters || 0}</div>
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1">Boosters</div>
-                </div>
-              </div>
-              {hallOfArmorCards.length > 0 && (
-                <>
-                  <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Top Variants</div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {hallOfArmorCards.map(c => {
-                      const displayName = resolveCardDefId(c.cardDefId, armorDefIdMap);
-                      return (
-                        <div key={c.cardDefId} className="holo-foil relative w-full aspect-[3/4] rounded-lg overflow-hidden border shrink-0" style={{ borderColor: 'rgba(173,43,238,0.25)' }}>
-                          <img src={getCardArtUrl({ name: displayName })} alt="" loading="lazy" className="w-full h-full object-cover"
-                               onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                          <div className="absolute bottom-0 right-0 z-10 px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ background: 'rgba(173,43,238,0.85)' }}>
-                            {c.variants.length}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
             </div>
           )}
 
@@ -14146,7 +13875,7 @@ RULES:
         const tab = params.get('tab');
         const action = params.get('action');
 
-        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'settings', 'history', 'profile', 'analytics', 'simulator', 'cosmetics'].includes(tab)) {
+        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'settings', 'history', 'profile', 'analytics', 'simulator'].includes(tab)) {
           setActiveTab(tab);
         }
 
@@ -14364,11 +14093,6 @@ RULES:
             {activeTab === 'analytics' && (
               <ErrorBoundary>
                 <CardPerformanceView />
-              </ErrorBoundary>
-            )}
-            {activeTab === 'cosmetics' && (
-              <ErrorBoundary>
-                <CosmeticsView cardDataVersion={cardDataVersion} />
               </ErrorBoundary>
             )}
             {activeTab === 'simulator' && (
