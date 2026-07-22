@@ -4772,7 +4772,7 @@ RULES:
 
 
     // Phase 1: Directional page transition wrapper
-    const TAB_INDEX = {ai:0, collection:1, database:2, decks:3, compare:4, history:5, settings:6, dashboard:7, profile:9, analytics:10, simulator:11};
+    const TAB_INDEX = {dashboard:0, collection:1, decks:2, ai:3, settings:4, history:5, analytics:6, cosmetics:7, mastery:8, profile:9, simulator:10};
     const PageTransition = ({ activeTab, children }) => {
       const prevTab = useRef(activeTab);
       const [direction, setDirection] = useState('slide-left');
@@ -11254,9 +11254,9 @@ RULES:
             )}
           </div>
 
-          {/* Card Database */}
+          {/* Card Data */}
           <div className="stitch-card p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Card Database</h3>
+            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Card Data</h3>
             <p className="text-stitch-muted text-sm mb-3">Fetch latest card data from MarvelSnapZone. No API key required.</p>
             <button onClick={refreshCardData} disabled={isRefreshingCards}
               className="w-full min-h-[44px] bg-series-3 text-white py-2 rounded-full hover:opacity-80 disabled:opacity-50">
