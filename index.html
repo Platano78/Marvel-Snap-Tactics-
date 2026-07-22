@@ -7830,6 +7830,21 @@ RULES:
                 </button>
               )}
             </div>
+            {/* Creators — promoted to the forefront: a prominent entry to the curated section below */}
+            {!creatorsError && creators.length > 0 && (
+              <button
+                onClick={() => { const el = document.getElementById('creator-decks-section'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+                className="w-full mb-4 flex items-center gap-3 rounded-2xl p-3 min-h-[44px] text-left bg-[rgba(173,43,238,0.10)] border border-[rgba(173,43,238,0.22)] hover:bg-[rgba(173,43,238,0.16)] transition-colors"
+                aria-label="Jump to curated decks from creators"
+              >
+                <span className="material-symbols-outlined text-cosmic-purple-text" aria-hidden="true">movie</span>
+                <span className="flex-1 min-w-0">
+                  <span className="block text-sm font-bold text-white">Decks from Creators</span>
+                  <span className="block text-xs text-stitch-muted truncate">Curated lists from {creators.length} top creator{creators.length === 1 ? '' : 's'}</span>
+                </span>
+                <span className="material-symbols-outlined text-cosmic-purple-text" aria-hidden="true">chevron_right</span>
+              </button>
+            )}
             {decks.length === 0 ? (
               /* No decks yet — art-forward teaser, not a barren panel */
               <div className="flex flex-col items-center gap-4 px-6 py-10 text-center">
