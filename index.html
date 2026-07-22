@@ -1566,6 +1566,13 @@
       border:2px solid var(--fr-ink);border-radius:999px;padding:2px 9px;background:#fff}
     .fr-chip.s{background:var(--fr-gold)} .fr-chip.a{background:#cfe6ff}
 
+    /* Home-specific helpers — quick-match cube buttons */
+    .fr-btn--red{background:var(--fr-red)}
+    .fr-cube{font-family:var(--fr-font-hero);font-weight:400;font-size:20px;letter-spacing:.02em;color:#fff;border:3px solid var(--fr-ink);border-radius:6px;box-shadow:3px 3px 0 var(--fr-line);padding:8px 0;cursor:pointer;transition:transform .1s,box-shadow .1s;min-height:44px}
+    .fr-cube:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--fr-line)} .fr-cube:active{transform:translate(1px,1px);box-shadow:2px 2px 0 var(--fr-line)}
+    .fr-cube--win{background:var(--fr-blue)} .fr-cube--loss{background:var(--fr-red)}
+    .fr-cube:focus-visible{outline:3px solid var(--fr-gold);outline-offset:2px}
+
     /* delta grid (Home) */
     .fr-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--fr-gutter)}
     .fr-mini .fr-readout{font-size:28px}
@@ -4997,6 +5004,10 @@ RULES:
       const [rank, setRank] = useState(null);
       const [cardPerformance, setCardPerformance] = useState(null);
       const [featuredArtFailed, setFeaturedArtFailed] = useState(false);
+      // Reveal — the "power-up moment" fires ONLY when fresh synced data arrives
+      // (snap-data-updated), never on plain mount (mirrors CardDetail's pattern).
+      const [revealing, setRevealing] = React.useState(false);
+      const revealTimer = React.useRef(null);
 
       // Deterministic "card of the day" — stable across reloads for the same calendar day, no Math.random.
       // Depends on cardDataVersion because uniqueCards is a reassignable module-level `let` refreshed
@@ -5017,9 +5028,18 @@ RULES:
           setRank(loadFromStorage('snap_rank', null));
           setCardPerformance(loadFromStorage('snap_card_performance', null));
         };
-        loadPlayerData();
-        window.addEventListener('snap-data-updated', loadPlayerData);
-        return () => window.removeEventListener('snap-data-updated', loadPlayerData);
+        loadPlayerData(); // initial data — no reveal
+        const onSync = () => {
+          loadPlayerData();
+          setRevealing(true);
+          clearTimeout(revealTimer.current);
+          revealTimer.current = setTimeout(() => setRevealing(false), 2600);
+        };
+        window.addEventListener('snap-data-updated', onSync);
+        return () => {
+          window.removeEventListener('snap-data-updated', onSync);
+          clearTimeout(revealTimer.current);
+        };
       }, []);
 
       const totalCards = uniqueCards.length;
@@ -5143,9 +5163,9 @@ RULES:
       const rankArcCircumference = 2 * Math.PI * rankArcRadius;
 
       return (
-        <div className="px-4 pb-20">
+        <div className="px-4 pb-20 fr-scope">
           {/* THE VAULT — full-bleed hero: the player's best card owns the top of Home */}
-          <div className="hero-vault-card -mx-4 relative overflow-hidden mb-6" style={{ height: 'min(55vh, 480px)' }} aria-label={heroCard ? `Featured card: ${heroCard.name}` : 'Featured card'}>
+          <div className="hero-vault-card -mx-4 relative overflow-hidden mb-6" style={{ height: 'min(55vh, 480px)', border: '3px solid var(--fr-ink)', boxShadow: '6px 6px 0 var(--fr-line)' }} aria-label={heroCard ? `Featured card: ${heroCard.name}` : 'Featured card'}>
             {heroCard && !featuredArtFailed ? (
               <img
                 key={heroCard.name}
@@ -5156,7 +5176,7 @@ RULES:
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center bg-stark-surface-2">
-                <span className="material-symbols-outlined text-6xl text-cosmic-purple-text/40" aria-hidden="true">style</span>
+                <span className="material-symbols-outlined text-6xl text-white/40" aria-hidden="true">style</span>
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent" aria-hidden="true"></div>
@@ -5165,9 +5185,9 @@ RULES:
               <div className="absolute top-3 right-3 z-20 flex flex-col items-end gap-1.5 max-w-[150px]">
                 <div className="relative w-16 h-16 shrink-0">
                   <svg viewBox="0 0 64 64" className="absolute inset-0 w-full h-full -rotate-90" aria-hidden="true">
-                    <circle cx="32" cy="32" r={rankArcRadius} fill="none" stroke="rgba(199,95,255,0.18)" strokeWidth="3" />
+                    <circle cx="32" cy="32" r={rankArcRadius} fill="none" stroke="rgba(20,18,16,0.18)" strokeWidth="3" />
                     <circle
-                      cx="32" cy="32" r={rankArcRadius} fill="none" stroke="#ad2bee" strokeWidth="3" strokeLinecap="round"
+                      cx="32" cy="32" r={rankArcRadius} fill="none" stroke="var(--fr-blue)" strokeWidth="3" strokeLinecap="round"
                       strokeDasharray={rankArcCircumference}
                       strokeDashoffset={rankArcCircumference * (1 - seasonSweep)}
                     />
@@ -5197,16 +5217,16 @@ RULES:
           {/* THE COMPANION — Snapapoulous's conversational headline for tonight's story */}
           <div className="flex items-start gap-3 mb-6">
             <div className="companion-orb w-10 h-10 rounded-full shrink-0" aria-hidden="true"><span></span></div>
-            <p className="flex-1 pt-1.5 text-xl sm:text-2xl font-bold text-white leading-snug">{companionHeadline}</p>
+            <p className="flex-1 pt-1.5 text-xl sm:text-2xl font-bold leading-snug" style={{ color: 'var(--fr-ink)' }}>{companionHeadline}</p>
           </div>
 
           {/* Your Arsenal — owned cards as a glossy shelf, stat chips riding the cards */}
           <div className="mb-6">
-            <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-3 px-0.5">Your Arsenal</div>
+            <div className="fr-label">Your Arsenal</div>
             {arsenalCards.length === 0 ? (
-              <div className="stitch-card p-5 flex flex-col items-center gap-2 text-center">
-                <span className="material-symbols-outlined text-4xl text-cosmic-purple-text/40" aria-hidden="true">inventory_2</span>
-                <p className="text-sm text-stitch-muted">No cards owned yet — sync your collection or add cards to build your Arsenal</p>
+              <div className="fr-panel flex flex-col items-center gap-2 text-center">
+                <span className="material-symbols-outlined text-4xl" style={{ color: 'var(--fr-ink-dim)' }} aria-hidden="true">inventory_2</span>
+                <p className="text-sm" style={{ color: 'var(--fr-ink-dim)' }}>No cards owned yet — sync your collection or add cards to build your Arsenal</p>
               </div>
             ) : (
               <div className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory" role="list" aria-label="Owned cards">
@@ -5220,49 +5240,50 @@ RULES:
           {/* Ask Snapapoulous */}
           <button
             onClick={() => { pendingAdvisorMeta = true; window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'ai' })); }}
-            className="w-full cosmic-glass min-h-[52px] rounded-full px-6 py-3 mb-6 flex items-center justify-center gap-2 text-white font-semibold tracking-wide transition-[box-shadow,transform] duration-150 ease-[var(--ease-snap)] hover:shadow-[0_0_20px_rgba(173,43,238,0.3)] active:scale-95"
+            className="fr-btn mb-6 flex items-center justify-center gap-2"
           >
-            <span className="material-symbols-outlined text-cosmic-purple-text" aria-hidden="true">auto_awesome</span>
+            <span className="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
             Ask Snapapoulous
           </button>
 
           {/* Quick Match — demoted below the Arsenal, behavior unchanged */}
-          <div className="cosmic-glass p-5 mb-4">
+          <div className="fr-panel mb-4">
             <div className="flex items-center gap-2 mb-4">
-              <span className="material-symbols-outlined text-cosmic-purple-text" aria-hidden="true">bolt</span>
-              <h3 className="font-display font-semibold text-white text-base">Quick Match</h3>
+              <span className="material-symbols-outlined" style={{ color: 'var(--fr-ink)' }} aria-hidden="true">bolt</span>
+              <h3 className="font-semibold text-base" style={{ color: 'var(--fr-ink)' }}>Quick Match</h3>
             </div>
             <div className="mb-3" role="group" aria-label="Record win">
-              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-emerald-300 mb-2" id="win-label">Victory</div>
+              <div className="text-xs uppercase tracking-[0.15em] font-semibold mb-2" style={{ color: 'var(--fr-ink)' }} id="win-label">Victory</div>
               <div className="flex gap-2" role="group" aria-labelledby="win-label">
                 {[1, 2, 4, 8].map(cubes => (
                   <button key={`win-${cubes}`} onClick={() => onQuickMatch('WIN', cubes)}
                     aria-label={`Record win of ${cubes} cube${cubes > 1 ? 's' : ''}`}
-                    className="flex-1 min-h-[44px] rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 font-bold text-lg hover:bg-emerald-500/25 hover:shadow-[0_0_12px_rgba(16,185,129,0.35)] transition-colors">
+                    className="flex-1 fr-cube fr-cube--win">
                     +{cubes}
                   </button>
                 ))}
               </div>
             </div>
             <div role="group" aria-label="Record loss">
-              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-red-300 mb-2" id="loss-label">Defeat</div>
+              <div className="text-xs uppercase tracking-[0.15em] font-semibold mb-2" style={{ color: 'var(--fr-ink)' }} id="loss-label">Defeat</div>
               <div className="flex gap-2" role="group" aria-labelledby="loss-label">
                 {[1, 2, 4, 8].map(cubes => (
                   <button key={`loss-${cubes}`} onClick={() => onQuickMatch('LOSS', cubes)}
                     aria-label={`Record loss of ${cubes} cube${cubes > 1 ? 's' : ''}`}
-                    className="flex-1 min-h-[44px] rounded-xl bg-red-500/15 border border-red-500/40 text-red-300 font-bold text-lg hover:bg-red-500/25 hover:shadow-[0_0_12px_rgba(248,113,113,0.35)] transition-colors">
+                    className="flex-1 fr-cube fr-cube--loss">
                     -{cubes}
                   </button>
                 ))}
               </div>
             </div>
             {lastMatchId && matches.find(m => m.id === lastMatchId) && (
-              <div className="mt-4 pt-4 border-t border-white/10">
+              <div className="mt-4 pt-4" style={{ borderTop: '2px solid var(--fr-ink)' }}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted">Tag opponent archetype (optional)</span>
+                  <span className="text-xs uppercase tracking-[0.15em] font-semibold" style={{ color: 'var(--fr-ink-dim)' }}>Tag opponent archetype (optional)</span>
                   <button onClick={onDismissLastMatch}
                     aria-label="Skip tagging opponent archetype"
-                    className="text-xs text-stitch-muted hover:text-white px-2 py-1 rounded-full transition-colors">
+                    className="text-xs px-2 py-1 rounded-full transition-colors"
+                    style={{ color: 'var(--fr-ink-dim)' }}>
                     Skip
                   </button>
                 </div>
@@ -5272,7 +5293,8 @@ RULES:
                     return (
                       <button key={name} onClick={() => updateMatch(lastMatchId, { opponentArchetype: name })}
                         aria-pressed={active}
-                        className={`shrink-0 min-h-[44px] rounded-full px-4 text-xs font-bold whitespace-nowrap snap-start transition-colors ${active ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}>
+                        className={`shrink-0 min-h-[44px] rounded-full px-4 text-xs font-bold whitespace-nowrap snap-start transition-colors ${active ? '' : 'fr-chip'}`}
+                        style={active ? { background: 'var(--fr-blue)', color: '#fff', border: '2px solid var(--fr-ink)' } : undefined}>
                         {active ? `✓ ${name}` : name}
                       </button>
                     );
@@ -5284,53 +5306,50 @@ RULES:
 
           {/* Player OS: Pity Counters (Spotlight Oracle Preview) */}
           {rewards && (
-            <div className="stitch-card p-4 mb-4 border-l-4 border-mcu-red">
+            <div className="fr-panel mb-4" style={{ borderLeft: '8px solid var(--fr-red)' }}>
               <div className="flex items-center justify-between mb-2">
-                <span className="stitch-label">Pity Counters</span>
+                <span className="fr-label">Pity Counters</span>
                 {(rewards.isCloseToS4 || rewards.isCloseToS5 || rewards.isCloseToSpotlight) && (
-                  <span className="text-xs px-2 py-0.5 bg-mcu-red/30 text-mcu-red rounded animate-pulse">Close!</span>
+                  <span className="fr-chip" style={{ background: 'var(--fr-red)', color: '#fff' }}>Close!</span>
                 )}
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div className="text-center">
                   <div className="relative pt-1">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-stitch-muted">S4</span>
-                      <span className="text-xs font-bold text-green-400">{rewards.pityCounters?.s4 || 0}/20</span>
+                      <span className="text-xs" style={{ color: 'var(--fr-ink)' }}>S4</span>
+                      <span className="text-xs font-bold" style={{ fontFamily: 'var(--fr-font-data)', color: 'var(--fr-blue)' }}>{rewards.pityCounters?.s4 || 0}/20</span>
                     </div>
-                    <div className="w-full bg-[#1a1320] rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full ${rewards.isCloseToS4 ? 'bg-green-400' : 'bg-green-600'}`}
-                        style={{ width: `${Math.min(100, ((rewards.pityCounters?.s4 || 0) / 20) * 100)}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="relative pt-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-stitch-muted">S5</span>
-                      <span className="text-xs font-bold text-purple-400">{rewards.pityCounters?.s5 || 0}/60</span>
-                    </div>
-                    <div className="w-full bg-[#1a1320] rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full ${rewards.isCloseToS5 ? 'bg-purple-400' : 'bg-purple-600'}`}
-                        style={{ width: `${Math.min(100, ((rewards.pityCounters?.s5 || 0) / 60) * 100)}%` }}
-                      ></div>
+                    <div className="fr-bar">
+                      <i
+                        style={{ background: 'var(--fr-blue)', width: `${Math.min(100, ((rewards.pityCounters?.s4 || 0) / 20) * 100)}%` }}
+                      ></i>
                     </div>
                   </div>
                 </div>
                 <div className="text-center">
                   <div className="relative pt-1">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-stitch-muted">Key</span>
-                      <span className="text-xs font-bold text-orange-400">{rewards.pityCounters?.spotlightKey || 0}/4</span>
+                      <span className="text-xs" style={{ color: 'var(--fr-ink)' }}>S5</span>
+                      <span className="text-xs font-bold" style={{ fontFamily: 'var(--fr-font-data)', color: 'var(--fr-red-ink)' }}>{rewards.pityCounters?.s5 || 0}/60</span>
                     </div>
-                    <div className="w-full bg-[#1a1320] rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full ${rewards.isCloseToSpotlight ? 'bg-orange-400' : 'bg-orange-600'}`}
-                        style={{ width: `${Math.min(100, ((rewards.pityCounters?.spotlightKey || 0) / 4) * 100)}%` }}
-                      ></div>
+                    <div className="fr-bar">
+                      <i
+                        style={{ background: 'var(--fr-red)', width: `${Math.min(100, ((rewards.pityCounters?.s5 || 0) / 60) * 100)}%` }}
+                      ></i>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="relative pt-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs" style={{ color: 'var(--fr-ink)' }}>Key</span>
+                      <span className="text-xs font-bold" style={{ fontFamily: 'var(--fr-font-data)', color: '#b8860b' }}>{rewards.pityCounters?.spotlightKey || 0}/4</span>
+                    </div>
+                    <div className="fr-bar">
+                      <i
+                        style={{ background: 'var(--fr-gold)', width: `${Math.min(100, ((rewards.pityCounters?.spotlightKey || 0) / 4) * 100)}%` }}
+                      ></i>
                     </div>
                   </div>
                 </div>
@@ -5340,69 +5359,74 @@ RULES:
 
           {/* Lifetime Stats (from imported data) */}
           {displayStats.hasImported && (
-            <div className="stitch-card p-4 mb-4 border-l-4 border-cosmic-purple-text">
+            <div className="fr-panel mb-4" style={{ borderLeft: '8px solid var(--fr-blue)' }}>
               <div className="flex items-center justify-between mb-2">
-                <span className="stitch-label">Lifetime Stats</span>
-                <span className="stitch-badge">From Game</span>
+                <span className="fr-label">Lifetime Stats</span>
+                <span className="fr-chip">From Game</span>
               </div>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div>
-                  <div className="text-lg font-bold text-white">{displayStats.totalGames.toLocaleString()}</div>
-                  <div className="text-xs text-stitch-muted">Games</div>
+                  <div className="fr-readout text-lg" style={{ color: 'var(--fr-ink)' }}>{displayStats.totalGames.toLocaleString()}</div>
+                  <div className="text-xs" style={{ color: 'var(--fr-ink-dim)' }}>Games</div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-stitch-green">{displayStats.wins.toLocaleString()}</div>
-                  <div className="text-xs text-stitch-muted">Wins</div>
+                  <div className="fr-readout text-lg" style={{ color: 'var(--fr-blue)' }}>{displayStats.wins.toLocaleString()}</div>
+                  <div className="text-xs" style={{ color: 'var(--fr-ink-dim)' }}>Wins</div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-red-400">{displayStats.losses.toLocaleString()}</div>
-                  <div className="text-xs text-stitch-muted">Losses</div>
+                  <div className="fr-readout text-lg" style={{ color: 'var(--fr-red-ink)' }}>{displayStats.losses.toLocaleString()}</div>
+                  <div className="text-xs" style={{ color: 'var(--fr-ink-dim)' }}>Losses</div>
                 </div>
                 <div>
-                  <div className="text-lg font-bold text-mcu-gold">{displayStats.winRate}%</div>
-                  <div className="text-xs text-stitch-muted">Win Rate</div>
+                  <div className="fr-readout text-lg" style={{ color: '#b8860b' }}>{displayStats.winRate}%</div>
+                  <div className="text-xs" style={{ color: 'var(--fr-ink-dim)' }}>Win Rate</div>
                 </div>
               </div>
               {displayStats.snapId && (
-                <div className="text-xs text-stitch-muted text-right mt-2">{displayStats.snapId}</div>
+                <div className="text-xs text-right mt-2" style={{ color: 'var(--fr-ink-dim)' }}>{displayStats.snapId}</div>
               )}
             </div>
           )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-            <div className="rounded-2xl bg-stark-surface p-4">
-              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Collection</div>
-              <div className="text-3xl font-bold text-white">{cardDataVersion === 0 ? '—' : `${completionPercent}%`}</div>
-              <div className="text-xs text-stitch-muted mt-1">{ownedInDatabase}/{totalCards}</div>
+          <div className={`grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4${revealing ? ' run' : ''}`}>
+            <div className="fr-panel">
+              <div className="fr-label">Collection</div>
+              <div className="fr-readout" style={{ fontSize: '28px', color: 'var(--fr-ink)' }}>{cardDataVersion === 0 ? '—' : `${completionPercent}%`}</div>
+              <div className="text-xs mt-1" style={{ color: 'var(--fr-ink-dim)' }}>{ownedInDatabase}/{totalCards}</div>
             </div>
-            <div className="rounded-2xl bg-stark-surface p-4">
-              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Win Rate</div>
-              <div className="text-3xl font-bold text-white">{winRate}%</div>
-              <div className="text-xs text-stitch-muted mt-1">{totalWins}/{totalGames}</div>
+            <div className="fr-panel">
+              <div className="fr-label">Win Rate</div>
+              <div className="fr-readout" style={{ fontSize: '28px', color: '#b8860b' }}>{winRate}%</div>
+              <div className="text-xs mt-1" style={{ color: 'var(--fr-ink-dim)' }}>{totalWins}/{totalGames}</div>
             </div>
-            <div className="rounded-2xl bg-stark-surface p-4">
-              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Net Cubes</div>
-              <div className={`text-3xl font-bold ${netCubes >= 0 ? 'text-stitch-green' : 'text-red-400'}`}>
-                {netCubes >= 0 ? '+' : ''}{netCubes}
+            <div className="fr-panel fr-panel--splash fr-panel--red">
+              <div className="fr-label">Net Cubes</div>
+              <div className="fr-reveal">
+                {netCubes > 0 && <span className="fr-burst"></span>}
+                <span className="fr-readout" style={{ fontSize: '34px', color: netCubes > 0 ? 'var(--fr-red)' : 'var(--fr-ink)' }}>
+                  {netCubes > 0 ? '+' : ''}{netCubes}
+                </span>
+                <span className="redact"></span>
               </div>
-              <div className="text-xs text-stitch-muted mt-1">Today {todayCubes >= 0 ? '+' : ''}{todayCubes}</div>
+              {netCubes > 0 && <span className="fr-stamp">Synced</span>}
+              <div className="text-xs mt-1" style={{ color: 'var(--fr-ink-dim)' }}>Today {todayCubes >= 0 ? '+' : ''}{todayCubes}</div>
             </div>
-            <div className="rounded-2xl bg-stark-surface p-4">
-              <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2">Streak</div>
-              <div className={`text-3xl font-bold ${streak.type === 'WIN' ? 'text-stitch-green' : streak.type === 'LOSS' ? 'text-red-400' : 'text-stitch-muted'}`}>
+            <div className="fr-panel">
+              <div className="fr-label">Streak</div>
+              <div className="fr-readout" style={{ fontSize: '28px', color: streak.type === 'WIN' ? 'var(--fr-blue)' : streak.type === 'LOSS' ? 'var(--fr-red)' : 'var(--fr-ink)' }}>
                 {streak.count}{streak.type === 'WIN' ? 'W' : streak.type === 'LOSS' ? 'L' : '-'}
               </div>
-              <div className="text-xs text-stitch-muted mt-1">Current</div>
+              <div className="text-xs mt-1" style={{ color: 'var(--fr-ink-dim)' }}>Current</div>
             </div>
           </div>
 
-          <div className="stitch-card comic-panel p-5">
+          <div className="fr-panel">
             <div className="flex justify-between items-center mb-3">
-              <div className="stitch-section-header mb-0">
+              <div className="fr-label mb-0">
                 <span className="material-symbols-outlined" aria-hidden="true">history</span>
                 Recent Matches
               </div>
-              <button onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'history' }))} className="text-xs text-cosmic-purple-text hover:text-white transition-colors">View All &rarr;</button>
+              <button onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'history' }))} className="text-xs transition-colors" style={{ color: 'var(--fr-blue)' }}>View All &rarr;</button>
             </div>
             {matches.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-6 text-center">
@@ -5416,7 +5440,7 @@ RULES:
                     </div>
                   ))}
                 </div>
-                <p className="text-sm text-stitch-muted">No battles yet — log your first match above</p>
+                <p className="text-sm" style={{ color: 'var(--fr-ink-dim)' }}>No battles yet — log your first match above</p>
               </div>
             ) : (
               <div className="relative">
@@ -5429,7 +5453,7 @@ RULES:
                         <polyline
                           points={momentumRibbon.nodes.map(node => `${node.x},${node.y * momentumRibbon.n / 100}`).join(' ')}
                           fill="none"
-                          stroke="#ad2bee"
+                          stroke="var(--fr-ink)"
                           strokeWidth="2"
                           vectorEffect="non-scaling-stroke"
                         />
@@ -5437,10 +5461,12 @@ RULES:
                       {momentumRibbon.nodes.map(node => (
                         <div
                           key={node.id}
-                          className={`absolute w-2.5 h-2.5 rounded-full -translate-x-1/2 -translate-y-1/2 border border-white/20 ${
-                            node.isTopStreakNode ? 'bg-mcu-gold' : node.isWin ? 'bg-stitch-green' : 'bg-red-400'
-                          }`}
-                          style={{ left: `${(node.x / 24) * 100}%`, top: `${node.y}%` }}
+                          className="absolute w-2.5 h-2.5 rounded-full -translate-x-1/2 -translate-y-1/2"
+                          style={{
+                            left: `${(node.x / 24) * 100}%`, top: `${node.y}%`,
+                            background: node.isTopStreakNode ? 'var(--fr-gold)' : node.isWin ? 'var(--fr-blue)' : 'var(--fr-red)',
+                            border: '2px solid var(--fr-ink)'
+                          }}
                         ></div>
                       ))}
                     </div>
@@ -5453,22 +5479,21 @@ RULES:
                   {recentVisible.map(match => {
                     const remark = getMatchRemark(match);
                     return (
-                      <div key={match.id} className={`stitch-list-item flex flex-col gap-1.5 ${
-                        match.result === 'WIN' ? 'comic-panel-win' : 'comic-panel-loss'
-                      }`}>
+                      <div key={match.id} className="flex flex-col gap-1.5 p-3 rounded"
+                        style={{ border: '2px solid var(--fr-ink)', background: '#fff' }}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <span className={`stitch-badge ${match.result === 'WIN' ? 'bg-stitch-green/20 text-stitch-green' : 'bg-red-500/20 text-red-400'}`}>
+                            <span className="fr-chip" style={match.result === 'WIN' ? { background: 'var(--fr-blue)', color: '#fff' } : { background: 'var(--fr-red)', color: '#fff' }}>
                               {match.result === 'WIN' ? '+' : '-'}{match.cubes}
                             </span>
-                            <span className={`text-sm font-bold ${match.result === 'WIN' ? 'text-stitch-green' : 'text-red-400'}`}>
+                            <span className="text-sm font-bold" style={{ color: match.result === 'WIN' ? 'var(--fr-blue)' : 'var(--fr-red-ink)' }}>
                               {match.result === 'WIN' ? 'Victory' : 'Defeat'}
                             </span>
                           </div>
-                          <span className="text-stitch-muted text-xs">{formatDate(match.timestamp)}</span>
+                          <span className="text-xs" style={{ color: 'var(--fr-ink-dim)' }}>{formatDate(match.timestamp)}</span>
                         </div>
-                        <div className="cosmic-glass rounded-full px-3 py-1 w-max max-w-full">
-                          <p className="text-xs italic text-cosmic-purple-text truncate">
+                        <div className="fr-chip w-max max-w-full">
+                          <p className="text-xs italic truncate" style={{ color: 'var(--fr-ink)' }}>
                             {remark.isNote ? `“${remark.text}”` : remark.text}
                           </p>
                         </div>
@@ -5484,13 +5509,15 @@ RULES:
           <div className="flex flex-wrap gap-3 mt-4">
             <button
               onClick={() => { pendingAdvisorMeta = true; window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'ai' })); }}
-              className="cosmic-glass rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-[box-shadow,transform] duration-150 ease-[var(--ease-snap)] hover:shadow-[0_0_15px_rgba(173,43,238,0.25)] active:scale-95"
+              className="fr-btn"
+              style={{ width: 'auto' }}
             >
               Ask about my games
             </button>
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: { tab: 'decks', view: 'forge' } }))}
-              className="cosmic-glass rounded-full px-5 py-2.5 text-sm font-semibold text-white transition-[box-shadow,transform] duration-150 ease-[var(--ease-snap)] hover:shadow-[0_0_15px_rgba(173,43,238,0.25)] active:scale-95"
+              className="fr-btn"
+              style={{ width: 'auto' }}
             >
               Forge a counter deck
             </button>
@@ -5504,7 +5531,8 @@ RULES:
       const [artFailed, setArtFailed] = useState(false);
       return (
         <div
-          className="snap-center shrink-0 w-[140px] h-[196px] rounded-lg overflow-hidden relative holo-foil holo-foil-active ring-1 ring-cosmic-purple-text/30 bg-stark-surface-2 transition-transform duration-150 ease-[var(--ease-snap)] active:scale-95"
+          className="snap-center shrink-0 w-[140px] h-[196px] rounded-lg overflow-hidden relative holo-foil holo-foil-active bg-stark-surface-2 transition-transform duration-150 ease-[var(--ease-snap)] active:scale-95"
+          style={{ border: '3px solid var(--fr-ink)', boxShadow: '4px 4px 0 var(--fr-line)' }}
           role="listitem"
           tabIndex="0"
           aria-label={`${card.name}${netCubes !== null ? `, ${netCubes >= 0 ? '+' : ''}${netCubes} net cubes` : ''}`}
@@ -5519,13 +5547,14 @@ RULES:
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-stark-surface-2">
-              <span className="material-symbols-outlined text-3xl text-cosmic-purple-text/40" aria-hidden="true">style</span>
+              <span className="material-symbols-outlined text-3xl text-white/40" aria-hidden="true">style</span>
             </div>
           )}
           {netCubes !== null && (
-            <div className="absolute top-2 right-2 cosmic-glass-strong rounded px-1.5 py-0.5 flex flex-col items-center">
-              <span className="text-[8px] uppercase tracking-[0.1em] font-semibold text-stitch-muted leading-none">Cubes</span>
-              <span className={`text-sm font-bold leading-none mt-0.5 tabular-nums ${netCubes >= 0 ? 'text-stitch-green' : 'text-red-400'}`}>
+            <div className="absolute top-2 right-2 rounded px-1.5 py-0.5 flex flex-col items-center"
+              style={{ background: netCubes > 0 ? 'var(--fr-red)' : 'var(--fr-ink)', border: '2px solid var(--fr-ink)' }}>
+              <span className="text-[8px] uppercase tracking-[0.1em] font-semibold leading-none text-white/80">Cubes</span>
+              <span className="text-sm font-bold leading-none mt-0.5 tabular-nums text-white" style={{ fontFamily: 'var(--fr-font-data)' }}>
                 {netCubes >= 0 ? '+' : ''}{netCubes}
               </span>
             </div>
