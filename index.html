@@ -25,7 +25,7 @@
   <!-- Google Fonts - Spline Sans (UI) + Inter (fallback) + Material Symbols -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Anton&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
 
   <!-- Service Worker Update Handler - runs early to catch SW updates -->
@@ -1461,6 +1461,145 @@
         margin-left: 0;
         margin-top: 8px;
       }
+    }
+
+    /* ============================================================
+       FIELD REPORT · SPLASH EDITION — Phase 3 design system
+       Transplanted from the owner-approved prototype (fr-proto-v1).
+       A's soul (dossier data framing + reveal), B's skin
+       (bright comic paper, Marvel red/blue/gold, ink borders).
+       Color logic enforces the POW threshold gate:
+         RED  = high-magnitude cube swings (the headline)
+         GOLD = maxed / progression milestones
+         BLUE = navigation / accent / chips
+         INK  = ordinary values (no traffic-light dashboard)
+       Scoped via .fr-scope so the light theme does not leak to
+       other tabs. --ease-snap already exists in the app's root
+       token block (line ~299) and is intentionally not redefined here.
+       ============================================================ */
+    :root{
+      /* — paper & ink — */
+      --fr-paper:#fffdf7; --fr-panel:#ffffff; --fr-ink:#141210; --fr-ink-dim:#5a544c;
+      /* — comic primaries — */
+      --fr-red:#ed1d24; --fr-blue:#006ec7; --fr-gold:#ffc107;
+      --fr-red-ink:#c8121a;                    /* text-safe red on white */
+      /* — panel primitives — */
+      --fr-line:#141210;                       /* black ink border */
+      --fr-shadow:4px 4px 0 #141210;           /* hard comic offset shadow */
+      --fr-ink-weight:3px; --fr-gutter:12px; --fr-radius:5px; --fr-border-w:3px;
+      /* — type — */
+      --fr-font-hero:'Anton','Oswald','Haettenschweiler','Impact',sans-serif;
+      --fr-font-data:'Space Mono',ui-monospace,'SF Mono',monospace;
+      --fr-font-body:'Spline Sans','Inter',system-ui,-apple-system,sans-serif;
+      /* — motion — */
+      --fr-reveal-t:.62s;
+      /* — halftone Ben-Day wash — */
+      --fr-halftone:radial-gradient(rgba(0,0,0,.05) 1px, transparent 1.35px);
+      --fr-halftone-size:7px 7px;
+    }
+
+    /* scope root — paper base + ink text + halftone, applied ONLY inside
+       CardDetail so other tabs keep their existing dark theme */
+    .fr-scope{
+      background:var(--fr-paper); color:var(--fr-ink);
+      background-image:var(--fr-halftone); background-size:var(--fr-halftone-size);
+      font-family:var(--fr-font-body);
+    }
+
+    /* ---- primitives ---- */
+    .fr-tab{display:flex;align-items:baseline;gap:9px;margin-bottom:14px}
+    .fr-tab h3{font-family:var(--fr-font-hero);font-weight:400;font-size:26px;letter-spacing:.02em;text-transform:uppercase;margin:0;color:var(--fr-ink);
+      background:var(--fr-gold);border:3px solid var(--fr-ink);border-radius:4px;padding:2px 10px;box-shadow:3px 3px 0 #141210}
+    .fr-tab .code{font-family:var(--fr-font-data);font-size:10px;letter-spacing:.08em;color:var(--fr-blue);text-transform:uppercase}
+
+    .fr-stack{display:flex;flex-direction:column;gap:var(--fr-gutter)}
+    .fr-panel{
+      position:relative;background:var(--fr-panel);border:var(--fr-border-w) solid var(--fr-line);border-radius:var(--fr-radius);
+      padding:14px 15px;box-shadow:var(--fr-shadow);
+      background-image:var(--fr-halftone);background-size:var(--fr-halftone-size)
+    }
+    .fr-panel--red{border-color:var(--fr-red)} .fr-panel--blue{border-color:var(--fr-blue)}
+
+    .fr-label{
+      display:inline-flex;align-items:center;gap:8px;font-family:var(--fr-font-hero);font-weight:400;
+      font-size:14px;letter-spacing:.05em;text-transform:uppercase;color:var(--fr-ink);margin:0 0 8px
+    }
+    .fr-label::before{content:"";width:13px;height:var(--fr-ink-weight);background:var(--fr-blue);flex:none}
+
+    .fr-readout{font-family:var(--fr-font-data);font-weight:700;font-variant-numeric:tabular-nums;color:var(--fr-ink);letter-spacing:-.01em}
+
+    /* splash / hero — the marquee number bleeds past the panel */
+    .fr-panel--splash{overflow:visible;padding-bottom:22px}
+    .fr-hero{
+      position:relative;z-index:2;font-family:var(--fr-font-data);font-weight:700;font-variant-numeric:tabular-nums;
+      font-size:82px;line-height:.86;color:var(--fr-red);letter-spacing:-.03em;
+      -webkit-text-stroke:2px var(--fr-ink);paint-order:stroke fill;
+      display:inline-block;margin:2px 0 -16px -2px;transform-origin:left center
+    }
+    .fr-hero.neg{color:var(--fr-red)}
+    /* gold POW starburst — flashes ONLY during reveal, then gone */
+    .fr-burst{position:absolute;left:22px;top:14px;width:150px;height:150px;z-index:1;opacity:0;pointer-events:none;
+      background:var(--fr-gold);
+      clip-path:polygon(50% 0,61% 22%,86% 12%,77% 38%,100% 47%,78% 60%,90% 86%,62% 76%,50% 100%,38% 76%,11% 86%,23% 60%,0 47%,23% 38%,14% 12%,39% 22%)}
+
+    /* mastery bar */
+    .fr-bar{height:12px;background:#efe9dd;border:2px solid var(--fr-ink);border-radius:3px;overflow:hidden;margin:9px 0 7px}
+    .fr-bar i{display:block;height:100%;width:60%;background:var(--fr-blue)}
+    .fr-bar.maxed i{background:var(--fr-gold)}
+    .fr-meta{font-family:var(--fr-font-data);font-size:12px;color:var(--fr-ink-dim)}
+    .fr-lvl{font-family:var(--fr-font-data);font-weight:700;font-size:15px;color:var(--fr-ink)}
+    .fr-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+
+    /* deck list, chips, button */
+    .fr-list{list-style:none;margin:8px 0 12px;padding:0;display:flex;flex-direction:column;gap:5px}
+    .fr-list li{font-family:var(--fr-font-data);font-size:12.5px;color:var(--fr-ink);display:flex;gap:8px;align-items:center}
+    .fr-list li::before{content:"\25B6";color:var(--fr-red);font-size:9px}
+    .fr-btn{
+      width:100%;font-family:var(--fr-font-hero);font-weight:400;font-size:15px;letter-spacing:.04em;text-transform:uppercase;
+      color:#fff;background:var(--fr-blue);border:3px solid var(--fr-ink);border-radius:5px;
+      padding:10px;cursor:pointer;box-shadow:3px 3px 0 #141210;transition:transform .1s,box-shadow .1s
+    }
+    .fr-btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 #141210} .fr-btn:active{transform:translate(1px,1px);box-shadow:2px 2px 0 #141210}
+    .fr-btn:focus-visible{outline:3px solid var(--fr-red);outline-offset:2px}
+    .fr-chips{display:flex;flex-wrap:wrap;gap:6px}
+    .fr-chip{font-family:var(--fr-font-data);font-size:10.5px;font-weight:700;color:var(--fr-ink);
+      border:2px solid var(--fr-ink);border-radius:999px;padding:2px 9px;background:#fff}
+    .fr-chip.s{background:var(--fr-gold)} .fr-chip.a{background:#cfe6ff}
+
+    /* delta grid (Home) */
+    .fr-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--fr-gutter)}
+    .fr-mini .fr-readout{font-size:28px}
+    .fr-mini .fr-readout.ink{color:var(--fr-ink)}     /* ordinary delta — no shout */
+    .fr-mini .fr-readout.gold{color:#b8860b}           /* milestone (gold text-safe) */
+
+    /* ---- REVEAL primitive ---- */
+    .fr-reveal{position:relative;display:inline-block}
+    .fr-reveal .redact{position:absolute;inset:-3px -6px;background:var(--fr-ink);z-index:3;transform:scaleX(0);transform-origin:right center;pointer-events:none}
+    .fr-reveal .redact::after{content:"";position:absolute;right:0;top:0;bottom:0;width:3px;background:var(--fr-red);opacity:0}
+    .fr-stamp{
+      position:absolute;top:4px;right:6px;z-index:4;font-family:var(--fr-font-hero);font-weight:400;
+      font-size:16px;letter-spacing:.06em;text-transform:uppercase;color:var(--fr-red);
+      border:3px solid var(--fr-red);border-radius:4px;padding:2px 9px;transform:rotate(-9deg);
+      opacity:0;pointer-events:none
+    }
+
+    .run .fr-reveal .redact{animation:fr-redact var(--fr-reveal-t) var(--ease-snap) forwards}
+    .run .fr-reveal .redact::after{animation:fr-edge var(--fr-reveal-t) var(--ease-snap) forwards}
+    .run .fr-hero{animation:fr-punch .6s var(--ease-snap) .34s both}
+    .run .fr-burst{animation:fr-burst 1.1s var(--ease-snap) .3s both}
+    .run .fr-mini .fr-readout.gold{animation:fr-punch .5s var(--ease-snap) .3s both}
+    .run .fr-stamp{animation:fr-stamp 1.7s var(--ease-snap) .5s both}
+
+    @keyframes fr-redact{0%{transform:scaleX(1)}42%{transform:scaleX(1)}100%{transform:scaleX(0)}}
+    @keyframes fr-edge{0%,42%{opacity:1}100%{opacity:0}}
+    @keyframes fr-punch{0%{transform:scale(.6);opacity:0}55%{transform:scale(1.17)}100%{transform:scale(1)}}
+    @keyframes fr-burst{0%{opacity:0;transform:scale(.3) rotate(-20deg)}40%{opacity:.9;transform:scale(1.05) rotate(6deg)}70%{opacity:.7}100%{opacity:0;transform:scale(1) rotate(0)}}
+    @keyframes fr-stamp{0%{opacity:0;transform:rotate(-9deg) scale(2.2)}22%{opacity:1;transform:rotate(-9deg) scale(.9)}34%{transform:rotate(-9deg) scale(1)}72%{opacity:1}100%{opacity:0;transform:rotate(-9deg) scale(1)}}
+
+    @media (prefers-reduced-motion:reduce){
+      .run .fr-reveal .redact,.run .fr-hero,.run .fr-burst,.run .fr-mini .fr-readout.gold{animation:none}
+      .run .fr-stamp{animation:fr-stamp-rm 1.4s ease both}
+      @keyframes fr-stamp-rm{0%{opacity:0}20%{opacity:1}75%{opacity:1}100%{opacity:0}}
     }
   </style>
 </head>
@@ -6449,6 +6588,10 @@ RULES:
       const [mastery, setMastery] = useState(null);
       const [collEnhanced, setCollEnhanced] = useState(null);
       const [decks, setDecks] = useState([]);
+      // Reveal — the "power-up moment" fires ONLY when fresh synced data arrives
+      // (snap-data-updated), never on plain card open.
+      const [revealing, setRevealing] = React.useState(false);
+      const revealTimer = React.useRef(null);
       useEffect(() => {
         const load = () => {
           setPerf(loadFromStorage('snap_card_performance', null));
@@ -6456,9 +6599,18 @@ RULES:
           setCollEnhanced(loadFromStorage('snap_collection_enhanced', null));
           setDecks(loadFromStorage('snap_decks', []));
         };
-        load();
-        window.addEventListener('snap-data-updated', load);
-        return () => window.removeEventListener('snap-data-updated', load);
+        load(); // initial data — no reveal
+        const onSync = () => {
+          load();
+          setRevealing(true);
+          clearTimeout(revealTimer.current);
+          revealTimer.current = setTimeout(() => setRevealing(false), 2600);
+        };
+        window.addEventListener('snap-data-updated', onSync);
+        return () => {
+          window.removeEventListener('snap-data-updated', onSync);
+          clearTimeout(revealTimer.current);
+        };
       }, []);
 
       // defId -> display name lookup (mirrors MasteryForgeView resolution)
@@ -6556,32 +6708,27 @@ RULES:
 
       return (
         <div
-          className="fixed inset-0 z-[60] flex flex-col bg-[#0f0814]/95 backdrop-blur-xl overflow-y-auto"
+          className="fr-scope fixed inset-0 z-[60] flex flex-col overflow-y-auto"
           role="dialog"
           aria-modal="true"
           aria-label={`Card details for ${card.name}`}
         >
-          {/* Blurred art background */}
-          {artUrl && (
-            <div
-              className="fixed inset-0 z-0 opacity-15 blur-3xl pointer-events-none"
-              style={{ backgroundImage: `url(${artUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-              aria-hidden="true"
-            />
-          )}
-
           {/* Top AppBar */}
-          <header className="sticky top-0 z-10 flex items-center bg-[#0f0814]/80 backdrop-blur-md p-4 justify-between border-b border-white/10">
+          <header className="sticky top-0 z-10 flex items-center bg-[var(--fr-paper)] p-4 justify-between border-b-[3px] border-[var(--fr-ink)]">
             <button
               onClick={onClose}
-              className="text-[#ad2bee] flex size-10 shrink-0 items-center justify-center cursor-pointer rounded-full hover:bg-[#ad2bee]/10 transition-colors"
+              className="flex size-10 shrink-0 items-center justify-center cursor-pointer rounded-full hover:bg-black/5 transition-colors"
+              style={{ color: 'var(--fr-ink)' }}
               aria-label="Go back"
             >
               <span className="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
             </button>
-            <h2 className="text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">Card Details</h2>
+            <h2 className="text-lg font-bold leading-tight tracking-tight flex-1 text-center" style={{ color: 'var(--fr-ink)' }}>Card Details</h2>
             <div className="flex w-10 items-center justify-end">
-              <div className={`flex items-center justify-center rounded-full size-10 ${isOwned ? 'bg-[#ad2bee]/30 text-[#ad2bee]' : 'bg-white/10 text-white/40'}`}>
+              <div
+                className="flex items-center justify-center rounded-full size-10"
+                style={isOwned ? { background: 'rgba(0,110,199,0.15)', color: 'var(--fr-blue)' } : { background: 'rgba(20,18,16,0.08)', color: 'var(--fr-ink-dim)' }}
+              >
                 <span className="material-symbols-outlined" style={{ fontVariationSettings: isOwned ? "'FILL' 1" : "'FILL' 0" }}>
                   {isOwned ? 'check_circle' : 'radio_button_unchecked'}
                 </span>
@@ -6592,7 +6739,7 @@ RULES:
           <main className="relative z-10 flex flex-col pb-10">
             {/* Hero Card Art */}
             <div className="px-4 py-6">
-              <div className="holo-foil holo-foil-active relative w-full aspect-[3/4] max-w-xs mx-auto bg-[#2b1933] rounded-xl overflow-hidden shadow-2xl border-4 border-[#ad2bee]/50">
+              <div className="fr-panel holo-foil holo-foil-active relative w-full aspect-[3/4] max-w-xs mx-auto rounded-xl overflow-hidden" style={{ padding: 0 }}>
                 {!artFailed ? (
                   <img
                     src={artUrl}
@@ -6602,16 +6749,16 @@ RULES:
                     onError={() => setArtFailed(true)}
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-[#b792c9]">
+                  <div className="absolute inset-0 flex items-center justify-center text-[color:var(--fr-ink-dim)]">
                     <span className="material-symbols-outlined text-6xl">style</span>
                   </div>
                 )}
                 {/* Energy badge — z-10 keeps it above the sheen */}
-                <div className="absolute top-4 left-4 z-10 size-14 bg-blue-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                <div className="absolute top-4 left-4 z-10 size-14 bg-blue-600 rounded-full flex items-center justify-center shadow-lg" style={{ border: '3px solid var(--fr-ink)' }}>
                   <span className="text-2xl font-black text-white">{card.cost}</span>
                 </div>
                 {/* Power badge — z-10 keeps it above the sheen */}
-                <div className="absolute bottom-4 right-4 z-10 size-14 bg-orange-500 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+                <div className="absolute bottom-4 right-4 z-10 size-14 bg-orange-500 rounded-full flex items-center justify-center shadow-lg" style={{ border: '3px solid var(--fr-ink)' }}>
                   <span className="text-2xl font-black text-white">{card.power}</span>
                 </div>
               </div>
@@ -6619,17 +6766,38 @@ RULES:
 
             {/* Card Name & Series Row */}
             <div className="px-6 mb-4">
-              <h1 className="text-4xl font-black tracking-tighter text-white mb-2 uppercase">{card.name}</h1>
-              <div className="flex items-center gap-2 flex-wrap">
+              <h1
+                className="inline-block text-3xl mb-2 uppercase"
+                style={{
+                  fontFamily: 'var(--fr-font-hero)', fontWeight: 400, letterSpacing: '.02em', color: 'var(--fr-ink)',
+                  background: 'var(--fr-gold)', border: '3px solid var(--fr-ink)', borderRadius: '4px',
+                  padding: '2px 12px', boxShadow: '3px 3px 0 #141210'
+                }}
+              >
+                {card.name}
+              </h1>
+              <div className="flex items-center gap-2 flex-wrap mt-2">
                 {abilityType && (
-                  <span className={`stitch-badge ${abilityType.cls}`}>{abilityType.label}</span>
+                  <span
+                    className="text-[11px] font-bold uppercase tracking-wide rounded-full px-3 py-1"
+                    style={{
+                      border: '2px solid var(--fr-ink)',
+                      background: abilityType.label === 'Ongoing' ? 'var(--fr-blue)' : 'var(--fr-gold)',
+                      color: abilityType.label === 'Ongoing' ? '#fff' : 'var(--fr-ink)'
+                    }}
+                  >
+                    {abilityType.label}
+                  </span>
                 )}
                 {getSeriesDisplayName(card.series) !== 'Unknown' && (
-                  <span className={`stitch-badge ${getSeriesColorClass(card.series)}`}>
+                  <span
+                    className="text-[11px] font-bold uppercase tracking-wide rounded-full px-3 py-1"
+                    style={{ border: '2px solid var(--fr-ink)', background: '#fff', color: 'var(--fr-ink)' }}
+                  >
                     {getSeriesDisplayName(card.series)}
                   </span>
                 )}
-                <span className="text-[#b792c9] text-sm font-medium">
+                <span className="text-sm font-medium" style={{ color: 'var(--fr-ink-dim)' }}>
                   {card.cost} Energy • {card.power} Power
                 </span>
               </div>
@@ -6637,8 +6805,8 @@ RULES:
 
             {/* Ability Text */}
             <section className="px-6 mb-6">
-              <div className="bg-stark-surface p-4 rounded-2xl border border-white/10">
-                <p className="text-slate-300 leading-relaxed text-sm">{card.ability || 'No ability text available.'}</p>
+              <div className="fr-panel">
+                <p className="leading-relaxed text-sm" style={{ color: 'var(--fr-ink)', fontFamily: 'var(--fr-font-body)' }}>{card.ability || 'No ability text available.'}</p>
               </div>
             </section>
 
@@ -6646,57 +6814,63 @@ RULES:
                 sub-block is guarded independently on real data; the whole section
                 is gated by hasYourCardData so unowned/no-data cards show nothing here. */}
             {hasYourCardData && (
-              <section className="px-6 mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="material-symbols-outlined text-[#ad2bee]">person</span>
-                  <h3 className="text-xl font-bold text-white">Your Card</h3>
+              <section className={`px-6 mb-6${revealing ? ' run' : ''}`}>
+                <div className="fr-tab">
+                  <h3>Your Card</h3>
+                  <span className="code">// classified field intel</span>
                 </div>
-                <div className="flex flex-col gap-3">
+                <div className="fr-stack">
                   {hasPerfData && (
-                    <div className="bg-stark-surface p-4 rounded-2xl border border-white/10 flex items-center justify-between">
-                      <span className="text-sm font-semibold text-[#b792c9]">Net Cubes</span>
-                      <span className={`text-lg font-black ${netCubes > 0 ? 'text-[#0bda76]' : netCubes < 0 ? 'text-red-500' : 'text-white'}`}>
-                        {netCubes > 0 ? `+${netCubes}` : netCubes}
-                      </span>
+                    <div className="fr-panel fr-panel--splash fr-panel--red">
+                      <div className="fr-label">Net Cubes</div>
+                      <div className="fr-reveal">
+                        {netCubes > 0 && <span className="fr-burst"></span>}
+                        <span className="fr-hero" style={netCubes > 0 ? undefined : { color: 'var(--fr-ink)' }}>
+                          {netCubes > 0 ? `+${netCubes}` : netCubes}
+                        </span>
+                        <span className="redact"></span>
+                      </div>
+                      {netCubes > 0 && <span className="fr-stamp">Declassified</span>}
                     </div>
                   )}
 
                   {!!masteryEntry && (
-                    <div className="bg-stark-surface p-4 rounded-2xl border border-white/10">
-                      <div className="flex items-center justify-between mb-2 text-xs tabular-nums">
-                        <span className="text-sm font-semibold text-[#b792c9]">Mastery</span>
-                        <span className="text-white font-bold">Lvl {masteryEntry.level} / {masteryCap}</span>
+                    <div className="fr-panel">
+                      <div className="fr-row">
+                        <div className="fr-label">Mastery</div>
+                        <span className="fr-lvl">LVL {masteryEntry.level} / {masteryCap}</span>
                       </div>
-                      <div className="stitch-progress">
-                        <div className="stitch-progress-fill" style={{ width: `${masteryPct}%`, background: masteryPct >= 100 ? '#ffd700' : 'var(--cosmic-purple)' }} />
+                      <div className={`fr-bar${masteryPct >= 100 ? ' maxed' : ''}`}>
+                        <i style={{ width: `${masteryPct}%` }} />
                       </div>
-                      <p className="text-xs text-[#b792c9] mt-2">{(masteryEntry.experience || 0).toLocaleString()} XP</p>
+                      <span className="fr-meta">{(masteryEntry.experience || 0).toLocaleString()} XP</span>
                     </div>
                   )}
 
                   {variantCount > 0 && (
-                    <div className="bg-stark-surface p-4 rounded-2xl border border-white/10">
-                      <span className="text-sm font-semibold text-[#b792c9]">
-                        {variantCount} variant{variantCount === 1 ? '' : 's'} owned{hasGodSplit ? ' (incl. God Split)' : ''}
+                    <div className="fr-panel">
+                      <div className="fr-label">Variants</div>
+                      <span className="fr-readout" style={{ fontSize: '15px' }}>
+                        {variantCount} OWNED{hasGodSplit ? ' · INCL. GOD SPLIT' : ''}
                       </span>
                     </div>
                   )}
 
                   {hasDeckData && (
-                    <div className="bg-stark-surface p-4 rounded-2xl border border-white/10">
-                      <span className="text-sm font-semibold text-[#b792c9] block mb-2">
+                    <div className="fr-panel">
+                      <div className="fr-label">
                         {cardDecks.length > 0
                           ? `Used in ${cardDecks.length} of your deck${cardDecks.length === 1 ? '' : 's'}`
                           : 'Not in any of your decks yet'}
-                      </span>
+                      </div>
                       {cardDecks.length > 0 && (
-                        <ul className="text-xs text-white/80 mb-3 list-disc list-inside">
+                        <ul className="fr-list">
                           {cardDecks.slice(0, 3).map(d => <li key={d.id || d.name}>{d.name}</li>)}
                         </ul>
                       )}
                       <button
                         onClick={() => { window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'decks' })); onClose(); }}
-                        className="w-full min-h-[44px] rounded-xl font-bold bg-[#ad2bee]/20 hover:bg-[#ad2bee]/30 text-cosmic-purple-text transition-all"
+                        className="fr-btn"
                         aria-label="Go to Decks"
                       >
                         Go to Decks
@@ -6711,14 +6885,14 @@ RULES:
             {seenInDecks.length > 0 && (
               <section className="px-6 mb-6">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="material-symbols-outlined text-[#ad2bee]">trending_up</span>
-                  <h3 className="text-xl font-bold text-white">Seen In</h3>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--fr-blue)' }}>trending_up</span>
+                  <h3 className="text-xl font-bold" style={{ fontFamily: 'var(--fr-font-hero)', color: 'var(--fr-ink)' }}>Seen In</h3>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="fr-chips">
                   {seenInDecks.map(deck => (
                     <span
                       key={deck.name}
-                      className="text-[11px] font-semibold text-cosmic-purple-text bg-[rgba(173,43,238,0.12)] border border-[rgba(173,43,238,0.25)] rounded-full px-3 py-1"
+                      className={`fr-chip${deck.tier === 'S' ? ' s' : deck.tier === 'A' ? ' a' : ''}`}
                     >
                       {deck.name} ({deck.tier})
                     </span>
@@ -6730,11 +6904,12 @@ RULES:
             {/* Strategy Tips */}
             <section className="px-6 mb-8">
               <div className="flex items-center gap-2 mb-3">
-                <span className="material-symbols-outlined text-[#ad2bee]">lightbulb</span>
-                <h3 className="text-xl font-bold text-white">Strategy Tips</h3>
+                <span className="material-symbols-outlined" style={{ color: 'var(--fr-blue)' }}>lightbulb</span>
+                <h3 className="text-xl font-bold" style={{ fontFamily: 'var(--fr-font-hero)', color: 'var(--fr-ink)' }}>Strategy Tips</h3>
               </div>
-              <div className="bg-stark-surface p-4 rounded-2xl border border-white/10">
-                <p className="text-slate-300 leading-relaxed text-sm">{strategyText}</p>
+              <div className="fr-panel">
+                <div className="fr-label">Notes</div>
+                <p className="leading-relaxed text-sm" style={{ color: 'var(--fr-ink)', fontFamily: 'var(--fr-font-body)' }}>{strategyText}</p>
               </div>
             </section>
 
@@ -6742,27 +6917,30 @@ RULES:
             {synergies.length > 0 && (
               <section className="px-6 mb-8">
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="material-symbols-outlined text-[#ad2bee]">dynamic_feed</span>
-                  <h3 className="text-xl font-bold text-white">Best Synergy</h3>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--fr-blue)' }}>dynamic_feed</span>
+                  <h3 className="text-xl font-bold" style={{ fontFamily: 'var(--fr-font-hero)', color: 'var(--fr-ink)' }}>Best Synergy</h3>
                 </div>
-                <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
-                  {synergies.map(syn => {
-                    const synArt = getCardArtUrl(syn);
-                    return (
-                      <div key={syn.name} className="flex-shrink-0 w-24 flex flex-col items-center">
-                        <div className="w-20 h-28 bg-[#2b1933] rounded-lg mb-2 shadow-lg border border-white/10 overflow-hidden">
-                          {synArt ? (
-                            <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${synArt})` }} />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-[#b792c9]">
-                              <span className="material-symbols-outlined">style</span>
-                            </div>
-                          )}
+                <div className="fr-panel">
+                  <div className="fr-label">Pairs Well With</div>
+                  <div className="flex gap-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
+                    {synergies.map(syn => {
+                      const synArt = getCardArtUrl(syn);
+                      return (
+                        <div key={syn.name} className="flex-shrink-0 w-24 flex flex-col items-center">
+                          <div className="w-20 h-28 rounded-lg mb-2 overflow-hidden" style={{ border: '2px solid var(--fr-ink)' }}>
+                            {synArt ? (
+                              <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${synArt})` }} />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--fr-ink-dim)' }}>
+                                <span className="material-symbols-outlined">style</span>
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-xs font-bold text-center truncate w-full text-center" style={{ color: 'var(--fr-ink)' }}>{syn.name}</span>
                         </div>
-                        <span className="text-xs font-bold text-center text-white truncate w-full text-center">{syn.name}</span>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </section>
             )}
@@ -6771,31 +6949,34 @@ RULES:
             {counters.length > 0 && (
               <section className="px-6 mb-8">
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="material-symbols-outlined text-red-500">warning</span>
-                  <h3 className="text-xl font-bold text-white">Countered By</h3>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--fr-red)' }}>warning</span>
+                  <h3 className="text-xl font-bold" style={{ fontFamily: 'var(--fr-font-hero)', color: 'var(--fr-ink)' }}>Countered By</h3>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  {counters.slice(0, 4).map(ctr => {
-                    const ctrArt = getCardArtUrl(ctr);
-                    return (
-                      <div key={ctr.name} className="bg-red-500/10 border border-red-500/20 p-3 rounded-xl flex items-center gap-3">
-                        <div className="size-12 bg-[#2b1933] rounded-md shrink-0 overflow-hidden">
-                          {ctrArt ? (
-                            <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${ctrArt})` }} />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-[#b792c9]">
-                              <span className="material-symbols-outlined text-sm">style</span>
-                            </div>
-                          )}
+                <div className="fr-panel">
+                  <div className="fr-label">Tech Cards</div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {counters.slice(0, 4).map(ctr => {
+                      const ctrArt = getCardArtUrl(ctr);
+                      return (
+                        <div key={ctr.name} className="p-3 rounded-xl flex items-center gap-3" style={{ border: '2px solid var(--fr-red)', background: 'rgba(237,29,36,0.06)' }}>
+                          <div className="size-12 rounded-md shrink-0 overflow-hidden" style={{ border: '2px solid var(--fr-ink)' }}>
+                            {ctrArt ? (
+                              <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${ctrArt})` }} />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center" style={{ color: 'var(--fr-ink-dim)' }}>
+                                <span className="material-symbols-outlined text-sm">style</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-bold text-sm truncate" style={{ color: 'var(--fr-ink)' }}>{ctr.name}</span>
+                            <span className="text-[10px] uppercase font-black" style={{ color: 'var(--fr-red-ink)' }}>Counter</span>
+                            <span className="text-xs truncate" style={{ color: 'var(--fr-ink-dim)' }}>{COUNTER_WHY[ctr.name]}</span>
+                          </div>
                         </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="font-bold text-sm text-white truncate">{ctr.name}</span>
-                          <span className="text-[10px] text-red-400 uppercase font-black">Counter</span>
-                          <span className="text-xs text-[#b792c9] truncate">{COUNTER_WHY[ctr.name]}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </section>
             )}
@@ -6804,14 +6985,15 @@ RULES:
             <div className="px-6">
               {isOwned ? (
                 <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-center gap-2 text-[#0bda76] py-3">
+                  <div className="flex items-center justify-center gap-2 text-[color:var(--fr-blue)] py-3">
                     <span className="material-symbols-outlined" style={{ fontSize: '20px', fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                     <span className="font-bold tracking-wide">In Your Collection</span>
                   </div>
                   {editMode && (
                     <button
                       onClick={onToggleOwned}
-                      className="w-full py-3 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white transition-all"
+                      className="w-full fr-btn"
+                      style={{ background: 'var(--fr-red)' }}
                     >
                       Remove from Collection
                     </button>
@@ -6820,7 +7002,7 @@ RULES:
               ) : (
                 <button
                   onClick={onToggleOwned}
-                  className="w-full py-3 rounded-xl font-bold bg-[#0bda76] hover:opacity-90 text-[#0f0814] transition-all"
+                  className="w-full fr-btn"
                 >
                   Add to Collection
                 </button>
