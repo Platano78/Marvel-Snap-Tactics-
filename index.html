@@ -10289,7 +10289,7 @@ RULES:
     const MasteryForgeView = ({ cardDataVersion }) => {
       // ── Hooks (ALL hooks before any early return — BUG-018 / React #310) ──
       const [mastery, setMastery] = useState(null);
-      const [sortMode, setSortMode] = useState('level'); // 'level' | 'xp'
+      const [sortMode, setSortMode] = useState('level'); // 'level' | 'nearcap'
       const [showAll, setShowAll] = useState(false);
 
       useEffect(() => {
@@ -10314,9 +10314,18 @@ RULES:
       ), [masteryCards, defIdNameMap]);
 
       const sortedCards = useMemo(() => (
-        [...resolvedCards].sort((a, b) => (
-          sortMode === 'xp' ? (b.experience || 0) - (a.experience || 0) : (b.level || 0) - (a.level || 0)
-        ))
+        [...resolvedCards].sort((a, b) => {
+          if (sortMode === 'nearcap') {
+            // Closest-to-cap first; already-maxed cards sink to the bottom.
+            const aRem = (a.levelCap || 30) - (a.level || 0);
+            const bRem = (b.levelCap || 30) - (b.level || 0);
+            const aMaxed = aRem <= 0;
+            const bMaxed = bRem <= 0;
+            if (aMaxed !== bMaxed) return aMaxed ? 1 : -1;
+            return aRem - bRem || (b.level || 0) - (a.level || 0);
+          }
+          return (b.level || 0) - (a.level || 0);
+        })
       ), [resolvedCards, sortMode]);
 
       const hasMastery = masteryCards.length > 0;
@@ -10397,11 +10406,11 @@ RULES:
               By Level
             </button>
             <button
-              onClick={() => setSortMode('xp')}
-              aria-pressed={sortMode === 'xp'}
-              className={`min-h-[44px] px-4 rounded-full text-xs font-bold transition-colors ${sortMode === 'xp' ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}
+              onClick={() => setSortMode('nearcap')}
+              aria-pressed={sortMode === 'nearcap'}
+              className={`min-h-[44px] px-4 rounded-full text-xs font-bold transition-colors ${sortMode === 'nearcap' ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}
             >
-              By XP
+              Near Cap
             </button>
           </div>
 
