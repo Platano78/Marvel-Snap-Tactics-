@@ -3513,6 +3513,10 @@ RULES:
         // Parse card stats (net cubes per card)
         const cardStats = account.CardStats || {};
         const cardPerformance = Object.entries(cardStats)
+          // Skip .NET serialization-artifact keys (e.g. a Dictionary type-descriptor string that
+          // leaks into CardStats) — a real CardDefId/name never contains these markers. Also guard
+          // that netCubes is numeric so a non-card entry can't corrupt the sort.
+          .filter(([card, netCubes]) => card && typeof netCubes === 'number' && !/[`\[\]]|System\.|mscorlib/.test(card))
           .map(([card, netCubes]) => ({ card, netCubes }))
           .sort((a, b) => b.netCubes - a.netCubes);
 
