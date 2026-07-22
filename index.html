@@ -6406,6 +6406,30 @@ RULES:
       const artUrl = getCardArtUrl(card);
       const [artFailed, setArtFailed] = useState(false);
 
+      // Your Card — private synced data (perf/mastery/variants/decks), loaded once + on sync
+      const [perf, setPerf] = useState(null);
+      const [mastery, setMastery] = useState(null);
+      const [collEnhanced, setCollEnhanced] = useState(null);
+      const [decks, setDecks] = useState([]);
+      useEffect(() => {
+        const load = () => {
+          setPerf(loadFromStorage('snap_card_performance', null));
+          setMastery(loadFromStorage('snap_mastery', null));
+          setCollEnhanced(loadFromStorage('snap_collection_enhanced', null));
+          setDecks(loadFromStorage('snap_decks', []));
+        };
+        load();
+        window.addEventListener('snap-data-updated', load);
+        return () => window.removeEventListener('snap-data-updated', load);
+      }, []);
+
+      // defId -> display name lookup (mirrors MasteryForgeView/CosmeticsView resolution)
+      const defIdNameMap = useMemo(() => {
+        const m = new Map();
+        CARD_DATA.forEach(c => { if (c.defId) m.set(c.defId, c.name); });
+        return m;
+      }, []);
+
       // Derive ability keyword badge
       const abilityType = React.useMemo(() => {
         if (!card.ability) return null;
@@ -6473,6 +6497,24 @@ RULES:
         if (a.includes('move')) return `${card.name} benefits from movement synergies. Iron Fist and Cloak can reposition it to the most advantageous lane.`;
         return `${card.name} slots into decks that want its stat line — ${card.cost}-Cost for ${card.power} Power.`;
       }, [card]);
+
+      // "Your Card" — derived from real synced data only; each guard below decides
+      // whether its own sub-section renders. No fabricated numbers or denominators.
+      const netCubes = perf?.cards?.[card.name]?.netCubes;
+      const hasPerfData = netCubes !== undefined && netCubes !== null;
+
+      const masteryEntry = mastery?.cards?.find(c => (defIdNameMap.get(c.card) || c.card) === card.name);
+      const masteryCap = masteryEntry?.levelCap || 30;
+      const masteryPct = masteryEntry ? Math.min(100, ((masteryEntry.level || 0) / masteryCap) * 100) : 0;
+
+      const collEntry = collEnhanced?.cards?.find(c => (defIdNameMap.get(c.cardDefId) || c.cardDefId) === card.name);
+      const variantCount = collEntry?.variants?.length || 0;
+      const hasGodSplit = !!collEntry?.variants?.some(v => v.isGodSplit);
+
+      const cardDecks = Array.isArray(decks) ? decks.filter(d => Array.isArray(d.cards) && d.cards.includes(card.name)) : [];
+      const hasDeckData = Array.isArray(decks) && decks.length > 0;
+
+      const hasYourCardData = hasPerfData || !!masteryEntry || variantCount > 0 || hasDeckData;
 
       return (
         <div
@@ -6561,6 +6603,71 @@ RULES:
                 <p className="text-slate-300 leading-relaxed text-sm">{card.ability || 'No ability text available.'}</p>
               </div>
             </section>
+
+            {/* Your Card — private synced data (perf/mastery/variants/decks). Each
+                sub-block is guarded independently on real data; the whole section
+                is gated by hasYourCardData so unowned/no-data cards show nothing here. */}
+            {hasYourCardData && (
+              <section className="px-6 mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="material-symbols-outlined text-[#ad2bee]">person</span>
+                  <h3 className="text-xl font-bold text-white">Your Card</h3>
+                </div>
+                <div className="flex flex-col gap-3">
+                  {hasPerfData && (
+                    <div className="bg-stark-surface p-4 rounded-2xl border border-white/10 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-[#b792c9]">Net Cubes</span>
+                      <span className={`text-lg font-black ${netCubes > 0 ? 'text-[#0bda76]' : netCubes < 0 ? 'text-red-500' : 'text-white'}`}>
+                        {netCubes > 0 ? `+${netCubes}` : netCubes}
+                      </span>
+                    </div>
+                  )}
+
+                  {!!masteryEntry && (
+                    <div className="bg-stark-surface p-4 rounded-2xl border border-white/10">
+                      <div className="flex items-center justify-between mb-2 text-xs tabular-nums">
+                        <span className="text-sm font-semibold text-[#b792c9]">Mastery</span>
+                        <span className="text-white font-bold">Lvl {masteryEntry.level} / {masteryCap}</span>
+                      </div>
+                      <div className="stitch-progress">
+                        <div className="stitch-progress-fill" style={{ width: `${masteryPct}%`, background: masteryPct >= 100 ? '#ffd700' : 'var(--cosmic-purple)' }} />
+                      </div>
+                      <p className="text-xs text-[#b792c9] mt-2">{(masteryEntry.experience || 0).toLocaleString()} XP</p>
+                    </div>
+                  )}
+
+                  {variantCount > 0 && (
+                    <div className="bg-stark-surface p-4 rounded-2xl border border-white/10">
+                      <span className="text-sm font-semibold text-[#b792c9]">
+                        {variantCount} variant{variantCount === 1 ? '' : 's'} owned{hasGodSplit ? ' (incl. God Split)' : ''}
+                      </span>
+                    </div>
+                  )}
+
+                  {hasDeckData && (
+                    <div className="bg-stark-surface p-4 rounded-2xl border border-white/10">
+                      <span className="text-sm font-semibold text-[#b792c9] block mb-2">
+                        {cardDecks.length > 0
+                          ? `Used in ${cardDecks.length} of your deck${cardDecks.length === 1 ? '' : 's'}`
+                          : 'Not in any of your decks yet'}
+                      </span>
+                      {cardDecks.length > 0 && (
+                        <ul className="text-xs text-white/80 mb-3 list-disc list-inside">
+                          {cardDecks.slice(0, 3).map(d => <li key={d.id || d.name}>{d.name}</li>)}
+                        </ul>
+                      )}
+                      <button
+                        onClick={() => { window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'decks' })); onClose(); }}
+                        className="w-full min-h-[44px] rounded-xl font-bold bg-[#ad2bee]/20 hover:bg-[#ad2bee]/30 text-cosmic-purple-text transition-all"
+                        aria-label="Go to Decks"
+                      >
+                        Go to Decks
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
 
             {/* Seen In — real decks this card appears in, from live tier list data */}
             {seenInDecks.length > 0 && (
