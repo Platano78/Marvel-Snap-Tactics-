@@ -98,3 +98,21 @@ Generate 3 concept mockups in **Stitch**, each on **Card Detail + Home**, sharin
 - Concept B "Splash Page": Marvel RED base, heavy ink borders, halftone wash, action/POW stat bubbles.
 - Concept C "Tactical HUD": DARK + purple accent, geometric power-bar viz, live-feed sync deltas.
 Then: ChatGPT adversarial critique (which reads a Sync Delta fastest / most ownable / noise-trap) → present 3-up on Card Detail → owner picks → Phase 2 (systematize the winner into CSS-variable tokens) → Phase 3 crew slices (Card Detail first).
+
+## 10. Phase 1 RESULT — pick LOCKED (owner, 2026-07-22)
+
+**Winner: A "Field Report" base identity + B "Splash Page" energy ("A's soul, B's energy").**
+
+- **Executed:** Stitch project "Snap — Design Pass Concepts" (`projects/6159647980375162328`), 3 design systems (A `assets/7861476939588740308`, B `assets/16544935332947469040`, C `assets/7715685138557257106`), 6 screens rendered (Gemini 3 Pro) on Card Detail + Home, grounded in real `Your Card` / `Since Last Sync` data. First pass read too conservative → owner note "be bold, flashy, have fun" → regenerated bolder v2s of all 3 Card Details + C-Home. 3-up board artifact delivered.
+- **Winning screen IDs** (project `6159647980375162328`): A CardDetail `bb7dbc86fb62445a94f4068a39e20b2c`, A Home `e93519860bfa4a0d96bc4d271c82f29c`; B CardDetail `04c74a07f60f4b8ca8e7567ce5b21906`, B Home `4e906aef7bb1468e9ee404c6f3019ac0`; C CardDetail `b73fb863042842efa19ceab86964393e`, C Home `e3c654e3aec14bafa05d3f7c83ba897f`.
+- **Adversarial critique (ChatGPT):** A won all three tests — fastest exact-number read, most ownable (declassify-the-hidden-record = the moat), cleanest signal/noise. B's POW! starburst = highest noise risk (container out-shouts the number); C = generic-AI-dashboard risk. Recommendation was A; **owner chose A-base but explicitly wants B's fun dialed up** — resolves the standing "A is important-but-not-fun" objection.
+- **Phase 2 mandate (the systematize step):** translate A "Field Report" into the CSS-variable design system + panel primitives (`--panel-border`, `--panel-gutter`, `--accent-glow`, `--ink-weight`, noir base, purple demoted to accent, amber #FFC107 as the single POW alert, Space-Mono private-data numerals, Anton/condensed hero labels). **The differentiator vs. plain-A:** engineer a **rationed "reveal moment"** at sync time (redaction bars break open → amber hero number punches past its panel → stamp impact → settles to clean static read) so the dossier lands as a *triumph*, not paperwork. Borrow B's exuberance as a ≤1s event, NOT permanent decoration. Motion honors `prefers-reduced-motion`.
+- **Phase 3:** crew slices, Card Detail first (§6 order), sw CACHE_NAME bump per slice (currently `snapapoulous-stitch-v42`).
+
+## 11. Phase 2 RESULT — "Field Report · Splash Edition" (2026-07-22)
+
+Systematized as a **live real-CSS prototype** (artifact `68d24a47-44f7-44fd-8ecb-5ac8a9f11bb8`; source `scratchpad/fr-proto-v1.tpl.html`). Two owner calls after v0:
+- **Colour pivot → "Bright splash paper" (owner liked B's palette):** noir base DROPPED. Final skin = bright comic paper `#fffdf7`, white panels, 3px black ink borders + hard 4px offset shadow, ≤5% halftone; **Marvel red/blue/gold**. **Flips the app default surface dark→LIGHT** (real product change, Phase 3).
+- **Kept from A ("A's soul, B's skin"):** dossier data framing (Space-Mono numbers, case-file panels, file-tab headers) + the **rationed reveal** (ink censor wipe → hero number punch + gold POW burst → `DECLASSIFIED`/`SYNCED` stamp → fades; no wallpaper). Space Mono owns every private number.
+- **Colour logic = POW threshold gate (confirmed):** RED = high-mag cube swings only · GOLD = milestones · BLUE = accent/nav · INK = ordinary values (no traffic-light). Stamp wording kept.
+- **Tokens for Phase 3:** paste the `--fr-*` block + primitives (`.fr-panel`, `.fr-panel--splash`, `.fr-hero`, `.fr-burst`, `.fr-reveal/.redact/.fr-stamp`) as a Layer-2.5 skin onto the 4-layer `:root`; reuse `--ease-snap` + `prefers-reduced-motion`/`data-motion`/`data-perf` gates; reveal fires on `snap-data-updated`. Add Anton + Space Mono to the Google-Fonts `<link>`; body stays Spline Sans.
