@@ -2057,6 +2057,7 @@
     let uniqueCardsUpdateCallbacks = [];
     let pendingScrollToCreators = false;
     let pendingAdvisorMeta = false;
+    let pendingAdvisorMatchup = null; // { deckName, deckCards:[displayName] } — one-shot: Decks → Advisor matchup
 
     // Function to update uniqueCards and notify listeners
     const updateUniqueCards = (newCards) => {
@@ -6098,6 +6099,7 @@ RULES:
       const [isLoading, setIsLoading] = useState(false);
       const [error, setError] = useState(null);
       const [advisorMode, setAdvisorMode] = useState('ask');
+      const [matchupDeck, setMatchupDeck] = useState(null); // { deckName, deckCards } when a matchup is in flight
       const messagesEndRef = useRef(null);
       // Holds the in-flight request's AbortController. A ref (not state) so setting/clearing
       // it never triggers a re-render.
@@ -6123,6 +6125,14 @@ RULES:
 
       useEffect(() => {
         if (pendingAdvisorMeta) { pendingAdvisorMeta = false; setAdvisorMode('meta'); }
+      }, []);
+
+      useEffect(() => {
+        if (pendingAdvisorMatchup) {
+          setMatchupDeck(pendingAdvisorMatchup);
+          pendingAdvisorMatchup = null;
+          setAdvisorMode('ask');
+        }
       }, []);
 
       const isConfigured = () => {
@@ -6267,6 +6277,34 @@ RULES:
             ))}
           </div>
           {advisorMode === 'ask' && (<>
+          {matchupDeck && (
+            <div className="mx-4 mb-3 bg-stark-surface border border-[rgba(173,43,238,0.25)] rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-cosmic-purple-text flex items-center gap-2 min-w-0">
+                  <span className="material-symbols-outlined shrink-0" style={{ fontSize: '18px' }} aria-hidden="true">compare_arrows</span>
+                  <span className="truncate">Matchup: {matchupDeck.deckName}</span>
+                </span>
+                <button onClick={() => setMatchupDeck(null)} aria-label="Dismiss matchup"
+                  className="text-stitch-muted shrink-0 min-h-[32px] min-w-[32px] flex items-center justify-center">
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">close</span>
+                </button>
+              </div>
+              <p className="text-xs text-stitch-muted mb-2">Pick a meta opponent to analyze against:</p>
+              <div className="flex flex-wrap gap-2">
+                {(Array.isArray(META_CONTEXT.topArchetypes) ? META_CONTEXT.topArchetypes : []).map(opp => (
+                  <button key={opp.name}
+                    onClick={() => {
+                      const prompt = `Analyze this matchup. MY DECK "${matchupDeck.deckName}": ${matchupDeck.deckCards.join(', ')}. OPPONENT ARCHETYPE: ${opp.name} (${opp.tier} tier) — ${opp.description}. Give qualitative matchup guidance: who is favored and why, the key turns, curve/tempo considerations, and which specific tech cards in my deck matter here. Be explicit about what is fact (my decklist) versus inference (the opponent's likely cards).`;
+                      setMatchupDeck(null);
+                      sendMessage(prompt);
+                    }}
+                    className="text-xs px-3 py-2 rounded-full border min-h-[40px] bg-stark-surface-2 text-white border-[rgba(173,43,238,0.25)] hover:bg-[rgba(173,43,238,0.15)] transition-colors">
+                    vs {opp.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {!isConfigured() && (
             <div className="mx-4 mb-4 bg-stark-surface border border-[rgba(173,43,238,0.25)] rounded-2xl p-4">
               <p className="text-stitch-muted text-sm mb-3">AI not configured yet!</p>
@@ -7980,6 +8018,18 @@ RULES:
                           </div>
                         );
                       })()}
+                      {/* Analyze matchup — hands this deck to the Advisor, which picks the meta opponent */}
+                      <button
+                        onClick={() => {
+                          pendingAdvisorMatchup = { deckName: deck.name, deckCards: deck.cards.map(n => resolveToDisplayName(n)) };
+                          window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'ai' }));
+                        }}
+                        className="mt-3 w-full min-h-[44px] rounded-full text-sm font-bold bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-cosmic-purple-text hover:bg-[rgba(173,43,238,0.15)] transition-colors flex items-center justify-center gap-2"
+                        aria-label={`Analyze matchups for ${deck.name}`}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">compare_arrows</span>
+                        Analyze matchup
+                      </button>
                     </div>
                   );
                 })}
