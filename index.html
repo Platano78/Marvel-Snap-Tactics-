@@ -4776,7 +4776,7 @@ RULES:
 
 
     // Phase 1: Directional page transition wrapper
-    const TAB_INDEX = {dashboard:0, collection:1, decks:2, ai:3, settings:4, history:5, analytics:6, cosmetics:7, mastery:8, profile:9, simulator:10};
+    const TAB_INDEX = {dashboard:0, collection:1, decks:2, ai:3, settings:4, history:5, analytics:6, cosmetics:7, profile:9, simulator:10};
     const PageTransition = ({ activeTab, children }) => {
       const prevTab = useRef(activeTab);
       const [direction, setDirection] = useState('slide-left');
@@ -6802,6 +6802,7 @@ RULES:
       const [editMode, setEditMode] = useState(false); // edit mode for removing cards
       const [selectedCard, setSelectedCard] = useState(null);
       const [confirmDialog, setConfirmDialog] = useState({ isOpen: false, action: null });
+      const [cardsMode, setCardsMode] = useState('browse'); // 'browse' | 'mastery'
 
       const handleClearAll = useCallback(() => {
         setConfirmDialog({
@@ -6925,6 +6926,19 @@ RULES:
 
       return (
         <div className="pb-24">
+          {/* Cards mode toggle: Browse | Mastery */}
+          <div className="flex gap-3 px-4 pt-4 pb-1">
+            <button onClick={() => setCardsMode('browse')} aria-pressed={cardsMode === 'browse'}
+              className={`flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium transition-colors ${cardsMode === 'browse' ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-white hover:bg-[rgba(173,43,238,0.1)]'}`}>
+              Browse
+            </button>
+            <button onClick={() => setCardsMode('mastery')} aria-pressed={cardsMode === 'mastery'}
+              className={`flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium transition-colors ${cardsMode === 'mastery' ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 border border-[rgba(173,43,238,0.15)] text-white hover:bg-[rgba(173,43,238,0.1)]'}`}>
+              Mastery
+            </button>
+          </div>
+          {cardsMode === 'browse' ? (
+          <>
 
           {/* ── Stitch: Stats Overview row ── */}
           <div className="flex flex-wrap gap-4 px-4 pt-4 pb-2">
@@ -7208,6 +7222,10 @@ RULES:
             onConfirm={confirmClearCollection}
             onCancel={() => setConfirmDialog({ isOpen: false, action: null })}
           />
+          </>
+          ) : (
+            <MasteryForgeView cardDataVersion={cardDataVersion} />
+          )}
         </div>
       );
     };
@@ -11019,13 +11037,6 @@ RULES:
                 <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">palette</span>
                 <span className="text-white text-sm">Cosmetics</span>
               </button>
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'mastery' }))}
-                className="stitch-list-item p-3 min-h-[44px] flex flex-col items-center"
-              >
-                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">workspace_premium</span>
-                <span className="text-white text-sm">Mastery Forge</span>
-              </button>
             </div>
           </div>
 
@@ -14135,7 +14146,7 @@ RULES:
         const tab = params.get('tab');
         const action = params.get('action');
 
-        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'settings', 'history', 'profile', 'analytics', 'simulator', 'cosmetics', 'mastery'].includes(tab)) {
+        if (tab && ['dashboard', 'ai', 'collection', 'decks', 'settings', 'history', 'profile', 'analytics', 'simulator', 'cosmetics'].includes(tab)) {
           setActiveTab(tab);
         }
 
@@ -14358,11 +14369,6 @@ RULES:
             {activeTab === 'cosmetics' && (
               <ErrorBoundary>
                 <CosmeticsView cardDataVersion={cardDataVersion} />
-              </ErrorBoundary>
-            )}
-            {activeTab === 'mastery' && (
-              <ErrorBoundary>
-                <MasteryForgeView cardDataVersion={cardDataVersion} />
               </ErrorBoundary>
             )}
             {activeTab === 'simulator' && (
