@@ -2586,8 +2586,8 @@
         name: 'Google (Gemini)',
         description: 'Sign in with Google - easiest option',
         authType: 'oauth',
-        models: ['gemini-3.5-flash', 'gemini-3.1-pro-preview', 'gemini-2.5-pro', 'gemini-3-flash-preview', 'gemini-3.1-flash-lite', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'],
-        defaultModel: 'gemini-3.5-flash',
+        models: ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3.1-pro-preview', 'gemini-2.5-pro', 'gemini-3-flash-preview', 'gemini-3.1-flash-lite', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'],
+        defaultModel: 'gemini-3.6-flash',
         primary: true
       },
       'gemini': {
@@ -2595,8 +2595,8 @@
         name: 'Gemini (API Key)',
         description: 'Use your own Gemini API key',
         authType: 'api_key',
-        models: ['gemini-3.5-flash', 'gemini-3.1-pro-preview', 'gemini-2.5-pro', 'gemini-3-flash-preview', 'gemini-3.1-flash-lite', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'],
-        defaultModel: 'gemini-3.5-flash'
+        models: ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-3.1-pro-preview', 'gemini-2.5-pro', 'gemini-3-flash-preview', 'gemini-3.1-flash-lite', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'],
+        defaultModel: 'gemini-3.6-flash'
       },
       'groq': {
         id: 'groq',
@@ -3330,6 +3330,53 @@ RESPONSE GUIDELINES:
           }
           throw new Error(message);
         }
+      }
+    };
+
+    // Auto-detects models exposed by a local endpoint (Ollama or OpenAI-compatible), for the
+    // Settings "Detect" button. Tries the OpenAI-compatible /v1/models list first (LM Studio,
+    // vLLM, and Ollama's own OpenAI-compat shim all serve it), then falls back to Ollama's
+    // native /api/tags. Reachable-but-empty is a valid outcome (returns []); only a total
+    // failure to reach either endpoint throws, so the caller can tell "no models" apart from
+    // "can't connect".
+    const detectLocalModels = async (endpoint) => {
+      const base = (endpoint || '').trim().replace(/\/+$/, '');
+      const isV1 = base.endsWith('/v1');
+      const modelsUrl = isV1 ? `${base}/models` : `${base}/v1/models`;
+      const origin = isV1 ? base.slice(0, -3) : base;
+
+      let openaiReachable = false;
+      let openaiErr = null;
+      try {
+        const ac = withAbort(undefined, AI_CONNECT_TIMEOUT_MS);
+        try {
+          const response = await fetch(modelsUrl, { headers: { Accept: 'application/json' }, signal: ac.signal });
+          if (!response.ok) throw new Error(`${response.status}`);
+          openaiReachable = true;
+          const data = await response.json();
+          const models = Array.isArray(data.data) ? data.data.map(m => m.id).filter(Boolean) : [];
+          if (models.length) return [...new Set(models)];
+        } finally {
+          ac.cleanup();
+        }
+      } catch (e) {
+        openaiErr = e;
+      }
+
+      try {
+        const ac = withAbort(undefined, AI_CONNECT_TIMEOUT_MS);
+        try {
+          const response = await fetch(`${origin}/api/tags`, { headers: { Accept: 'application/json' }, signal: ac.signal });
+          if (!response.ok) throw new Error(`${response.status}`);
+          const data = await response.json();
+          const models = Array.isArray(data.models) ? data.models.map(m => m.name).filter(Boolean) : [];
+          return [...new Set(models)];
+        } finally {
+          ac.cleanup();
+        }
+      } catch (ollamaErr) {
+        if (openaiReachable) return []; // OpenAI-compat endpoint reachable but empty; Ollama fallback unreachable too
+        throw new Error(`Local endpoint unreachable at both ${modelsUrl} (${openaiErr.message}) and ${origin}/api/tags (${ollamaErr.message})`);
       }
     };
 
@@ -10503,6 +10550,9 @@ RULES:
       const [testStatus, setTestStatus] = useState({});
       const [testError, setTestError] = useState({});
       const [isRefreshingCards, setIsRefreshingCards] = useState(false);
+      const [localModels, setLocalModels] = useState([]);
+      const [detectingModels, setDetectingModels] = useState(false);
+      const [detectError, setDetectError] = useState(null);
 
       // Phase 4: Log Ingestor state
       const [isDragOver, setIsDragOver] = useState(false);
@@ -11068,16 +11118,57 @@ RULES:
                         style={{background:'#fff',border:'3px solid var(--fr-line)',color:'var(--fr-ink)'}} />
                       <button onClick={() => { selectProvider(provider.id); testConnection(provider.id); }}
                         className="fr-chip a min-h-[44px] px-3 py-2 text-sm">Test</button>
+                      {provider.id === 'local' && (
+                        <button onClick={async () => {
+                            setDetectError(null);
+                            setDetectingModels(true);
+                            try {
+                              const models = await detectLocalModels(aiConfig.localEndpoint);
+                              setLocalModels(models);
+                              if (models.length) {
+                                selectProvider(provider.id);
+                                setAiConfig(prev => ({ ...prev, model: prev.model && models.includes(prev.model) ? prev.model : models[0] }));
+                              } else {
+                                setDetectError('No models found at endpoint');
+                              }
+                            } catch (e) {
+                              setDetectError('Could not reach endpoint');
+                            } finally {
+                              setDetectingModels(false);
+                            }
+                          }}
+                          disabled={!aiConfig.localEndpoint || detectingModels}
+                          id={`settings-local-detect-${provider.id}`}
+                          aria-label={`Detect models at ${provider.name} endpoint`}
+                          className="fr-chip a min-h-[44px] px-3 py-2 text-sm">{detectingModels ? 'Detecting…' : 'Detect'}</button>
+                      )}
                     </div>
                     <p className="text-xs mt-1" style={{color:'var(--fr-ink-dim)'}}>Common ports: Ollama (11434), LM Studio (1234), vLLM (8000)</p>
+                    {provider.id === 'local' && detectError && (
+                      <p className="text-[10px] mt-1" style={{color:'var(--fr-red-ink)'}}>{detectError}</p>
+                    )}
                     {aiConfig.provider === provider.id && (
-                      <input type="text" placeholder="Model name..."
-                        id={`settings-local-model-${provider.id}`}
-                        name={`settings-local-model-${provider.id}`}
-                        value={aiConfig.model || ''}
-                        onChange={(e) => setAiConfig(prev => ({ ...prev, model: e.target.value }))}
-                        className="w-full mt-2 rounded-xl px-3 py-2 text-sm placeholder:text-[var(--fr-ink-dim)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,110,199,.35)]"
-                        style={{background:'#fff',border:'3px solid var(--fr-line)',color:'var(--fr-ink)'}} />
+                      <React.Fragment>
+                        {provider.id === 'local' && localModels.length > 0 && (
+                          <select
+                            id={`settings-local-model-select-${provider.id}`}
+                            name={`settings-local-model-select-${provider.id}`}
+                            aria-label="Detected local model"
+                            value={aiConfig.model || ''}
+                            onChange={(e) => setAiConfig(prev => ({ ...prev, model: e.target.value }))}
+                            className="w-full mt-2 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,110,199,.35)]"
+                            style={{background:'#fff',border:'3px solid var(--fr-line)',color:'var(--fr-ink)'}}>
+                            {localModels.map(m => <option key={m} value={m}>{m}</option>)}
+                          </select>
+                        )}
+                        <input type="text" placeholder="Model name..."
+                          id={`settings-local-model-${provider.id}`}
+                          name={`settings-local-model-${provider.id}`}
+                          value={aiConfig.model || ''}
+                          onChange={(e) => setAiConfig(prev => ({ ...prev, model: e.target.value }))}
+                          className="w-full mt-2 rounded-xl px-3 py-2 text-sm placeholder:text-[var(--fr-ink-dim)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,110,199,.35)]"
+                          style={{background:'#fff',border:'3px solid var(--fr-line)',color:'var(--fr-ink)'}} />
+                      </React.Fragment>
                     )}
                   </div>
                 ))}
