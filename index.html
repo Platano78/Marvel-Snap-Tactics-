@@ -11188,64 +11188,61 @@ RULES:
       const advancedProviders = Object.values(AIProviders).filter(p => p.advanced);
 
       return (
-        <div className="px-4 pb-20">
-          <Header title="SETTINGS" />
+        <div className="fr-scope px-4 pb-20">
+          <div className="fr-tab" style={{padding:'0 4px', margin:'12px 16px 0'}}><h3>Settings</h3><span className="code">More</span></div>
 
           {/* App Info */}
-          <div className="stitch-card p-5 mb-4">
+          <div className="fr-panel p-5 mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-cosmic-purple-text rounded-xl flex items-center justify-center">
-                <span className="text-2xl font-display font-bold text-white">S</span>
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{background:'var(--fr-blue)', border:'2px solid var(--fr-ink)'}}>
+                <span className="text-2xl font-display font-bold" style={{color:'#fff'}}>S</span>
               </div>
               <div>
-                <div className="text-white font-bold">Snapapoulous Prime</div>
-                <div className="text-stitch-muted text-sm">v3.0.0 - Stitch Design Rebuild</div>
+                <div className="font-bold" style={{color:'var(--fr-ink)'}}>Snapapoulous Prime</div>
+                <div className="text-sm" style={{color:'var(--fr-ink-dim)'}}>v3.0.0 - Stitch Design Rebuild</div>
               </div>
             </div>
           </div>
 
           {/* Quick Navigation - More Features */}
-          <div className="stitch-card p-5 mb-4">
-            <div className="stitch-section-header">
-              <span className="material-symbols-outlined" aria-hidden="true">apps</span>
-              More Features
-            </div>
+          <div className="fr-panel p-5 mb-4">
+            <div className="fr-tab"><span className="sr-only" aria-hidden="true"></span><h3>More Features</h3></div>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'profile' }))}
-                className="stitch-list-item p-3 min-h-[44px] flex flex-col items-center"
+                className="fr-chip a p-3 min-h-[44px] flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">person</span>
-                <span className="text-white text-sm">Profile</span>
+                <span className="material-symbols-outlined text-2xl mb-1" style={{color:'var(--fr-blue)'}} aria-hidden="true">person</span>
+                <span className="text-sm" style={{color:'var(--fr-ink)'}}>Profile</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'history' }))}
-                className="stitch-list-item p-3 min-h-[44px] flex flex-col items-center"
+                className="fr-chip a p-3 min-h-[44px] flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">history</span>
-                <span className="text-white text-sm">Match History</span>
+                <span className="material-symbols-outlined text-2xl mb-1" style={{color:'var(--fr-blue)'}} aria-hidden="true">history</span>
+                <span className="text-sm" style={{color:'var(--fr-ink)'}}>Match History</span>
               </button>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'analytics' }))}
-                className="stitch-list-item p-3 min-h-[44px] flex flex-col items-center"
+                className="fr-chip a p-3 min-h-[44px] flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">monitoring</span>
-                <span className="text-white text-sm">Analytics</span>
+                <span className="material-symbols-outlined text-2xl mb-1" style={{color:'var(--fr-blue)'}} aria-hidden="true">monitoring</span>
+                <span className="text-sm" style={{color:'var(--fr-ink)'}}>Analytics</span>
               </button>
               <button
                 onClick={() => { pendingScrollToCreators = true; window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'decks' })); }}
-                className="stitch-list-item p-3 min-h-[44px] flex flex-col items-center"
+                className="fr-chip a p-3 min-h-[44px] flex flex-col items-center"
               >
-                <span className="material-symbols-outlined text-2xl mb-1 text-cosmic-purple-text" aria-hidden="true">movie</span>
-                <span className="text-white text-sm">Creators</span>
+                <span className="material-symbols-outlined text-2xl mb-1" style={{color:'var(--fr-blue)'}} aria-hidden="true">movie</span>
+                <span className="text-sm" style={{color:'var(--fr-ink)'}}>Creators</span>
               </button>
             </div>
           </div>
 
           {/* PC Game Data Sync - Phase 5 */}
-          <div className="stitch-card p-5 mb-4 pc-sync-section">
-            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">PC Game Data Sync</h3>
-            <p className="text-stitch-muted text-sm mb-4">
+          <div className="fr-panel p-5 mb-4 pc-sync-section">
+            <div className="fr-tab"><h3>PC Game Data Sync</h3></div>
+            <p className="text-sm mb-4" style={{color:'var(--fr-ink-dim)'}}>
               Import your collection, stats, and card performance directly from game files.
             </p>
 
@@ -11257,22 +11254,22 @@ RULES:
           </div>
 
           {/* QR Sync - Phase 4 */}
-          <div className="stitch-card p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Cross-Device Sync</h3>
-            <p className="text-stitch-muted text-sm mb-4">
+          <div className="fr-panel p-5 mb-4">
+            <div className="fr-tab"><h3>Cross-Device Sync</h3></div>
+            <p className="text-sm mb-4" style={{color:'var(--fr-ink-dim)'}}>
               Generate a QR code to quickly sync your collection to another device.
             </p>
 
             <button
               onClick={generateSyncQR}
-              className="w-full min-h-[44px] bg-cosmic-purple text-white py-3 rounded-full font-medium hover:bg-[#b84eff] transition-colors duration-200 mb-3"
+              className="fr-btn min-h-[44px] mb-3"
             >
               📱 Generate Sync QR Code
             </button>
 
             {qrError && (
-              <div className={`border rounded-2xl p-3 mb-3 ${qrCodeParts.length > 0 ? 'bg-yellow-900/50 border-yellow-500' : 'bg-red-900/50 border-red-500'}`}>
-                <p className={`text-sm ${qrCodeParts.length > 0 ? 'text-yellow-300' : 'text-red-300'}`}>{qrError}</p>
+              <div className="fr-panel fr-panel--red p-3 mb-3" style={{background:'#fff'}}>
+                <p className="text-sm" style={{color:'var(--fr-red-ink)'}}>{qrError}</p>
               </div>
             )}
 
@@ -11290,11 +11287,11 @@ RULES:
                         setQrDataUrl(qrCodeParts[newIndex]);
                       }}
                       disabled={qrPartIndex === 0}
-                      className="px-3 py-1 bg-[#1a1320] text-white rounded-full disabled:opacity-50"
+                      className="fr-chip a px-3 py-1 disabled:opacity-50"
                     >
                       ← Prev
                     </button>
-                    <span className="text-stitch-muted text-sm">
+                    <span className="fr-readout text-sm">
                       QR {qrPartIndex + 1} of {qrCodeParts.length}
                     </span>
                     <button
@@ -11304,28 +11301,28 @@ RULES:
                         setQrDataUrl(qrCodeParts[newIndex]);
                       }}
                       disabled={qrPartIndex === qrCodeParts.length - 1}
-                      className="px-3 py-1 bg-[#1a1320] text-white rounded-full disabled:opacity-50"
+                      className="fr-chip a px-3 py-1 disabled:opacity-50"
                     >
                       Next →
                     </button>
                   </div>
                 ) : null}
-                <p className="text-stitch-muted text-xs">Scan with your phone camera to sync collection</p>
+                <p className="text-xs" style={{color:'var(--fr-ink-dim)'}}>Scan with your phone camera to sync collection</p>
               </div>
             )}
 
             {/* Multi-part QR scanning progress (shown on receiving device) */}
             {showMultiPartProgress && qrScanProgress && (
-              <div className="mt-4 rounded-2xl p-4" style={{ background: 'rgba(173,43,238,0.08)', border: '1px solid rgba(173,43,238,0.3)' }}>
-                <h4 className="text-cosmic-purple-text font-medium mb-2">Multi-Part Sync Progress</h4>
+              <div className="fr-panel fr-panel--blue mt-4 p-4">
+                <p className="fr-label mb-2">Multi-Part Sync Progress</p>
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="flex-1 bg-[#1a1320] rounded-full h-3">
+                  <div className="flex-1 rounded-full h-3 overflow-hidden" style={{background:'#efe9dd', border:'2px solid var(--fr-ink)'}}>
                     <div
-                      className="bg-cosmic-purple-text h-3 rounded-full transition-[width] duration-300 ease-[var(--ease-snap)]"
-                      style={{ width: `${(qrScanProgress.scanned.length / qrScanProgress.total) * 100}%` }}
+                      className="h-full rounded-full transition-[width] duration-300 ease-[var(--ease-snap)]"
+                      style={{ width: `${(qrScanProgress.scanned.length / qrScanProgress.total) * 100}%`, background:'var(--fr-blue)' }}
                     />
                   </div>
-                  <span className="text-sm text-gray-300">
+                  <span className="fr-readout text-sm">
                     {qrScanProgress.scanned.length}/{qrScanProgress.total}
                   </span>
                 </div>
@@ -11334,10 +11331,10 @@ RULES:
                   {Array.from({ length: qrScanProgress.total }, (_, i) => i + 1).map(partNum => (
                     <span
                       key={partNum}
-                      className={`px-2 py-1 text-xs rounded-full ${
+                      className={`fr-chip px-2 py-1 text-xs ${
                         qrScanProgress.scanned.includes(partNum)
-                          ? 'bg-green-600 text-white'
-                          : 'bg-stark-surface-2 text-gray-300'
+                          ? 'a'
+                          : ''
                       }`}
                     >
                       {partNum}
@@ -11346,7 +11343,7 @@ RULES:
                 </div>
 
                 {qrScanProgress.missing.length > 0 && (
-                  <p className="text-sm text-yellow-300 mb-2">
+                  <p className="text-sm mb-2" style={{color:'var(--fr-red-ink)'}}>
                     Missing: QR {qrScanProgress.missing.join(', ')}
                   </p>
                 )}
@@ -11358,7 +11355,7 @@ RULES:
                       setQrScanProgress(null);
                       setShowMultiPartProgress(false);
                     }}
-                    className="flex-1 min-h-[44px] px-3 py-2 bg-red-700 text-white rounded-full text-sm hover:bg-red-600"
+                    className="fr-chip flex-1 min-h-[44px] px-3 py-2 text-sm"
                   >
                     Cancel Sync
                   </button>
@@ -11366,7 +11363,7 @@ RULES:
                     onClick={() => {
                       setShowMultiPartProgress(false);
                     }}
-                    className="flex-1 min-h-[44px] px-3 py-2 bg-stark-surface-2 text-white rounded-full text-sm hover:bg-stitch-accent"
+                    className="fr-chip a flex-1 min-h-[44px] px-3 py-2 text-sm"
                   >
                     Hide Progress
                   </button>
@@ -11376,57 +11373,61 @@ RULES:
           </div>
 
           {/* AI Provider Configuration */}
-          <div className="stitch-card p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-4">AI Provider</h3>
+          <div className="fr-panel p-5 mb-4">
+            <div className="fr-tab"><h3>AI Provider</h3></div>
 
             {/* Google OAuth - Primary */}
-            <div className="mb-4 p-4 rounded-2xl bg-stitch-card" style={{ border: '1px solid rgba(173,43,238,0.3)' }}>
+            <div className="fr-panel fr-panel--blue mb-4 p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-white font-medium">Google (Gemini)</span>
-                  <span className="bg-cosmic-purple text-white text-xs px-2 py-0.5 rounded-full">Recommended</span>
+                  <span className="font-medium" style={{color:'var(--fr-ink)'}}>Google (Gemini)</span>
+                  <span className="fr-chip a text-xs px-2 py-0.5">Recommended</span>
                 </div>
                 <StatusBadge status={testStatus['gemini-oauth']} />
               </div>
               {testStatus['gemini-oauth'] === 'error' && testError['gemini-oauth'] && (
-                <p className="text-stitch-muted text-[10px] mt-1 mb-2">{testError['gemini-oauth']}</p>
+                <p className="text-[10px] mt-1 mb-2" style={{color:'var(--fr-red-ink)'}}>{testError['gemini-oauth']}</p>
               )}
-              <p className="text-stitch-muted text-sm mb-3">One-click sign in, no API key needed</p>
+              <p className="text-sm mb-3" style={{color:'var(--fr-ink-dim)'}}>One-click sign in, no API key needed</p>
 
               {googleSignedIn ? (
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     <button onClick={() => selectProvider('gemini-oauth')}
-                      className={`flex-1 min-h-[44px] py-2 rounded-full font-medium transition-colors duration-150 ${aiConfig.provider === 'gemini-oauth' ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-gray-300'}`}>
+                      className="flex-1 min-h-[44px] py-2 rounded-full font-medium transition-colors duration-150"
+                      style={aiConfig.provider === 'gemini-oauth'
+                        ? {background:'var(--fr-blue)',color:'#fff',border:'2px solid var(--fr-ink)'}
+                        : {background:'#fff',color:'var(--fr-ink)',border:'2px solid var(--fr-ink)'}}>
                       {aiConfig.provider === 'gemini-oauth' ? 'Selected' : 'Use This'}
                     </button>
                     <button onClick={() => testConnection('gemini-oauth')}
-                      className="min-h-[44px] bg-stark-surface-2 text-white px-4 py-2 rounded-full hover:bg-stitch-accent">Test</button>
+                      className="fr-chip a min-h-[44px] px-4 py-2">Test</button>
                     <button onClick={handleGoogleSignOut}
-                      className="min-h-[44px] bg-red-600 text-white px-4 py-2 rounded-full hover:bg-red-500">Sign Out</button>
+                      className="fr-chip min-h-[44px] px-4 py-2">Sign Out</button>
                   </div>
                   {/* Model selector for Gemini OAuth */}
                   {aiConfig.provider === 'gemini-oauth' && (
                     <div className="mt-2">
-                      <label className="text-stitch-muted text-xs mb-1 block">Select Model:</label>
+                      <label className="fr-label text-xs mb-1">Select Model:</label>
                       <select
                         id="settings-gemini-model"
                         name="settings-gemini-model"
                         value={aiConfig.model || AIProviders['gemini-oauth'].defaultModel}
                         onChange={(e) => setAiConfig(prev => ({ ...prev, model: e.target.value }))}
-                        className="w-full bg-stark-surface-2 text-white rounded-xl px-3 py-2 text-sm border-2 border-[rgba(173,43,238,0.3)] focus:border-cosmic-purple-text focus:outline-none">
+                        className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,110,199,.35)]"
+                        style={{background:'#fff',border:'3px solid var(--fr-line)',color:'var(--fr-ink)'}}>
                         {AIProviders['gemini-oauth'].models.map(m => (
                           <option key={m} value={m}>{m}</option>
                         ))}
                       </select>
-                      <p className="text-gray-500 text-xs mt-1">Gemini 3 models are preview versions with latest capabilities</p>
+                      <p className="text-xs mt-1" style={{color:'var(--fr-ink-dim)'}}>Gemini 3 models are preview versions with latest capabilities</p>
                     </div>
                   )}
                 </div>
               ) : (
                 <div>
                   <button onClick={handleGoogleSignIn}
-                    className="w-full min-h-[44px] bg-white text-gray-800 py-3 rounded-full font-medium flex items-center justify-center gap-2 hover:bg-gray-100">
+                    className="fr-btn min-h-[44px] flex items-center justify-center gap-2">
                     <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                     Continue with Google
                   </button>
@@ -11436,15 +11437,15 @@ RULES:
 
             {/* API Key Providers */}
             {mainProviders.filter(p => p.id !== 'gemini-oauth').map(provider => (
-              <div key={provider.id} className="mb-3 p-3 rounded-2xl bg-stitch-card" style={{ border: '1px solid rgba(173,43,238,0.15)' }}>
+              <div key={provider.id} className="fr-panel mb-3 p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-white font-medium">{provider.name}</span>
+                  <span className="font-medium" style={{color:'var(--fr-ink)'}}>{provider.name}</span>
                   <StatusBadge status={testStatus[provider.id]} />
                 </div>
                 {testStatus[provider.id] === 'error' && testError[provider.id] && (
-                  <p className="text-stitch-muted text-[10px] mb-1">{testError[provider.id]}</p>
+                  <p className="text-[10px] mb-1" style={{color:'var(--fr-red-ink)'}}>{testError[provider.id]}</p>
                 )}
-                <p className="text-stitch-muted text-xs mb-2">{provider.description}</p>
+                <p className="text-xs mb-2" style={{color:'var(--fr-ink-dim)'}}>{provider.description}</p>
                 <div className="flex gap-2">
                   <input type="password" placeholder="API Key..."
                     id={`settings-api-key-${provider.id}`}
@@ -11452,10 +11453,11 @@ RULES:
                     value={aiConfig.apiKeys?.[provider.id] || ''}
                     onChange={(e) => setApiKey(provider.id, e.target.value)}
                     aria-label={provider.name + ' API Key'}
-                    className="flex-1 bg-stark-surface-2 text-white rounded-xl px-3 py-2 text-sm border-2 border-[rgba(173,43,238,0.25)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20" />
+                    className="flex-1 rounded-xl px-3 py-2 text-sm placeholder:text-[var(--fr-ink-dim)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,110,199,.35)]"
+                    style={{background:'#fff',border:'3px solid var(--fr-line)',color:'var(--fr-ink)'}} />
                   <button onClick={() => { selectProvider(provider.id); testConnection(provider.id); }}
                     disabled={!aiConfig.apiKeys?.[provider.id]}
-                    className="min-h-[44px] bg-cosmic-purple text-white px-3 py-2 rounded-full text-sm hover:bg-[#b84eff] transition-colors duration-150 disabled:opacity-50">
+                    className="fr-btn min-h-[44px] w-auto px-3 py-2 text-sm disabled:opacity-50">
                     Test
                   </button>
                 </div>
@@ -11465,7 +11467,8 @@ RULES:
                       name={`settings-provider-model-${provider.id}`}
                       value={aiConfig.model || provider.defaultModel}
                       onChange={(e) => setAiConfig(prev => ({ ...prev, model: e.target.value }))}
-                      className="w-full bg-stark-surface-2 text-white rounded-xl px-2 py-1 text-sm border-2 border-[rgba(173,43,238,0.25)]">
+                      className="w-full rounded-xl px-2 py-1 text-sm focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,110,199,.35)]"
+                      style={{background:'#fff',border:'3px solid var(--fr-line)',color:'var(--fr-ink)'}}>
                       {provider.models.map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
                   </div>
@@ -11475,7 +11478,7 @@ RULES:
 
             {/* Advanced Section */}
             <button onClick={() => setShowAdvanced(!showAdvanced)}
-              className="w-full flex items-center justify-between py-2 text-stitch-muted hover:text-white">
+              className="fr-chip a w-full flex items-center justify-between py-2">
               <span className="text-sm">Advanced Options</span>
               <span>{showAdvanced ? '▲' : '▼'}</span>
             </button>
@@ -11483,15 +11486,15 @@ RULES:
             {showAdvanced && (
               <div className="mt-3 space-y-3">
                 {advancedProviders.map(provider => (
-                  <div key={provider.id} className="p-3 rounded-2xl bg-stitch-card" style={{ border: '1px solid rgba(173,43,238,0.15)' }}>
+                  <div key={provider.id} className="fr-panel p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-white font-medium">{provider.name}</span>
+                      <span className="font-medium" style={{color:'var(--fr-ink)'}}>{provider.name}</span>
                       <StatusBadge status={testStatus[provider.id]} />
                     </div>
                     {testStatus[provider.id] === 'error' && testError[provider.id] && (
-                      <p className="text-stitch-muted text-[10px] mb-1">{testError[provider.id]}</p>
+                      <p className="text-[10px] mb-1" style={{color:'var(--fr-red-ink)'}}>{testError[provider.id]}</p>
                     )}
-                    <p className="text-stitch-muted text-xs mb-2">{provider.description}</p>
+                    <p className="text-xs mb-2" style={{color:'var(--fr-ink-dim)'}}>{provider.description}</p>
                     <div className="flex gap-2">
                       <input type="text"
                         id={`settings-local-endpoint-${provider.id}`}
@@ -11499,18 +11502,20 @@ RULES:
                         placeholder="http://localhost:11434"
                         value={aiConfig.localEndpoint || ''}
                         onChange={(e) => setAiConfig(prev => ({ ...prev, localEndpoint: e.target.value }))}
-                        className="flex-1 bg-stark-surface-2 text-white rounded-xl px-3 py-2 text-sm border-2 border-[rgba(173,43,238,0.25)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20" />
+                        className="flex-1 rounded-xl px-3 py-2 text-sm placeholder:text-[var(--fr-ink-dim)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,110,199,.35)]"
+                        style={{background:'#fff',border:'3px solid var(--fr-line)',color:'var(--fr-ink)'}} />
                       <button onClick={() => { selectProvider(provider.id); testConnection(provider.id); }}
-                        className="min-h-[44px] bg-stark-surface-2 text-white px-3 py-2 rounded-full text-sm hover:bg-stitch-accent">Test</button>
+                        className="fr-chip a min-h-[44px] px-3 py-2 text-sm">Test</button>
                     </div>
-                    <p className="text-gray-500 text-xs mt-1">Common ports: Ollama (11434), LM Studio (1234), vLLM (8000)</p>
+                    <p className="text-xs mt-1" style={{color:'var(--fr-ink-dim)'}}>Common ports: Ollama (11434), LM Studio (1234), vLLM (8000)</p>
                     {aiConfig.provider === provider.id && (
                       <input type="text" placeholder="Model name..."
                         id={`settings-local-model-${provider.id}`}
                         name={`settings-local-model-${provider.id}`}
                         value={aiConfig.model || ''}
                         onChange={(e) => setAiConfig(prev => ({ ...prev, model: e.target.value }))}
-                        className="w-full mt-2 bg-stark-surface-2 text-white rounded-xl px-3 py-2 text-sm border-2 border-[rgba(173,43,238,0.25)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20" />
+                        className="w-full mt-2 rounded-xl px-3 py-2 text-sm placeholder:text-[var(--fr-ink-dim)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,110,199,.35)]"
+                        style={{background:'#fff',border:'3px solid var(--fr-line)',color:'var(--fr-ink)'}} />
                     )}
                   </div>
                 ))}
@@ -11519,46 +11524,47 @@ RULES:
 
             {/* Current Selection */}
             {aiConfig.provider && (
-              <div className="mt-4 p-3 bg-green-900/30 border border-green-600 rounded-2xl">
-                <div className="text-green-400 text-sm">
+              <div className="mt-4 p-3 rounded-2xl" style={{background:'#cfe6ff',border:'2px solid var(--fr-blue)'}}>
+                <div className="text-sm" style={{color:'var(--fr-ink)'}}>
                   Active: <strong>{AIProviders[aiConfig.provider]?.name}</strong>
-                  {aiConfig.model && <span className="text-green-300"> ({aiConfig.model})</span>}
+                  {aiConfig.model && <span> ({aiConfig.model})</span>}
                 </div>
               </div>
             )}
           </div>
 
           {/* AI Context Settings - Phase 4 */}
-          <div className="stitch-card p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">AI Context</h3>
-            <p className="text-stitch-muted text-sm mb-3">
+          <div className="fr-panel p-5 mb-4">
+            <div className="fr-tab"><h3>AI Context</h3></div>
+            <p className="text-sm mb-3" style={{color:'var(--fr-ink-dim)'}}>
               Configure how much context Snapapoulous has access to for personalized advice.
             </p>
 
             {/* Enhanced Persona Toggle */}
-            <div className="flex items-center justify-between py-2 border-b border-[rgba(173,43,238,0.2)]">
+            <div className="flex items-center justify-between py-2" style={{borderBottom:'2px solid var(--fr-ink)'}}>
               <div>
-                <span className="text-white font-medium">Enhanced AI Context</span>
-                <p className="text-gray-500 text-xs mt-1">
+                <span className="font-medium" style={{color:'var(--fr-ink)'}}>Enhanced AI Context</span>
+                <p className="text-xs mt-1" style={{color:'var(--fr-ink-dim)'}}>
                   Includes rich match analysis, collection gaps, meta context, and persona from persona.json
                 </p>
               </div>
               <button
                 onClick={() => setSettings(prev => ({ ...prev, useSimplePersona: !prev.useSimplePersona }))}
-                className={`relative w-12 h-6 rounded-full transition-colors ${
-                  !settings.useSimplePersona ? 'bg-series-2' : 'bg-stark-surface-2'
-                }`}
+                className="relative w-12 h-6 rounded-full transition-colors"
+                style={!settings.useSimplePersona
+                  ? {background:'var(--fr-blue)',color:'#fff',border:'2px solid var(--fr-ink)'}
+                  : {background:'#fff',color:'var(--fr-ink)',border:'2px solid var(--fr-ink)'}}
               >
-                <span className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                <span className={`absolute top-[2px] w-4 h-4 rounded-full transition-transform ${
                   !settings.useSimplePersona ? 'left-7' : 'left-1'
-                }`} />
+                }`} style={{background:!settings.useSimplePersona ? '#fff' : 'var(--fr-ink)'}} />
               </button>
             </div>
 
             {/* Context Preview */}
             {!settings.useSimplePersona && (
-              <div className="mt-3 p-3 bg-[#1a1320] rounded-2xl text-xs text-gray-300">
-                <p className="font-medium text-mcu-gold mb-2">Context includes:</p>
+              <div className="mt-3 p-3 rounded-2xl text-xs" style={{background:'#efe9dd',border:'2px solid var(--fr-ink)',color:'var(--fr-ink)'}}>
+                <p className="fr-label font-medium mb-2">Context includes:</p>
                 <ul className="space-y-1 list-disc list-inside">
                   <li>Current date & season (Dragons Season)</li>
                   <li>Your match history analysis (trends, streaks, deck performance)</li>
@@ -11571,82 +11577,79 @@ RULES:
             )}
 
             {settings.useSimplePersona && (
-              <div className="mt-3 p-3 bg-[#1a1320] rounded-2xl text-xs text-gray-300">
-                <p className="font-medium text-stitch-muted mb-2">Simplified mode active:</p>
+              <div className="mt-3 p-3 rounded-2xl text-xs" style={{background:'#efe9dd',border:'2px solid var(--fr-ink)',color:'var(--fr-ink)'}}>
+                <p className="fr-label font-medium mb-2">Simplified mode active:</p>
                 <p>Basic stats only. Faster responses but less personalized advice.</p>
               </div>
             )}
           </div>
 
           {/* Card Data */}
-          <div className="stitch-card p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Card Data</h3>
-            <p className="text-stitch-muted text-sm mb-3">Fetch latest card data from MarvelSnapZone. No API key required.</p>
+          <div className="fr-panel p-5 mb-4">
+            <div className="fr-tab"><h3>Card Data</h3></div>
+            <p className="text-sm mb-3" style={{color:'var(--fr-ink-dim)'}}>Fetch latest card data from MarvelSnapZone. No API key required.</p>
             <button onClick={refreshCardData} disabled={isRefreshingCards}
-              className="w-full min-h-[44px] bg-series-3 text-white py-2 rounded-full hover:opacity-80 disabled:opacity-50">
+              className="fr-btn min-h-[44px] disabled:opacity-50">
               {isRefreshingCards ? 'Refreshing...' : 'Refresh Card Data'}
             </button>
-            <p className="text-gray-500 text-xs mt-2">
-              Data source: <a href="https://marvelsnapzone.com" target="_blank" className="text-cosmic-purple-text hover:underline">MarvelSnapZone</a>
+            <p className="text-xs mt-2" style={{color:'var(--fr-ink-dim)'}}>
+              Data source: <a href="https://marvelsnapzone.com" target="_blank" className="hover:underline" style={{color:'var(--fr-blue)'}}>MarvelSnapZone</a>
             </p>
           </div>
 
           {/* Performance Mode */}
-          <div className="stitch-card p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Performance Mode</h3>
-            <p className="text-stitch-muted text-sm mb-3">
+          <div className="fr-panel p-5 mb-4">
+            <div className="fr-tab"><h3>Performance Mode</h3></div>
+            <p className="text-sm mb-3" style={{color:'var(--fr-ink-dim)'}}>
               Reduce animations and effects to improve performance on older devices or save battery.
             </p>
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={() => handlePerformanceModeChange('auto')}
-                className={`min-h-[44px] py-3 rounded-full font-medium text-sm transition-colors ${
-                  performanceMode === 'auto'
-                    ? 'bg-cosmic-purple text-white'
-                    : 'bg-[#1a1320] text-gray-300 hover:bg-stark-surface-2'
-                }`}
+                className="min-h-[44px] py-3 rounded-full font-medium text-sm transition-colors"
+                style={performanceMode === 'auto'
+                  ? {background:'var(--fr-blue)',color:'#fff',border:'2px solid var(--fr-ink)'}
+                  : {background:'#fff',color:'var(--fr-ink)',border:'2px solid var(--fr-ink)'}}
               >
                 Auto
               </button>
               <button
                 onClick={() => handlePerformanceModeChange('high')}
-                className={`min-h-[44px] py-3 rounded-full font-medium text-sm transition-colors ${
-                  performanceMode === 'high'
-                    ? 'bg-series-2 text-white'
-                    : 'bg-[#1a1320] text-gray-300 hover:bg-stark-surface-2'
-                }`}
+                className="min-h-[44px] py-3 rounded-full font-medium text-sm transition-colors"
+                style={performanceMode === 'high'
+                  ? {background:'var(--fr-blue)',color:'#fff',border:'2px solid var(--fr-ink)'}
+                  : {background:'#fff',color:'var(--fr-ink)',border:'2px solid var(--fr-ink)'}}
               >
                 Full Effects
               </button>
               <button
                 onClick={() => handlePerformanceModeChange('low')}
-                className={`min-h-[44px] py-3 rounded-full font-medium text-sm transition-colors ${
-                  performanceMode === 'low'
-                    ? 'bg-series-4 text-black'
-                    : 'bg-[#1a1320] text-gray-300 hover:bg-stark-surface-2'
-                }`}
+                className="min-h-[44px] py-3 rounded-full font-medium text-sm transition-colors"
+                style={performanceMode === 'low'
+                  ? {background:'var(--fr-blue)',color:'#fff',border:'2px solid var(--fr-ink)'}
+                  : {background:'#fff',color:'var(--fr-ink)',border:'2px solid var(--fr-ink)'}}
               >
                 Low-End
               </button>
             </div>
-            <p className="text-gray-500 text-xs mt-2">
+            <p className="text-xs mt-2" style={{color:'var(--fr-ink-dim)'}}>
               {performanceMode === 'auto' && 'Automatically detects device capabilities, battery level, and connection speed.'}
               {performanceMode === 'high' && 'All animations and effects enabled for the best visual experience.'}
               {performanceMode === 'low' && 'Minimal animations for smoother performance on any device.'}
             </p>
             {document.body.classList.contains('low-end-mode') && (
-              <div className="mt-2 text-xs text-mcu-gold flex items-center gap-1">
+              <div className="mt-2 text-xs flex items-center gap-1" style={{color:'var(--fr-ink)'}}>
                 <span>Currently running in low-end mode</span>
               </div>
             )}
           </div>
 
           {/* Reduced Motion */}
-          <div className="stitch-card p-5 mb-4">
+          <div className="fr-panel p-5 mb-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-display font-semibold text-[#c75fff]">Reduce Motion</h3>
-                <p className="text-stitch-muted text-sm mt-1">
+                <div className="fr-tab"><h3>Reduce Motion</h3></div>
+                <p className="text-sm mt-1" style={{color:'var(--fr-ink-dim)'}}>
                   Disable animations for accessibility or to reduce visual distractions.
                 </p>
               </div>
@@ -11657,33 +11660,31 @@ RULES:
                   setReducedMotion(newValue);
                   showToast(newValue ? 'Motion reduced' : 'Motion enabled');
                 }}
-                className={`relative w-14 h-8 rounded-full transition-colors ${
-                  settings.reducedMotion ? 'bg-cosmic-purple-text' : 'bg-stark-surface-2'
-                }`}
+                className="relative w-14 h-8 rounded-full transition-colors"
+                style={settings.reducedMotion
+                  ? {background:'var(--fr-blue)',color:'#fff',border:'2px solid var(--fr-ink)'}
+                  : {background:'#fff',color:'var(--fr-ink)',border:'2px solid var(--fr-ink)'}}
                 aria-label={settings.reducedMotion ? 'Disable reduced motion' : 'Enable reduced motion'}
                 role="switch"
                 aria-checked={settings.reducedMotion}
               >
-                <span className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white shadow-md transform transition-transform ${
+                <span className={`absolute top-[2px] left-1 w-6 h-6 rounded-full shadow-md transform transition-transform ${
                   settings.reducedMotion ? 'translate-x-6' : 'translate-x-0'
-                }`} />
+                }`} style={{background:settings.reducedMotion ? '#fff' : 'var(--fr-ink)'}} />
               </button>
             </div>
             {window.matchMedia('(prefers-reduced-motion: reduce)').matches && !settings.reducedMotion && (
-              <p className="text-mcu-gold text-xs mt-3 flex items-center gap-1">
+              <p className="text-xs mt-3 flex items-center gap-1" style={{color:'var(--fr-ink-dim)'}}>
                 <span>Your system prefers reduced motion. Consider enabling this setting.</span>
               </p>
             )}
           </div>
 
           {/* Refresh Game Data */}
-          <div className="stitch-card p-5 mb-4">
-            <div className="stitch-section-header">
-              <span className="material-symbols-outlined" aria-hidden="true">sync</span>
-              Game Data
-            </div>
-            <p className="text-stitch-muted text-sm mb-3">
-              Meta context &amp; spotlight schedule. Last updated: <span className="text-cosmic-purple-text font-medium">{META_CONTEXT.lastUpdated || 'Unknown'}</span> &mdash; {META_CONTEXT.season || 'Unknown season'}
+          <div className="fr-panel p-5 mb-4">
+            <div className="fr-tab"><span className="sr-only" aria-hidden="true"></span><h3>Game Data</h3></div>
+            <p className="text-sm mb-3" style={{color:'var(--fr-ink-dim)'}}>
+              Meta context &amp; spotlight schedule. Last updated: <span className="font-medium" style={{color:'var(--fr-blue)'}}>{META_CONTEXT.lastUpdated || 'Unknown'}</span> &mdash; {META_CONTEXT.season || 'Unknown season'}
             </p>
             <button
               onClick={async (e) => {
@@ -11711,57 +11712,58 @@ RULES:
                 btn.textContent = updated > 0 ? `Updated ${updated} file${updated > 1 ? 's' : ''}!` : 'No updates available';
                 setTimeout(() => { btn.textContent = 'Refresh Game Data'; }, 3000);
               }}
-              className="w-full min-h-[44px] bg-[#1a1320] text-white py-3 rounded-full font-medium hover:bg-stark-surface-2 flex items-center justify-center gap-2 border border-[rgba(173,43,238,0.3)]"
+              className="fr-btn min-h-[44px] flex items-center justify-center gap-2"
             >
               <span className="material-symbols-outlined" style={{fontSize: '18px'}}>refresh</span>
               Refresh Game Data
             </button>
-            <p className="text-stitch-muted text-xs mt-2">Pulls latest meta &amp; spotlight data from the server. AI advice and Oracle will use the updated info immediately.</p>
+            <p className="text-xs mt-2" style={{color:'var(--fr-ink-dim)'}}>Pulls latest meta &amp; spotlight data from the server. AI advice and Oracle will use the updated info immediately.</p>
           </div>
 
           {/* Live Creator Videos — Tier 2 opt-in (Creator Decks §4/§9 owner ruling) */}
-          <div className="stitch-card p-5 mb-4">
+          <div className="fr-panel p-5 mb-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-display font-semibold text-[#c75fff]">Live Creator Videos</h3>
-                <p className="text-stitch-muted text-sm mt-1">
+                <div className="fr-tab"><h3>Live Creator Videos</h3></div>
+                <p className="text-sm mt-1" style={{color:'var(--fr-ink-dim)'}}>
                   Fetches latest videos from creators' YouTube feeds when online.
                 </p>
               </div>
               <button
                 onClick={() => setSettings(prev => ({ ...prev, enableCreatorVideos: !prev.enableCreatorVideos }))}
-                className={`relative w-14 h-8 rounded-full transition-colors shrink-0 ${
-                  settings.enableCreatorVideos ? 'bg-cosmic-purple-text' : 'bg-stark-surface-2'
-                }`}
+                className="relative w-14 h-8 rounded-full transition-colors shrink-0"
+                style={settings.enableCreatorVideos
+                  ? {background:'var(--fr-blue)',color:'#fff',border:'2px solid var(--fr-ink)'}
+                  : {background:'#fff',color:'var(--fr-ink)',border:'2px solid var(--fr-ink)'}}
                 aria-label={settings.enableCreatorVideos ? 'Disable live creator videos' : 'Enable live creator videos'}
                 role="switch"
                 aria-checked={!!settings.enableCreatorVideos}
               >
-                <span className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white shadow-md transform transition-transform ${
+                <span className={`absolute top-[2px] left-1 w-6 h-6 rounded-full shadow-md transform transition-transform ${
                   settings.enableCreatorVideos ? 'translate-x-6' : 'translate-x-0'
-                }`} />
+                }`} style={{background:settings.enableCreatorVideos ? '#fff' : 'var(--fr-ink)'}} />
               </button>
             </div>
           </div>
 
           {/* Export/Import */}
-          <div className="stitch-card p-5 mb-4">
-            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Export Data</h3>
+          <div className="fr-panel p-5 mb-4">
+            <div className="fr-tab"><h3>Export Data</h3></div>
             <div className="space-y-2 mb-4">
-              <button onClick={exportVault} className="w-full min-h-[44px] bg-mcu-gold text-black py-3 rounded-full font-medium hover:bg-yellow-400 flex items-center justify-center gap-2">
+              <button onClick={exportVault} className="fr-btn min-h-[44px] flex items-center justify-center gap-2">
                 <span>📦</span> Export Full Vault (Recommended)
               </button>
               <div className="grid grid-cols-4 gap-2">
-                <button onClick={() => handleExport('all')} className="min-h-[44px] bg-cosmic-purple text-white py-2 rounded-full text-sm hover:bg-[#b84eff] transition-colors duration-150">Backup</button>
-                <button onClick={() => handleExport('collection')} className="min-h-[44px] bg-series-3 text-white py-2 rounded-full text-sm hover:opacity-80">Collection</button>
-                <button onClick={() => handleExport('matches')} className="min-h-[44px] bg-series-2 text-white py-2 rounded-full text-sm hover:opacity-80">Matches</button>
-                <button onClick={() => handleExport('decks')} className="min-h-[44px] bg-series-4 text-black py-2 rounded-full text-sm hover:opacity-80">Decks</button>
+                <button onClick={() => handleExport('all')} className="fr-chip a min-h-[44px] py-2 text-sm">Backup</button>
+                <button onClick={() => handleExport('collection')} className="fr-chip a min-h-[44px] py-2 text-sm">Collection</button>
+                <button onClick={() => handleExport('matches')} className="fr-chip a min-h-[44px] py-2 text-sm">Matches</button>
+                <button onClick={() => handleExport('decks')} className="fr-chip a min-h-[44px] py-2 text-sm">Decks</button>
               </div>
             </div>
 
-            <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Import Data</h3>
+            <div className="fr-tab"><h3>Import Data</h3></div>
             {!showImport ? (
-              <button onClick={() => setShowImport(true)} className="w-full min-h-[44px] bg-[#1a1320] text-white py-2 rounded-full hover:bg-stark-surface-2">
+              <button onClick={() => setShowImport(true)} className="fr-btn min-h-[44px]">
                 Import from JSON
               </button>
             ) : (
@@ -11770,18 +11772,19 @@ RULES:
                   id="data-import-export"
                   name="data-import-export"
                   placeholder="Paste JSON data here..."
-                  className="w-full h-24 bg-[#1a1320] text-white rounded-xl px-3 py-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20 text-sm" />
+                  className="w-full h-24 rounded-xl px-3 py-2 placeholder:text-[var(--fr-ink-dim)] focus:outline-none focus:ring-[3px] focus:ring-[rgba(0,110,199,.35)] text-sm"
+                  style={{background:'#fff',border:'3px solid var(--fr-line)',color:'var(--fr-ink)'}} />
                 <div className="flex gap-2">
-                  <button onClick={handleImport} className="flex-1 min-h-[44px] bg-cosmic-purple text-white py-2 rounded-full hover:bg-[#b84eff] transition-colors duration-150">Import</button>
-                  <button onClick={() => { setShowImport(false); setImportData(''); }} className="flex-1 min-h-[44px] bg-stark-surface-2 text-white py-2 rounded-full hover:bg-stitch-accent">Cancel</button>
+                  <button onClick={handleImport} className="fr-btn flex-1 min-h-[44px]">Import</button>
+                  <button onClick={() => { setShowImport(false); setImportData(''); }} className="fr-chip flex-1 min-h-[44px] py-2">Cancel</button>
                 </div>
               </div>
             )}
           </div>
 
           {/* Danger Zone */}
-          <div className="stitch-card p-5 border-red-500/50">
-            <h3 className="text-lg font-display font-semibold text-red-400 mb-3">Danger Zone</h3>
+          <div className="fr-panel fr-panel--red p-5">
+            <div className="fr-tab"><h3>Danger Zone</h3></div>
             <button onClick={() => {
               if (confirm('Clear ALL data including AI settings?')) {
                 localStorage.clear();
@@ -11792,7 +11795,7 @@ RULES:
                 setAiConfig({ provider: '', model: '', apiKeys: {}, googleToken: null, localEndpoint: 'http://localhost:11434' });
                 alert('All data cleared');
               }
-            }} className="w-full min-h-[44px] bg-red-600 text-white py-2 rounded-full hover:bg-red-500">Clear All Data</button>
+            }} className="fr-btn fr-btn--red min-h-[44px]">Clear All Data</button>
           </div>
 
           {/* Log Preview Modal */}
