@@ -5306,6 +5306,8 @@ RULES:
             </div>
           </div>
 
+          <SinceLastSyncCard />
+
           <div className="fr-panel">
             <div className="flex justify-between items-center mb-3">
               <div className="fr-label mb-0">
@@ -11651,6 +11653,79 @@ RULES:
     };
 
     // ==================== USER PROFILE COMPONENT ====================
+    // Since Last Sync (Time Stone) — diffs the last two snapshots taken on each sync.
+    // Self-contained: owns its own snapshot state so it can mount on Home and Profile alike.
+    const SinceLastSyncCard = ({ className = '' }) => {
+      const [snapshots, setSnapshots] = useState(() => loadFromStorage('snap_snapshots', []));
+
+      useEffect(() => {
+        const load = () => setSnapshots(loadFromStorage('snap_snapshots', []));
+        window.addEventListener('snap-data-updated', load);
+        return () => window.removeEventListener('snap-data-updated', load);
+      }, []);
+
+      // Cumulative fields flag negative deltas as reset/source change; season fields render signed.
+      const CUMULATIVE_DELTA_FIELDS = [
+        { key: 'wins', label: 'Wins' }, { key: 'losses', label: 'Losses' }, { key: 'ties', label: 'Ties' },
+        { key: 'snaps', label: 'Snaps' }, { key: 'concedes', label: 'Retreats' },
+        { key: 'opponentConcedes', label: 'Opponent Retreats' }, { key: 'collectionScore', label: 'Collection Score' },
+        { key: 'masteryXpTotal', label: 'Mastery XP' }
+      ];
+      const SEASON_DELTA_FIELDS = [
+        { key: 'currentRank', label: 'Rank' }, { key: 'skillRating', label: 'Skill Rating' }
+      ];
+      const latestSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null;
+      const previousSnapshot = snapshots.length > 1 ? snapshots[snapshots.length - 2] : null;
+      const snapshotDeltas = previousSnapshot
+        ? [...CUMULATIVE_DELTA_FIELDS, ...SEASON_DELTA_FIELDS]
+            .filter(f => latestSnapshot[f.key] != null && previousSnapshot[f.key] != null)
+            .map(f => {
+              const delta = latestSnapshot[f.key] - previousSnapshot[f.key];
+              const isCumulative = CUMULATIVE_DELTA_FIELDS.some(c => c.key === f.key);
+              return { ...f, delta, anomalous: isCumulative && delta < 0 };
+            })
+        : [];
+
+      return (
+        <div className={className}>
+          {previousSnapshot && (
+            <div className="fr-panel p-5 mb-4">
+              <div className="fr-tab">
+                <h3>Since Last Sync</h3>
+                <span className="code">Time Stone</span>
+              </div>
+              <p className="text-xs mb-3" style={{color:'var(--fr-ink-dim)'}}>
+                {formatRelativeTime(latestSnapshot.syncedAt)} — the interval between your last two
+                syncs, not a single match (Snapapoulous doesn't log per-match history).
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {snapshotDeltas.map(d => (
+                  <div key={d.key} className={`fr-panel ${!d.anomalous && d.delta <= -100 ? 'fr-panel--red' : ''} p-4`}>
+                    <div className="fr-label text-xs mb-2">{d.label}</div>
+                    {d.anomalous ? (
+                      <div className="flex items-center gap-1 text-sm font-bold" style={{color:'var(--fr-red-ink)'}}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }} aria-hidden="true">warning</span>
+                        reset or source change
+                      </div>
+                    ) : (
+                      <div className="fr-readout text-3xl font-bold" style={{color: d.delta <= -100 ? 'var(--fr-red-ink)' : d.delta >= 100 ? '#b8860b' : 'var(--fr-ink)'}}>
+                        {d.delta > 0 ? '+' : ''}{d.delta.toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {!previousSnapshot && (
+            <p className="text-xs text-center mb-4" style={{color:'var(--fr-ink-dim)'}}>
+              Sync again to start tracking your progress over time.
+            </p>
+          )}
+        </div>
+      );
+    };
+
     const UserProfile = ({ collection, matches, cardDataVersion }) => {
       const totalCards = uniqueCards.length;
       const ownedCount = getOwnedCount(collection);
@@ -11660,7 +11735,6 @@ RULES:
       const [importedStats, setImportedStats] = useState(null);
       const [decks, setDecks] = useState([]);
       const [collEnhanced, setCollEnhanced] = useState(null);
-      const [snapshots, setSnapshots] = useState([]);
 
       // Load Player OS data on mount and when a sync writes fresh data.
       useEffect(() => {
@@ -11669,7 +11743,6 @@ RULES:
           setImportedStats(loadFromStorage('snap_profile_stats', null));
           setDecks(loadFromStorage('snap_decks', []));
           setCollEnhanced(loadFromStorage('snap_collection_enhanced', null));
-          setSnapshots(loadFromStorage('snap_snapshots', []));
         };
         loadProfileData();
         window.addEventListener('snap-data-updated', loadProfileData);
@@ -11694,27 +11767,6 @@ RULES:
         ? (importedStats.totalGames || ((importedStats.wins || 0) + (importedStats.losses || 0) + (importedStats.ties || 0)))
         : 0;
       const pctOfOutcomes = (n) => (recordedOutcomes > 0 ? `${Math.round(((n || 0) / recordedOutcomes) * 100)}%` : '—');
-      // Time Stone deltas — cumulative fields flag negative as reset/source change; season fields render signed.
-      const CUMULATIVE_DELTA_FIELDS = [
-        { key: 'wins', label: 'Wins' }, { key: 'losses', label: 'Losses' }, { key: 'ties', label: 'Ties' },
-        { key: 'snaps', label: 'Snaps' }, { key: 'concedes', label: 'Retreats' },
-        { key: 'opponentConcedes', label: 'Opponent Retreats' }, { key: 'collectionScore', label: 'Collection Score' },
-        { key: 'masteryXpTotal', label: 'Mastery XP' }
-      ];
-      const SEASON_DELTA_FIELDS = [
-        { key: 'currentRank', label: 'Rank' }, { key: 'skillRating', label: 'Skill Rating' }
-      ];
-      const latestSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null;
-      const previousSnapshot = snapshots.length > 1 ? snapshots[snapshots.length - 2] : null;
-      const snapshotDeltas = previousSnapshot
-        ? [...CUMULATIVE_DELTA_FIELDS, ...SEASON_DELTA_FIELDS]
-            .filter(f => latestSnapshot[f.key] != null && previousSnapshot[f.key] != null)
-            .map(f => {
-              const delta = latestSnapshot[f.key] - previousSnapshot[f.key];
-              const isCumulative = CUMULATIVE_DELTA_FIELDS.some(c => c.key === f.key);
-              return { ...f, delta, anomalous: isCumulative && delta < 0 };
-            })
-        : [];
 
       return (
         <div className="fr-scope px-4 pb-20">
@@ -11835,40 +11887,7 @@ RULES:
           )}
 
           {/* Since Last Sync (Time Stone) */}
-          {previousSnapshot && (
-            <div className="fr-panel p-5 mb-4">
-              <div className="fr-tab">
-                <h3>Since Last Sync</h3>
-                <span className="code">Time Stone</span>
-              </div>
-              <p className="text-xs mb-3" style={{color:'var(--fr-ink-dim)'}}>
-                {formatRelativeTime(latestSnapshot.syncedAt)} — the interval between your last two
-                syncs, not a single match (Snapapoulous doesn't log per-match history).
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {snapshotDeltas.map(d => (
-                  <div key={d.key} className={`fr-panel ${!d.anomalous && d.delta <= -100 ? 'fr-panel--red' : ''} p-4`}>
-                    <div className="fr-label text-xs mb-2">{d.label}</div>
-                    {d.anomalous ? (
-                      <div className="flex items-center gap-1 text-sm font-bold" style={{color:'var(--fr-red-ink)'}}>
-                        <span className="material-symbols-outlined" style={{ fontSize: '16px' }} aria-hidden="true">warning</span>
-                        reset or source change
-                      </div>
-                    ) : (
-                      <div className="fr-readout text-3xl font-bold" style={{color: d.delta <= -100 ? 'var(--fr-red-ink)' : d.delta >= 100 ? '#b8860b' : 'var(--fr-ink)'}}>
-                        {d.delta > 0 ? '+' : ''}{d.delta.toLocaleString()}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {!previousSnapshot && (
-            <p className="text-xs text-center mb-4" style={{color:'var(--fr-ink-dim)'}}>
-              Sync again to start tracking your progress over time.
-            </p>
-          )}
+          <SinceLastSyncCard />
 
           {/* Season Stats */}
           {importedStats?.rankData && (
