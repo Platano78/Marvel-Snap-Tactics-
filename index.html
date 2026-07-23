@@ -8498,10 +8498,14 @@ RULES:
           result: 'Deck forged.',
         }[forgeStatus] || '';
         return (
-          <div className="px-4 pb-20">
-            <Header title="THE FORGE" />
+          <div className="px-4 pb-20 fr-scope">
+            <div className="fr-tab" style={{ padding: '0 4px', margin: '12px 16px 0' }}>
+              <h3>The Forge</h3>
+              <span className="code">AI Deck Maker</span>
+            </div>
             <button onClick={() => { setView('list'); setForgeStatus('idle'); setForgeError(null); }}
-              className="inline-flex items-center gap-1 min-h-[44px] px-1 text-cosmic-purple-text hover:text-white transition-colors mb-2">
+              className="inline-flex items-center gap-1 min-h-[44px] px-2 mb-2 font-semibold"
+              style={{ color: 'var(--fr-ink)', borderBottom: '2px solid var(--fr-ink)' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">arrow_back</span>
               <span className="text-sm font-semibold">Back to Decks</span>
             </button>
@@ -8512,9 +8516,10 @@ RULES:
 
             {/* Prompt input + toggles — hidden only while mid-forge */}
             {forgeStatus !== 'forging' && (
-              <div className="stitch-card p-5 mb-4">
-                <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Forge a Deck</h3>
-                <div className="flex items-center bg-[#1a1320] rounded-full px-4 py-1 mb-3 border-2 border-[rgba(173,43,238,0.3)] focus-within:border-cosmic-purple-text">
+              <div className="fr-panel p-5 mb-4">
+                <div className="fr-tab mb-3"><h3>Forge a Deck</h3></div>
+                <div className="flex items-center rounded-lg px-3 py-1 mb-3 focus-within:ring-4 focus-within:ring-blue-500/30"
+                     style={{ background: '#fff', border: '3px solid var(--fr-line)' }}>
                   <input
                     type="text"
                     id="forge-prompt"
@@ -8524,24 +8529,28 @@ RULES:
                     onKeyDown={(e) => { if (e.key === 'Enter') runForge(forgePrompt); }}
                     placeholder="Forge me a deck around..."
                     aria-label="Forge prompt"
-                    className="flex-1 bg-transparent text-white text-sm py-2 focus:outline-none focus:ring-0 border-none placeholder-white/40"
+                    className="flex-1 bg-transparent text-sm py-2 focus:outline-none focus:ring-0 border-none placeholder:text-[var(--fr-ink-dim)]"
+                    style={{ color: 'var(--fr-ink)' }}
                   />
                   <button onClick={() => runForge(forgePrompt)}
                     disabled={!forgePrompt.trim()}
                     aria-label="Forge deck"
-                    className="flex items-center justify-center w-11 h-11 rounded-full bg-cosmic-purple text-white disabled:opacity-40 shrink-0">
+                    className="fr-btn flex items-center justify-center w-11 h-11 disabled:opacity-40 shrink-0"
+                    style={{ padding: 0, width: '44px' }}>
                     <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">auto_awesome</span>
                   </button>
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => setForgeOnlyOwned(o => !o)}
                     aria-pressed={forgeOnlyOwned}
-                    className={`flex-1 min-h-[44px] rounded-full px-3 text-xs font-bold transition-colors ${forgeOnlyOwned ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}>
+                    className="fr-chip flex-1 min-h-[44px] px-3 text-xs font-bold transition-colors"
+                    style={forgeOnlyOwned ? { background: 'var(--fr-blue)', color: '#fff', border: '2px solid var(--fr-ink)' } : { background: '#fff', color: 'var(--fr-ink)', border: '2px solid var(--fr-ink)' }}>
                     Only my cards
                   </button>
                   <button onClick={() => setForgeMetaAware(m => !m)}
                     aria-pressed={forgeMetaAware}
-                    className={`flex-1 min-h-[44px] rounded-full px-3 text-xs font-bold transition-colors ${forgeMetaAware ? 'bg-cosmic-purple text-white' : 'bg-stark-surface-2 text-[#b792c9] border border-[rgba(173,43,238,0.25)]'}`}>
+                    className="fr-chip flex-1 min-h-[44px] px-3 text-xs font-bold transition-colors"
+                    style={forgeMetaAware ? { background: 'var(--fr-blue)', color: '#fff', border: '2px solid var(--fr-ink)' } : { background: '#fff', color: 'var(--fr-ink)', border: '2px solid var(--fr-ink)' }}>
                     Meta-aware
                   </button>
                 </div>
@@ -8553,30 +8562,30 @@ RULES:
             {forgeStatus === 'forging' && (
               <div className="relative flex flex-col items-center justify-center gap-3 py-14 text-center overflow-hidden">
                 <div className="forge-energy-well" aria-hidden="true" />
-                <span className="material-symbols-outlined relative z-10 text-4xl text-cosmic-purple-text" style={{ fontVariationSettings: "'FILL' 1" }} aria-hidden="true">auto_awesome</span>
-                <p className="relative z-10 text-xs uppercase tracking-[0.15em] font-semibold text-cosmic-purple-text">Forging&hellip;</p>
-                <p className="relative z-10 text-stitch-muted text-xs max-w-xs">Snapapoulous is reading the meta and your collection.</p>
+                <span className="material-symbols-outlined relative z-10 text-4xl" style={{ fontVariationSettings: "'FILL' 1", color: 'var(--fr-blue)' }} aria-hidden="true">auto_awesome</span>
+                <p className="relative z-10 text-xs uppercase tracking-[0.15em] font-semibold" style={{ color: 'var(--fr-blue)' }}>Forging&hellip;</p>
+                <p className="relative z-10 text-xs max-w-xs" style={{ color: 'var(--fr-ink-dim)' }}>Snapapoulous is reading the meta and your collection.</p>
               </div>
             )}
 
             {/* Error */}
             {forgeStatus === 'error' && forgeError && (
-              <div ref={forgeAnnounceRef} tabIndex={-1} className="stitch-card p-5 border border-red-500/25 focus:outline-none">
-                <p className="text-red-400 font-semibold text-sm mb-2">{forgeError.message}</p>
+              <div ref={forgeAnnounceRef} tabIndex={-1} className="fr-panel fr-panel--red p-5 focus:outline-none">
+                <p className="font-semibold text-sm mb-2" style={{ color: 'var(--fr-red-ink)' }}>{forgeError.message}</p>
                 {forgeError.violations && forgeError.violations.length > 0 && (
-                  <ul className="text-xs text-stitch-muted list-disc list-inside mb-3 space-y-0.5">
+                  <ul className="text-xs list-disc list-inside mb-3 space-y-0.5" style={{ color: 'var(--fr-ink-dim)' }}>
                     {forgeError.violations.map((v, i) => <li key={i}>{v}</li>)}
                   </ul>
                 )}
                 <div className="flex gap-2">
                   {forgeError.validSubset && forgeError.validSubset.length > 0 && (
                     <button onClick={openForgeInBuilder}
-                      className="flex-1 min-h-[44px] bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-white py-2 rounded-full font-bold text-sm hover:bg-[rgba(173,43,238,0.12)] transition-colors">
+                      className="fr-chip flex-1 min-h-[44px] py-2 font-bold text-sm">
                       Open in Builder
                     </button>
                   )}
                   <button onClick={() => { setForgeStatus('idle'); setForgeError(null); }}
-                    className="flex-1 min-h-[44px] bg-cosmic-purple text-white py-2 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(173,43,238,0.45)] transition-shadow duration-200">
+                    className="fr-btn flex-1 min-h-[44px] py-2 text-sm">
                     Try Again
                   </button>
                 </div>
@@ -8586,8 +8595,8 @@ RULES:
             {/* Result */}
             {forgeStatus === 'result' && forgeResult && (
               <div ref={forgeAnnounceRef} tabIndex={-1} className="focus:outline-none">
-                <div className="stitch-card p-5 mb-4">
-                  <label className="stitch-label mb-1 block">Deck Name</label>
+                <div className="fr-panel p-5 mb-4">
+                  <label className="fr-label mb-1 block">Deck Name</label>
                   <input
                     type="text"
                     id="forge-deck-name"
@@ -8595,7 +8604,8 @@ RULES:
                     value={forgeDeckName}
                     onChange={(e) => setForgeDeckName(e.target.value)}
                     aria-label="Forged deck name"
-                    className="w-full bg-[#1a1320] text-white text-lg font-display font-semibold rounded-xl px-3 py-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20"
+                    className="w-full text-lg font-display font-semibold rounded-lg px-3 py-2 focus:outline-none focus:ring-4 focus:ring-blue-500/30"
+                    style={{ background: '#fff', color: 'var(--fr-ink)', border: '3px solid var(--fr-line)' }}
                   />
                 </div>
 
@@ -8618,11 +8628,11 @@ RULES:
                         className={`forge-card-in flex flex-col gap-1 shrink-0 snap-center ${isHero ? 'w-[152px]' : 'w-[112px]'}`}
                         style={{ animationDelay: `${idx * 60}ms` }}
                       >
-                        <div className={`relative w-full aspect-[3/4] rounded-xl overflow-hidden ${
-                          isHero
-                            ? `holo-foil holo-foil-active shadow-2xl border-4 ${inSynergy ? 'border-[#ffd700]/70' : 'border-[#ad2bee]/50'}`
-                            : `holo-foil-hover border ${inSynergy ? 'ring-1 ring-[#ffd700]/70 border-transparent' : 'border-[rgba(173,43,238,0.25)]'}`
-                        }`}>
+                        <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden"
+                             style={{
+                               border: inSynergy ? '3px solid #b8860b' : '3px solid var(--fr-ink)',
+                               boxShadow: isHero ? '5px 5px 0 var(--fr-ink)' : 'none',
+                             }}>
                           <div className="absolute inset-0 card-art card-art-fallback" style={{ zIndex: 0 }} />
                           {artUrl && (
                             <img src={artUrl} alt={cardName} loading="lazy"
@@ -8639,7 +8649,7 @@ RULES:
                         </div>
                         {note && (
                           <span
-                            className="forge-chip-in cosmic-glass text-[11px] leading-snug text-cosmic-purple-text px-2 py-0.5 text-center"
+                            className="forge-chip-in fr-chip a text-[11px] leading-snug px-2 py-0.5 text-center"
                             style={{ animationDelay: `${idx * 60 + 200}ms` }}
                             title={note.note}
                           >
@@ -8656,10 +8666,10 @@ RULES:
                     hallucinated pair from the AI response simply doesn't show up. */}
                 {displaySynergies.length > 0 && (
                   <div className="mb-4">
-                    <div className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mb-2 px-0.5">Synergies</div>
+                    <div className="fr-label mb-2 px-0.5">Synergies</div>
                     <div className="flex flex-wrap gap-2">
                       {displaySynergies.map(([a, b], i) => (
-                        <span key={i} className="text-[11px] font-semibold px-3 py-1 rounded-full cosmic-glass border border-[#ffd700]/50 text-[#ffd700]">
+                        <span key={i} className="fr-chip s text-[11px] font-semibold px-3 py-1">
                           {a} <span aria-hidden="true">⚡</span> {b}
                         </span>
                       ))}
@@ -8669,11 +8679,11 @@ RULES:
 
                 <div className="flex gap-2">
                   <button onClick={() => setForgeStatus('idle')}
-                    className="flex-1 min-h-[44px] bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-white py-2 rounded-full font-bold text-sm hover:bg-[rgba(173,43,238,0.12)] transition-colors">
+                    className="fr-chip flex-1 min-h-[44px] py-2 font-bold text-sm">
                     Refine
                   </button>
                   <button onClick={saveForgedDeck}
-                    className="flex-1 min-h-[44px] bg-cosmic-purple text-white py-2 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(173,43,238,0.45)] transition-shadow duration-200">
+                    className="fr-btn flex-1 min-h-[44px] py-2 text-sm">
                     Save to My Decks
                   </button>
                 </div>
@@ -8686,67 +8696,74 @@ RULES:
       // Compare View — DeckComparison renders its own Header, so just prepend the back control
       if (view === 'compare') {
         return (
-          <>
+          <div className="fr-scope">
             <div className="px-4 pt-4">
               <button onClick={() => setView('list')}
-                className="inline-flex items-center gap-1 min-h-[44px] px-1 text-cosmic-purple-text hover:text-white transition-colors mb-2">
+                className="inline-flex items-center gap-1 min-h-[44px] px-2 mb-2 font-semibold"
+                style={{ color: 'var(--fr-ink)', borderBottom: '2px solid var(--fr-ink)' }}>
                 <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">arrow_back</span>
                 <span className="text-sm font-semibold">Back to Decks</span>
               </button>
             </div>
             <DeckComparison decks={decks} cardDataVersion={cardDataVersion} />
-          </>
+          </div>
         );
       }
 
       // Import View
       if (view === 'import') {
         return (
-          <div className="px-4 pb-20">
-            <Header title="IMPORT DECK" />
+          <div className="px-4 pb-20 fr-scope">
+            <div className="fr-tab" style={{ padding: '0 4px', margin: '12px 16px 0' }}>
+              <h3>Import Deck</h3>
+              <span className="code">Deck Code</span>
+            </div>
             <button onClick={() => setView('list')}
-              className="inline-flex items-center gap-1 min-h-[44px] px-1 text-cosmic-purple-text hover:text-white transition-colors mb-2">
+              className="inline-flex items-center gap-1 min-h-[44px] px-2 mb-2 font-semibold"
+              style={{ color: 'var(--fr-ink)', borderBottom: '2px solid var(--fr-ink)' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">arrow_back</span>
               <span className="text-sm font-semibold">Back to Decks</span>
             </button>
 
-            <div className="stitch-card p-5 mb-4">
-              <h3 className="text-lg font-display font-semibold text-[#c75fff] mb-3">Import from Deck Code</h3>
-              <p className="text-stitch-muted text-sm mb-2">Paste the full deck export from the game (includes # comments and code)</p>
+            <div className="fr-panel p-5 mb-4">
+              <div className="fr-tab mb-3"><h3>Import from Deck Code</h3></div>
+              <p className="text-sm mb-2" style={{ color: 'var(--fr-ink-dim)' }}>Paste the full deck export from the game (includes # comments and code)</p>
               <textarea placeholder="# (1) Iron Man&#10;# (2) Hulk&#10;...&#10;base64code&#10;#"
                 id="import-deck-code"
                 name="import-deck-code"
                 value={importCode} onChange={(e) => setImportCode(e.target.value)}
                 rows={6}
-                className="w-full bg-[#1a1320] text-white rounded-xl px-3 py-2 mb-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20 font-mono text-sm" />
+                className="w-full rounded-lg px-3 py-2 mb-2 focus:outline-none focus:ring-4 focus:ring-blue-500/30 placeholder:text-[var(--fr-ink-dim)] font-mono text-sm"
+                style={{ background: '#fff', color: 'var(--fr-ink)', border: '3px solid var(--fr-line)' }} />
               <button onClick={importFromCode}
-                className="w-full min-h-[44px] bg-cosmic-purple text-white py-2 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(173,43,238,0.45)] transition-shadow duration-200">
+                className="fr-btn w-full min-h-[44px] py-2 text-sm">
                 Import from Code
               </button>
             </div>
 
-            <div className="stitch-card p-5">
+            <div className="fr-panel p-5">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-display font-semibold text-[#c75fff]">Import from URL</h3>
-                <span className="text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted">Coming soon</span>
+                <div className="fr-tab"><h3>Import from URL</h3></div>
+                <span className="fr-chip text-xs font-semibold">Coming soon</span>
               </div>
-              <p className="text-stitch-muted text-sm mb-2">Paste a MarvelSnapZone or Untapped.gg deck URL</p>
+              <p className="text-sm mb-2" style={{ color: 'var(--fr-ink-dim)' }}>Paste a MarvelSnapZone or Untapped.gg deck URL</p>
               <input type="text" placeholder="https://marvelsnapzone.com/decks/..."
                 id="import-deck-url"
                 name="import-deck-url"
                 value={importUrl} onChange={(e) => setImportUrl(e.target.value)}
                 aria-label="Deck URL"
                 disabled
-                className="w-full bg-[#1a1320] text-white rounded-xl px-3 py-2 mb-2 border-2 border-[rgba(173,43,238,0.3)] focus:border-cosmic-purple-text focus:outline-none focus:ring-2 focus:ring-cosmic-purple-text/20 disabled:opacity-50 disabled:cursor-not-allowed" />
+                className="w-full rounded-lg px-3 py-2 mb-2 focus:outline-none focus:ring-4 focus:ring-blue-500/30 placeholder:text-[var(--fr-ink-dim)] disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ background: '#fff', color: 'var(--fr-ink)', border: '3px solid var(--fr-line)' }} />
               <button onClick={importFromUrl}
                 disabled
-                className="w-full min-h-[44px] bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-white py-2 rounded-full font-bold text-sm hover:bg-[rgba(173,43,238,0.12)] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                className="fr-chip w-full min-h-[44px] py-2 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                 Import from URL
               </button>
             </div>
 
             {importError && (
-              <div className="mt-4 bg-red-500/15 text-red-400 border border-red-500/25 p-3 rounded-xl">{importError}</div>
+              <div className="fr-panel fr-panel--red mt-4 p-3" style={{ color: 'var(--fr-red-ink)' }}>{importError}</div>
             )}
           </div>
         );
@@ -8760,17 +8777,17 @@ RULES:
       const curveMax = Math.max(...curveData, 1);
 
       return (
-        <div className="flex flex-col min-h-screen" style={{ background: '#1c1022' }}>
+        <div className="flex flex-col min-h-screen fr-scope" style={{ background: 'var(--fr-paper)' }}>
 
           {/* ── Stitch: Top App Bar ── */}
           <div className="flex items-center justify-between px-4 py-3 sticky top-0 z-50"
-               style={{ background: 'rgba(28,16,34,0.92)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(85,50,103,0.5)' }}>
+               style={{ background: 'rgba(255,253,247,0.96)', borderBottom: '3px solid var(--fr-ink)' }}>
             {/* Back / Close */}
             <button onClick={() => setView('list')}
               className="flex size-10 shrink-0 items-center justify-center rounded-full"
-              style={{ background: '#3c2348' }}
+              style={{ background: '#fff', border: '2px solid var(--fr-ink)', color: 'var(--fr-ink)' }}
               aria-label="Back to deck list">
-              <span className="material-symbols-outlined" style={{ color: '#ffffff', fontSize: '22px' }} aria-hidden="true">arrow_back</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '22px' }} aria-hidden="true">arrow_back</span>
             </button>
 
             {/* Title + status */}
@@ -8784,11 +8801,11 @@ RULES:
                 onChange={(e) => setDeckName(e.target.value)}
                 placeholder="New Deck"
                 aria-label="Deck name"
-                className="bg-transparent text-white text-lg font-bold leading-tight tracking-tight text-center w-full focus:outline-none focus:ring-0 border-none placeholder-white/40"
-                style={{ caretColor: '#ad2bee' }}
+                className="text-lg font-bold leading-tight tracking-tight text-center w-full focus:outline-none focus:ring-4 focus:ring-blue-500/30 rounded-md px-2 placeholder:text-[var(--fr-ink-dim)]"
+                style={{ background: '#fff', color: 'var(--fr-ink)', border: '2px solid var(--fr-ink)', caretColor: 'var(--fr-blue)' }}
               />
               <span className="text-[11px] font-bold uppercase tracking-widest"
-                    style={{ color: selectedCards.length === 12 ? '#0bda76' : '#ad2bee' }}>
+                    style={{ color: selectedCards.length === 12 ? '#b8860b' : 'var(--fr-ink-dim)' }}>
                 {selectedCards.length === 12
                   ? 'Ready to Save'
                   : `Incomplete (${selectedCards.length}/12)`}
@@ -8799,10 +8816,10 @@ RULES:
             <button
               onClick={saveDeck}
               disabled={selectedCards.length !== 12 || !deckName.trim()}
-              className="flex size-10 shrink-0 items-center justify-center rounded-full disabled:opacity-40 transition-opacity"
-              style={{ background: '#ad2bee' }}
+              className="fr-btn flex size-10 shrink-0 items-center justify-center disabled:opacity-40 transition-opacity"
+              style={{ padding: 0, width: '40px' }}
               aria-label="Save deck">
-              <span className="material-symbols-outlined" style={{ color: '#ffffff', fontSize: '20px' }} aria-hidden="true">save</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">save</span>
             </button>
           </div>
 
@@ -8820,7 +8837,8 @@ RULES:
                     <button
                       key={cardName}
                       onClick={() => toggleCardInDeck(cardName)}
-                      className="relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer group holo-glow"
+                      className="relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer group"
+                      style={{ border: '3px solid var(--fr-ink)', boxShadow: '3px 3px 0 var(--fr-ink)' }}
                       aria-label={`Remove ${cardName} from deck`}>
                       {/* Card art — fallback div always present behind img */}
                       <div className="absolute inset-0 card-art card-art-fallback rounded-lg" style={{ zIndex: 0 }} />
@@ -8846,9 +8864,10 @@ RULES:
                     </button>
                   ) : (
                     <div key={`empty-${i}`}
-                      className="card-slot flex items-center justify-center opacity-40"
+                      className="flex items-center justify-center rounded-lg aspect-[3/4]"
+                      style={{ background: '#efe9dd', border: '3px solid var(--fr-ink)', boxShadow: '2px 2px 0 var(--fr-ink)', minHeight: 0 }}
                       aria-label={`Empty slot ${i + 1}`}>
-                      <span className="material-symbols-outlined" style={{ color: '#ad2bee', fontSize: '22px' }} aria-hidden="true">add</span>
+                      <span className="material-symbols-outlined" style={{ color: 'var(--fr-ink-dim)', fontSize: '22px' }} aria-hidden="true">add</span>
                     </div>
                   );
                 })}
@@ -8856,25 +8875,24 @@ RULES:
             </div>
 
             {/* ── Stitch: Stats Bar ── */}
-            <div className="mx-4 mb-3 rounded-xl flex items-center justify-between px-4 py-2.5"
-                 style={{ background: 'rgba(173,43,238,0.10)', border: '1px solid rgba(173,43,238,0.20)' }}>
+            <div className="fr-panel mx-4 mb-3 flex items-center justify-between px-4 py-2.5">
               {/* Stats */}
               <div className="flex gap-5">
                 <div className="flex flex-col">
-                  <span className="stitch-label">Avg Energy</span>
-                  <span className="text-sm font-bold text-white">
+                  <span className="fr-label">Avg Energy</span>
+                  <span className="fr-readout text-sm font-bold" style={{ color: 'var(--fr-ink)' }}>
                     {deckStats ? deckStats.avgCost : '--'}
                   </span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="stitch-label">Total Power</span>
-                  <span className="text-sm font-bold text-white">
+                  <span className="fr-label">Total Power</span>
+                  <span className="fr-readout text-sm font-bold" style={{ color: 'var(--fr-ink)' }}>
                     {deckStats ? deckStats.totalPower : '--'}
                   </span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="stitch-label">Cards</span>
-                  <span className={`text-sm font-bold ${selectedCards.length === 12 ? 'text-[#0bda76]' : 'text-[#ffd700]'}`}>
+                  <span className="fr-label">Cards</span>
+                  <span className="fr-readout text-sm font-bold" style={{ color: 'var(--fr-ink)' }}>
                     {selectedCards.length}/12
                   </span>
                 </div>
@@ -8894,7 +8912,7 @@ RULES:
                         className="w-3 rounded-t-sm transition-all duration-300"
                         style={{
                           height: `${Math.max(heightPct, 8)}%`,
-                          background: `rgba(173,43,238,${opacity})`,
+                          background: `rgba(0,110,199,${opacity})`,
                           minHeight: '3px',
                         }}
                         title={`Cost ${idx + 1}${idx === 5 ? '+' : ''}: ${count}`}
@@ -8907,13 +8925,13 @@ RULES:
 
             {/* ── Stitch: Search + Filter pills (sticky below top bar) ── */}
             <div className="px-4 pb-3 sticky top-[65px] z-40"
-                 style={{ background: 'rgba(28,16,34,0.95)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+                 style={{ background: 'rgba(255,253,247,0.96)', borderBottom: '2px solid var(--fr-ink)' }}>
               {/* Search input */}
               <label className="flex flex-col w-full h-10 mb-3">
-                <div className="flex w-full flex-1 items-stretch rounded-xl h-full"
-                     style={{ background: '#3c2348' }}>
+                <div className="flex w-full flex-1 items-stretch rounded-xl h-full focus-within:ring-4 focus-within:ring-blue-500/30"
+                     style={{ background: '#fff', border: '3px solid var(--fr-line)' }}>
                   <div className="flex items-center justify-center pl-4 rounded-l-xl"
-                       style={{ color: '#b792c9' }}>
+                       style={{ color: 'var(--fr-ink-dim)' }}>
                     <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">search</span>
                   </div>
                   <input
@@ -8924,8 +8942,8 @@ RULES:
                     value={searchCard}
                     onChange={(e) => setSearchCard(e.target.value)}
                     aria-label="Search cards to add to deck"
-                    className="flex w-full flex-1 rounded-xl rounded-l-none border-none focus:outline-none focus:ring-0 text-white text-sm font-normal px-2"
-                    style={{ background: 'transparent', caretColor: '#ad2bee' }}
+                    className="flex w-full flex-1 rounded-xl rounded-l-none border-none focus:outline-none focus:ring-0 text-sm font-normal px-2 placeholder:text-[var(--fr-ink-dim)]"
+                    style={{ background: 'transparent', color: 'var(--fr-ink)', caretColor: 'var(--fr-blue)' }}
                   />
                 </div>
               </label>
@@ -8934,16 +8952,16 @@ RULES:
               <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                 <button
                   onClick={() => setSeriesFilter('all')}
-                  className="flex h-8 shrink-0 items-center justify-center rounded-full px-4 text-xs font-bold transition-colors"
-                  style={{ background: seriesFilter === 'all' ? '#ad2bee' : '#3c2348', color: '#ffffff' }}
+                  className="fr-chip flex h-8 shrink-0 items-center justify-center px-4 text-xs font-bold transition-colors"
+                  style={seriesFilter === 'all' ? { background: 'var(--fr-blue)', color: '#fff', border: '2px solid var(--fr-ink)' } : { background: '#fff', color: 'var(--fr-ink)', border: '2px solid var(--fr-ink)' }}
                   aria-pressed={seriesFilter === 'all'}>
                   All
                 </button>
                 {Object.keys(POOL_GROUPS).map(pool => (
                   <button key={pool}
                     onClick={() => setSeriesFilter(seriesFilter === pool ? 'all' : pool)}
-                    className="flex h-8 shrink-0 items-center justify-center rounded-full px-4 text-xs font-medium transition-colors"
-                    style={{ background: seriesFilter === pool ? '#ad2bee' : '#3c2348', color: '#ffffff' }}
+                    className="fr-chip flex h-8 shrink-0 items-center justify-center px-4 text-xs font-medium transition-colors"
+                    style={seriesFilter === pool ? { background: 'var(--fr-blue)', color: '#fff', border: '2px solid var(--fr-ink)' } : { background: '#fff', color: 'var(--fr-ink)', border: '2px solid var(--fr-ink)' }}
                     aria-pressed={seriesFilter === pool}>
                     {pool}
                   </button>
@@ -8969,12 +8987,13 @@ RULES:
                     <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden"
                          style={{
                            border: isSelected
-                             ? '2px solid #ad2bee'
+                             ? '3px solid var(--fr-blue)'
                              : isOwned
-                               ? '1px solid rgba(255,255,255,0.15)'
-                               : '1px solid rgba(255,255,255,0.06)',
-                           boxShadow: isSelected ? '0 0 14px rgba(173,43,238,0.5)' : 'none',
-                           opacity: isOwned || isSelected ? 1 : 0.55,
+                               ? '3px solid var(--fr-ink)'
+                               : '2px solid var(--fr-ink-dim)',
+                           boxShadow: isSelected ? '3px 3px 0 var(--fr-ink)' : 'none',
+                           opacity: isOwned || isSelected ? 1 : 0.6,
+                           filter: isOwned || isSelected ? 'none' : 'grayscale(1)',
                          }}>
                       {/* Fallback always rendered behind img */}
                       <div className="absolute inset-0 card-art card-art-fallback" style={{ zIndex: 0 }} />
@@ -8989,13 +9008,13 @@ RULES:
                       {isSelected && (
                         <div className="absolute inset-0 bg-black/20 flex items-start justify-end p-1">
                           <span className="material-symbols-outlined rounded-full bg-black/60 text-lg"
-                                style={{ color: '#0bda76', fontSize: '18px' }} aria-hidden="true">check_circle</span>
+                                style={{ color: '#fff', fontSize: '18px' }} aria-hidden="true">check_circle</span>
                         </div>
                       )}
                       {/* Not owned lock */}
                       {!isOwned && !isSelected && (
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="material-symbols-outlined text-white/40" style={{ fontSize: '24px' }} aria-hidden="true">lock</span>
+                          <span className="material-symbols-outlined" style={{ color: 'rgba(255,255,255,.55)', fontSize: '24px' }} aria-hidden="true">lock</span>
                         </div>
                       )}
                     </div>
@@ -9004,7 +9023,8 @@ RULES:
                       <span className="text-[10px] font-bold bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center text-white leading-none">
                         {card.cost}
                       </span>
-                      <span className="text-[10px] font-bold bg-orange-600 rounded-full w-4 h-4 flex items-center justify-center text-white leading-none">
+                      <span className="text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center text-white leading-none"
+                            style={{ background: 'var(--fr-ink)' }}>
                         {card.power}
                       </span>
                     </div>
@@ -9013,7 +9033,7 @@ RULES:
               })}
 
               {filteredCards.length === 0 && (
-                <div className="col-span-3 py-12 text-center" style={{ color: '#b792c9' }}>
+                <div className="col-span-3 py-12 text-center" style={{ color: 'var(--fr-ink-dim)' }}>
                   <span className="material-symbols-outlined block text-4xl mb-2" aria-hidden="true">search_off</span>
                   <p className="text-sm">No cards match your search</p>
                 </div>
@@ -9023,8 +9043,8 @@ RULES:
 
           {/* ── Stitch: Floating Bottom Actions (fixed above NavBar) ── */}
           <div className="fixed bottom-16 left-0 right-0 px-6 pb-4 pt-10 z-40 pointer-events-none"
-               style={{ background: 'linear-gradient(to top, rgba(28,16,34,1) 0%, rgba(28,16,34,0.85) 65%, transparent 100%)' }}>
-            <div className="flex gap-3 pointer-events-auto">
+               style={{ background: 'linear-gradient(to top, var(--fr-paper) 0%, rgba(255,253,247,0.92) 65%, transparent 100%)' }}>
+            <div className="fr-panel flex gap-3 pointer-events-auto p-3">
               {/* Smart Auto-fill: pick highest-power owned cards to fill remaining slots */}
               <button
                 onClick={() => {
@@ -9039,8 +9059,7 @@ RULES:
                   setSelectedCards(prev => [...prev, ...candidates]);
                 }}
                 disabled={selectedCards.length >= 12}
-                className="flex-1 h-12 rounded-full flex items-center justify-center gap-2 font-bold text-sm disabled:opacity-40 transition-opacity"
-                style={{ background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.12)' }}
+                className="fr-btn flex-1 h-12 flex items-center justify-center gap-2 text-sm disabled:opacity-40 transition-opacity"
                 aria-label="Smart auto-fill remaining slots with owned cards">
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">auto_fix_high</span>
                 <span>Smart Auto-fill</span>
@@ -9049,8 +9068,7 @@ RULES:
               <button
                 onClick={() => setSelectedCards([])}
                 disabled={selectedCards.length === 0}
-                className="flex-1 h-12 rounded-full flex items-center justify-center gap-2 font-bold text-sm disabled:opacity-40 transition-opacity"
-                style={{ background: 'rgba(255,255,255,0.07)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.12)' }}
+                className="fr-btn fr-btn--red flex-1 h-12 flex items-center justify-center gap-2 text-sm disabled:opacity-40 transition-opacity"
                 aria-label="Clear all cards from deck">
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">delete_sweep</span>
                 <span>Clear</span>
@@ -9059,8 +9077,7 @@ RULES:
               <button
                 onClick={saveDeck}
                 disabled={selectedCards.length !== 12 || !deckName.trim()}
-                className="flex-1 h-12 rounded-full flex items-center justify-center gap-2 font-bold text-sm text-white disabled:opacity-40 transition-all"
-                style={{ background: '#ad2bee', boxShadow: '0 4px 20px rgba(173,43,238,0.45)' }}
+                className="fr-btn flex-1 h-12 flex items-center justify-center gap-2 text-sm disabled:opacity-40 transition-all"
                 aria-label="Save deck">
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">save</span>
                 <span>Save Deck</span>
