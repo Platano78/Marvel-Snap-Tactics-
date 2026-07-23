@@ -4957,18 +4957,15 @@ RULES:
       };
 
       return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-stitch-border" style={{background: 'rgba(28,16,34,0.95)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)'}} role="navigation" aria-label="Main navigation">
+        <nav className="fr-scope fixed bottom-0 left-0 right-0 z-50" style={{background: 'var(--fr-paper)', borderTop: '3px solid var(--fr-line)'}} role="navigation" aria-label="Main navigation">
           <div className="relative flex justify-around items-center h-16 max-w-lg mx-auto">
-            <span className="absolute bottom-1 w-6 h-0.5 rounded-full bg-cosmic-purple" style={indicatorStyle} aria-hidden="true" />
+            <span className="absolute bottom-1 w-6 h-0.5 rounded-full" style={{...indicatorStyle, background: 'var(--fr-blue)'}} aria-hidden="true" />
             {primaryTabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 aria-current={activeTab === tab.id ? 'page' : undefined}
                 id={`tab-${tab.id}`}
-                className={`relative flex flex-col items-center justify-center w-full h-full min-w-[44px] min-h-[44px] transition-colors duration-200 ${
-                  activeTab === tab.id
-                    ? 'text-cosmic-purple-text'
-                    : 'text-stitch-muted hover:text-white'
-                }`}>
+                className="relative flex flex-col items-center justify-center w-full h-full min-w-[44px] min-h-[44px] transition-colors duration-200"
+                style={{color: activeTab === tab.id ? 'var(--fr-blue)' : 'var(--fr-ink-dim)'}}>
                 <span className="material-symbols-outlined" aria-hidden="true" style={{fontSize: '22px'}}>{tab.icon}</span>
                 <span className="text-[10px] mt-0.5 font-semibold tracking-wide hidden min-[360px]:block">{tab.label}</span>
               </button>
@@ -9810,50 +9807,48 @@ RULES:
 
       return (
         <div className="modal-overlay" onClick={onCancel}>
-          <div className="modal p-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-xl font-display font-semibold text-[#c75fff] mb-4 text-center">Log Analysis Complete</h3>
+          <div className="modal fr-scope fr-panel p-4" onClick={e => e.stopPropagation()}>
+            <h3 className="text-xl font-display font-semibold mb-4 text-center" style={{color:'var(--fr-ink)'}}>Log Analysis Complete</h3>
 
             <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="bg-[#1a1320] rounded-lg p-3 text-center">
-                <div className="text-2xl font-bold text-white">{matches.length}</div>
-                <div className="text-xs text-stitch-muted">New Matches</div>
+              <div className="rounded-lg p-3 text-center" style={{background:'#fff', border:'2px solid var(--fr-ink)'}}>
+                <div className="fr-readout text-2xl font-bold" style={{color:'var(--fr-ink)'}}>{matches.length}</div>
+                <div className="text-xs" style={{color:'var(--fr-ink-dim)'}}>New Matches</div>
               </div>
-              <div className="bg-[#1a1320] rounded-lg p-3 text-center">
-                <div className="text-2xl font-bold text-stitch-muted">{skippedCount}</div>
-                <div className="text-xs text-stitch-muted">Duplicates Skipped</div>
+              <div className="rounded-lg p-3 text-center" style={{background:'#fff', border:'2px solid var(--fr-ink)'}}>
+                <div className="fr-readout text-2xl font-bold" style={{color:'var(--fr-ink-dim)'}}>{skippedCount}</div>
+                <div className="text-xs" style={{color:'var(--fr-ink-dim)'}}>Duplicates Skipped</div>
               </div>
-              <div className="bg-green-900/50 rounded-lg p-3 text-center">
-                <div className="text-2xl font-bold text-green-400">{wins}</div>
-                <div className="text-xs text-stitch-muted">Wins</div>
+              <div className="rounded-lg p-3 text-center" style={{background:'#cfe6ff', border:'2px solid var(--fr-ink)'}}>
+                <div className="fr-readout text-2xl font-bold" style={{color:'var(--fr-blue)'}}>{wins}</div>
+                <div className="text-xs" style={{color:'var(--fr-ink-dim)'}}>Wins</div>
               </div>
-              <div className="bg-red-900/50 rounded-lg p-3 text-center">
-                <div className="text-2xl font-bold text-red-400">{losses}</div>
-                <div className="text-xs text-stitch-muted">Losses</div>
+              <div className="rounded-lg p-3 text-center" style={{background:'#fff', border:'2px solid var(--fr-ink)'}}>
+                <div className="fr-readout text-2xl font-bold" style={{color:'var(--fr-red-ink)'}}>{losses}</div>
+                <div className="text-xs" style={{color:'var(--fr-ink-dim)'}}>Losses</div>
               </div>
             </div>
 
-            <div className="bg-[#1a1320] rounded-lg p-3 mb-4 text-center">
-              <div className="text-xs text-stitch-muted mb-1">Net Cubes from Import</div>
-              <div className={`text-2xl font-bold ${totalCubes >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            <div className="rounded-lg p-3 mb-4 text-center" style={{background:'#efe9dd', border:'2px solid var(--fr-ink)'}}>
+              <div className="text-xs mb-1" style={{color:'var(--fr-ink-dim)'}}>Net Cubes from Import</div>
+              <div className="fr-readout text-2xl font-bold" style={{color: totalCubes > 0 ? 'var(--fr-blue)' : totalCubes <= -4 ? 'var(--fr-red-ink)' : 'var(--fr-ink)'}}>
                 {totalCubes >= 0 ? '+' : ''}{totalCubes}
               </div>
             </div>
 
             {matches.length > 0 && (
               <div className="mb-4">
-                <h4 className="text-sm font-medium text-gray-300 mb-2">Preview (Recent 5):</h4>
+                <h4 className="text-sm font-medium mb-2" style={{color:'var(--fr-ink-dim)'}}>Preview (Recent 5):</h4>
                 <div className="space-y-1 max-h-32 overflow-y-auto">
                   {matches.slice(0, 5).map((m, i) => (
-                    <div key={i} className={`flex items-center justify-between p-2 rounded text-sm ${
-                      m.result === 'WIN' ? 'bg-green-900/30' : 'bg-red-900/30'
-                    }`}>
-                      <span className={m.result === 'WIN' ? 'text-green-400' : 'text-red-400'}>{m.result}</span>
-                      <span className="text-white">{m.result === 'WIN' ? '+' : '-'}{m.cubes}</span>
-                      <span className="text-stitch-muted text-xs">{formatDate(m.timestamp)}</span>
+                    <div key={i} className="flex items-center justify-between p-2 rounded text-sm" style={{background: m.result === 'WIN' ? '#cfe6ff' : '#fff', border:'2px solid var(--fr-ink)'}}>
+                      <span style={{color: m.result === 'WIN' ? 'var(--fr-blue)' : 'var(--fr-ink)', fontWeight:700}}>{m.result}</span>
+                      <span className="fr-readout" style={{color: m.result === 'LOSS' && m.cubes >= 4 ? 'var(--fr-red-ink)' : 'var(--fr-ink)'}}>{m.result === 'WIN' ? '+' : '-'}{m.cubes}</span>
+                      <span className="text-xs" style={{color:'var(--fr-ink-dim)'}}>{formatDate(m.timestamp)}</span>
                     </div>
                   ))}
                   {matches.length > 5 && (
-                    <div className="text-center text-stitch-muted text-xs py-1">...and {matches.length - 5} more</div>
+                    <div className="text-center text-xs py-1" style={{color:'var(--fr-ink-dim)'}}>...and {matches.length - 5} more</div>
                   )}
                 </div>
               </div>
@@ -9861,11 +9856,11 @@ RULES:
 
             <div className="flex gap-2">
               <button onClick={() => onConfirm(matches)}
-                className="flex-1 bg-mcu-blue text-white py-3 rounded-lg font-medium hover:bg-blue-600">
+                className="fr-btn flex-1 py-3 font-medium">
                 Import {matches.length} Matches
               </button>
               <button onClick={onCancel}
-                className="flex-1 bg-stark-surface-2 text-white py-3 rounded-lg font-medium hover:bg-stitch-accent">
+                className="flex-1 py-3 rounded-lg font-medium" style={{background:'#fff', color:'var(--fr-ink)', border:'2px solid var(--fr-ink)'}}>
                 Cancel
               </button>
             </div>
@@ -9878,45 +9873,45 @@ RULES:
     const SyncConfirmModal = ({ syncData, onConfirm, onCancel }) => {
       return (
         <div className="modal-overlay" onClick={onCancel}>
-          <div className="modal p-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-xl font-display font-semibold text-[#c75fff] mb-4 text-center">Sync Data Received</h3>
+          <div className="modal fr-scope fr-panel p-4" onClick={e => e.stopPropagation()}>
+            <h3 className="text-xl font-display font-semibold mb-4 text-center" style={{color:'var(--fr-ink)'}}>Sync Data Received</h3>
 
-            <div className="bg-[#1a1320] rounded-lg p-4 mb-4">
+            <div className="rounded-lg p-4 mb-4" style={{background:'#efe9dd', border:'2px solid var(--fr-ink)'}}>
               <div className="text-center mb-3">
-                <div className="text-3xl font-bold text-mcu-blue">{syncData.c?.length || 0}</div>
-                <div className="text-sm text-stitch-muted">Cards in Collection</div>
+                <div className="fr-readout text-3xl font-bold" style={{color:'var(--fr-blue)'}}>{syncData.c?.length || 0}</div>
+                <div className="text-sm" style={{color:'var(--fr-ink-dim)'}}>Cards in Collection</div>
               </div>
               {syncData.s && (
                 <div className="grid grid-cols-3 gap-2 text-center text-sm">
                   <div>
-                    <div className="text-green-400 font-bold">{syncData.s.wins || 0}</div>
-                    <div className="text-stitch-muted text-xs">Wins</div>
+                    <div className="fr-readout font-bold" style={{color:'var(--fr-blue)'}}>{syncData.s.wins || 0}</div>
+                    <div className="text-xs" style={{color:'var(--fr-ink-dim)'}}>Wins</div>
                   </div>
                   <div>
-                    <div className="text-red-400 font-bold">{syncData.s.losses || 0}</div>
-                    <div className="text-stitch-muted text-xs">Losses</div>
+                    <div className="fr-readout font-bold" style={{color:'var(--fr-red-ink)'}}>{syncData.s.losses || 0}</div>
+                    <div className="text-xs" style={{color:'var(--fr-ink-dim)'}}>Losses</div>
                   </div>
                   <div>
-                    <div className={`font-bold ${(syncData.s.cubes || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    <div className="fr-readout font-bold" style={{color: (syncData.s.cubes || 0) > 0 ? 'var(--fr-blue)' : (syncData.s.cubes || 0) <= -4 ? 'var(--fr-red-ink)' : 'var(--fr-ink)'}}>
                       {(syncData.s.cubes || 0) >= 0 ? '+' : ''}{syncData.s.cubes || 0}
                     </div>
-                    <div className="text-stitch-muted text-xs">Cubes</div>
+                    <div className="text-xs" style={{color:'var(--fr-ink-dim)'}}>Cubes</div>
                   </div>
                 </div>
               )}
             </div>
 
-            <p className="text-stitch-muted text-sm mb-4 text-center">
+            <p className="text-sm mb-4 text-center" style={{color:'var(--fr-ink-dim)'}}>
               This will merge the synced collection with your current data.
             </p>
 
             <div className="flex gap-2">
               <button onClick={onConfirm}
-                className="flex-1 bg-mcu-blue text-white py-3 rounded-lg font-medium hover:bg-blue-600">
+                className="fr-btn flex-1 py-3 font-medium">
                 Import Collection
               </button>
               <button onClick={onCancel}
-                className="flex-1 bg-stark-surface-2 text-white py-3 rounded-lg font-medium hover:bg-stitch-accent">
+                className="flex-1 py-3 rounded-lg font-medium" style={{background:'#fff', color:'var(--fr-ink)', border:'2px solid var(--fr-ink)'}}>
                 Cancel
               </button>
             </div>
@@ -11895,31 +11890,29 @@ RULES:
           onClick={onCancel}
         >
           <div
-            className="modal p-6 max-w-sm"
+            className="modal fr-scope fr-panel p-6 max-w-sm"
             onClick={e => e.stopPropagation()}
           >
             <h3
               id="confirm-dialog-title"
-              className="text-xl font-display font-semibold text-[#c75fff] mb-3"
+              className="text-xl font-display font-semibold mb-3"
+              style={{color:'var(--fr-ink)'}}
             >
               {title}
             </h3>
-            <p className="text-gray-300 mb-6">{message}</p>
+            <p className="mb-6" style={{color:'var(--fr-ink-dim)'}}>{message}</p>
             <div className="flex gap-3">
               <button
                 onClick={onCancel}
-                className="flex-1 bg-stark-surface-2 text-white py-3 rounded-lg font-medium hover:bg-stitch-accent touch-target"
+                className="flex-1 py-3 rounded-lg font-medium touch-target"
+                style={{background:'#fff', color:'var(--fr-ink)', border:'2px solid var(--fr-ink)'}}
                 autoFocus
               >
                 {cancelText}
               </button>
               <button
                 onClick={onConfirm}
-                className={`flex-1 py-3 rounded-lg font-medium touch-target ${
-                  danger
-                    ? 'bg-red-600 text-white hover:bg-red-500'
-                    : 'bg-mcu-blue text-white hover:bg-blue-600'
-                }`}
+                className={`fr-btn flex-1 py-3 font-medium touch-target ${danger ? 'fr-btn--red' : ''}`}
               >
                 {confirmText}
               </button>
@@ -11949,10 +11942,10 @@ RULES:
       if (cubes < 4) {
         return (
           <div className="fixed bottom-24 left-4 right-4 z-50 comic-pop-enter">
-            <div className={`stitch-card p-4 ${isWin ? 'comic-panel-win' : 'comic-panel-loss'}`}>
+            <div className="fr-scope fr-panel p-4">
               <div className="flex items-center justify-between">
-                <span className="font-display font-bold text-lg text-white tracking-tight">{isWin ? 'Victory!' : 'Defeat'}</span>
-                <span className={`font-display font-black text-2xl ${isWin ? 'text-[#0bda76]' : 'text-red-400'}`}>
+                <span className="font-display font-bold text-lg tracking-tight" style={{color:'var(--fr-ink)'}}>{isWin ? 'Victory!' : 'Defeat'}</span>
+                <span className="fr-readout font-display font-black text-2xl" style={{color: isWin ? 'var(--fr-red)' : 'var(--fr-red-ink)'}}>
                   {isWin ? '+' : '-'}{cubes}
                 </span>
               </div>
@@ -11961,38 +11954,38 @@ RULES:
         );
       }
 
-      // Full-screen splash for high-stakes (4+ cubes) — cosmic purple burst on win, subdued red on defeat
-      const dotColor = isWin ? 'rgba(173,43,238,0.08)' : 'rgba(239,68,68,0.05)';
+      // Full-screen splash for high-stakes (4+ cubes) — comic-print scrim around a paper panel
+      const dotColor = isWin ? 'rgba(255,253,247,0.10)' : 'rgba(237,29,36,0.08)';
       return (
         <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}
           style={{
             background: `radial-gradient(circle, ${dotColor} 1.5px, transparent 1.5px), rgba(0,0,0,0.85)`,
             backgroundSize: '10px 10px, 100% 100%'
           }}>
-          <div className="cosmic-glass-strong text-center comic-pop-enter relative px-10 py-12 mx-6">
-            {/* Cosmic purple burst glow — win only; defeat stays subdued */}
+          <div className="fr-scope fr-panel text-center comic-pop-enter relative px-10 py-12 mx-6 overflow-hidden">
+            {/* Static comic burst — win only; defeat stays subdued */}
             {isWin && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
-                <div className="w-80 h-80 rounded-full animate-pulse" style={{
-                  background: 'radial-gradient(circle, rgba(173,43,238,0.35) 0%, transparent 70%)'
-                }} />
-              </div>
+              <div className="absolute inset-0 pointer-events-none" aria-hidden="true" style={{
+                background: 'repeating-conic-gradient(from -8deg at 50% 52%, rgba(0,110,199,.12) 0deg 8deg, transparent 8deg 18deg)',
+                opacity: 0.8
+              }} />
             )}
 
             {/* Result word — Spline Sans bold */}
-            <h1 className={`font-display font-black text-6xl md:text-7xl mb-6 tracking-tight ${isWin ? 'text-white' : 'text-red-400'}`}>
+            <h1 className="font-display font-black text-6xl md:text-7xl mb-6 tracking-tight relative" style={{color: isWin ? 'var(--fr-ink)' : 'var(--fr-red-ink)'}}>
               {isWin ? 'VICTORY' : 'DEFEAT'}
             </h1>
 
-            {/* Cube badge — big tabular white number in a semantic pill; holo-foil sweep on wins only */}
+            {/* Cube badge — marquee comic readout */}
             <div
-              className={`inline-block px-8 py-4 rounded-full overflow-hidden relative ${isWin ? 'holo-foil holo-foil-sweep-once' : ''}`}
+              className="inline-block px-8 py-4 rounded-full overflow-hidden relative"
               style={{
-                background: isWin ? 'rgba(173,43,238,0.20)' : 'rgba(239,68,68,0.15)',
-                border: `1px solid ${isWin ? 'rgba(173,43,238,0.45)' : 'rgba(239,68,68,0.30)'}`,
+                background: '#fff',
+                border: '3px solid var(--fr-ink)',
+                boxShadow: '4px 4px 0 var(--fr-ink)'
               }}
             >
-              <span className="font-display font-black text-4xl text-white">
+              <span className="fr-readout font-display font-black text-4xl" style={{color: isWin ? 'var(--fr-red)' : 'var(--fr-red-ink)'}}>
                 {isWin ? '+' : '-'}{cubes} CUBES
               </span>
             </div>
@@ -12002,14 +11995,14 @@ RULES:
               <div className="mt-8">
                 <span
                   className="inline-block px-5 py-2 rounded-full font-display font-bold text-sm uppercase tracking-wide"
-                  style={{ background: 'rgba(255,215,0,0.15)', border: '1px solid rgba(255,215,0,0.35)', color: '#ffd700' }}
+                  style={{ background: 'var(--fr-gold)', border: '2px solid var(--fr-ink)', color: 'var(--fr-ink)' }}
                 >
                   Max Bet
                 </span>
               </div>
             )}
 
-            <p className="mt-10 text-sm" style={{ color: '#b792c9' }}>Tap anywhere to continue</p>
+            <p className="mt-10 text-sm relative" style={{color:'var(--fr-ink-dim)'}}>Tap anywhere to continue</p>
           </div>
         </div>
       );
