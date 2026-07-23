@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#120818" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#120818" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fffdf7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#fffdf7" media="(prefers-color-scheme: dark)">
   <meta name="description" content="Marvel Snap AI Companion & Tracker - Track your collection, log matches, and get tactical advice">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -520,32 +520,19 @@
        Lives on body::before (position: fixed, z-index: -1) so it stays
        glued to the viewport while content scrolls over it. The React
        root wrapper drops its opaque background so this shows through. */
+    /* Field Report body atmosphere — light comic paper + Ben-Day halftone wash.
+       Replaces the retired Full-Holo dark nebula/starfield. Lives on body::before
+       (fixed, z-index:-1) so it stays glued to the viewport under scrolling content;
+       the .fr-scope screen roots paint their own paper+halftone on top. */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
       z-index: -1;
       pointer-events: none;
-      background-color: var(--ui-surface-base);
-      background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat;
-      background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
-      background-size: auto, auto, auto, 340px 340px, 200px 200px;
-      background-image:
-        radial-gradient(ellipse 65% 55% at 16% 14%, rgba(36, 16, 51, 0.65) 0%, rgba(36, 16, 51, 0) 60%),
-        radial-gradient(ellipse 70% 60% at 88% 84%, rgba(26, 11, 36, 0.55) 0%, rgba(26, 11, 36, 0) 65%),
-        radial-gradient(ellipse 45% 40% at 72% 6%, rgba(173, 43, 238, 0.10) 0%, rgba(173, 43, 238, 0) 55%),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340'%3E%3Ccircle cx='40' cy='50' r='1.3' fill='%23fff' fill-opacity='0.6'/%3E%3Ccircle cx='150' cy='30' r='1.1' fill='%23fff' fill-opacity='0.5'/%3E%3Ccircle cx='260' cy='90' r='1.4' fill='%23fff' fill-opacity='0.65'/%3E%3Ccircle cx='90' cy='180' r='1.2' fill='%23fff' fill-opacity='0.55'/%3E%3Ccircle cx='300' cy='220' r='1.3' fill='%23fff' fill-opacity='0.6'/%3E%3Ccircle cx='200' cy='290' r='1.1' fill='%23fff' fill-opacity='0.5'/%3E%3Ccircle cx='30' cy='300' r='1.2' fill='%23fff' fill-opacity='0.55'/%3E%3C/svg%3E"),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Ccircle cx='12' cy='18' r='0.7' fill='%23fff' fill-opacity='0.5'/%3E%3Ccircle cx='47' cy='72' r='0.6' fill='%23fff' fill-opacity='0.35'/%3E%3Ccircle cx='88' cy='15' r='0.8' fill='%23fff' fill-opacity='0.55'/%3E%3Ccircle cx='134' cy='55' r='0.6' fill='%23fff' fill-opacity='0.3'/%3E%3Ccircle cx='168' cy='102' r='0.7' fill='%23fff' fill-opacity='0.45'/%3E%3Ccircle cx='23' cy='121' r='0.6' fill='%23fff' fill-opacity='0.35'/%3E%3Ccircle cx='61' cy='158' r='0.8' fill='%23fff' fill-opacity='0.5'/%3E%3Ccircle cx='109' cy='134' r='0.6' fill='%23fff' fill-opacity='0.3'/%3E%3Ccircle cx='146' cy='180' r='0.7' fill='%23fff' fill-opacity='0.4'/%3E%3Ccircle cx='185' cy='42' r='0.6' fill='%23fff' fill-opacity='0.35'/%3E%3Ccircle cx='5' cy='95' r='0.6' fill='%23fff' fill-opacity='0.28'/%3E%3Ccircle cx='77' cy='3' r='0.7' fill='%23fff' fill-opacity='0.45'/%3E%3Ccircle cx='155' cy='150' r='0.6' fill='%23fff' fill-opacity='0.3'/%3E%3Ccircle cx='192' cy='175' r='0.7' fill='%23fff' fill-opacity='0.4'/%3E%3C/svg%3E");
-    }
-    /* Barely-perceptible twinkle — motion-safe only, never the default */
-    @media (prefers-reduced-motion: no-preference) {
-      body::before {
-        animation: starfield-twinkle 9s ease-in-out infinite;
-      }
-    }
-    @keyframes starfield-twinkle {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.85; }
+      background-color: var(--fr-paper);
+      background-image: var(--fr-halftone);
+      background-size: var(--fr-halftone-size);
     }
 
     /* Glass primitives — elevated surfaces with real depth (rule 2) */
@@ -740,8 +727,8 @@
     }
     body {
       font-family: var(--font-ui);
-      background-color: var(--ui-surface-base);
-      color: var(--ui-text-primary);
+      background-color: var(--fr-paper);
+      color: var(--fr-ink);
       min-height: 100vh;
       overflow-x: hidden;
       padding-top: env(safe-area-inset-top);
@@ -1103,35 +1090,37 @@
 
     /* Linked Folder Styles */
     .linked-folder-section {
-      background: rgba(173, 43, 238, 0.1);
-      border: 2px solid rgba(173, 43, 238, 0.4);
-      border-radius: 1rem;
+      background: var(--fr-panel);
+      border: 3px solid var(--fr-line);
+      box-shadow: var(--fr-shadow);
+      border-radius: var(--fr-radius);
       padding: 16px;
       margin-bottom: 12px;
     }
     .linked-folder-section h4 {
       margin: 0 0 8px 0;
-      color: #c75fff;
+      color: var(--fr-ink);
       font-family: 'Spline Sans', 'Inter', sans-serif;
       font-weight: 700;
     }
     .linked-folder-section .description {
       margin: 0 0 12px 0;
-      color: #aaa;
+      color: var(--fr-ink-dim);
       font-size: 0.85em;
     }
     .link-folder-btn {
       width: 100%;
       padding: 14px 20px;
       font-size: 1em;
-      background: #ad2bee;
-      color: white;
-      border: none;
-      border-radius: 0.75rem;
+      background: var(--fr-blue);
+      color: #fff;
+      border: 3px solid var(--fr-ink);
+      box-shadow: 3px 3px 0 var(--fr-line);
+      border-radius: var(--fr-radius);
       cursor: pointer;
       font-weight: bold;
     }
-    .link-folder-btn:hover { background: #c75fff; }
+    .link-folder-btn:hover { background: #005ba3; }
     .linked-status {
       display: flex;
       flex-direction: column;
@@ -1149,13 +1138,13 @@
       font-weight: bold;
     }
     .status-badge.linked {
-      background: rgba(34, 197, 94, 0.2);
-      color: #22c55e;
+      background: rgba(255, 193, 7, 0.2);
+      color: #b8860b;
     }
     .unlink-btn {
       background: none;
       border: none;
-      color: #9CA3AF;
+      color: var(--fr-ink-dim);
       cursor: pointer;
       font-size: 0.85em;
       min-width: 44px;
@@ -1166,25 +1155,26 @@
       padding: 8px 12px;
     }
     .unlink-btn:hover {
-      color: #ef4444;
+      color: var(--fr-red-ink);
       text-decoration: underline;
     }
     .sync-btn {
       padding: 12px 20px;
       font-size: 1em;
-      background: #ad2bee;
-      color: white;
-      border: none;
-      border-radius: 0.75rem;
+      background: var(--fr-blue);
+      color: #fff;
+      border: 3px solid var(--fr-ink);
+      box-shadow: 3px 3px 0 var(--fr-line);
+      border-radius: var(--fr-radius);
       cursor: pointer;
       font-weight: bold;
     }
-    .sync-btn:hover { background: #c75fff; }
+    .sync-btn:hover { background: #005ba3; }
     .sync-btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .last-sync {
       margin: 0;
       font-size: 0.8em;
-      color: #9CA3AF;
+      color: var(--fr-ink-dim);
       text-align: center;
     }
     .not-supported-msg {
@@ -4837,7 +4827,8 @@ RULES:
 
       return (
         <div
-          className="flex items-center gap-1 text-xs uppercase tracking-[0.15em] font-semibold text-stitch-muted mt-1"
+          className="flex items-center gap-1 text-xs uppercase tracking-[0.15em] font-semibold mt-1"
+          style={{ color: 'var(--fr-ink-dim)' }}
           title={absolute}
           aria-label={`Game data as of ${absolute}`}
         >
@@ -4901,9 +4892,9 @@ RULES:
       if (!showBanner || !deferredPrompt) return null;
 
       return (
-        <div className="mx-4 mt-4 rounded-xl bg-stark-surface-2 border border-cosmic-purple-text/30 text-white px-4 py-3 text-sm flex items-center justify-between gap-3">
+        <div className="fr-scope fr-panel mx-4 mt-4 px-4 py-3 text-sm flex items-center justify-between gap-3" style={{color:'var(--fr-ink)'}}>
           <span>Install Snapapoulous Prime as an app</span>
-          <button onClick={handleInstall} className="shrink-0 px-3 py-1.5 rounded-lg bg-cosmic-purple text-white font-semibold">
+          <button onClick={handleInstall} className="fr-btn shrink-0">
             Install
           </button>
         </div>
@@ -4975,19 +4966,22 @@ RULES:
       );
     };
 
-    // Header - Stitch Top Bar Style
+    // Header - Field Report Top Bar Style
     const Header = ({ title, subtitle, onBack }) => (
-      <header className="stitch-topbar sticky top-0 z-40 py-3 px-4 mb-4 halftone-cosmic overflow-hidden">
+      <header
+        className="fr-scope sticky top-0 z-40 py-3 px-4 mb-4 overflow-hidden"
+        style={{background:'var(--fr-paper)', borderBottom:'3px solid var(--fr-line)'}}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {onBack && (
-              <button onClick={onBack} className="text-stitch-muted hover:text-white min-w-[44px] min-h-[44px] flex items-center justify-center">
+              <button onClick={onBack} className="min-w-[44px] min-h-[44px] flex items-center justify-center" style={{color:'var(--fr-ink)'}}>
                 <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
               </button>
             )}
             <div>
-              <h1 className="text-lg font-semibold text-white tracking-wider">{title}</h1>
-              {subtitle && <p className="text-xs text-cosmic-purple-text font-medium">{subtitle}</p>}
+              <h1 className="text-lg font-semibold tracking-wider" style={{color:'var(--fr-ink)'}}>{title}</h1>
+              {subtitle && <p className="text-xs font-medium" style={{color:'var(--fr-blue)'}}>{subtitle}</p>}
             </div>
           </div>
         </div>
@@ -5908,7 +5902,7 @@ RULES:
         if (match.snapped === 'PLAYER' || match.snapped === 'BOTH') {
           decisions.push({
             icon: 'filter_vintage',
-            iconColor: '#ad2bee',
+            iconColor: 'var(--fr-blue)',
             title: 'You Snapped',
             body: `You chose to double the stakes. ${isWin ? 'The snap paid off — you won the cubes.' : 'The snap backfired. Consider retreating sooner when behind on 2+ locations.'}`,
             grade: isWin ? 'GOOD' : 'RISKY',
@@ -5917,7 +5911,7 @@ RULES:
         if (match.snapped === 'OPPONENT' || match.snapped === 'BOTH') {
           decisions.push({
             icon: 'filter_vintage',
-            iconColor: '#ef4444',
+            iconColor: 'var(--fr-ink-dim)',
             title: 'Opponent Snapped',
             body: `Your opponent doubled the stakes. ${isWin ? 'You correctly called their bluff and stayed in.' : 'You faced a tough spot — retreating for 2 was an option.'}`,
             grade: isWin ? 'GOOD' : 'INFO',
@@ -5927,17 +5921,17 @@ RULES:
       }, [match, isWin]);
 
       const gradeStyle = (grade) => {
-        if (grade === 'GOOD')   return { color: '#0bda76', bg: 'rgba(11,218,118,0.15)' };
-        if (grade === 'RISKY')  return { color: '#fb923c', bg: 'rgba(251,146,60,0.15)' };
+        if (grade === 'GOOD')   return { color: '#b8860b', bg: 'rgba(255,193,7,0.15)' };
+        if (grade === 'RISKY')  return { color: 'var(--fr-ink)', bg: '#efe9dd' };
         if (grade === 'REVIEW') return { color: '#f87171', bg: 'rgba(239,68,68,0.15)' };
-        return { color: '#b792c9', bg: 'rgba(183,146,201,0.10)' };
+        return { color: 'var(--fr-ink-dim)', bg: '#efe9dd' };
       };
 
       return (
         /* Full-screen overlay — sits on top of MatchHistory, same layer as CardDetail */
         <div
-          className="fixed inset-0 z-50 overflow-y-auto"
-          style={{ background: '#1c1022' }}
+          className="fr-scope fixed inset-0 z-50 overflow-y-auto"
+          style={{ background: 'var(--fr-paper)' }}
           role="dialog"
           aria-modal="true"
           aria-label="Match Detail"
@@ -5946,34 +5940,34 @@ RULES:
           <div
             className="sticky top-0 z-10 flex items-center justify-between px-4 py-3"
             style={{
-              background: 'rgba(28,16,34,0.92)',
+              background: 'var(--fr-paper)',
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',
-              borderBottom: '1px solid rgba(173,43,238,0.15)',
+              borderBottom: '3px solid var(--fr-line)',
             }}
           >
             {/* Back button */}
             <button
               onClick={onBack}
-              className="flex items-center justify-center rounded-full text-[#b792c9] hover:text-white hover:bg-white/10 transition-colors"
-              style={{ width: 44, height: 44 }}
+              className="flex items-center justify-center rounded-full transition-colors"
+              style={{ width: 44, height: 44, color: 'var(--fr-ink)' }}
               aria-label="Back to Match History"
             >
               <span className="material-symbols-outlined" aria-hidden="true">arrow_back_ios_new</span>
             </button>
 
             {/* Title */}
-            <div className="flex flex-col items-center">
-              <h2 className="text-white text-lg font-bold leading-tight tracking-tight">Match Detail</h2>
-              <span className="text-xs font-medium" style={{ color: '#ad2bee' }}>
+            <div className="fr-tab flex flex-col items-center" style={{padding:'4px 12px', margin:0}}>
+              <h3>Match Detail</h3>
+              <span className="code">
                 {match.opponent ? `vs. ${match.opponent}` : 'Unknown Opponent'} · {formatDate(match.timestamp)}
               </span>
             </div>
 
             {/* Share placeholder */}
             <button
-              className="flex items-center justify-center rounded-full text-[#b792c9] hover:text-white hover:bg-white/10 transition-colors"
-              style={{ width: 44, height: 44 }}
+              className="flex items-center justify-center rounded-full transition-colors"
+              style={{ width: 44, height: 44, color: 'var(--fr-ink)' }}
               aria-label="Share match"
             >
               <span className="material-symbols-outlined" aria-hidden="true">share</span>
@@ -5984,36 +5978,33 @@ RULES:
           <div className="flex flex-wrap gap-3 p-4">
             {/* Result */}
             <div
-              className="flex min-w-[110px] flex-1 flex-col gap-1 rounded-2xl p-4"
-              style={{ background: '#3c2348', border: '1px solid rgba(173,43,238,0.20)' }}
+              className="fr-panel flex min-w-[110px] flex-1 flex-col gap-1 p-4"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: '#ad2bee' }}>Result</p>
-              <p className={`text-2xl font-bold ${isWin ? 'text-[#0bda76]' : 'text-red-400'}`}>
+              <p className="fr-label text-[10px]">Result</p>
+              <p className="fr-readout text-2xl font-bold" style={{color: isWin ? '#b8860b' : 'var(--fr-ink)'}}>
                 {isWin ? 'Victory' : 'Defeat'}
               </p>
             </div>
 
             {/* Cubes */}
             <div
-              className="flex min-w-[110px] flex-1 flex-col gap-1 rounded-2xl p-4"
-              style={{ background: '#3c2348', border: '1px solid rgba(173,43,238,0.20)' }}
+              className="fr-panel flex min-w-[110px] flex-1 flex-col gap-1 p-4"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: '#ad2bee' }}>Cubes</p>
+              <p className="fr-label text-[10px]">Cubes</p>
               <div className="flex items-center gap-2">
-                <p className={`text-2xl font-bold ${isWin ? 'text-[#0bda76]' : 'text-red-400'}`}>
+                <p className="fr-readout text-2xl font-bold" style={{color:'var(--fr-ink)'}}>
                   {isWin ? '+' : '-'}{cubes}
                 </p>
-                <span className="material-symbols-outlined text-blue-400 text-base" aria-hidden="true">filter_vintage</span>
+                <span className="material-symbols-outlined text-base" style={{color:'var(--fr-blue)'}} aria-hidden="true">filter_vintage</span>
               </div>
             </div>
 
             {/* Snap status */}
             <div
-              className="flex min-w-[110px] flex-1 flex-col gap-1 rounded-2xl p-4"
-              style={{ background: '#3c2348', border: '1px solid rgba(173,43,238,0.20)' }}
+              className="fr-panel flex min-w-[110px] flex-1 flex-col gap-1 p-4"
             >
-              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: '#ad2bee' }}>Snap</p>
-              <p className="text-white text-lg font-bold leading-tight">
+              <p className="fr-label text-[10px]">Snap</p>
+              <p className="fr-readout text-lg font-bold leading-tight" style={{color:'var(--fr-ink)'}}>
                 {snapLabel(match.snapped) || 'No Snap'}
               </p>
             </div>
@@ -6022,19 +6013,13 @@ RULES:
           {/* ── Winning / Key Play Banner ───────────────────────────────────── */}
           <div className="px-4 pb-2">
             <div
-              className="rounded-2xl p-4"
-              style={{
-                background: isWin
-                  ? 'linear-gradient(135deg, rgba(173,43,238,0.25) 0%, rgba(60,35,72,0.60) 100%)'
-                  : 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(60,35,72,0.60) 100%)',
-                border: `1px solid ${isWin ? 'rgba(173,43,238,0.35)' : 'rgba(239,68,68,0.25)'}`,
-              }}
+              className="fr-panel p-4"
             >
               <div className="flex items-center gap-2 mb-2">
                 <span className="material-symbols-outlined text-yellow-400 text-lg" aria-hidden="true">auto_awesome</span>
-                <h3 className="text-white font-bold text-sm">{isWin ? 'Winning Play' : 'Turning Point'}</h3>
+                <h3 className="font-bold text-sm" style={{color:'var(--fr-ink)'}}>{isWin ? 'Winning Play' : 'Turning Point'}</h3>
               </div>
-              <p className="text-sm leading-relaxed" style={{ color: '#d1c4e9' }}>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--fr-ink-dim)' }}>
                 {isWin
                   ? `You won +${cubes} cubes${match.deck ? ` with your ${match.deck} deck` : ''}.`
                   : `You lost ${cubes} cubes${match.opponentArchetype ? ` to ${match.opponentArchetype}` : ''}.`}
@@ -6044,9 +6029,9 @@ RULES:
 
           {/* ── Honest data notice — per-turn replay is a hard data gap, not a stub ─ */}
           <div className="px-4 pt-4 pb-2">
-            <div className="stitch-card p-4 flex items-start gap-3">
-              <span className="material-symbols-outlined text-base mt-0.5" style={{ color: '#b792c9' }} aria-hidden="true">info</span>
-              <p className="text-xs leading-relaxed text-stitch-muted">
+            <div className="fr-panel p-4 flex items-start gap-3">
+              <span className="material-symbols-outlined text-base mt-0.5" style={{ color: 'var(--fr-blue)' }} aria-hidden="true">info</span>
+              <p className="text-xs leading-relaxed" style={{color:'var(--fr-ink-dim)'}}>
                 Per-turn replay isn't available. Marvel Snap's exported game files don't include per-match board or turn data — this view shows the match result you logged.
               </p>
             </div>
@@ -6055,24 +6040,24 @@ RULES:
           {/* ── Details — only the fields the user actually logged ──────────── */}
           {(match.deck || match.opponentArchetype || match.notes) && (
             <div className="px-4 pt-2 pb-2">
-              <h3 className="text-white text-lg font-bold leading-tight tracking-tight mb-3">Details</h3>
-              <div className="stitch-card p-4 flex flex-col gap-2">
+              <div className="fr-tab mb-3"><h3>Details</h3></div>
+              <div className="fr-panel p-4 flex flex-col gap-2">
                 {match.deck && (
                   <div className="flex justify-between gap-3">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-stitch-muted">Deck</span>
-                    <span className="text-sm text-white text-right">{match.deck}</span>
+                    <span className="fr-label text-xs">Deck</span>
+                    <span className="text-sm text-right" style={{color:'var(--fr-ink)'}}>{match.deck}</span>
                   </div>
                 )}
                 {match.opponentArchetype && (
                   <div className="flex justify-between gap-3">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-stitch-muted">Opponent Archetype</span>
-                    <span className="text-sm text-white text-right">{match.opponentArchetype}</span>
+                    <span className="fr-label text-xs">Opponent Archetype</span>
+                    <span className="text-sm text-right" style={{color:'var(--fr-ink)'}}>{match.opponentArchetype}</span>
                   </div>
                 )}
                 {match.notes && (
                   <div className="flex justify-between gap-3">
-                    <span className="text-xs font-semibold uppercase tracking-wider text-stitch-muted">Notes</span>
-                    <span className="text-sm text-white text-right">{match.notes}</span>
+                    <span className="fr-label text-xs">Notes</span>
+                    <span className="text-sm text-right" style={{color:'var(--fr-ink)'}}>{match.notes}</span>
                   </div>
                 )}
               </div>
@@ -6081,15 +6066,14 @@ RULES:
 
           {/* ── Key Decisions ───────────────────────────────────────────────── */}
           <div className="px-4 pt-4 pb-2">
-            <h3 className="text-white text-lg font-bold leading-tight tracking-tight mb-3">Key Decisions</h3>
+            <div className="fr-tab mb-3"><h3>Key Decisions</h3></div>
             <div className="space-y-3">
               {keyDecisions.map((kd, i) => {
                 const gs = gradeStyle(kd.grade);
                 return (
                   <div
                     key={i}
-                    className="flex gap-3 p-4 rounded-2xl"
-                    style={{ background: '#2b1933', border: '1px solid rgba(255,255,255,0.05)' }}
+                    className="fr-panel flex gap-3 p-4"
                   >
                     {/* Icon */}
                     <div
@@ -6101,7 +6085,7 @@ RULES:
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 mb-1">
-                        <p className="text-white text-sm font-bold leading-tight">{kd.title}</p>
+                        <p className="text-sm font-bold leading-tight" style={{color:'var(--fr-ink)'}}>{kd.title}</p>
                         <span
                           className="shrink-0 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded"
                           style={{ background: gs.bg, color: gs.color }}
@@ -6109,7 +6093,7 @@ RULES:
                           {kd.grade}
                         </span>
                       </div>
-                      <p className="text-xs leading-relaxed" style={{ color: '#b792c9' }}>{kd.body}</p>
+                      <p className="text-xs leading-relaxed" style={{ color: 'var(--fr-ink-dim)' }}>{kd.body}</p>
                     </div>
                   </div>
                 );
@@ -6120,33 +6104,29 @@ RULES:
           {/* ── AI Verdict / What to Learn ─────────────────────────────────── */}
           <div className="px-4 pt-4 pb-6">
             <div
-              className="rounded-2xl p-4"
-              style={{
-                background: isWin ? 'rgba(11,218,118,0.06)' : 'rgba(239,68,68,0.06)',
-                border: `1px solid ${isWin ? 'rgba(11,218,118,0.20)' : 'rgba(239,68,68,0.20)'}`,
-              }}
+              className={`fr-panel ${!isWin ? 'fr-panel--red' : ''} p-4`}
             >
               <div className="flex items-center gap-2 mb-3">
                 <span
                   className="material-symbols-outlined text-base"
-                  style={{ color: isWin ? '#0bda76' : '#f87171' }}
+                  style={{ color: isWin ? '#b8860b' : 'var(--fr-red-ink)' }}
                   aria-hidden="true"
                 >
                   {isWin ? 'school' : 'error'}
                 </span>
-                <h3 className="text-white font-bold text-sm">
+                <h3 className="font-bold text-sm" style={{color:'var(--fr-ink)'}}>
                   {isWin ? 'What You Did Well' : 'Missed Opportunity'}
                 </h3>
               </div>
 
               {isWin ? (
-                <p className="text-xs leading-relaxed" style={{ color: '#b792c9' }}>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--fr-ink-dim)' }}>
                   {match.snapped === 'PLAYER' || match.snapped === 'BOTH'
                     ? 'Snapping at the right moment multiplied your cube gain. Keep reading your opponent\'s hesitation before committing.'
                     : `Solid positional play — you secured the win without needing to snap${match.deck ? ` while running the ${match.deck} archetype` : ''}. Consistent lane control is the mark of a strong player.`}
                 </p>
               ) : (
-                <p className="text-xs leading-relaxed" style={{ color: '#b792c9' }}>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--fr-ink-dim)' }}>
                   {`You lost ${cubes} cubes this match${match.opponentArchetype ? ` against ${match.opponentArchetype}` : ''}. When you're clearly behind, retreating early for a smaller loss is often the better line than pushing to the final turn.`}
                 </p>
               )}
@@ -6156,8 +6136,7 @@ RULES:
                     snap=${match.snapped}, deck=${match.deck}, notes=${match.notes}`, context)
                   Display streaming response here. Add a "Get AI Analysis" button to trigger on demand. */}
               <button
-                className="mt-3 flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-lg transition-opacity hover:opacity-80"
-                style={{ background: 'rgba(173,43,238,0.20)', color: '#c75fff', border: '1px solid rgba(173,43,238,0.30)' }}
+                className="fr-btn mt-3 flex items-center gap-2 text-xs"
                 disabled
                 title="Wire to AI Advisor — see TODO in source"
               >
@@ -9153,7 +9132,7 @@ RULES:
     ];
 
     const TIER_CONFIG = {
-      S: { label: 'S', title: 'Powerhouse Decks', color: '#ad2bee', bg: 'rgba(173,43,238,0.15)', border: 'rgba(173,43,238,0.4)' },
+      S: { label: 'S', title: 'Powerhouse Decks', color: '#b8860b', bg: 'rgba(255,193,7,0.15)', border: 'rgba(255,193,7,0.5)' },
       A: { label: 'A', title: 'Solid Choices',    color: '#3b82f6', bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.3)' },
       B: { label: 'B', title: 'Viable Picks',     color: '#22c55e', bg: 'rgba(34,197,94,0.10)',  border: 'rgba(34,197,94,0.25)' },
       C: { label: 'C', title: 'Niche / Risky',    color: '#f59e0b', bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.25)' },
@@ -9926,7 +9905,7 @@ RULES:
     const TOAST_VARIANTS = {
       success: { icon: 'check_circle', className: 'border-green-500/60 bg-green-950/85 text-green-200' },
       error: { icon: 'error', className: 'border-red-500/60 bg-red-950/85 text-red-200' },
-      info: { icon: 'info', className: 'border-cosmic-purple/60 bg-[#1a1320]/95 text-white' },
+      info: { icon: 'info', className: 'border-[#006ec7]/60 bg-[#1a1320]/95 text-white' },
       warning: { icon: 'warning', className: 'border-yellow-500/60 bg-yellow-950/85 text-yellow-200' }
     };
     let legacyToastDispatch = null;
@@ -10228,9 +10207,9 @@ RULES:
               <button className="link-folder-btn" onClick={handleLinkFolder}>
                 Select nvprod Folder
               </button>
-              <p style={{ fontSize: '0.75em', color: '#9CA3AF', marginTop: '8px' }}>
+              <p style={{ fontSize: '0.75em', color: 'var(--fr-ink-dim)', marginTop: '8px' }}>
                 Navigate to:<br />
-                <code style={{ background: '#120818', padding: '2px 6px', borderRadius: '4px', color: '#ffd700' }}>
+                <code style={{ background: '#efe9dd', padding: '2px 6px', borderRadius: '4px', color: 'var(--fr-ink)', border: '1px solid var(--fr-line)' }}>
                   %AppData%\LocalLow\Second Dinner\SNAP\Standalone\States\nvprod
                 </code>
               </p>
@@ -10716,7 +10695,7 @@ RULES:
     const StatusBadge = ({ status }) => {
       if (!status) return null;
       if (status === 'testing') return <span className="text-yellow-400 text-[10px] uppercase tracking-[0.1em] font-semibold">Testing...</span>;
-      if (status === 'success') return <span className="text-stitch-green text-[10px] uppercase tracking-[0.1em] font-semibold">Connected</span>;
+      if (status === 'success') return <span className="text-[10px] uppercase tracking-[0.1em] font-semibold" style={{color:'#b8860b'}}>Connected</span>;
       return <span className="text-red-400 text-[10px] uppercase tracking-[0.1em] font-semibold">Failed</span>;
     };
 
@@ -12329,9 +12308,9 @@ RULES:
     // ==================== DECK COMPARISON COMPONENT ====================
     // Render a deck selector dropdown
     const DeckSelector = ({ value, onChange, color, label, decks }) => (
-      <div className="flex flex-col gap-2">
+      <div className="fr-scope flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color }}>
+          <span className="fr-label text-[10px]" style={{ color }}>
             {label}
           </span>
         </div>
@@ -12341,12 +12320,11 @@ RULES:
             name={`deck-selector-${label.toLowerCase().replace(/\s+/g, '-')}`}
             value={value}
             onChange={e => onChange(e.target.value)}
-            className="w-full appearance-none rounded-full px-4 py-3 pr-10 text-sm font-medium text-white border focus:outline-none focus:ring-2 focus:ring-offset-0 truncate"
+            className="w-full appearance-none px-4 py-3 pr-10 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 truncate"
             style={{
-              background: 'rgba(42,26,51,0.9)',
-              borderColor: color,
-              boxShadow: `0 0 8px ${color}40`,
-              color: '#fff',
+              background: '#fff',
+              border: '3px solid var(--fr-line)',
+              color: 'var(--fr-ink)',
               fontSize: '14px',
             }}
             aria-label={`Select ${label}`}
@@ -12366,18 +12344,15 @@ RULES:
         </div>
         {value && (
           <div
-            className="rounded-xl p-4 border"
-            style={{
-              background: 'rgba(42,26,51,0.6)',
-              borderColor: `${color}50`,
-            }}
+            className="fr-panel p-4"
+            style={{borderColor: color}}
           >
             {value && decks.find(d => d.id === value) ? (
               <div className="flex flex-col gap-1">
-                <span className="text-white font-bold text-base leading-tight">
+                <span className="font-bold text-base leading-tight" style={{color:'var(--fr-ink)'}}>
                   {decks.find(d => d.id === value).name}
                 </span>
-                <span className="text-xs text-stitch-muted">
+                <span className="text-xs" style={{color:'var(--fr-ink-dim)'}}>
                   {(decks.find(d => d.id === value).cards || []).length} cards
                 </span>
               </div>
@@ -12458,28 +12433,31 @@ RULES:
       // Empty state when fewer than 2 decks exist — art-forward teaser, not a barren panel
       if (decks.length < 2) {
         return (
-          <div className="px-4 pb-20">
-            <Header title="COMPARE DECKS" subtitle="Side-by-side analysis" />
+          <div className="fr-scope px-4 pb-20">
+            <div className="fr-tab" style={{padding:'0 4px', margin:'12px 16px 0'}}>
+              <h3>Compare Decks</h3>
+              <span className="code">Side-by-side</span>
+            </div>
             <div className="flex flex-col items-center gap-4 px-6 py-10 text-center mt-8">
               <div className="flex -space-x-4" aria-hidden="true">
                 {['Wolverine', 'Hulk', 'Scarlet Witch'].map((name, i) => (
                   <div key={name}
-                       className="relative w-16 aspect-[3/4] rounded-lg overflow-hidden border-2 border-gray-600 bg-[#2b1933] shrink-0 grayscale opacity-70"
-                       style={{ transform: `rotate(${(i - 1) * 8}deg)` }}>
+                       className="relative w-16 aspect-[3/4] rounded-lg overflow-hidden shrink-0 grayscale opacity-70"
+                       style={{ transform: `rotate(${(i - 1) * 8}deg)`, background:'#efe9dd', border:'2px solid var(--fr-ink)' }}>
                     <img src={getCardArtUrl({ name })} alt="" loading="lazy" className="w-full h-full object-cover"
                          onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
                 ))}
               </div>
               <div>
-                <p className="text-white font-bold text-lg mb-1">Need 2+ Decks</p>
-                <p className="text-[#b792c9] text-sm max-w-xs mx-auto">
+                <p className="font-bold text-lg mb-1" style={{color:'var(--fr-ink)'}}>Need 2+ Decks</p>
+                <p className="text-sm max-w-xs mx-auto" style={{color:'var(--fr-ink-dim)'}}>
                   Build at least two decks in the Decks tab to unlock side-by-side comparison. You currently have {decks.length} deck{decks.length === 1 ? '' : 's'}.
                 </p>
               </div>
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'decks' }))}
-                className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple hover:bg-[#b84eff] transition-colors min-h-[44px]"
+                className="fr-btn mt-1 min-h-[44px]"
               >
                 Go to Decks
               </button>
@@ -12489,22 +12467,25 @@ RULES:
       }
 
       return (
-        <div className="px-4 pb-20">
-          <Header title="COMPARE DECKS" subtitle="Side-by-side analysis" />
+        <div className="fr-scope px-4 pb-20">
+          <div className="fr-tab" style={{padding:'0 4px', margin:'12px 16px 0'}}>
+            <h3>Compare Decks</h3>
+            <span className="code">Side-by-side</span>
+          </div>
 
           {/* Deck Selectors */}
           <div className="grid grid-cols-2 gap-3 mb-6">
             <DeckSelector
               value={deckAId}
               onChange={setDeckAId}
-              color="#ad2bee"
+              color="var(--fr-blue)"
               label="Deck A"
               decks={decks}
             />
             <DeckSelector
               value={deckBId}
               onChange={setDeckBId}
-              color="#3b82f6"
+              color="var(--fr-red)"
               label="Deck B"
               decks={decks}
             />
@@ -12515,50 +12496,50 @@ RULES:
             <>
               {/* Key Stats Grid */}
               <section className="mb-5" aria-label="Performance metrics">
-                <h3 className="stitch-label mb-3 px-1">Performance Metrics</h3>
+                <h3 className="fr-label mb-3 px-1">Performance Metrics</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {/* Avg Energy */}
-                  <div className="stitch-stat flex flex-col gap-2">
-                    <p className="stitch-label">Avg. Energy</p>
+                  <div className="fr-panel flex flex-col gap-2 p-4">
+                    <p className="fr-label">Avg. Energy</p>
                     <div className="flex items-end justify-between">
                       <div className="flex flex-col">
-                        <span className="text-xl font-bold" style={{ color: '#ad2bee' }}>{statsA.avgCost}</span>
-                        <span className="text-xl font-bold" style={{ color: '#3b82f6' }}>{statsB.avgCost}</span>
+                        <span className="fr-readout text-xl font-bold" style={{ color: 'var(--fr-blue)' }}>{statsA.avgCost}</span>
+                        <span className="fr-readout text-xl font-bold" style={{ color: 'var(--fr-red-ink)' }}>{statsB.avgCost}</span>
                       </div>
-                      <span className="material-symbols-outlined mb-1" style={{ color: '#ad2bee', fontSize: '22px' }} aria-hidden="true">bolt</span>
+                      <span className="material-symbols-outlined mb-1" style={{ color: 'var(--fr-blue)', fontSize: '22px' }} aria-hidden="true">bolt</span>
                     </div>
                   </div>
                   {/* Total Power */}
-                  <div className="stitch-stat flex flex-col gap-2">
-                    <p className="stitch-label">Total Power</p>
+                  <div className="fr-panel flex flex-col gap-2 p-4">
+                    <p className="fr-label">Total Power</p>
                     <div className="flex items-end justify-between">
                       <div className="flex flex-col">
-                        <span className="text-xl font-bold" style={{ color: '#ad2bee' }}>{statsA.totalPower}</span>
-                        <span className="text-xl font-bold" style={{ color: '#3b82f6' }}>{statsB.totalPower}</span>
+                        <span className="fr-readout text-xl font-bold" style={{ color: 'var(--fr-blue)' }}>{statsA.totalPower}</span>
+                        <span className="fr-readout text-xl font-bold" style={{ color: 'var(--fr-red-ink)' }}>{statsB.totalPower}</span>
                       </div>
-                      <span className="material-symbols-outlined mb-1" style={{ color: '#ad2bee', fontSize: '22px' }} aria-hidden="true">fitness_center</span>
+                      <span className="material-symbols-outlined mb-1" style={{ color: 'var(--fr-blue)', fontSize: '22px' }} aria-hidden="true">fitness_center</span>
                     </div>
                   </div>
                   {/* Card Count */}
-                  <div className="stitch-stat flex flex-col gap-2">
-                    <p className="stitch-label">Cards</p>
+                  <div className="fr-panel flex flex-col gap-2 p-4">
+                    <p className="fr-label">Cards</p>
                     <div className="flex items-end justify-between">
                       <div className="flex flex-col">
-                        <span className="text-xl font-bold" style={{ color: '#ad2bee' }}>{statsA.cardCount}</span>
-                        <span className="text-xl font-bold" style={{ color: '#3b82f6' }}>{statsB.cardCount}</span>
+                        <span className="fr-readout text-xl font-bold" style={{ color: 'var(--fr-blue)' }}>{statsA.cardCount}</span>
+                        <span className="fr-readout text-xl font-bold" style={{ color: 'var(--fr-red-ink)' }}>{statsB.cardCount}</span>
                       </div>
-                      <span className="material-symbols-outlined mb-1" style={{ color: '#ad2bee', fontSize: '22px' }} aria-hidden="true">style</span>
+                      <span className="material-symbols-outlined mb-1" style={{ color: 'var(--fr-blue)', fontSize: '22px' }} aria-hidden="true">style</span>
                     </div>
                   </div>
                   {/* Shared Cards */}
-                  <div className="stitch-stat flex flex-col gap-2">
-                    <p className="stitch-label">Shared</p>
+                  <div className="fr-panel flex flex-col gap-2 p-4">
+                    <p className="fr-label">Shared</p>
                     <div className="flex items-end justify-between">
                       <div className="flex flex-col">
-                        <span className="text-xl font-bold text-stitch-green">{overlapData ? overlapData.shared.length : 0}</span>
-                        <span className="text-xs text-stitch-muted">cards in both</span>
+                        <span className="fr-readout text-xl font-bold" style={{color:'var(--fr-ink)'}}>{overlapData ? overlapData.shared.length : 0}</span>
+                        <span className="text-xs" style={{color:'var(--fr-ink-dim)'}}>cards in both</span>
                       </div>
-                      <span className="material-symbols-outlined mb-1 text-stitch-green" style={{ fontSize: '22px' }} aria-hidden="true">join_inner</span>
+                      <span className="material-symbols-outlined mb-1" style={{ color:'var(--fr-blue)', fontSize: '22px' }} aria-hidden="true">join_inner</span>
                     </div>
                   </div>
                 </div>
@@ -12566,17 +12547,17 @@ RULES:
 
               {/* Energy Curve */}
               <section className="mb-5" aria-label="Energy curve">
-                <div className="rounded-2xl p-4 border border-white/5" style={{ background: 'var(--stitch-card)' }}>
+                <div className="fr-panel p-4">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="stitch-label">Energy Curve</h3>
+                    <h3 className="fr-label">Energy Curve</h3>
                     <div className="flex gap-4">
                       <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full" style={{ background: '#ad2bee' }} aria-hidden="true" />
-                        <span className="text-[10px] text-stitch-muted font-bold">A</span>
+                        <div className="w-2 h-2 rounded-full" style={{ background: 'var(--fr-blue)' }} aria-hidden="true" />
+                        <span className="text-[10px] font-bold" style={{color:'var(--fr-ink-dim)'}}>A</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full" style={{ background: '#3b82f6' }} aria-hidden="true" />
-                        <span className="text-[10px] text-stitch-muted font-bold">B</span>
+                        <div className="w-2 h-2 rounded-full" style={{ background: 'var(--fr-red)' }} aria-hidden="true" />
+                        <span className="text-[10px] font-bold" style={{color:'var(--fr-ink-dim)'}}>B</span>
                       </div>
                     </div>
                   </div>
@@ -12595,7 +12576,7 @@ RULES:
                               style={{
                                 height: `${heightA}px`,
                                 minHeight: countA > 0 ? '4px' : '0px',
-                                background: '#ad2bee',
+                                background: 'var(--fr-blue)',
                               }}
                               aria-label={`Cost ${label}: Deck A ${countA} cards`}
                             />
@@ -12605,12 +12586,12 @@ RULES:
                               style={{
                                 height: `${heightB}px`,
                                 minHeight: countB > 0 ? '4px' : '0px',
-                                background: '#3b82f6',
+                                background: 'var(--fr-red)',
                               }}
                               aria-label={`Cost ${label}: Deck B ${countB} cards`}
                             />
                           </div>
-                          <span className="text-[10px] text-stitch-muted">{label}</span>
+                          <span className="fr-readout text-[10px]" style={{color:'var(--fr-ink-dim)'}}>{label}</span>
                         </div>
                       );
                     })}
@@ -12621,20 +12602,20 @@ RULES:
               {/* Card Overlap Table */}
               {overlapData && (
                 <section className="mb-5" aria-label="Card overlap">
-                  <h3 className="stitch-label mb-3 px-1">Card Overlap</h3>
-                  <div className="rounded-2xl overflow-hidden border border-white/10" style={{ background: 'var(--stitch-card)' }}>
+                  <h3 className="fr-label mb-3 px-1">Card Overlap</h3>
+                  <div className="fr-panel overflow-hidden">
                     <table className="w-full text-left text-sm" role="table">
                       <thead>
-                        <tr style={{ background: 'rgba(255,255,255,0.04)' }}>
-                          <th className="p-3 stitch-label font-bold">Card</th>
-                          <th className="p-3 stitch-label font-bold text-center" style={{ color: '#ad2bee' }}>A</th>
-                          <th className="p-3 stitch-label font-bold text-center" style={{ color: '#3b82f6' }}>B</th>
+                        <tr style={{ background: '#efe9dd' }}>
+                          <th className="p-3 fr-label font-bold">Card</th>
+                          <th className="p-3 fr-label font-bold text-center" style={{ color: 'var(--fr-blue)' }}>A</th>
+                          <th className="p-3 fr-label font-bold text-center" style={{ color: 'var(--fr-red-ink)' }}>B</th>
                         </tr>
                       </thead>
                       <tbody>
                         {overlapData.shared.map(name => (
-                          <tr key={`shared-${name}`} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                            <td className="p-3 font-medium text-white text-sm">
+                          <tr key={`shared-${name}`} style={{ borderTop: '1px solid var(--fr-line)' }}>
+                            <td className="p-3 font-medium text-sm" style={{color:'var(--fr-ink)'}}>
                               <div className="flex items-center gap-2">
                                 <div className="relative w-6 h-8 rounded overflow-hidden shrink-0 card-art card-art-fallback">
                                   <img src={getCardArtUrl({ name })} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover"
@@ -12644,16 +12625,16 @@ RULES:
                               </div>
                             </td>
                             <td className="p-3 text-center">
-                              <span className="material-symbols-outlined" style={{ color: '#0bda76', fontSize: '18px' }} aria-label="In deck A">check_circle</span>
+                              <span className="material-symbols-outlined" style={{ color: 'var(--fr-blue)', fontSize: '18px' }} aria-label="In deck A">check_circle</span>
                             </td>
                             <td className="p-3 text-center">
-                              <span className="material-symbols-outlined" style={{ color: '#0bda76', fontSize: '18px' }} aria-label="In deck B">check_circle</span>
+                              <span className="material-symbols-outlined" style={{ color: 'var(--fr-blue)', fontSize: '18px' }} aria-label="In deck B">check_circle</span>
                             </td>
                           </tr>
                         ))}
                         {overlapData.onlyA.map(name => (
-                          <tr key={`a-${name}`} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                            <td className="p-3 font-medium text-white text-sm">
+                          <tr key={`a-${name}`} style={{ borderTop: '1px solid var(--fr-line)' }}>
+                            <td className="p-3 font-medium text-sm" style={{color:'var(--fr-ink)'}}>
                               <div className="flex items-center gap-2">
                                 <div className="relative w-6 h-8 rounded overflow-hidden shrink-0 card-art card-art-fallback">
                                   <img src={getCardArtUrl({ name })} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover"
@@ -12663,16 +12644,16 @@ RULES:
                               </div>
                             </td>
                             <td className="p-3 text-center">
-                              <span className="material-symbols-outlined" style={{ color: '#0bda76', fontSize: '18px' }} aria-label="In deck A">check_circle</span>
+                              <span className="material-symbols-outlined" style={{ color: 'var(--fr-blue)', fontSize: '18px' }} aria-label="In deck A">check_circle</span>
                             </td>
                             <td className="p-3 text-center">
-                              <span className="material-symbols-outlined text-slate-600" style={{ fontSize: '18px' }} aria-label="Not in deck B">circle</span>
+                              <span className="material-symbols-outlined" style={{ color:'var(--fr-ink-dim)', fontSize: '18px' }} aria-label="Not in deck B">circle</span>
                             </td>
                           </tr>
                         ))}
                         {overlapData.onlyB.map(name => (
-                          <tr key={`b-${name}`} style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                            <td className="p-3 font-medium text-white text-sm">
+                          <tr key={`b-${name}`} style={{ borderTop: '1px solid var(--fr-line)' }}>
+                            <td className="p-3 font-medium text-sm" style={{color:'var(--fr-ink)'}}>
                               <div className="flex items-center gap-2">
                                 <div className="relative w-6 h-8 rounded overflow-hidden shrink-0 card-art card-art-fallback">
                                   <img src={getCardArtUrl({ name })} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover"
@@ -12682,16 +12663,16 @@ RULES:
                               </div>
                             </td>
                             <td className="p-3 text-center">
-                              <span className="material-symbols-outlined text-slate-600" style={{ fontSize: '18px' }} aria-label="Not in deck A">circle</span>
+                              <span className="material-symbols-outlined" style={{ color:'var(--fr-ink-dim)', fontSize: '18px' }} aria-label="Not in deck A">circle</span>
                             </td>
                             <td className="p-3 text-center">
-                              <span className="material-symbols-outlined" style={{ color: '#0bda76', fontSize: '18px' }} aria-label="In deck B">check_circle</span>
+                              <span className="material-symbols-outlined" style={{ color: 'var(--fr-blue)', fontSize: '18px' }} aria-label="In deck B">check_circle</span>
                             </td>
                           </tr>
                         ))}
                         {overlapData.shared.length === 0 && overlapData.onlyA.length === 0 && overlapData.onlyB.length === 0 && (
                           <tr>
-                            <td colSpan={3} className="p-6 text-center text-stitch-muted text-sm">No cards found</td>
+                            <td colSpan={3} className="p-6 text-center text-sm" style={{color:'var(--fr-ink-dim)'}}>No cards found</td>
                           </tr>
                         )}
                       </tbody>
@@ -12702,43 +12683,37 @@ RULES:
 
               {/* Verdict / Summary */}
               <section className="mb-5" aria-label="Comparison verdict">
-                <div
-                  className="p-5 rounded-2xl border relative overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(173,43,238,0.15) 0%, rgba(42,26,51,0.6) 50%, rgba(59,130,246,0.15) 100%)',
-                    borderColor: 'rgba(173,43,238,0.4)',
-                  }}
-                >
+                <div className="fr-panel p-5 relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none" aria-hidden="true">
                     <span className="material-symbols-outlined" style={{ fontSize: '64px' }}>stars</span>
                   </div>
                   <div className="relative z-10">
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="material-symbols-outlined" style={{ color: '#ad2bee', fontSize: '20px' }} aria-hidden="true">compare_arrows</span>
-                      <h3 className="font-bold text-base text-white">Comparison Summary</h3>
+                      <span className="material-symbols-outlined" style={{ color: 'var(--fr-blue)', fontSize: '20px' }} aria-hidden="true">compare_arrows</span>
+                      <h3 className="font-bold text-base" style={{color:'var(--fr-ink)'}}>Comparison Summary</h3>
                     </div>
                     <div className="grid grid-cols-3 gap-2 text-center">
-                      <div className="rounded-xl p-3" style={{ background: 'rgba(173,43,238,0.1)', border: '1px solid rgba(173,43,238,0.25)' }}>
-                        <div className="text-xs text-stitch-muted mb-1 font-bold uppercase tracking-wide">A Only</div>
-                        <div className="text-2xl font-bold" style={{ color: '#ad2bee' }}>{overlapData ? overlapData.onlyA.length : 0}</div>
-                        <div className="text-xs text-stitch-muted">unique</div>
+                      <div className="fr-panel fr-panel--blue p-3">
+                        <div className="fr-label text-xs mb-1">A Only</div>
+                        <div className="fr-readout text-2xl font-bold" style={{ color: 'var(--fr-blue)' }}>{overlapData ? overlapData.onlyA.length : 0}</div>
+                        <div className="text-xs" style={{color:'var(--fr-ink-dim)'}}>unique</div>
                       </div>
-                      <div className="rounded-xl p-3" style={{ background: 'rgba(11,218,118,0.1)', border: '1px solid rgba(11,218,118,0.25)' }}>
-                        <div className="text-xs text-stitch-muted mb-1 font-bold uppercase tracking-wide">Shared</div>
-                        <div className="text-2xl font-bold text-stitch-green">{overlapData ? overlapData.shared.length : 0}</div>
-                        <div className="text-xs text-stitch-muted">overlap</div>
+                      <div className="fr-panel p-3">
+                        <div className="fr-label text-xs mb-1">Shared</div>
+                        <div className="fr-readout text-2xl font-bold" style={{color:'var(--fr-ink)'}}>{overlapData ? overlapData.shared.length : 0}</div>
+                        <div className="text-xs" style={{color:'var(--fr-ink-dim)'}}>overlap</div>
                       </div>
-                      <div className="rounded-xl p-3" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)' }}>
-                        <div className="text-xs text-stitch-muted mb-1 font-bold uppercase tracking-wide">B Only</div>
-                        <div className="text-2xl font-bold" style={{ color: '#3b82f6' }}>{overlapData ? overlapData.onlyB.length : 0}</div>
-                        <div className="text-xs text-stitch-muted">unique</div>
+                      <div className="fr-panel fr-panel--red p-3">
+                        <div className="fr-label text-xs mb-1">B Only</div>
+                        <div className="fr-readout text-2xl font-bold" style={{ color: 'var(--fr-red-ink)' }}>{overlapData ? overlapData.onlyB.length : 0}</div>
+                        <div className="text-xs" style={{color:'var(--fr-ink-dim)'}}>unique</div>
                       </div>
                     </div>
                     {overlapData && overlapData.shared.length > 0 && (
-                      <p className="mt-3 text-sm text-stitch-muted leading-relaxed">
-                        <span className="text-white font-bold">{deckA.name}</span> and{' '}
-                        <span className="text-white font-bold">{deckB.name}</span> share{' '}
-                        <span className="font-bold" style={{ color: '#0bda76' }}>{overlapData.shared.length} card{overlapData.shared.length !== 1 ? 's' : ''}</span>.{' '}
+                      <p className="mt-3 text-sm leading-relaxed" style={{color:'var(--fr-ink-dim)'}}>
+                        <span className="font-bold" style={{color:'var(--fr-ink)'}}>{deckA.name}</span> and{' '}
+                        <span className="font-bold" style={{color:'var(--fr-ink)'}}>{deckB.name}</span> share{' '}
+                        <span className="fr-readout font-bold" style={{ color: 'var(--fr-ink)' }}>{overlapData.shared.length} card{overlapData.shared.length !== 1 ? 's' : ''}</span>.{' '}
                         {overlapData.shared.length >= 6
                           ? 'High overlap — these decks share a core strategy.'
                           : overlapData.shared.length >= 3
@@ -12747,9 +12722,9 @@ RULES:
                       </p>
                     )}
                     {overlapData && overlapData.shared.length === 0 && (
-                      <p className="mt-3 text-sm text-stitch-muted leading-relaxed">
-                        No shared cards — <span className="text-white font-bold">{deckA.name}</span> and{' '}
-                        <span className="text-white font-bold">{deckB.name}</span> are completely distinct archetypes.
+                      <p className="mt-3 text-sm leading-relaxed" style={{color:'var(--fr-ink-dim)'}}>
+                        No shared cards — <span className="font-bold" style={{color:'var(--fr-ink)'}}>{deckA.name}</span> and{' '}
+                        <span className="font-bold" style={{color:'var(--fr-ink)'}}>{deckB.name}</span> are completely distinct archetypes.
                       </p>
                     )}
                   </div>
@@ -12758,8 +12733,8 @@ RULES:
             </>
           ) : deckAId === deckBId ? (
             <div className="flex flex-col items-center justify-center mt-12 text-center gap-3">
-              <span className="material-symbols-outlined text-4xl text-stitch-muted" aria-hidden="true">compare_arrows</span>
-              <p className="text-stitch-muted text-sm">Select two different decks to compare.</p>
+              <span className="material-symbols-outlined text-4xl" style={{color:'var(--fr-ink-dim)'}} aria-hidden="true">compare_arrows</span>
+              <p className="text-sm" style={{color:'var(--fr-ink-dim)'}}>Select two different decks to compare.</p>
             </div>
           ) : null}
         </div>
