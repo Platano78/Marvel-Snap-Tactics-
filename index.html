@@ -9209,18 +9209,17 @@ RULES:
       const toggleDeck = (key) => setExpandedDeck(prev => prev === key ? null : key);
 
       return (
-        <div className="px-4 pb-20">
+        <div className="px-4 pb-20 fr-scope">
           {/* Header */}
-          <Header title="META TIER LIST" subtitle={`Last updated: ${lastUpdated} \u00b7 refreshed monthly \u2022 ${META_CONTEXT.season || 'Current Season'}`} />
+          <div className="fr-tab" style={{padding:'0 4px',margin:'12px 16px 0'}}><h3>Meta Tier List</h3><span className="code">Last updated: {lastUpdated} · refreshed monthly • {META_CONTEXT.season || 'Current Season'}</span></div>
 
           {/* Context chips \u2014 truthful static labels restored in place of the old bracket/time
               filter pills (those filtered nothing; these are non-interactive facts). */}
-          <div className="flex flex-wrap gap-2 mb-4" role="note" aria-label="Data context">
+          <div className="fr-chips mb-4" role="note" aria-label="Data context">
             {['Ranked', `Week of ${lastUpdated}`, 'Refreshed monthly'].map(label => (
               <span
                 key={label}
-                className="shrink-0 flex items-center h-9 px-3 rounded-full text-xs font-medium"
-                style={{ background: 'rgba(173,43,238,0.1)', color: '#b792c9', border: '1px solid rgba(173,43,238,0.2)' }}
+                className="fr-chip shrink-0 flex items-center h-9 px-3 rounded-full text-xs font-medium"
               >
                 {label}
               </span>
@@ -9231,8 +9230,7 @@ RULES:
           <div className="flex gap-2 mb-4">
             <button
               onClick={() => setSortBy(s => s === 'tier' ? 'winRate' : s === 'winRate' ? 'popularity' : 'tier')}
-              className="shrink-0 flex items-center gap-1 h-9 px-3 rounded-full text-xs font-medium transition-colors duration-150 ease-[var(--ease-snap)] min-h-[36px]"
-              style={{ background: 'rgba(173,43,238,0.1)', color: '#b792c9', border: '1px solid rgba(173,43,238,0.2)' }}
+              className="fr-chip shrink-0 flex items-center gap-1 h-9 px-3 rounded-full text-xs font-medium transition-colors duration-150 ease-[var(--ease-snap)] min-h-[36px]"
               aria-label={`Sort by ${sortBy}`}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '14px' }} aria-hidden="true">sort</span>
@@ -9249,14 +9247,14 @@ RULES:
             return (
               <section key={tierKey} className="mb-6" aria-label={`Tier ${tierKey}: ${cfg.title}`}>
                 {/* Tier heading */}
-                <div className="flex items-center gap-2 mb-3">
+                <div className="fr-tab" style={{padding:0,margin:'0 0 12px',gap:12}}>
                   <span
-                    className="flex items-center justify-center w-8 h-8 rounded font-bold text-lg italic text-white shrink-0"
-                    style={{ background: cfg.color }}
+                    className={`flex items-center justify-center w-8 h-8 rounded font-bold text-lg italic shrink-0 ${tierKey === 'S' ? 'fr-chip.s' : 'fr-chip'}`}
+                    style={{ ...(tierKey !== 'S' ? { background: cfg.color } : {}), ...(tierKey !== 'S' ? { color: '#fff' } : {}) }}
                     aria-label={`Tier ${tierKey}`}
                   >{cfg.label}</span>
-                  <h2 className="text-white text-lg font-bold font-display">{cfg.title}</h2>
-                  <span className="text-xs ml-auto" style={{ color: '#b792c9' }}>{decks.length} deck{decks.length !== 1 ? 's' : ''}</span>
+                  <h3 style={{fontSize:'18px'}}>{cfg.title}</h3>
+                  <span className="text-xs ml-auto" style={{ color: 'var(--fr-ink-dim)' }}>{decks.length} deck{decks.length !== 1 ? 's' : ''}</span>
                 </div>
 
                 {/* S-tier: large card layout */}
@@ -9268,8 +9266,8 @@ RULES:
                       return (
                         <article
                           key={key}
-                          className="rounded-2xl overflow-hidden bg-stitch-card transition-shadow duration-200 ease-[var(--ease-snap)] hover:shadow-[0_0_20px_rgba(173,43,238,0.3)] focus-within:shadow-[0_0_20px_rgba(173,43,238,0.3)]"
-                          style={{ border: `1px solid ${cfg.border}` }}
+                          className="fr-panel overflow-hidden transition-shadow duration-200 ease-[var(--ease-snap)]"
+                          style={{ border: `2px solid ${cfg.border}` }}
                         >
                           {/* Colored top accent bar */}
                           <div style={{ height: '4px', background: `linear-gradient(90deg, ${cfg.color}, transparent)` }} />
@@ -9277,7 +9275,7 @@ RULES:
                             <div className="flex justify-between items-start mb-2">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  <h3 className="text-white text-base font-bold font-display truncate">{deck.name}</h3>
+                                  <h3 className="text-base font-bold font-display truncate" style={{color:'var(--fr-ink)'}}>{deck.name}</h3>
                                   {deck.tag && (
                                     <span
                                       className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded text-white shrink-0"
@@ -9314,12 +9312,12 @@ RULES:
                               </span>
                               <span
                                 className="text-xs font-bold px-2 py-1 rounded-full"
-                                style={{ background: 'rgba(255,215,0,0.1)', color: '#ffd700', border: '1px solid rgba(255,215,0,0.25)' }}
+                                style={{ background: 'rgba(255,215,0,0.1)', color: '#b8860b', border: '1px solid rgba(184,134,11,0.25)' }}
                               >
                                 <span className="material-symbols-outlined" style={{ fontSize: '12px', verticalAlign: 'middle' }} aria-hidden="true">diamond</span>
                                 {' '}Avg Cubes: {typeof deck.avgCubes === 'number' ? `${deck.avgCubes >= 0 ? '+' : ''}${deck.avgCubes.toFixed(2)}` : '—'}
                               </span>
-                              <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'rgba(173,43,238,0.08)', color: '#b792c9', border: '1px solid rgba(173,43,238,0.15)' }}>
+                              <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'rgba(0,0,0,0.04)', color: 'var(--fr-ink-dim)', border: '1px solid rgba(0,0,0,0.1)' }}>
                                 <span className="material-symbols-outlined" style={{ fontSize: '12px', verticalAlign: 'middle' }} aria-hidden="true">bar_chart</span>
                                 {' '}{typeof deck.popularity === 'number' ? `${deck.popularity.toFixed(1)}% played` : '— played'}
                               </span>
@@ -9327,16 +9325,16 @@ RULES:
 
                             {/* Expandable sample cards */}
                             {isExpanded && (
-                              <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(173,43,238,0.15)' }}>
-                                <p className="text-xs mb-2" style={{ color: '#b792c9' }}>Sample cards</p>
+                              <div className="mt-3 pt-3" style={{ borderTop: '1px solid var(--fr-ink-dim)' }}>
+                                <p className="text-xs mb-2" style={{ color: 'var(--fr-ink-dim)' }}>Sample cards</p>
                                 <div className="flex flex-wrap gap-2">
                                   {deck.sampleCards.map((card, ci) => (
                                     <div key={ci} className="flex flex-col items-center gap-1 w-14">
-                                      <div className="w-14 h-[76px] rounded-lg overflow-hidden border shrink-0" style={{ borderColor: 'rgba(173,43,238,0.25)' }}>
+                                      <div className="w-14 h-[76px] rounded-lg overflow-hidden border shrink-0" style={{ borderColor: 'var(--fr-ink-dim)' }}>
                                         <img src={getCardArtUrl({ name: card })} alt="" loading="lazy" className="w-full h-full object-cover"
                                           onError={(e) => { e.target.style.display = 'none'; }} />
                                       </div>
-                                      <span className="text-[10px] text-center leading-tight text-white font-medium truncate w-full">{card}</span>
+                                      <span className="text-[10px] text-center leading-tight font-medium truncate w-full" style={{color:'var(--fr-ink)'}}>{card}</span>
                                     </div>
                                   ))}
                                 </div>
@@ -9356,8 +9354,8 @@ RULES:
                       return (
                         <article key={key}>
                           <button
-                            className="w-full text-left rounded-2xl p-3 bg-stitch-card transition-colors duration-150 ease-[var(--ease-snap)] hover:bg-[rgba(60,35,72,0.5)]"
-                            style={{ border: `1px solid rgba(173,43,238,0.15)` }}
+                            className="w-full text-left rounded-2xl p-3 fr-panel transition-colors duration-150 ease-[var(--ease-snap)]"
+                            style={{ border: `2px solid ${cfg.border}` }}
                             onClick={() => toggleDeck(key)}
                             aria-expanded={isExpanded}
                           >
@@ -9369,41 +9367,41 @@ RULES:
                               >{cfg.label}</span>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-white text-sm font-bold font-display truncate">{deck.name}</span>
+                                  <span className="text-sm font-bold font-display truncate" style={{color:'var(--fr-ink)'}}>{deck.name}</span>
                                   {deck.tag && (
                                     <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded text-white shrink-0"
                                       style={{ background: cfg.color }}>{deck.tag}</span>
                                   )}
                                 </div>
                                 <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-xs" style={{ color: '#b792c9' }}>Win Rate: {typeof deck.winRate === 'number' ? `${deck.winRate.toFixed(1)}%` : '—'}</span>
-                                  <span className="text-xs" style={{ color: '#ffd700' }}>
+                                  <span className="text-xs" style={{ color: 'var(--fr-ink-dim)' }}>Win Rate: {typeof deck.winRate === 'number' ? `${deck.winRate.toFixed(1)}%` : '—'}</span>
+                                  <span className="text-xs" style={{ color: '#b8860b' }}>
                                     <span className="material-symbols-outlined" style={{ fontSize: '11px', verticalAlign: 'middle' }} aria-hidden="true">diamond</span>
                                     {' '}{typeof deck.avgCubes === 'number' ? `${deck.avgCubes >= 0 ? '+' : ''}${deck.avgCubes.toFixed(2)}` : '—'}
                                   </span>
                                 </div>
                               </div>
-                              <span className="material-symbols-outlined shrink-0" style={{ color: 'rgba(255,255,255,0.25)', fontSize: '20px' }} aria-hidden="true">
+                              <span className="material-symbols-outlined shrink-0" style={{ color: 'var(--fr-ink-dim)', fontSize: '20px' }} aria-hidden="true">
                                 {isExpanded ? 'expand_less' : 'chevron_right'}
                               </span>
                             </div>
                             {isExpanded && (
-                              <div className="mt-3 pt-3 text-left" style={{ borderTop: '1px solid rgba(173,43,238,0.12)' }}>
-                                <p className="text-xs mb-2" style={{ color: '#b792c9' }}>Sample cards</p>
+                              <div className="mt-3 pt-3 text-left" style={{ borderTop: '1px solid var(--fr-ink-dim)' }}>
+                                <p className="text-xs mb-2" style={{ color: 'var(--fr-ink-dim)' }}>Sample cards</p>
                                 <div className="flex flex-wrap gap-2">
                                   {deck.sampleCards.map((card, ci) => (
                                     <div key={ci} className="flex flex-col items-center gap-1 w-12">
-                                      <div className="w-12 h-[65px] rounded-lg overflow-hidden border shrink-0" style={{ borderColor: 'rgba(173,43,238,0.2)' }}>
+                                      <div className="w-12 h-[65px] rounded-lg overflow-hidden border shrink-0" style={{ borderColor: 'var(--fr-ink-dim)' }}>
                                         <img src={getCardArtUrl({ name: card })} alt="" loading="lazy" className="w-full h-full object-cover"
                                           onError={(e) => { e.target.style.display = 'none'; }} />
                                       </div>
-                                      <span className="text-[9px] text-center leading-tight text-white font-medium truncate w-full">{card}</span>
+                                      <span className="text-[9px] text-center leading-tight font-medium truncate w-full" style={{color:'var(--fr-ink)'}}>{card}</span>
                                     </div>
                                   ))}
                                 </div>
                                 <div className="flex items-center gap-1 mt-2">
-                                  <span className="material-symbols-outlined text-xs" style={{ fontSize: '13px', color: '#b792c9' }} aria-hidden="true">bar_chart</span>
-                                  <span className="text-xs" style={{ color: '#b792c9' }}>{typeof deck.popularity === 'number' ? `${deck.popularity.toFixed(1)}% of games played` : '— of games played'}</span>
+                                  <span className="material-symbols-outlined text-xs" style={{ fontSize: '13px', color: 'var(--fr-ink-dim)' }} aria-hidden="true">bar_chart</span>
+                                  <span className="text-xs" style={{ color: 'var(--fr-ink-dim)' }}>{typeof deck.popularity === 'number' ? `${deck.popularity.toFixed(1)}% of games played` : '— of games played'}</span>
                                 </div>
                               </div>
                             )}
@@ -9418,7 +9416,7 @@ RULES:
           })}
 
           {/* Footer note */}
-          <p className="text-center text-xs pb-4" style={{ color: 'rgba(183,146,201,0.6)' }}>
+          <p className="text-center text-xs pb-4" style={{ color: 'var(--fr-ink-dim)' }}>
             Data sourced from meta-context.json &bull; Win rates reflect Infinite ladder
           </p>
         </div>
@@ -9472,59 +9470,59 @@ RULES:
       const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
       return (
-        <div className="px-4 pb-20">
-          <Header title="THIS WEEK'S META" subtitle={`${META_CONTEXT.season || 'Current Season'} \u2022 ${weekLabel}`} />
+        <div className="px-4 pb-20 fr-scope">
+          <div className="fr-tab" style={{padding:'0 4px',margin:'12px 16px 0'}}><h3>This Week's Meta</h3><span className="code">{META_CONTEXT.season || 'Current Season'} • {weekLabel}</span></div>
 
           {/* Archetype Popularity Chart */}
-          <div className="rounded-2xl border border-white/5 bg-stitch-card p-4 mb-4">
-            <p className="text-stitch-muted text-sm font-medium mb-1">Archetype Popularity (Last 7 Days)</p>
+          <div className="fr-panel p-4 mb-4">
+            <p className="text-sm font-medium mb-1" style={{color:'var(--fr-ink-dim)'}}>Archetype Popularity (Last 7 Days)</p>
             <div className="flex items-baseline justify-between mb-3">
-              <p className="text-white text-2xl font-bold tracking-tight">Meta Power Shift</p>
-              <div className="flex items-center gap-1 bg-green-900/30 px-2 py-1 rounded-lg">
-                <span className="material-symbols-outlined text-[#0bda76]" style={{ fontSize: '16px' }} aria-hidden="true">trending_up</span>
-                <span className="text-[#0bda76] text-xs font-bold">+5.4%</span>
+              <p className="text-2xl font-bold tracking-tight" style={{color:'var(--fr-ink)'}}>Meta Power Shift</p>
+              <div className="flex items-center gap-1 px-2 py-1 rounded-lg" style={{background:'rgba(184,134,11,0.1)'}}>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#b8860b' }} aria-hidden="true">trending_up</span>
+                <span style={{color:'#b8860b'}} className="text-xs font-bold">+5.4%</span>
               </div>
             </div>
             {/* SVG Sparkline — matches Stitch design */}
             <div style={{ minHeight: '140px' }}>
               <svg width="100%" height="148" viewBox="-3 0 478 150" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d={sparklineFill} fill="url(#wms_gradient)" />
-                <path d={sparklinePath} stroke="#ad2bee" strokeWidth="3" strokeLinecap="round" />
+                <path d={sparklinePath} stroke="#006ec7" strokeWidth="3" strokeLinecap="round" />
                 <defs>
                   <linearGradient id="wms_gradient" x1="236" y1="1" x2="236" y2="149" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#ad2bee" stopOpacity="0.3" />
-                    <stop offset="1" stopColor="#ad2bee" stopOpacity="0" />
+                    <stop stopColor="#006ec7" stopOpacity="0.3" />
+                    <stop offset="1" stopColor="#006ec7" stopOpacity="0" />
                   </linearGradient>
                 </defs>
               </svg>
               <div className="flex justify-between px-1 mt-1">
                 {days.map(d => (
-                  <span key={d} className="text-stitch-muted" style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{d}</span>
+                  <span key={d} style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--fr-ink-dim)' }}>{d}</span>
                 ))}
               </div>
             </div>
             {/* Chart legend chips */}
             <div className="flex gap-2 mt-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
               {[
-                { label: (META_CONTEXT.topArchetypes[0] || {}).name || 'Top Archetype', color: '#ad2bee' },
+                { label: (META_CONTEXT.topArchetypes[0] || {}).name || 'Top Archetype', color: 'var(--fr-blue)' },
                 { label: (META_CONTEXT.topArchetypes[1] || {}).name || '2nd Archetype', color: '#3b82f6' },
                 { label: (META_CONTEXT.topArchetypes[2] || {}).name || '3rd Archetype', color: '#f97316' },
               ].map(item => (
-                <div key={item.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full shrink-0 border" style={{ background: '#2b1933', borderColor: '#553267' }}>
+                <div key={item.label} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full shrink-0 border" style={{ background: '#fff', borderColor: 'var(--fr-ink-dim)' }}>
                   <div className="w-2 h-2 rounded-full shrink-0" style={{ background: item.color }} />
-                  <span className="text-white text-xs font-bold">{item.label}</span>
+                  <span className="text-xs font-bold" style={{color:'var(--fr-ink)'}}>{item.label}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Weekly Analysis banner */}
-          <div className="mb-4 p-4 rounded-2xl border" style={{ background: 'rgba(173,43,238,0.07)', borderColor: 'rgba(173,43,238,0.25)' }}>
+          <div className="fr-panel mb-4 p-4">
             <div className="flex items-center gap-2 mb-2">
-              <span className="material-symbols-outlined text-[#ad2bee]" style={{ fontSize: '20px' }} aria-hidden="true">psychology</span>
-              <h3 className="text-white font-bold text-sm">Weekly Analysis</h3>
+              <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--fr-blue)' }} aria-hidden="true">psychology</span>
+              <h3 className="font-bold text-sm" style={{color:'var(--fr-ink)'}}>Weekly Analysis</h3>
             </div>
-            <p className="text-slate-300 text-sm leading-relaxed">
+            <p className="text-sm leading-relaxed" style={{color:'var(--fr-ink)'}}>
               {`The meta this week centers on `}
               <strong>{(META_CONTEXT.topArchetypes[0] || {}).name || 'top archetypes'}</strong>
               {` dominating queue. Tech options like `}
@@ -9538,52 +9536,52 @@ RULES:
           {/* Quick Stats Row */}
           <div className="grid grid-cols-4 gap-2 mb-6">
             {[
-              { icon: 'military_tech', label: 'S-Tier', value: sTierCount, color: '#ad2bee' },
-              { icon: 'workspace_premium', label: 'A-Tier', value: aTierCount, color: '#3b82f6' },
+              { icon: 'military_tech', label: 'S-Tier', value: sTierCount, color: 'var(--fr-gold)' },
+              { icon: 'workspace_premium', label: 'A-Tier', value: aTierCount, color: 'var(--fr-blue)' },
               { icon: 'local_fire_department', label: 'Hot Cards', value: hotCardCount, color: '#f97316' },
-              { icon: 'shield', label: 'Tech Cards', value: techCardCount, color: '#0bda76' },
+              { icon: 'shield', label: 'Tech Cards', value: techCardCount, color: '#b8860b' },
             ].map(stat => (
-              <div key={stat.label} className="rounded-2xl border border-white/5 bg-stitch-card p-3 text-center">
+              <div key={stat.label} className="fr-panel p-3 text-center">
                 <span className="material-symbols-outlined" style={{ fontSize: '20px', color: stat.color }} aria-hidden="true">{stat.icon}</span>
-                <div className="text-white font-bold text-xl mt-1">{stat.value}</div>
-                <div className="text-stitch-muted text-xs">{stat.label}</div>
+                <div className="font-bold text-xl mt-1" style={{color:'var(--fr-ink)'}}>{stat.value}</div>
+                <div className="text-xs" style={{color:'var(--fr-ink-dim)'}}>{stat.label}</div>
               </div>
             ))}
           </div>
 
           {/* Rising Stars */}
-          <h3 className="text-white text-base font-bold tracking-tight px-0 pb-2 pt-2 flex items-center gap-2">
-            <span className="material-symbols-outlined text-green-400" style={{ fontSize: '20px' }} aria-hidden="true">trending_up</span>
-            Rising Stars
-          </h3>
+          <div className="fr-tab" style={{padding:0,margin:'12px 0 0',gap:8}}>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#b8860b' }} aria-hidden="true">trending_up</span>
+            <h3 style={{fontSize:'18px'}}>Rising Stars</h3>
+          </div>
           <div className="grid grid-cols-2 gap-3 mb-6">
             {(rising.length > 0 ? rising : [{ name: 'No data', delta: '', description: '' }]).map((item, i) => (
-              <div key={i} className="rounded-2xl border border-white/5 bg-stitch-card p-4 flex flex-col gap-2">
-                <div className="w-10 h-10 rounded-xl border-2 flex items-center justify-center shrink-0" style={{ borderColor: '#ad2bee', background: 'rgba(173,43,238,0.12)' }}>
-                  <span className="material-symbols-outlined text-[#ad2bee]" style={{ fontSize: '20px' }} aria-hidden="true">auto_awesome</span>
+              <div key={i} className="fr-panel p-4 flex flex-col gap-2">
+                <div className="w-10 h-10 rounded-xl border-2 flex items-center justify-center shrink-0" style={{ borderColor: 'var(--fr-blue)', background: 'rgba(0,110,199,0.08)' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--fr-blue)' }} aria-hidden="true">auto_awesome</span>
                 </div>
                 <div>
-                  <h4 className="text-white font-bold text-sm leading-snug">{item.name}</h4>
-                  {item.delta && <p className="text-[#0bda76] text-xs font-medium mt-0.5">{item.delta} Playrate</p>}
+                  <h4 className="font-bold text-sm leading-snug" style={{color:'var(--fr-ink)'}}>{item.name}</h4>
+                  {item.delta && <p style={{color:'#b8860b'}} className="text-xs font-medium mt-0.5">{item.delta} Playrate</p>}
                 </div>
               </div>
             ))}
           </div>
 
           {/* Falling Off */}
-          <h3 className="text-white text-base font-bold tracking-tight px-0 pb-2 pt-2 flex items-center gap-2">
-            <span className="material-symbols-outlined text-red-500" style={{ fontSize: '20px' }} aria-hidden="true">trending_down</span>
-            Falling Off
-          </h3>
+          <div className="fr-tab" style={{padding:0,margin:'12px 0 0',gap:8}}>
+            <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--fr-ink-dim)' }} aria-hidden="true">trending_down</span>
+            <h3 style={{fontSize:'18px'}}>Falling Off</h3>
+          </div>
           <div className="grid grid-cols-2 gap-3 mb-6">
             {(falling.length > 0 ? falling : [{ name: 'No data', delta: '', description: '' }]).map((item, i) => (
-              <div key={i} className="rounded-2xl border border-white/5 bg-stitch-card p-4 flex flex-col gap-2" style={{ opacity: 0.85 }}>
-                <div className="w-10 h-10 rounded-xl border-2 flex items-center justify-center shrink-0" style={{ borderColor: '#553267', background: 'rgba(85,50,103,0.25)' }}>
-                  <span className="material-symbols-outlined text-stitch-muted" style={{ fontSize: '20px' }} aria-hidden="true">arrow_downward</span>
+              <div key={i} className="fr-panel p-4 flex flex-col gap-2" style={{ opacity: 0.85 }}>
+                <div className="w-10 h-10 rounded-xl border-2 flex items-center justify-center shrink-0" style={{ borderColor: 'var(--fr-ink-dim)', background: 'rgba(0,0,0,0.04)' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--fr-ink-dim)' }} aria-hidden="true">arrow_downward</span>
                 </div>
                 <div>
-                  <h4 className="text-stitch-muted font-bold text-sm leading-snug">{item.name}</h4>
-                  {item.delta && <p className="text-red-400 text-xs font-medium mt-0.5">{item.delta} Playrate</p>}
+                  <h4 className="font-bold text-sm leading-snug" style={{color:'var(--fr-ink-dim)'}}>{item.name}</h4>
+                  {item.delta && <p style={{color:'var(--fr-ink-dim)'}} className="text-xs font-medium mt-0.5">{item.delta} Playrate</p>}
                 </div>
               </div>
             ))}
@@ -9592,11 +9590,11 @@ RULES:
           {/* Recent OTA / Balance Changes */}
           {otaChanges.length > 0 && (
             <>
-              <h3 className="text-white text-base font-bold tracking-tight pb-2 pt-2 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#ad2bee]" style={{ fontSize: '20px' }} aria-hidden="true">update</span>
+              <h3 className="text-base font-bold tracking-tight pb-2 pt-2 flex items-center gap-2" style={{ color: 'var(--fr-ink)' }}>
+                <span className="material-symbols-outlined text-[#006ec7]" style={{ fontSize: '20px' }} aria-hidden="true">update</span>
                 Recent OTA Changes
               </h3>
-              <div className="rounded-2xl border border-white/5 bg-stitch-card p-4 mb-6">
+              <div className="fr-panel p-4 mb-6">
                 <ul className="space-y-2">
                   {otaChanges.map((change, i) => {
                     const isNerf = change.toLowerCase().includes('nerf') || /\d+→\d+/.test(change) && (() => {
@@ -9605,10 +9603,10 @@ RULES:
                     })();
                     return (
                       <li key={i} className="flex items-start gap-2.5 text-sm">
-                        <span className="material-symbols-outlined shrink-0 mt-0.5" style={{ fontSize: '16px', color: isNerf ? '#f87171' : '#4ade80' }} aria-hidden="true">
+                        <span className="material-symbols-outlined shrink-0 mt-0.5" style={{ fontSize: '16px', color: isNerf ? 'var(--fr-red-ink)' : 'var(--fr-blue)' }} aria-hidden="true">
                           {isNerf ? 'arrow_downward' : 'arrow_upward'}
                         </span>
-                        <span className="text-slate-300 leading-snug">{change}</span>
+                        <span className="leading-snug" style={{ color: 'var(--fr-ink)' }}>{change}</span>
                       </li>
                     );
                   })}
@@ -9618,29 +9616,29 @@ RULES:
           )}
 
           {/* Meta Shift Highlights */}
-          <h3 className="text-white text-base font-bold tracking-tight pb-2 pt-2 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#ad2bee]" style={{ fontSize: '20px' }} aria-hidden="true">bolt</span>
+          <h3 className="text-base font-bold tracking-tight pb-2 pt-2 flex items-center gap-2" style={{ color: 'var(--fr-ink)' }}>
+            <span className="material-symbols-outlined text-[#006ec7]" style={{ fontSize: '20px' }} aria-hidden="true">bolt</span>
             Meta Shift Highlights
           </h3>
-          <div className="rounded-2xl border border-white/5 bg-stitch-card p-4 mb-4">
+          <div className="fr-panel p-4 mb-4">
             {/* TODO: replace with weeklySnapshot.metaShifts[] from data/meta-context.json */}
             <ul className="space-y-3">
               {[
-                { icon: 'new_releases', color: '#ad2bee', text: `${(META_CONTEXT.hotCards || ['New cards'])[0]} emerging as the most contested card in high-ladder queues.` },
+                { icon: 'new_releases', color: '#006ec7', text: `${(META_CONTEXT.hotCards || ['New cards'])[0]} emerging as the most contested card in high-ladder queues.` },
                 { icon: 'swap_vert',    color: '#3b82f6', text: `Control shell demand rising — ${(META_CONTEXT.techCards || ['tech cards']).slice(0,2).join(' and ')} tech rates up significantly.` },
                 { icon: 'insights',    color: '#f97316', text: `${sTierCount} S-tier archetypes confirmed post-OTA. Expect further tuning next patch.` },
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-2.5 text-sm">
                   <span className="material-symbols-outlined shrink-0 mt-0.5" style={{ fontSize: '16px', color: item.color }} aria-hidden="true">{item.icon}</span>
-                  <span className="text-slate-300 leading-snug">{item.text}</span>
+                  <span className="leading-snug" style={{ color: 'var(--fr-ink)' }}>{item.text}</span>
                 </li>
               ))}
             </ul>
           </div>
 
           {/* Data attribution footer */}
-          <p className="text-stitch-muted text-xs text-center mt-2">
-            Data from <span className="text-[#c75fff]">{META_CONTEXT.lastUpdated || 'recent patch'}</span> — {META_CONTEXT.season || 'Current Season'}
+          <p className="text-xs text-center mt-2" style={{ color: 'var(--fr-ink-dim)' }}>
+            Data from <span className="text-[#006ec7]">{META_CONTEXT.lastUpdated || 'recent patch'}</span> — {META_CONTEXT.season || 'Current Season'}
           </p>
         </div>
       );
@@ -9656,19 +9654,19 @@ RULES:
       ];
 
       return (
-        <div>
+        <div className="fr-scope">
           {/* Sub-tab switcher — 3 tabs, smaller text to fit mobile */}
           <div className="flex gap-1 px-4 pt-3 pb-0">
             {TABS.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setOracleTab(tab.id)}
-                className="flex-1 py-2 rounded-full font-bold font-display transition-[background-color,box-shadow,color] duration-150 ease-[var(--ease-snap)] min-h-[36px]"
+                className="fr-chip flex-1 py-2 rounded-full font-bold font-display transition-[background-color,box-shadow,color] duration-150 ease-[var(--ease-snap)] min-h-[36px]"
                 style={{
                   fontSize: '11px',
                   ...(oracleTab === tab.id
-                    ? { background: '#ad2bee', color: '#fff', boxShadow: '0 0 8px rgba(173,43,238,0.4)' }
-                    : { background: 'rgba(173,43,238,0.1)', color: '#b792c9', border: '1px solid rgba(173,43,238,0.2)' })
+                    ? { background: 'var(--fr-blue)', color: '#fff', border: '2px solid var(--fr-ink)' }
+                    : { background: '#fff', color: 'var(--fr-ink)', border: '2px solid var(--fr-ink)' })
                 }}
                 aria-pressed={oracleTab === tab.id}
               >
@@ -9703,8 +9701,8 @@ RULES:
         loadData();
       }, []);
 
-      if (loading) return <div className="px-4 pb-20"><Header title="SPOTLIGHT ORACLE" /><div className="text-center py-8 text-stitch-muted">Loading...</div></div>;
-      if (!schedule) return <div className="px-4 pb-20"><Header title="SPOTLIGHT ORACLE" /><div className="rounded-2xl bg-stitch-card p-6 text-center" style={{ border: '1px solid rgba(173,43,238,0.15)' }}><span className="material-symbols-outlined text-cosmic-purple-text mb-2" style={{ fontSize: '40px' }} aria-hidden="true">auto_awesome</span><p className="text-stitch-muted">Schedule unavailable</p></div></div>;
+      if (loading) return <div className="px-4 pb-20 fr-scope"><div className="fr-tab" style={{padding:'0 4px',margin:'12px 16px 0'}}><h3>Spotlight Oracle</h3></div><div className="text-center py-8" style={{color:'var(--fr-ink-dim)'}}>Loading...</div></div>;
+      if (!schedule) return <div className="px-4 pb-20 fr-scope"><div className="fr-tab" style={{padding:'0 4px',margin:'12px 16px 0'}}><h3>Spotlight Oracle</h3></div><div className="fr-panel p-6 text-center"><span className="material-symbols-outlined" style={{ fontSize: '40px', color: 'var(--fr-blue)' }} aria-hidden="true">auto_awesome</span><p style={{color:'var(--fr-ink-dim)'}}>Schedule unavailable</p></div></div>;
 
       const ownedCards = new Set((collection?.owned || []).map(c => c.toLowerCase()));
       const pity = rewards?.pityCounters || { s4: 0, s5: 0, spotlightKey: 0 };
@@ -9718,64 +9716,60 @@ RULES:
       });
 
       return (
-        <div className="px-4 pb-20">
-          <Header title="SPOTLIGHT ORACLE" />
-          <div className="rounded-2xl bg-stitch-card p-5 mb-4" style={{ border: '1px solid rgba(173,43,238,0.3)' }}>
-            <h2 className="text-lg font-display font-semibold text-cosmic-purple-text mb-3 flex items-center gap-2">
-              <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">auto_awesome</span>
-              Pity Status
-            </h2>
+        <div className="px-4 pb-20 fr-scope">
+          <div className="fr-tab" style={{padding:'0 4px',margin:'12px 16px 0'}}><h3>Spotlight Oracle</h3></div>
+          <div className="fr-panel p-5 mb-4">
+            <div className="fr-tab" style={{padding:0,margin:'0 0 12px'}}>
+              <h3 style={{fontSize:'18px'}}>Pity Status</h3>
+            </div>
             <div className="space-y-3">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="stitch-label">S4 Pity</span>
-                  <span className="text-white font-bold text-sm">{pity.s4}/20</span>
+                  <span className="fr-label">S4 Pity</span>
+                  <span className="fr-readout text-sm">{pity.s4}/20</span>
                 </div>
-                <div className="stitch-progress"><div className="stitch-progress-fill bg-cosmic-purple" style={{ width: `${Math.min(100, (pity.s4 / 20) * 100)}%` }} /></div>
+                <div className="fr-bar"><i style={{ width: `${Math.min(100, (pity.s4 / 20) * 100)}%` }} /></div>
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="stitch-label">S5 Pity</span>
-                  <span className="text-white font-bold text-sm">{pity.s5}/60</span>
+                  <span className="fr-label">S5 Pity</span>
+                  <span className="fr-readout text-sm">{pity.s5}/60</span>
                 </div>
-                <div className="stitch-progress"><div className="stitch-progress-fill bg-cosmic-purple" style={{ width: `${Math.min(100, (pity.s5 / 60) * 100)}%` }} /></div>
+                <div className="fr-bar"><i style={{ width: `${Math.min(100, (pity.s5 / 60) * 100)}%` }} /></div>
               </div>
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="stitch-label flex items-center gap-1">
-                    <span className="material-symbols-outlined" style={{ fontSize: '12px', color: '#ffd700' }} aria-hidden="true">vpn_key</span>
-                    Spotlight Key
-                  </span>
-                  <span className="text-white font-bold text-sm">{pity.spotlightKey}/4</span>
+                  <span className="fr-label">Spotlight Key</span>
+                  <span className="fr-readout text-sm">{pity.spotlightKey}/4</span>
                 </div>
-                <div className="stitch-progress"><div className="stitch-progress-fill bg-cosmic-purple" style={{ width: `${Math.min(100, (pity.spotlightKey / 4) * 100)}%` }} /></div>
+                <div className="fr-bar"><i style={{ width: `${Math.min(100, (pity.spotlightKey / 4) * 100)}%` }} /></div>
               </div>
             </div>
           </div>
           <div className="space-y-4">
             {analyzedWeeks.map((week, idx) => {
-              const evBorder = week.evRating === 'excellent' ? 'rgba(34,197,94,0.4)' : week.evRating === 'good' ? 'rgba(59,130,246,0.4)' : 'rgba(173,43,238,0.2)';
+              const evBorder = week.evRating === 'excellent' ? 'var(--fr-gold)' : week.evRating === 'good' ? 'var(--fr-blue)' : 'var(--fr-ink-dim)';
               const mainOwned = ownedCards.has(week.spotlight.mainCard.toLowerCase());
               return (
-                <div key={idx} className="rounded-2xl bg-stitch-card p-5" style={{ border: `1px solid ${evBorder}` }}>
+                <div key={idx} className="fr-panel p-5" style={{ border: `2px solid ${evBorder}` }}>
                   <div className="flex justify-between items-center mb-3 flex-wrap gap-2">
-                    <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ background: 'rgba(173,43,238,0.1)', color: '#b792c9', border: '1px solid rgba(173,43,238,0.2)' }}>
+                    <span className="fr-chip text-xs font-bold px-2 py-1 rounded-full" style={{ border: '2px solid var(--fr-ink)' }}>
                       Week {week.weekNumber} &bull; {new Date(week.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                     </span>
-                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${week.evRating === 'excellent' ? 'bg-green-500/20 text-green-400' : 'bg-stark-surface-2 text-stitch-muted'}`}>
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${week.evRating === 'excellent' ? 'fr-chip.s' : ''}`} style={{ ...(week.evRating !== 'excellent' ? { color: 'var(--fr-ink-dim)' } : {}) }}>
                       {week.evRating === 'excellent' ? 'PRIME' : week.evRating.toUpperCase()}
                     </span>
                   </div>
 
                   {/* Main spotlight card */}
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="holo-foil w-12 h-16 rounded-lg overflow-hidden border shrink-0" style={{ borderColor: 'rgba(173,43,238,0.3)' }}>
+                    <div className="w-12 h-16 rounded-lg overflow-hidden border shrink-0" style={{ borderColor: 'var(--fr-ink)' }}>
                       <img src={getCardArtUrl({ name: week.spotlight.mainCard })} alt="" loading="lazy" className="w-full h-full object-cover"
                         onError={(e) => { e.target.style.display = 'none'; }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-[10px] uppercase tracking-[0.1em] font-semibold text-cosmic-purple-text mb-0.5">Main Spotlight</div>
-                      <span className={`text-sm font-bold ${mainOwned ? 'text-stitch-muted line-through' : 'text-white'}`}>{week.spotlight.mainCard}</span>
+                      <div className="text-[10px] uppercase tracking-[0.1em] font-semibold mb-0.5" style={{ color: 'var(--fr-blue)' }}>Main Spotlight</div>
+                      <span className={`text-sm font-bold ${mainOwned ? 'line-through' : ''}`} style={{ ...(mainOwned ? { color: 'var(--fr-ink-dim)' } : { color: 'var(--fr-ink)' }) }}>{week.spotlight.mainCard}</span>
                     </div>
                   </div>
 
@@ -9785,19 +9779,19 @@ RULES:
                       const owned = ownedCards.has(c.name.toLowerCase());
                       return (
                         <div key={i} className="flex flex-col items-center gap-1 w-12">
-                          <div className={`w-12 h-16 rounded-lg overflow-hidden border shrink-0 ${owned ? 'opacity-50' : ''}`} style={{ borderColor: 'rgba(173,43,238,0.2)' }}>
+                          <div className={`w-12 h-16 rounded-lg overflow-hidden border shrink-0 ${owned ? 'opacity-50' : ''}`} style={{ borderColor: 'var(--fr-ink-dim)' }}>
                             <img src={getCardArtUrl({ name: c.name })} alt="" loading="lazy" className="w-full h-full object-cover"
                               onError={(e) => { e.target.style.display = 'none'; }} />
                           </div>
-                          <span className={`text-[9px] text-center leading-tight truncate w-full font-medium ${owned ? 'text-stitch-muted line-through' : 'text-white'}`}>{c.name}</span>
+                          <span className={`text-[9px] text-center leading-tight truncate w-full font-medium ${owned ? 'line-through' : ''}`} style={{ color: owned ? 'var(--fr-ink-dim)' : 'var(--fr-ink)' }}>{c.name}</span>
                         </div>
                       );
                     })}
                   </div>
 
-                  <div className="flex justify-between text-xs pt-2" style={{ borderTop: '1px solid rgba(173,43,238,0.15)' }}>
-                    <span className="text-stitch-muted">Missing: {week.missingCards.length}/{week.totalCards}</span>
-                    <span className={week.evRating === 'excellent' ? 'text-stitch-green font-bold' : 'text-stitch-muted'}>EV: {week.ev === Infinity ? '∞' : week.ev}</span>
+                  <div className="flex justify-between text-xs pt-2" style={{ borderTop: '1px solid var(--fr-ink-dim)' }}>
+                    <span style={{color:'var(--fr-ink-dim)'}}>Missing: {week.missingCards.length}/{week.totalCards}</span>
+                    <span style={{color: week.evRating === 'excellent' ? '#b8860b' : 'var(--fr-ink-dim)', fontWeight: week.evRating === 'excellent' ? 700 : 400}}>EV: {week.ev === Infinity ? '∞' : week.ev}</span>
                   </div>
                 </div>
               );
