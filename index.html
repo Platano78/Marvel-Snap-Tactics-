@@ -11730,7 +11730,6 @@ RULES:
       const totalCards = uniqueCards.length;
       const ownedCount = getOwnedCount(collection);
       const completionPercent = totalCards > 0 ? Math.round((ownedCount / totalCards) * 100) : 0;
-      const { totalWins, totalGames, winRate, netCubes } = getMatchStats(matches);
       const [rank, setRank] = useState(null);
       const [importedStats, setImportedStats] = useState(null);
       const [decks, setDecks] = useState([]);
@@ -11748,19 +11747,6 @@ RULES:
         window.addEventListener('snap-data-updated', loadProfileData);
         return () => window.removeEventListener('snap-data-updated', loadProfileData);
       }, []);
-
-      const achievements = useMemo(() => {
-        const list = [];
-        if (ownedCount >= 50) list.push({ icon: 'style', name: 'Card Collector', desc: 'Own 50+ cards', progress: 100 });
-        else list.push({ icon: 'style', name: 'Card Collector', desc: 'Own 50+ cards', progress: Math.round((ownedCount / 50) * 100) });
-        if (totalGames >= 100) list.push({ icon: 'military_tech', name: 'Battle Hardened', desc: 'Play 100 matches', progress: 100 });
-        else list.push({ icon: 'military_tech', name: 'Battle Hardened', desc: 'Play 100 matches', progress: Math.min(100, Math.round((totalGames / 100) * 100)) });
-        if (winRate >= 60) list.push({ icon: 'emoji_events', name: 'Sharp Snapper', desc: '60%+ win rate', progress: 100 });
-        else list.push({ icon: 'emoji_events', name: 'Sharp Snapper', desc: '60%+ win rate', progress: Math.round((winRate / 60) * 100) });
-        if (netCubes >= 100) list.push({ icon: 'diamond', name: 'Cube Master', desc: 'Earn 100+ net cubes', progress: 100 });
-        else list.push({ icon: 'diamond', name: 'Cube Master', desc: 'Earn 100+ net cubes', progress: Math.min(100, Math.max(0, Math.round((netCubes / 100) * 100))) });
-        return list;
-      }, [ownedCount, totalGames, winRate, netCubes]);
 
       // Career Dossier denominators (moved from Analytics). recordedOutcomes = wins+losses+ties.
       const recordedOutcomes = importedStats
@@ -11803,15 +11789,13 @@ RULES:
             </div>
             <div className="fr-panel p-4 text-center">
               <div className="fr-label mb-1">Win Rate</div>
-              <div className="fr-readout text-3xl font-display font-bold" style={{color:'#b8860b'}}>{winRate}%</div>
-              <div className="fr-readout text-xs" style={{color:'var(--fr-ink-dim)'}}>{totalWins}W / {totalGames - totalWins}L</div>
+              <div className="fr-readout text-3xl font-display font-bold" style={{color:'#b8860b'}}>{importedStats ? `${importedStats.winRate}%` : '—'}</div>
+              <div className="fr-readout text-xs" style={{color:'var(--fr-ink-dim)'}}>{importedStats ? `${(importedStats.wins || 0).toLocaleString()}W / ${(importedStats.losses || 0).toLocaleString()}L` : 'sync to load'}</div>
             </div>
-            <div className={`fr-panel ${netCubes <= -100 ? 'fr-panel--red' : ''} p-4 text-center`}>
-              <div className="fr-label mb-1">Total Cubes</div>
-              <div className="fr-readout text-3xl font-display font-bold" style={{color: netCubes <= -100 ? 'var(--fr-red-ink)' : 'var(--fr-ink)'}}>
-                {netCubes >= 0 ? '+' : ''}{netCubes}
-              </div>
-              <div className="fr-readout text-xs" style={{color:'var(--fr-ink-dim)'}}>{totalGames} matches</div>
+            <div className="fr-panel p-4 text-center">
+              <div className="fr-label mb-1">Collection Score</div>
+              <div className="fr-readout text-3xl font-display font-bold" style={{color:'#b8860b'}}>{collEnhanced?.collectionScore ? collEnhanced.collectionScore.toLocaleString() : '—'}</div>
+              <div className="fr-readout text-xs" style={{color:'var(--fr-ink-dim)'}}>{collEnhanced?.collectionScore ? 'account depth' : 'sync to load'}</div>
             </div>
             <div className="fr-panel p-4 text-center">
               <div className="fr-label mb-1">Highest Rank</div>
@@ -11921,16 +11905,6 @@ RULES:
             </div>
           )}
 
-          {/* Collection Score */}
-          {collEnhanced?.collectionScore > 0 && (
-            <div className="fr-panel p-4 mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="fr-label">Collection Score</span>
-                <span className="fr-readout text-xl font-display font-bold" style={{color:'#b8860b'}}>{collEnhanced.collectionScore.toLocaleString()}</span>
-              </div>
-            </div>
-          )}
-
           {/* Favorite Decks */}
           {decks.length > 0 && (
             <div className="mb-4">
@@ -11962,27 +11936,6 @@ RULES:
             </div>
           )}
 
-          {/* Achievements */}
-          <div className="fr-tab">
-            <h3>Achievements</h3>
-          </div>
-          <div className="space-y-2">
-            {achievements.map((ach, i) => (
-              <div key={i} className="fr-panel flex items-center gap-3 p-3">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{background: ach.progress >= 100 ? 'var(--fr-gold)' : '#cfe6ff',border:'2px solid var(--fr-ink)'}}>
-                  <span className="material-symbols-outlined" style={{fontSize:'20px',color: ach.progress >= 100 ? 'var(--fr-ink)' : 'var(--fr-blue)'}}>{ach.icon}</span>
-                </div>
-                <div className="flex-1">
-                  <div className="text-sm font-bold" style={{color: ach.progress >= 100 ? '#b8860b' : 'var(--fr-ink)'}}>{ach.name}</div>
-                  <div className="text-xs" style={{color:'var(--fr-ink-dim)'}}>{ach.desc}</div>
-                  <div className={`fr-bar ${ach.progress >= 100 ? 'maxed' : ''} mt-1`}>
-                    <i style={{ width: `${Math.min(100, ach.progress)}%` }} />
-                  </div>
-                </div>
-                <span className="fr-readout text-xs font-bold" style={{color: ach.progress >= 100 ? '#b8860b' : 'var(--fr-ink-dim)'}}>{Math.min(100, ach.progress)}%</span>
-              </div>
-            ))}
-          </div>
         </div>
       );
     };
