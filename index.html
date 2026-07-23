@@ -4893,8 +4893,8 @@ RULES:
 
       return (
         <div className="fr-scope fr-panel mx-4 mt-4 px-4 py-3 text-sm flex items-center justify-between gap-3" style={{color:'var(--fr-ink)'}}>
-          <span>Install Snapapoulous Prime as an app</span>
-          <button onClick={handleInstall} className="fr-btn shrink-0">
+          <span className="min-w-0">Install Snapapoulous Prime as an app</span>
+          <button onClick={handleInstall} className="fr-btn shrink-0" style={{ width: 'auto', paddingLeft: '20px', paddingRight: '20px' }}>
             Install
           </button>
         </div>
