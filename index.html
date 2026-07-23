@@ -8026,26 +8026,29 @@ RULES:
       // List View
       if (view === 'list') {
         return (
-          <div className="px-4 pb-20">
-            <Header title="MY DECKS" />
+          <div className="px-4 pb-20 fr-scope">
+            <div className="fr-tab" style={{ padding: '0 4px', marginBottom: '14px' }}><h3>My Decks</h3><span className="code">Arsenal</span></div>
             <div className="flex gap-2 mb-4">
               <button onClick={startNewDeck}
-                className="flex-1 min-h-[44px] bg-cosmic-purple text-white py-3 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(173,43,238,0.45)] transition-shadow duration-200">
+                className="flex-1 min-h-[44px] fr-btn">
                 + Create Deck
               </button>
               <button onClick={() => setView('import')}
-                className="flex-1 min-h-[44px] bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-white py-3 rounded-full font-bold text-sm hover:bg-[rgba(173,43,238,0.12)] transition-colors duration-200">
+                className="flex-1 min-h-[44px] fr-btn"
+                style={{ background: '#fff', color: 'var(--fr-ink)', border: '3px solid var(--fr-line)' }}>
                 Import Deck
               </button>
               <button onClick={() => setView('forge')}
                 aria-label="Forge a deck with AI"
-                className="flex items-center justify-center min-h-[44px] w-14 shrink-0 rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-cosmic-purple-text hover:bg-[rgba(173,43,238,0.12)] hover:text-white transition-colors">
+                className="flex items-center justify-center min-h-[44px] w-14 shrink-0 rounded-full transition-colors"
+                style={{ background: '#fff', color: 'var(--fr-blue)', border: '3px solid var(--fr-line)' }}>
                 <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">auto_awesome</span>
               </button>
               {decks.length >= 2 && (
                 <button onClick={() => setView('compare')}
                   aria-label="Compare two decks"
-                  className="flex items-center justify-center min-h-[44px] w-14 shrink-0 rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-cosmic-purple-text hover:bg-[rgba(173,43,238,0.12)] hover:text-white transition-colors">
+                  className="flex items-center justify-center min-h-[44px] w-14 shrink-0 rounded-full transition-colors"
+                  style={{ background: '#fff', color: 'var(--fr-blue)', border: '3px solid var(--fr-line)' }}>
                   <span className="material-symbols-outlined" style={{ fontSize: '20px' }} aria-hidden="true">compare_arrows</span>
                 </button>
               )}
@@ -8054,15 +8057,15 @@ RULES:
             {!creatorsError && creators.length > 0 && (
               <button
                 onClick={() => { const el = document.getElementById('creator-decks-section'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-                className="w-full mb-4 flex items-center gap-3 rounded-2xl p-3 min-h-[44px] text-left bg-[rgba(173,43,238,0.10)] border border-[rgba(173,43,238,0.22)] hover:bg-[rgba(173,43,238,0.16)] transition-colors"
+                className="fr-panel fr-panel--blue w-full mb-4 flex items-center gap-3 min-h-[44px] text-left"
                 aria-label="Jump to curated decks from creators"
               >
-                <span className="material-symbols-outlined text-cosmic-purple-text" aria-hidden="true">movie</span>
+                <span className="material-symbols-outlined" style={{ color: 'var(--fr-blue)' }} aria-hidden="true">movie</span>
                 <span className="flex-1 min-w-0">
-                  <span className="block text-sm font-bold text-white">Decks from Creators</span>
-                  <span className="block text-xs text-stitch-muted truncate">Curated lists from {creators.length} top creator{creators.length === 1 ? '' : 's'}</span>
+                  <span className="block text-sm font-bold" style={{ color: 'var(--fr-ink)' }}>Decks from Creators</span>
+                  <span className="block text-xs truncate" style={{ color: 'var(--fr-ink-dim)' }}>Curated lists from {creators.length} top creator{creators.length === 1 ? '' : 's'}</span>
                 </span>
-                <span className="material-symbols-outlined text-cosmic-purple-text" aria-hidden="true">chevron_right</span>
+                <span className="material-symbols-outlined" style={{ color: 'var(--fr-blue)' }} aria-hidden="true">chevron_right</span>
               </button>
             )}
             {decks.length === 0 ? (
@@ -8071,22 +8074,23 @@ RULES:
                 <div className="flex -space-x-4" aria-hidden="true">
                   {['Iron Man', 'Storm', 'Magneto'].map((name, i) => (
                     <div key={name}
-                         className="relative w-16 aspect-[3/4] rounded-lg overflow-hidden border-2 border-gray-600 bg-[#2b1933] shrink-0 grayscale opacity-70"
-                         style={{ transform: `rotate(${(i - 1) * 8}deg)` }}>
+                         className="relative w-16 aspect-[3/4] rounded-lg overflow-hidden bg-[#efe9dd] shrink-0 grayscale opacity-70"
+                         style={{ border: '2px solid var(--fr-ink)', transform: `rotate(${(i - 1) * 8}deg)` }}>
                       <img src={getCardArtUrl({ name })} alt="" loading="lazy" className="w-full h-full object-cover"
                            onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                     </div>
                   ))}
                 </div>
                 <div>
-                  <p className="text-white font-bold text-lg mb-1">Build Your Arsenal</p>
-                  <p className="text-[#b792c9] text-sm max-w-xs mx-auto">
+                  <p className="font-bold text-lg mb-1" style={{ color: 'var(--fr-ink)' }}>Build Your Arsenal</p>
+                  <p className="text-sm max-w-xs mx-auto" style={{ color: 'var(--fr-ink-dim)' }}>
                     Create your first deck above, or browse Cards to see what you can build with.
                   </p>
                 </div>
                 <button
                   onClick={() => window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'collection' }))}
-                  className="mt-1 px-5 py-2.5 rounded-full font-semibold text-sm text-white bg-cosmic-purple hover:bg-[#b84eff] transition-colors min-h-[44px]"
+                  className="fr-btn mt-1"
+                  style={{ width: 'auto', padding: '10px 20px' }}
                 >
                   Browse Cards
                 </button>
@@ -8096,17 +8100,19 @@ RULES:
                 {decks.map(deck => {
                   const stats = getDeckStats(deck.cards);
                   return (
-                    <div key={deck.id} className="rounded-2xl p-5 bg-stark-surface border border-[rgba(173,43,238,0.18)]">
+                    <div key={deck.id} className="fr-panel">
                       <div className="flex justify-between items-start mb-3">
-                        <h3 className="text-lg font-display font-semibold text-white">{deck.name}</h3>
+                        <h3 className="text-lg font-display font-semibold" style={{ color: 'var(--fr-ink)' }}>{deck.name}</h3>
                         <div className="flex gap-2 shrink-0">
                           <button onClick={() => editDeck(deck)}
-                            className="flex items-center justify-center w-11 h-11 rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-cosmic-purple-text hover:bg-[rgba(173,43,238,0.15)] hover:text-white transition-colors"
+                            className="flex items-center justify-center w-11 h-11 rounded-full transition-colors"
+                            style={{ background: '#fff', color: 'var(--fr-blue)', border: '2px solid var(--fr-ink)' }}
                             aria-label={`Edit ${deck.name}`}>
                             <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">edit</span>
                           </button>
                           <button onClick={() => deleteDeck(deck.id)}
-                            className="flex items-center justify-center w-11 h-11 rounded-full bg-stark-surface-2 border border-red-500/25 text-red-400 hover:bg-red-500/15 hover:text-red-300 transition-colors"
+                            className="flex items-center justify-center w-11 h-11 rounded-full transition-colors"
+                            style={{ background: '#fff', color: 'var(--fr-red-ink)', border: '2px solid var(--fr-ink)' }}
                             aria-label={`Delete ${deck.name}`}>
                             <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">delete</span>
                           </button>
@@ -8119,7 +8125,7 @@ RULES:
                           const card = cardLookup.get(displayName);
                           const artUrl = card ? getCardArtUrl(card) : null;
                           return (
-                            <div key={cardName + i} className="relative w-10 aspect-[3/4] rounded-lg overflow-hidden border-2 border-stark-surface shrink-0">
+                            <div key={cardName + i} className="relative w-10 aspect-[3/4] rounded-lg overflow-hidden shrink-0" style={{ border: '2px solid var(--fr-ink)' }}>
                               <div className="absolute inset-0 card-art card-art-fallback" />
                               {artUrl && (
                                 <img src={artUrl} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover"
@@ -8129,31 +8135,31 @@ RULES:
                           );
                         })}
                         {deck.cards.length > 4 && (
-                          <div className="relative w-10 aspect-[3/4] rounded-lg overflow-hidden border-2 border-stark-surface shrink-0 flex items-center justify-center bg-stark-surface-2">
-                            <span className="text-[10px] font-bold text-white">+{deck.cards.length - 4}</span>
+                          <div className="relative w-10 aspect-[3/4] rounded-lg overflow-hidden shrink-0 flex items-center justify-center" style={{ border: '2px solid var(--fr-ink)', background: '#efe9dd' }}>
+                            <span className="text-[10px] font-bold" style={{ color: 'var(--fr-ink)' }}>+{deck.cards.length - 4}</span>
                           </div>
                         )}
                       </div>
                       <div className="flex gap-4 mb-3">
                         <div className="flex flex-col">
-                          <span className="stitch-label">Avg Energy</span>
-                          <span className="text-sm font-bold text-white">{stats.avgCost}</span>
+                          <span className="text-[10px] uppercase tracking-[0.1em] font-semibold" style={{ color: 'var(--fr-ink-dim)' }}>Avg Energy</span>
+                          <span className="fr-readout text-sm" style={{ color: 'var(--fr-ink)' }}>{stats.avgCost}</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="stitch-label">Power</span>
-                          <span className="text-sm font-bold text-white">{stats.totalPower}</span>
+                          <span className="text-[10px] uppercase tracking-[0.1em] font-semibold" style={{ color: 'var(--fr-ink-dim)' }}>Power</span>
+                          <span className="fr-readout text-sm" style={{ color: 'var(--fr-ink)' }}>{stats.totalPower}</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="stitch-label">Owned</span>
-                          <span className={`text-sm font-bold ${stats.ownedCount === 12 ? 'text-stitch-green' : 'text-[#ffd700]'}`}>{stats.ownedCount}/12</span>
+                          <span className="text-[10px] uppercase tracking-[0.1em] font-semibold" style={{ color: 'var(--fr-ink-dim)' }}>Owned</span>
+                          <span className="fr-readout text-sm" style={{ color: stats.ownedCount === 12 ? '#b8860b' : 'var(--fr-ink-dim)' }}>{stats.ownedCount}/12</span>
                         </div>
                       </div>
                       {/* Mana Curve */}
                       <div className="flex gap-1 items-end h-8 mb-3">
                         {stats.curve.map((count, cost) => (
                           <div key={cost} className="flex-1 flex flex-col items-center">
-                            <div className="bg-cosmic-purple-text w-full rounded-t" style={{ height: count * 8 + 'px' }}></div>
-                            <span className="text-xs text-stitch-muted">{cost}{cost === 6 ? '+' : ''}</span>
+                            <div className="w-full rounded-t" style={{ height: count * 8 + 'px', background: 'var(--fr-blue)' }}></div>
+                            <span className="text-xs" style={{ color: 'var(--fr-ink-dim)' }}>{cost}{cost === 6 ? '+' : ''}</span>
                           </div>
                         ))}
                       </div>
@@ -8164,7 +8170,10 @@ RULES:
                           const card = cardLookup.get(displayName);
                           const owned = deckOwnedSet.has(displayName.toLowerCase());
                           return (
-                            <span key={cardName} className={`text-xs px-2 py-1 rounded-full border ${owned ? 'bg-stark-surface-2 text-white border-white/5' : 'bg-red-500/15 text-red-400 border-red-500/25'}`}>
+                            <span key={cardName} className="text-xs px-2 py-1 rounded-full"
+                              style={owned
+                                ? { background: '#fff', color: 'var(--fr-ink)', border: '2px solid var(--fr-ink)' }
+                                : { background: '#efe9dd', color: 'var(--fr-ink-dim)', border: '2px solid var(--fr-ink-dim)' }}>
                               {card?.cost || '?'}/{displayName}
                             </span>
                           );
@@ -8178,23 +8187,23 @@ RULES:
                         const isOpen = expandedConsistency === deck.id;
                         const selected = comboSelection[deck.id] || [];
                         return (
-                          <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(173,43,238,0.15)' }}>
+                          <div className="mt-3 pt-3" style={{ borderTop: '2px solid var(--fr-line)' }}>
                             <button
                               onClick={() => setExpandedConsistency(prev => prev === deck.id ? null : deck.id)}
                               className="w-full min-h-[44px] flex items-center justify-between text-left"
                               aria-expanded={isOpen}
                               aria-label={`${isOpen ? 'Hide' : 'Show'} draw consistency for ${deck.name}`}
                             >
-                              <span className="flex items-center gap-2 text-sm font-bold text-cosmic-purple-text">
+                              <span className="flex items-center gap-2 text-sm font-bold" style={{ color: 'var(--fr-blue)' }}>
                                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">insights</span>
                                 Consistency
                               </span>
-                              <span className="material-symbols-outlined text-cosmic-purple-text" aria-hidden="true">{isOpen ? 'expand_less' : 'expand_more'}</span>
+                              <span className="material-symbols-outlined" style={{ color: 'var(--fr-blue)' }} aria-hidden="true">{isOpen ? 'expand_less' : 'expand_more'}</span>
                             </button>
                             {isOpen && (
                               <div className="mt-2">
                                 {/* On-curve odds — P(you have a playable card) by turn. Same math as old exactCurve. */}
-                                <p className="text-xs text-stitch-muted mb-2">Chance you have a playable card by each turn (on-curve)</p>
+                                <p className="text-xs mb-2" style={{ color: 'var(--fr-ink-dim)' }}>Chance you have a playable card by each turn (on-curve)</p>
                                 <div className="flex gap-1 items-end mb-3">
                                   {Array.from({ length: 6 }, (_, idx) => {
                                     const turn = idx + 1;
@@ -8203,15 +8212,15 @@ RULES:
                                     const pct = Math.round(SimulationEngine.hypergeometricAtLeastOne(N, K, n) * 100);
                                     return (
                                       <div key={turn} className="flex-1 flex flex-col items-center gap-1">
-                                        <span className="text-[10px] tabular-nums text-white font-bold">{pct}%</span>
-                                        <div className="w-full rounded-t bg-cosmic-purple-text" style={{ height: `${Math.max(2, pct * 0.4)}px` }} />
-                                        <span className="text-[10px] text-stitch-muted">T{turn}</span>
+                                        <span className="text-[10px] tabular-nums font-bold" style={{ color: 'var(--fr-ink)' }}>{pct}%</span>
+                                        <div className="w-full rounded-t" style={{ height: `${Math.max(2, pct * 0.4)}px`, background: 'var(--fr-blue)' }} />
+                                        <span className="text-[10px]" style={{ color: 'var(--fr-ink-dim)' }}>T{turn}</span>
                                       </div>
                                     );
                                   })}
                                 </div>
                                 {/* Key-card / combo odds — pick 1+ cards → P(all in hand by turn). Same math as old exactCombo. */}
-                                <p className="text-xs text-stitch-muted mb-2">
+                                <p className="text-xs mb-2" style={{ color: 'var(--fr-ink-dim)' }}>
                                   {selected.length === 0 ? 'Tap cards to see draw odds (1 card = key-card odds, 2+ = combo odds)'
                                    : selected.length === 1 ? `P(draw ${selected[0]} by turn)` : `P(all ${selected.length} pieces in hand by turn)`}
                                 </p>
@@ -8226,7 +8235,10 @@ RULES:
                                           return { ...prev, [deck.id]: next };
                                         })}
                                         aria-pressed={on}
-                                        className={`text-[11px] px-2 py-1 rounded-full border min-h-[32px] ${on ? 'bg-cosmic-purple text-white border-transparent' : 'bg-stark-surface-2 text-white border-white/5'}`}>
+                                        className="text-[11px] px-2 py-1 rounded-full min-h-[32px]"
+                                        style={on
+                                          ? { background: 'var(--fr-blue)', color: '#fff', border: '2px solid var(--fr-ink)' }
+                                          : { background: '#fff', color: 'var(--fr-ink)', border: '2px solid var(--fr-ink)' }}>
                                         {c.name}
                                       </button>
                                     );
@@ -8240,9 +8252,9 @@ RULES:
                                       const pct = Math.round(SimulationEngine.hypergeometricAllCards(N, selected, n) * 100);
                                       return (
                                         <div key={turn} className="flex-1 flex flex-col items-center gap-1">
-                                          <span className="text-[10px] tabular-nums text-mcu-gold font-bold">{pct}%</span>
-                                          <div className="w-full rounded-t bg-mcu-gold" style={{ height: `${Math.max(2, pct * 0.4)}px` }} />
-                                          <span className="text-[10px] text-stitch-muted">T{turn}</span>
+                                          <span className="text-[10px] tabular-nums font-bold" style={{ color: '#b8860b' }}>{pct}%</span>
+                                          <div className="w-full rounded-t" style={{ height: `${Math.max(2, pct * 0.4)}px`, background: 'var(--fr-gold)' }} />
+                                          <span className="text-[10px]" style={{ color: 'var(--fr-ink-dim)' }}>T{turn}</span>
                                         </div>
                                       );
                                     })}
@@ -8259,7 +8271,8 @@ RULES:
                           pendingAdvisorMatchup = { deckName: deck.name, deckCards: deck.cards.map(n => resolveToDisplayName(n)) };
                           window.dispatchEvent(new CustomEvent('setActiveTab', { detail: 'ai' }));
                         }}
-                        className="mt-3 w-full min-h-[44px] rounded-full text-sm font-bold bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-cosmic-purple-text hover:bg-[rgba(173,43,238,0.15)] transition-colors flex items-center justify-center gap-2"
+                        className="mt-3 w-full min-h-[44px] rounded-full text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                        style={{ background: '#fff', color: 'var(--fr-blue)', border: '3px solid var(--fr-line)' }}
                         aria-label={`Analyze matchups for ${deck.name}`}
                       >
                         <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">compare_arrows</span>
@@ -8274,9 +8287,9 @@ RULES:
             {/* Creator Decks — Tier 1 (offline-safe curated decks from vetted creators) */}
             {!creatorsError && creators.length > 0 && (
               <div id="creator-decks-section" className="mt-6">
-                <div className="stitch-section-header">
-                  <span className="material-symbols-outlined" aria-hidden="true">movie</span>
-                  Creators
+                <div className="fr-tab">
+                  <h3>Creators</h3>
+                  <span className="code">Curated</span>
                 </div>
                 <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 mb-3">
                   <button
@@ -8284,10 +8297,11 @@ RULES:
                     className="flex flex-col items-center gap-1 shrink-0 min-h-[44px]"
                     aria-pressed={selectedCreatorId === null}
                   >
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center bg-stark-surface-2 border-2 ${selectedCreatorId === null ? 'border-cosmic-purple-text' : 'border-transparent'} text-white text-xs font-bold`}>
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-xs font-bold"
+                      style={{ background: '#efe9dd', color: 'var(--fr-ink)', border: `2px solid ${selectedCreatorId === null ? 'var(--fr-blue)' : 'transparent'}` }}>
                       All
                     </div>
-                    <span className="text-[10px] text-stitch-muted">All</span>
+                    <span className="text-[10px]" style={{ color: 'var(--fr-ink-dim)' }}>All</span>
                   </button>
                   {creators.map(creator => (
                     <button
@@ -8296,8 +8310,9 @@ RULES:
                       className="flex flex-col items-center gap-1 shrink-0 min-h-[44px]"
                       aria-pressed={selectedCreatorId === creator.id}
                     >
-                      <div className={`relative w-12 h-12 rounded-full overflow-hidden bg-stark-surface-2 border-2 ${selectedCreatorId === creator.id ? 'border-cosmic-purple-text' : 'border-transparent'} flex items-center justify-center`}>
-                        <span className="absolute inset-0 flex items-center justify-center text-white text-xs font-bold">
+                      <div className="relative w-12 h-12 rounded-full overflow-hidden flex items-center justify-center"
+                        style={{ background: '#efe9dd', border: `2px solid ${selectedCreatorId === creator.id ? 'var(--fr-blue)' : 'transparent'}` }}>
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-bold" style={{ color: 'var(--fr-ink)' }}>
                           {creatorInitials(creator.name)}
                         </span>
                         {creator.avatarUrl && (
@@ -8305,7 +8320,7 @@ RULES:
                                onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                         )}
                       </div>
-                      <span className="text-[10px] text-stitch-muted max-w-[64px] truncate">{creator.name}</span>
+                      <span className="text-[10px] max-w-[64px] truncate" style={{ color: 'var(--fr-ink-dim)' }}>{creator.name}</span>
                     </button>
                   ))}
                 </div>
@@ -8314,7 +8329,7 @@ RULES:
                     only once data has arrived; no skeleton/spinner for a background, best-effort fetch. */}
                 {latestCreatorVideos.length > 0 && (
                   <div className="mb-4">
-                    <p className="stitch-label mb-2">Latest videos</p>
+                    <p className="fr-label mb-2">Latest videos</p>
                     <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
                       {latestCreatorVideos.map(video => (
                         <a
@@ -8322,10 +8337,11 @@ RULES:
                           href={video.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="holo-foil-hover shrink-0 w-40 rounded-xl overflow-hidden bg-stark-surface border border-[rgba(173,43,238,0.18)]"
+                          className="shrink-0 w-40 rounded-lg overflow-hidden block"
+                          style={{ background: '#fff', border: '3px solid var(--fr-line)', boxShadow: 'var(--fr-shadow)' }}
                           aria-label={`Watch "${video.title}" by ${video.creatorName} on YouTube`}
                         >
-                          <div className="relative w-full aspect-video bg-stark-surface-2">
+                          <div className="relative w-full aspect-video" style={{ background: '#efe9dd' }}>
                             <img
                               src={`https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`}
                               alt=""
@@ -8335,8 +8351,8 @@ RULES:
                             />
                           </div>
                           <div className="p-2">
-                            <p className="text-white text-xs font-semibold line-clamp-2 leading-snug">{video.title}</p>
-                            <p className="text-stitch-muted text-[10px] mt-1 truncate">
+                            <p className="text-xs font-semibold line-clamp-2 leading-snug" style={{ color: 'var(--fr-ink)' }}>{video.title}</p>
+                            <p className="text-[10px] mt-1 truncate" style={{ color: 'var(--fr-ink-dim)' }}>
                               {video.creatorName} &middot; {video.stale ? `as of ${new Date(video.cacheTimestamp).toLocaleDateString()}` : relativeVideoDate(video.published)}
                             </p>
                           </div>
@@ -8356,11 +8372,11 @@ RULES:
                       const ownedCount = names ? names.filter(n => collection.owned.includes(n)).length : null;
                       const missing = names ? names.filter(n => !collection.owned.includes(n)) : [];
                       return (
-                        <div key={deck.deckCode + deck.creatorId} className="holo-foil-hover rounded-2xl p-5 bg-stark-surface border border-[rgba(173,43,238,0.18)]">
+                        <div key={deck.deckCode + deck.creatorId} className="fr-panel">
                           {/* Creator + date */}
                           <div className="flex items-center gap-2 mb-3">
-                            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-stark-surface-2 shrink-0 flex items-center justify-center">
-                              <span className="absolute inset-0 flex items-center justify-center text-white text-[10px] font-bold">
+                            <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0 flex items-center justify-center" style={{ background: '#efe9dd' }}>
+                              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold" style={{ color: 'var(--fr-ink)' }}>
                                 {creatorInitials(creator?.name)}
                               </span>
                               {creator?.avatarUrl && (
@@ -8369,12 +8385,12 @@ RULES:
                               )}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-white text-sm font-semibold truncate">{creator?.name || 'Unknown Creator'}</p>
-                              <p className="text-stitch-muted text-xs">{deck.publishedDate}</p>
+                              <p className="text-sm font-semibold truncate" style={{ color: 'var(--fr-ink)' }}>{creator?.name || 'Unknown Creator'}</p>
+                              <p className="text-xs" style={{ color: 'var(--fr-ink-dim)' }}>{deck.publishedDate}</p>
                             </div>
                           </div>
 
-                          <h3 className="text-lg font-display font-semibold text-white mb-3">{deck.deckName}</h3>
+                          <h3 className="text-lg font-display font-semibold mb-3" style={{ color: 'var(--fr-ink)' }}>{deck.deckName}</h3>
 
                           {/* Art signature row — Sweep 4 pattern */}
                           {names && (
@@ -8383,7 +8399,7 @@ RULES:
                                 const card = cardLookup.get(cardName);
                                 const artUrl = card ? getCardArtUrl(card) : null;
                                 return (
-                                  <div key={cardName + i} className="relative w-10 aspect-[3/4] rounded-lg overflow-hidden border-2 border-stark-surface shrink-0">
+                                  <div key={cardName + i} className="relative w-10 aspect-[3/4] rounded-lg overflow-hidden shrink-0" style={{ border: '2px solid var(--fr-ink)' }}>
                                     <div className="absolute inset-0 card-art card-art-fallback" />
                                     {artUrl && (
                                       <img src={artUrl} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover"
@@ -8393,8 +8409,8 @@ RULES:
                                 );
                               })}
                               {names.length > 4 && (
-                                <div className="relative w-10 aspect-[3/4] rounded-lg overflow-hidden border-2 border-stark-surface shrink-0 flex items-center justify-center bg-stark-surface-2">
-                                  <span className="text-[10px] font-bold text-white">+{names.length - 4}</span>
+                                <div className="relative w-10 aspect-[3/4] rounded-lg overflow-hidden shrink-0 flex items-center justify-center" style={{ border: '2px solid var(--fr-ink)', background: '#efe9dd' }}>
+                                  <span className="text-[10px] font-bold" style={{ color: 'var(--fr-ink)' }}>+{names.length - 4}</span>
                                 </div>
                               )}
                             </div>
@@ -8403,12 +8419,12 @@ RULES:
                           {/* Buildability badge (§3.2) — hide entirely on a bad/stale decode */}
                           {names ? (
                             <p className="text-xs mb-2">
-                              <span className={`font-bold ${ownedCount === 12 ? 'text-stitch-green' : 'text-[#ffd700]'}`}>
+                              <span className="font-bold" style={{ color: ownedCount === 12 ? '#b8860b' : 'var(--fr-ink-dim)' }}>
                                 {ownedCount === 12 ? 'Buildable now' : `${ownedCount}/12 owned`}
                               </span>
                             </p>
                           ) : decoded && decoded.error ? (
-                            <p className="text-xs text-stitch-muted mb-2">Deck code unavailable</p>
+                            <p className="text-xs mb-2" style={{ color: 'var(--fr-ink-dim)' }}>Deck code unavailable</p>
                           ) : null}
 
                           {/* Missing-card art chips (§3.3) */}
@@ -8418,7 +8434,7 @@ RULES:
                                 const card = cardLookup.get(cardName);
                                 const artUrl = card ? getCardArtUrl(card) : null;
                                 return (
-                                  <div key={cardName + i} className="relative w-8 aspect-[3/4] rounded-md overflow-hidden border-2 border-stark-surface shrink-0 grayscale opacity-70">
+                                  <div key={cardName + i} className="relative w-8 aspect-[3/4] rounded-md overflow-hidden shrink-0 grayscale opacity-70" style={{ border: '2px solid var(--fr-ink-dim)' }}>
                                     <div className="absolute inset-0 card-art card-art-fallback" />
                                     {artUrl && (
                                       <img src={artUrl} alt="" loading="lazy" className="absolute inset-0 w-full h-full object-cover"
@@ -8428,27 +8444,28 @@ RULES:
                                 );
                               })}
                               {missing.length > 4 && (
-                                <div className="relative w-8 aspect-[3/4] rounded-md overflow-hidden border-2 border-stark-surface shrink-0 flex items-center justify-center bg-stark-surface-2">
-                                  <span className="text-[9px] font-bold text-white">+{missing.length - 4}</span>
+                                <div className="relative w-8 aspect-[3/4] rounded-md overflow-hidden shrink-0 flex items-center justify-center" style={{ border: '2px solid var(--fr-ink-dim)', background: '#efe9dd' }}>
+                                  <span className="text-[9px] font-bold" style={{ color: 'var(--fr-ink-dim)' }}>+{missing.length - 4}</span>
                                 </div>
                               )}
                             </div>
                           )}
 
                           {deck.notes && (
-                            <p className="text-stitch-muted text-xs mb-3">{deck.notes}</p>
+                            <p className="text-xs mb-3" style={{ color: 'var(--fr-ink-dim)' }}>{deck.notes}</p>
                           )}
 
                           <div className="flex gap-2">
                             {names && (
                               <button onClick={() => importCreatorDeck(deck)}
-                                className="flex-1 min-h-[44px] bg-cosmic-purple text-white py-2 rounded-full font-bold text-sm hover:shadow-[0_0_20px_rgba(173,43,238,0.45)] transition-shadow duration-200">
+                                className="flex-1 min-h-[44px] fr-btn" style={{ padding: '8px' }}>
                                 Import This Deck
                               </button>
                             )}
                             {deck.videoUrl && (
                               <a href={deck.videoUrl} target="_blank" rel="noopener noreferrer"
-                                 className="flex items-center justify-center min-h-[44px] px-4 rounded-full bg-stark-surface-2 border border-[rgba(173,43,238,0.25)] text-cosmic-purple-text hover:bg-[rgba(173,43,238,0.12)] transition-colors"
+                                 className="flex items-center justify-center min-h-[44px] px-4 rounded-full transition-colors"
+                                 style={{ background: '#fff', color: 'var(--fr-blue)', border: '3px solid var(--fr-line)' }}
                                  aria-label={`Watch ${deck.deckName} on YouTube`}>
                                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }} aria-hidden="true">smart_display</span>
                               </a>
