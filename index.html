@@ -11799,7 +11799,7 @@ RULES:
             </div>
             <div className="fr-panel p-4 text-center">
               <div className="fr-label mb-1">Highest Rank</div>
-              <div className="fr-readout text-3xl font-display font-bold" style={{color:'#b8860b'}}>
+              <div className="fr-readout text-xl font-display font-bold leading-tight break-words" style={{color:'#b8860b'}}>
                 {rank?.highWatermarkTier || rank?.tier || '--'}
               </div>
               <div className="fr-readout text-xs" style={{color:'var(--fr-ink-dim)'}}>This season ({rank?.highWatermark || rank?.currentRank || 0})</div>
@@ -11882,7 +11882,7 @@ RULES:
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="fr-panel p-4">
                   <div className="fr-label text-xs mb-2">Rank <span className="fr-readout">{importedStats.rankData.currentRank}</span></div>
-                  <div className="fr-readout text-3xl font-bold" style={{color:'var(--fr-ink)'}}>{importedStats.rankData.tier}</div>
+                  <div className="fr-readout text-xl font-bold leading-tight break-words" style={{color:'var(--fr-ink)'}}>{importedStats.rankData.tier}</div>
                 </div>
                 {importedStats.skillRating > 0 && (
                   <div className="fr-panel p-4">
@@ -11896,7 +11896,7 @@ RULES:
                 </div>
                 <div className="fr-panel p-4">
                   <div className="fr-label text-xs mb-2">Season Best (<span className="fr-readout">{importedStats.rankData.highWatermark || 0}</span>)</div>
-                  <div className="fr-readout text-3xl font-bold" style={{color:'#b8860b'}}>{importedStats.rankData.highWatermarkTier || '—'}</div>
+                  <div className="fr-readout text-xl font-bold leading-tight break-words" style={{color:'#b8860b'}}>{importedStats.rankData.highWatermarkTier || '—'}</div>
                 </div>
               </div>
               {importedStats.rankData.seasonId && (
