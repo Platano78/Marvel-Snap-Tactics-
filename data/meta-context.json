@@ -1,9 +1,16 @@
 {
-  "lastUpdated": "July 20, 2026",
-  "season": "Spider-Man: Brand New Day",
-  "seasonPassCard": "Spider-Man: Brand New Day (1-Cost, 2 Power, Moveable twice. After this moves to a location, give one of your other cards there +1 Power)",
-  "newKeyword": "Moveable - You may move this card while playing cards (no location-adjacency restriction like the old Move keyword)",
+  "lastUpdated": "August 5, 2026",
+  "season": "Fractured Frontier",
+  "seasonPassCard": "Thanos: Fractured Frontier (5-Cost, Series 5 Premium. Game Start: Load an Infinity Shot. Your cards have 'Quickdraw: Thanos loads again.' On Reveal: Fire all loaded Shots -- Space/Mind/Reality/Power/Time/Soul Shots each apply a distinct effect. Power not stated here: sources disagreed, 7 vs 8, and could not be reconciled.)",
+  "newKeyword": "Quickdraw - Effects are active the first turn you draw them (next turn if cards are already revealing).",
   "recentOTA": [
+    "Drax, Avatar of Life: 3/4 -> 3/3 (nerf, July 30 OTA, was the strongest 3-Cost card by a wide margin)",
+    "Galactus, First Steps: 6/12 -> 6/11 (nerf, July 30 OTA)",
+    "Fin Fang Foom: 7/12 -> 7/14 (buff, July 30 OTA, compensates for the effort needed to reach 7 Energy)",
+    "Karen Page: 4/5 -> 4/6 (buff, July 30 OTA)",
+    "Tombstone: 2/3 -> 2/4 (buff, July 30 OTA)",
+    "Apocalypse: 6/8 -> 6/9 (buff, July 30 OTA)",
+    "Colleen Wing: 2/3 -> 2/4 (buff, July 30 OTA)",
     "Mother Askani: 4/3 -> 4/4, buff now only affects the copy, not the original (nerf, July 16 OTA)",
     "Supergiant: 4/6 -> 4/5 (nerf, July 16 OTA, reduce dominant tech-card status)",
     "Luke Cage: 3/2 protects all cards -> 2/2 protects only front-row cards (nerf, July 16 OTA)",
@@ -11,21 +18,13 @@
     "Aunt May: 2/3 -> 2/4 (buff, July 16 OTA)",
     "Agent 13: 1/2 -> 1/3 (buff, July 16 OTA)",
     "Lady Bullseye: 2/2 -> 2/3 (buff, July 16 OTA)",
-    "Triton: 3/4 -> 3/6 (buff, July 16 OTA)",
-    "Moondragon: 2/2 -> 2/1 (nerf, April 16 OTA, was overperforming in a dominant deck)",
-    "Chamber: 2/2 -> 2/1, wording \"higher\" -> \"more\" (nerf, April 16 OTA, targeted the End of Turn 2099 deck)",
-    "Wolverine, Horseman of War: Objective payoff +3 -> +4 Power (buff, April 16 OTA)",
-    "Techno-Organic Virus: copy cost +2 -> +1 Cost (buff, April 16 OTA)",
-    "Ka-Zar: 4/5 -> 4/6 (buff, April 16 OTA)",
-    "Odin: 6/9 -> 6/10 (buff, April 16 OTA)",
-    "Bucky Barnes: 2/1 -> 2/2 (buff, April 16 OTA)",
-    "Black Bolt: 5/7 -> 5/8 (buff, April 16 OTA)"
+    "Triton: 3/4 -> 3/6 (buff, July 16 OTA)"
   ],
   "topArchetypes": [
     {
       "name": "Lockdown Move",
       "tier": "S",
-      "description": "The longest-running top Move deck; doesn't rely solely on movement for its win condition, giving it outs other Move decks lack. Boosted by the season's new Moveable-keyword cards (Spider-Man: Brand New Day, Mary Jane, Aunt May, reworked Spider-Man 2099)."
+      "description": "The longest-running top Move deck; doesn't rely solely on movement for its win condition, giving it outs other Move decks lack. Built around long-time Move staples (Scream, Kraven, Sam Wilson Captain America, Aero) rather than any single season's keyword, so it survived the Moveable-to-Quickdraw season transition intact."
     },
     {
       "name": "Fantomex / Morgan le Fay",
@@ -39,15 +38,12 @@
     }
   ],
   "hotCards": [
-    "Spider-Man: Brand New Day",
-    "Mary Jane",
-    "Aunt May",
-    "Sinister Six",
-    "Tarantula",
-    "Boomerang",
-    "Scorpion: Brand New Day",
-    "Triton",
-    "Tombstone"
+    "Thanos: Fractured Frontier",
+    "Jane Foster: Fractured Frontier",
+    "Psylocke: Fractured Frontier",
+    "Red Wolf: Fractured Frontier",
+    "Death: Fractured Frontier",
+    "Red Hulk: Fractured Frontier"
   ],
   "techCards": [
     "Mercury",
@@ -57,49 +53,44 @@
   ],
   "newSeasonCards": [
     {
-      "name": "Spider-Man: Brand New Day",
-      "cost": 1,
-      "note": "Season Pass card. Moveable twice. After this moves to a location, give one of your other cards there +1 Power."
-    },
-    {
-      "name": "Mary Jane",
-      "cost": 3,
-      "note": "Super Premium Pass. End of Turn: Give each of your cards that moved this turn +1 Power."
-    },
-    {
-      "name": "Aunt May",
-      "cost": 2,
-      "note": "2/4 (post-OTA). End of Turn card supporting the Moveable package."
-    },
-    {
-      "name": "Sinister Six",
-      "cost": 6,
-      "note": "12 Power. Game Start: The first 6 characters you draw are EVIL! After you play them all, merge them into this and add this to the last one's location."
-    },
-    {
-      "name": "Tombstone",
-      "cost": 2,
-      "note": "3 Power. On Reveal: Destroy your lowest-Power card at each other location."
-    },
-    {
-      "name": "Scorpion: Brand New Day",
-      "cost": 6,
-      "note": "8 Power. Ongoing: Double the Power reductions on all enemy cards."
-    },
-    {
-      "name": "Spider-Sense",
+      "name": "Thanos: Fractured Frontier",
       "cost": 5,
-      "note": "Skill card, reduces cost based on Moveable cards played."
+      "note": "Season Pass (Premium). Game Start: Load an Infinity Shot. Your cards have 'Quickdraw: Thanos loads again.' On Reveal: Fire all loaded Shots."
     },
     {
-      "name": "Tarantula",
-      "cost": 2,
-      "note": "Grants power boosts when your side leads in power at the location."
+      "name": "Jane Foster: Fractured Frontier",
+      "cost": 3,
+      "note": "Season Pass (Super Premium). On Reveal: judge 4 random characters (+1 Power if yours, -1 Power if the enemy's). Quickdraw: judge the worthy again. Power not independently confirmed."
     },
     {
-      "name": "Boomerang",
+      "name": "Psylocke: Fractured Frontier",
+      "cost": 3,
+      "note": "Series 5. Reduces the cost of a card in hand. Stats (3-Cost/4-Power) come from a single datamine source, unconfirmed by a second outlet -- treat as approximate."
+    },
+    {
+      "name": "Red Wolf: Fractured Frontier",
       "cost": 2,
-      "note": "When this returns to your hand, randomly steal 4 Power from a character in your opponent's hand."
+      "note": "Series 5. Ongoing: gains +1 Power for each card in your hand. Stats from a single datamine source, unconfirmed by a second outlet."
+    },
+    {
+      "name": "Death: Fractured Frontier",
+      "cost": 5,
+      "note": "Series 5. On Reveal: resurrect all of your destroyed cards to random locations. Power (7, single-source) unconfirmed by a second outlet."
+    },
+    {
+      "name": "Red Hulk: Fractured Frontier",
+      "cost": 3,
+      "note": "Series 5, Quickdraw card. Loses Power for each enemy card present on reveal. Base Power unconfirmed -- sources disagreed (7-8)."
+    },
+    {
+      "name": "Doctor Octopus: Fractured Frontier",
+      "cost": 2,
+      "note": "Series 4, Limited Time Event card (not obtained via Spotlight Cache). Hand/deck manipulation on reveal; exact wording not independently verified this refresh."
+    },
+    {
+      "name": "Hellcow: Fractured Frontier",
+      "cost": 3,
+      "note": "Series 4, Limited Time Event card (not obtained via Spotlight Cache). End of Turn: afflicts other characters at this location with -1 Power."
     }
   ],
   "tierList": [
