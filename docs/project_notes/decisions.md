@@ -267,6 +267,64 @@ Track architectural and technology decisions with context and rationale.
 
 ---
 
+### ADR-008: Android game-file sync DEFERRED — vault export/import remains the mobile path (2026-07-27)
+
+**Status**: Accepted (deferred, not rejected — revisit only if the staging dependency disappears)
+
+**Context:**
+- Marvel Snap on Android writes the same state files as the PC client, verified on-device: package
+  **`com.nvsgames.snap`** (note: `nvsgames`, not `nvgames` as most public write-ups claim), at
+  `/sdcard/Android/data/com.nvsgames.snap/files/Standalone/States/nvprod/`. Same `ServerState` shape,
+  same UTF-8 BOM, so the existing 7 parsers work on them unmodified.
+- The gap: the shipped mobile path (`canLinkFolder === false` → "Import Vault Data", index.html:10165)
+  is one-way and desktop-sourced. It cannot capture gameplay that happened ON a phone or tablet. Live
+  proof at time of writing: the tablet was at rank 95 / 179 season games / 2003 cards while the PC sat
+  at 93 / 164 / 1998 — 15 games invisible to the app.
+- The owner plays across desktop, Tab S9 Ultra, Z Fold 6, and Pixel 10 Pro XL.
+
+**Investigated:** whether a browser-based PWA can read that directory on Android 16 / One UI 8.5.
+Answer, corroborated by a 3-backend council and a cited ChatGPT analysis: **shell uid, root, the owning
+game, or nothing.** Every browser- and permission-side door is shut —
+- SAF / `ACTION_OPEN_DOCUMENT_TREE` and `<input type="file">` navigating *into* `Android/data`: closed
+  in Android 11, made unconditional in DocumentsUI in Android 12 (so targeting API 29 is no escape),
+  `EXTRA_INITIAL_URI` descendant loophole hardened in Android 14.
+- `MANAGE_EXTERNAL_STORAGE` (incl. via a TWA/Capacitor wrapper): explicitly excludes other apps'
+  `Android/data` per Android docs. Verified on-device that Samsung My Files holds this permission and
+  it still doesn't help.
+- Samsung My Files: Samsung stated at Android 11 / One UI 3 that it can no longer access `Android/data`.
+  (One council backend claimed otherwise — it was describing pre-One UI 3 behavior.)
+- Web Share Target, MediaStore, Quick Share: all require a sender that can already read the file.
+
+**Decision:** keep the vault export/import path as the mobile story. Do NOT build the Android
+file-read. Verified-working mechanisms exist (adb over Tailscale from the PC — pairing, pull, and push
+to `/sdcard/Download/` all confirmed; or Shizuku plus a Shizuku-aware file manager), and the app-side
+change is small — a `<input type="file" multiple>` ingest reusing the same parsers, ~50-80 lines.
+
+**Alternatives considered:**
+- Cross-device merge / per-file freshest-wins across all four surfaces → **rejected by owner ruling**:
+  *"never battle the cloud sync in game... the cloud is the truth of it all."* The devices are caches of
+  one server account; Second Dinner already reconciles them. Opening the client IS the sync, so a device's
+  files are current by definition when you've just played on it. An earlier design here invented a
+  reconciliation problem that does not occur in practice.
+- Serving the PWA from Termux on `localhost` (same-origin, dodges mixed-content/CORS/Private-Network-Access)
+  → rejected: hard-couples the app to one staging mechanism, and splits `localStorage` onto a new origin.
+- `<input type="file" multiple>` ingest now → deferred. Mechanism-agnostic and genuinely small, but the
+  code is not the cost: **every sync would still need a manual shell-uid staging step first.** Build it
+  only if staging ever becomes automatic or a device gains native access.
+
+**Consequences:**
+- (+) Zero new dependencies (no Termux, Shizuku, or native wrapper) and zero new code.
+- (+) Honors ADR-001 (single HTML file, no build step) and the ADR-007 moat framing — this was never
+  about duplicating game data, but it also isn't worth a recurring manual ritual.
+- (−) Mobile gameplay stays invisible to the app until you next open the game on desktop and re-sync;
+  the vault path remains desktop→mobile only.
+- (−) The Pixel is the worst case regardless — Google Files has never allowed `Android/data` browsing,
+  so it would always need Shizuku or a PC.
+- Reversal trigger: Second Dinner shipping a data-export feature, or an Android release restoring
+  user-mediated access to app-specific external storage. Neither is on any roadmap.
+
+---
+
 ## Tips
 
 - **Keep decisions lightweight** - 10-20 lines is usually enough
