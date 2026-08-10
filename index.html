@@ -1756,8 +1756,8 @@
           }
 
           const expiresAt = Date.now() + (response.expires_in * 1000);
-          localStorage.setItem('snap_google_access_token', response.access_token);
-          localStorage.setItem('snap_google_token_expiry', expiresAt.toString());
+          saveToStorage('snap_google_access_token', response.access_token, { raw: true });
+          saveToStorage('snap_google_token_expiry', expiresAt.toString(), { raw: true });
 
           if (pendingTokenResolve) {
             pendingTokenResolve(response.access_token);
@@ -4411,217 +4411,231 @@ RULES:
       return { merged, addedCount, updatedCount, matchedIds };
     };
 
+    // Slice D ruling 3: must never tear. Every write below routes through saveToStorage
+    // (already quota-safe) via the local `write` helper, which tracks per-key success so a
+    // partial sync is reported honestly instead of as "Sync complete!". The outer try/catch
+    // is defense in depth against any unrelated exception aborting the whole import.
     const autoImportAll = (data) => {
-      const timestamp = new Date().toISOString();
-      const results = [];
+      const run = () => {
+        const timestamp = new Date().toISOString();
+        const results = [];
+        const failures = [];
 
-      // Collection (basic card list) — authoritative overwrite from game file.
-      // Previously union-merged with localStorage, which never removed stale entries
-      // (e.g. Shou-Lao stuck as owned after manual toggles or past buggy imports).
-      if (data.collection) {
-        const authoritative = [...new Set(data.collection.cards)];
-        localStorage.setItem('snap_collection', JSON.stringify({
-          owned: authoritative,
-          lastUpdated: timestamp,
-          source: 'LinkedFolder'
-        }));
-        results.push(`Collection: ${authoritative.length} cards`);
-      }
+        const write = (key, value, successLabel) => {
+          const outcome = saveToStorage(key, value);
+          if (outcome.ok) {
+            if (successLabel) results.push(successLabel);
+          } else {
+            failures.push(key);
+          }
+          return outcome.ok;
+        };
 
-      // Enhanced Collection (Hall of Armor - variants, splits, boosters)
-      if (data.collectionEnhanced) {
-        localStorage.setItem('snap_collection_enhanced', JSON.stringify({
-          ...data.collectionEnhanced,
-          importedAt: timestamp
-        }));
-        results.push(`Hall of Armor: ${data.collectionEnhanced.godSplitCount} God Splits`);
-      }
-
-      // Profile & Wallet
-      if (data.profile) {
-        localStorage.setItem('snap_profile_stats', JSON.stringify({
-          ...data.profile.stats,
-          snapId: data.profile.player.snapId,
-          currencies: data.profile.currencies,
-          rankData: data.profile.rankData,
-          skillRating: data.profile.skillRating,
-          importedAt: timestamp
-        }));
-        results.push(`Stats: ${data.profile.stats.winRate}% win rate`);
-
-        // Store rank from profile (more reliable than separate RankState.json)
-        if (data.profile.rankData) {
-          localStorage.setItem('snap_rank', JSON.stringify({
-            ...data.profile.rankData,
-            skillRating: data.profile.skillRating,
-            importedAt: timestamp
-          }));
-          results.push(`Rank: ${data.profile.rankData.tier} (${data.profile.rankData.currentRank}) | SR: ${data.profile.skillRating}`);
+        // Collection (basic card list) — authoritative overwrite from game file.
+        // Previously union-merged with localStorage, which never removed stale entries
+        // (e.g. Shou-Lao stuck as owned after manual toggles or past buggy imports).
+        if (data.collection) {
+          const authoritative = [...new Set(data.collection.cards)];
+          write('snap_collection', {
+            owned: authoritative,
+            lastUpdated: timestamp,
+            source: 'LinkedFolder'
+          }, `Collection: ${authoritative.length} cards`);
         }
 
-        // Store full wallet for Economy HQ
-        localStorage.setItem('snap_wallet', JSON.stringify({
-          ...data.profile.currencies,
-          fullWallet: data.profile.fullWallet,
-          importedAt: timestamp
-        }));
+        // Enhanced Collection (Hall of Armor - variants, splits, boosters)
+        if (data.collectionEnhanced) {
+          write('snap_collection_enhanced', {
+            ...data.collectionEnhanced,
+            importedAt: timestamp
+          }, `Hall of Armor: ${data.collectionEnhanced.godSplitCount} God Splits`);
+        }
 
-        // Card performance — parseProfile's CardStats keys are raw game CardDefIds, but every
-        // reader (Dashboard hero/arsenal, CardPerformanceView) looks up by display name, so
-        // resolve here at write time. Stores from before this fix keep defId keys until the
-        // next folder sync overwrites them (the sync is a full re-write, so this self-heals).
-        if (data.profile.cardPerformance) {
+        // Profile & Wallet
+        if (data.profile) {
+          write('snap_profile_stats', {
+            ...data.profile.stats,
+            snapId: data.profile.player.snapId,
+            currencies: data.profile.currencies,
+            rankData: data.profile.rankData,
+            skillRating: data.profile.skillRating,
+            importedAt: timestamp
+          }, `Stats: ${data.profile.stats.winRate}% win rate`);
+
+          // Store rank from profile (more reliable than separate RankState.json)
+          if (data.profile.rankData) {
+            write('snap_rank', {
+              ...data.profile.rankData,
+              skillRating: data.profile.skillRating,
+              importedAt: timestamp
+            }, `Rank: ${data.profile.rankData.tier} (${data.profile.rankData.currentRank}) | SR: ${data.profile.skillRating}`);
+          }
+
+          // Store full wallet for Economy HQ
+          write('snap_wallet', {
+            ...data.profile.currencies,
+            fullWallet: data.profile.fullWallet,
+            importedAt: timestamp
+          });
+
+          // Card performance — parseProfile's CardStats keys are raw game CardDefIds, but every
+          // reader (Dashboard hero/arsenal, CardPerformanceView) looks up by display name, so
+          // resolve here at write time. Stores from before this fix keep defId keys until the
+          // next folder sync overwrites them (the sync is a full re-write, so this self-heals).
+          if (data.profile.cardPerformance) {
+            const cardDb = CardDataLoader.cache || uniqueCards || [];
+            const defIdMap = new Map();
+            cardDb.forEach(card => {
+              if (card.defId) defIdMap.set(card.defId, card.name);
+              defIdMap.set(card.name, card.name);
+            });
+            const performanceMap = {};
+            data.profile.cardPerformance.all.forEach(({ card, netCubes }) => {
+              performanceMap[resolveCardDefId(card, defIdMap)] = { netCubes };
+            });
+            write('snap_card_performance', {
+              cards: performanceMap,
+              importedAt: timestamp
+            }, `Card Performance: ${data.profile.cardPerformance.all.length} cards`);
+          }
+        }
+
+        // Mastery
+        if (data.mastery) {
+          write('snap_mastery', {
+            cards: data.mastery.cards,
+            importedAt: timestamp
+          }, `Mastery: ${data.mastery.totalCards} cards`);
+        }
+
+        // Battle Pass
+        if (data.battlePass) {
+          write('snap_battlepass', {
+            ...data.battlePass,
+            importedAt: timestamp
+          }, `Battle Pass: Level ${data.battlePass.level}`);
+        }
+
+        // Rewards / Pity Counters (Spotlight Oracle)
+        if (data.rewards) {
+          if (write('snap_rewards', { ...data.rewards, importedAt: timestamp })) {
+            const pity = data.rewards.pityCounters;
+            results.push(`Pity: S4=${pity.s4}/20, S5=${pity.s5}/60`);
+          }
+        }
+
+        // Removed: tokenShop and shop localStorage writes (Economy HQ trimmed)
+
+        // Missions (Mission Tracker)
+        if (data.missions) {
+          write('snap_missions', {
+            ...data.missions,
+            importedAt: timestamp
+          }, `Missions: ${data.missions.dailyCompleted}/? daily`);
+        }
+
+        // Time Model (Server Time for Countdowns)
+        if (data.timeModel) {
+          write('snap_timemodel', {
+            serverTime: data.timeModel.serverTime?.toISOString?.() || data.timeModel.serverTime,
+            dailyReset: data.timeModel.dailyReset?.toISOString?.() || data.timeModel.dailyReset,
+            weeklyReset: data.timeModel.weeklyReset?.toISOString?.() || data.timeModel.weeklyReset,
+            seasonReset: data.timeModel.seasonReset?.toISOString?.() || data.timeModel.seasonReset,
+            importedAt: timestamp
+          }, `Server Time: synced`);
+        }
+
+        // Saved Decks — store to snap_decks (same key DeckBuilder reads)
+        if (data.decks && data.decks.decks?.length > 0) {
+          // Build CardDefId→displayName map — use CardDataLoader.cache (populated by parseCollection)
+          // instead of uniqueCards which may not be updated yet due to async race
           const cardDb = CardDataLoader.cache || uniqueCards || [];
           const defIdMap = new Map();
           cardDb.forEach(card => {
             if (card.defId) defIdMap.set(card.defId, card.name);
             defIdMap.set(card.name, card.name);
           });
-          const performanceMap = {};
-          data.profile.cardPerformance.all.forEach(({ card, netCubes }) => {
-            performanceMap[resolveCardDefId(card, defIdMap)] = { netCubes };
-          });
-          localStorage.setItem('snap_card_performance', JSON.stringify({
-            cards: performanceMap,
-            importedAt: timestamp
+
+          // Convert imported decks to DeckBuilder format
+          const importedDecks = data.decks.decks.map(deck => ({
+            id: deck.id || crypto.randomUUID(),
+            name: deck.name || 'Imported Deck',
+            cards: deck.cards.map(cardId => resolveCardDefId(cardId, defIdMap)),
+            createdAt: deck.lastUsed || timestamp,
+            updatedAt: timestamp,
+            imported: true
           }));
-          results.push(`Card Performance: ${data.profile.cardPerformance.all.length} cards`);
+
+          // Upsert against existing decks, keyed by the game's stable deck id so an
+          // in-game edit (same deck, changed cards) overwrites instead of getting
+          // filtered out. Fall back to a name match only for legacy entries saved
+          // before ids were tracked. Hand-made decks absent from this import are
+          // never touched (id collision with a real game deck is not realistic).
+          const existingDecks = loadFromStorage('snap_decks', []);
+          const { merged: mergedAfterUpsert, addedCount, updatedCount, matchedIds } =
+            upsertDecksById(existingDecks, importedDecks, timestamp);
+
+          // Deletion reconciliation: a previously-imported deck absent from this
+          // import was deleted in-game, so drop it. Hand-made decks (no `imported`
+          // flag) are always kept, regardless of the import. Safe against a
+          // zero-deck import wiping everything: the outer `data.decks.decks?.length
+          // > 0` guard already keeps this whole block (add/update/remove alike)
+          // from running when the parse yields no decks, so `importedDecks` can
+          // never be empty here.
+          const beforeCount = mergedAfterUpsert.length;
+          const mergedDecks = mergedAfterUpsert.filter(d => !d.imported || matchedIds.has(d.id));
+          const removedCount = beforeCount - mergedDecks.length;
+
+          write('snap_decks', mergedDecks, `Decks: ${addedCount} added, ${updatedCount} updated, ${removedCount} removed (${mergedDecks.length} total)`);
         }
-      }
 
-      // Mastery
-      if (data.mastery) {
-        localStorage.setItem('snap_mastery', JSON.stringify({
-          cards: data.mastery.cards,
-          importedAt: timestamp
-        }));
-        results.push(`Mastery: ${data.mastery.totalCards} cards`);
-      }
-
-      // Battle Pass
-      if (data.battlePass) {
-        localStorage.setItem('snap_battlepass', JSON.stringify({
-          ...data.battlePass,
-          importedAt: timestamp
-        }));
-        results.push(`Battle Pass: Level ${data.battlePass.level}`);
-      }
-
-      // Rewards / Pity Counters (Spotlight Oracle)
-      if (data.rewards) {
-        localStorage.setItem('snap_rewards', JSON.stringify({
-          ...data.rewards,
-          importedAt: timestamp
-        }));
-        const pity = data.rewards.pityCounters;
-        results.push(`Pity: S4=${pity.s4}/20, S5=${pity.s5}/60`);
-      }
-
-      // Removed: tokenShop and shop localStorage writes (Economy HQ trimmed)
-
-      // Missions (Mission Tracker)
-      if (data.missions) {
-        localStorage.setItem('snap_missions', JSON.stringify({
-          ...data.missions,
-          importedAt: timestamp
-        }));
-        results.push(`Missions: ${data.missions.dailyCompleted}/? daily`);
-      }
-
-      // Time Model (Server Time for Countdowns)
-      if (data.timeModel) {
-        localStorage.setItem('snap_timemodel', JSON.stringify({
-          serverTime: data.timeModel.serverTime?.toISOString?.() || data.timeModel.serverTime,
-          dailyReset: data.timeModel.dailyReset?.toISOString?.() || data.timeModel.dailyReset,
-          weeklyReset: data.timeModel.weeklyReset?.toISOString?.() || data.timeModel.weeklyReset,
-          seasonReset: data.timeModel.seasonReset?.toISOString?.() || data.timeModel.seasonReset,
-          importedAt: timestamp
-        }));
-        results.push(`Server Time: synced`);
-      }
-
-      // Saved Decks — store to snap_decks (same key DeckBuilder reads)
-      if (data.decks && data.decks.decks?.length > 0) {
-        // Build CardDefId→displayName map — use CardDataLoader.cache (populated by parseCollection)
-        // instead of uniqueCards which may not be updated yet due to async race
-        const cardDb = CardDataLoader.cache || uniqueCards || [];
-        const defIdMap = new Map();
-        cardDb.forEach(card => {
-          if (card.defId) defIdMap.set(card.defId, card.name);
-          defIdMap.set(card.name, card.name);
-        });
-
-        // Convert imported decks to DeckBuilder format
-        const importedDecks = data.decks.decks.map(deck => ({
-          id: deck.id || crypto.randomUUID(),
-          name: deck.name || 'Imported Deck',
-          cards: deck.cards.map(cardId => resolveCardDefId(cardId, defIdMap)),
-          createdAt: deck.lastUsed || timestamp,
-          updatedAt: timestamp,
-          imported: true
-        }));
-
-        // Upsert against existing decks, keyed by the game's stable deck id so an
-        // in-game edit (same deck, changed cards) overwrites instead of getting
-        // filtered out. Fall back to a name match only for legacy entries saved
-        // before ids were tracked. Hand-made decks absent from this import are
-        // never touched (id collision with a real game deck is not realistic).
-        const existingDecks = JSON.parse(localStorage.getItem('snap_decks') || '[]');
-        const { merged: mergedAfterUpsert, addedCount, updatedCount, matchedIds } =
-          upsertDecksById(existingDecks, importedDecks, timestamp);
-
-        // Deletion reconciliation: a previously-imported deck absent from this
-        // import was deleted in-game, so drop it. Hand-made decks (no `imported`
-        // flag) are always kept, regardless of the import. Safe against a
-        // zero-deck import wiping everything: the outer `data.decks.decks?.length
-        // > 0` guard already keeps this whole block (add/update/remove alike)
-        // from running when the parse yields no decks, so `importedDecks` can
-        // never be empty here.
-        const beforeCount = mergedAfterUpsert.length;
-        const mergedDecks = mergedAfterUpsert.filter(d => !d.imported || matchedIds.has(d.id));
-        const removedCount = beforeCount - mergedDecks.length;
-
-        localStorage.setItem('snap_decks', JSON.stringify(mergedDecks));
-        results.push(`Decks: ${addedCount} added, ${updatedCount} updated, ${removedCount} removed (${mergedDecks.length} total)`);
-      }
-
-      // Time Stone: append a compact cumulative snapshot on every real profile sync.
-      // This is the app's moat — a private longitudinal record untapped.gg can't
-      // reconstruct (no per-match log exists here, only intervals between two observed
-      // states). Analytics' "Since Last Sync" card diffs the last two entries.
-      if (data.profile) {
-        try {
-          const stats = data.profile.stats || {};
-          const snapshot = {
-            schemaVersion: 1,
-            syncedAt: timestamp,
-            wins: stats.wins || 0,
-            losses: stats.losses || 0,
-            ties: stats.ties || 0,
-            snaps: stats.snaps || 0,
-            concedes: stats.concedes || 0,
-            opponentConcedes: stats.opponentConcedes || 0,
-            currentRank: data.profile.rankData?.currentRank ?? null,
-            skillRating: data.profile.skillRating ?? null,
-            collectionScore: data.collectionEnhanced?.collectionScore ?? null,
-            masteryXpTotal: data.mastery ? data.mastery.cards.reduce((sum, c) => sum + (c.experience || 0), 0) : null
-          };
-          const CUMULATIVE_SNAPSHOT_FIELDS = ['wins', 'losses', 'ties', 'snaps', 'concedes', 'opponentConcedes', 'collectionScore', 'masteryXpTotal'];
-          const snapshots = loadFromStorage('snap_snapshots', []);
-          const last = snapshots[snapshots.length - 1];
-          // A re-sync with zero gameplay change (e.g. re-linking the same folder) would
-          // otherwise clutter the history with a redundant entry — skip it.
-          const isDuplicate = last && CUMULATIVE_SNAPSHOT_FIELDS.every(f => last[f] === snapshot[f]);
-          if (!isDuplicate) {
-            localStorage.setItem('snap_snapshots', JSON.stringify([...snapshots, snapshot].slice(-30)));
-            results.push('Snapshot: recorded');
+        // Time Stone: append a compact cumulative snapshot on every real profile sync.
+        // This is the app's moat — a private longitudinal record untapped.gg can't
+        // reconstruct (no per-match log exists here, only intervals between two observed
+        // states). Analytics' "Since Last Sync" card diffs the last two entries.
+        if (data.profile) {
+          try {
+            const stats = data.profile.stats || {};
+            const snapshot = {
+              schemaVersion: 1,
+              syncedAt: timestamp,
+              wins: stats.wins || 0,
+              losses: stats.losses || 0,
+              ties: stats.ties || 0,
+              snaps: stats.snaps || 0,
+              concedes: stats.concedes || 0,
+              opponentConcedes: stats.opponentConcedes || 0,
+              currentRank: data.profile.rankData?.currentRank ?? null,
+              skillRating: data.profile.skillRating ?? null,
+              collectionScore: data.collectionEnhanced?.collectionScore ?? null,
+              masteryXpTotal: data.mastery ? data.mastery.cards.reduce((sum, c) => sum + (c.experience || 0), 0) : null
+            };
+            const CUMULATIVE_SNAPSHOT_FIELDS = ['wins', 'losses', 'ties', 'snaps', 'concedes', 'opponentConcedes', 'collectionScore', 'masteryXpTotal'];
+            const snapshots = loadFromStorage('snap_snapshots', []);
+            const last = snapshots[snapshots.length - 1];
+            // A re-sync with zero gameplay change (e.g. re-linking the same folder) would
+            // otherwise clutter the history with a redundant entry — skip it.
+            const isDuplicate = last && CUMULATIVE_SNAPSHOT_FIELDS.every(f => last[f] === snapshot[f]);
+            if (!isDuplicate) {
+              if (write('snap_snapshots', [...snapshots, snapshot].slice(-30))) {
+                results.push('Snapshot: recorded');
+              }
+            }
+          } catch (e) {
+            console.warn('Snapshot append failed:', e);
+            failures.push('snap_snapshots');
           }
-        } catch (e) {
-          console.warn('Snapshot append failed:', e);
         }
-      }
 
-      return results;
+        return { results, failures, ok: failures.length === 0 };
+      };
+
+      try {
+        return run();
+      } catch (e) {
+        console.error('autoImportAll failed unexpectedly:', e);
+        return { results: [], failures: ['unexpected: ' + (e?.message || 'error')], ok: false };
+      }
     };
 
     // ==================== COLLECTION INFERRER ====================
@@ -4730,9 +4744,92 @@ RULES:
       } catch { return defaultValue; }
     };
 
-    const saveToStorage = (key, value) => {
-      try { localStorage.setItem(key, JSON.stringify(value)); }
-      catch (e) { console.warn('Storage error:', e); }
+    // Slice D: quota-aware write path. Distinguishes a full-storage failure from any other
+    // error and always surfaces failures to the user (ruling 1/2) instead of a silent
+    // console.warn. `opts.raw: true` skips JSON.stringify for the handful of keys
+    // (snap_game_data_mtime, snap_performance_mode) that store a plain string, so their
+    // on-disk shape doesn't change under this migration.
+    const isQuotaError = (e) => !!e && (
+      e.name === 'QuotaExceededError' ||
+      e.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+      e.code === 22 || e.code === 1014
+    );
+
+    const saveToStorage = (key, value, opts = {}) => {
+      try {
+        localStorage.setItem(key, opts.raw ? value : JSON.stringify(value));
+        return { ok: true };
+      } catch (e) {
+        const quota = isQuotaError(e);
+        console.warn('Storage error:', key, e);
+        // saveToStorage is the app's data-loss backstop: "returns a result, never throws" has
+        // to hold structurally, not just because the notifier happens to be throw-free today.
+        // The notifier (event + toast) is best-effort; the return contract below is not, so
+        // isolate the two — a future change to showToast/dispatchEvent can't turn a handled
+        // quota failure into an unhandled exception here.
+        try {
+          window.dispatchEvent(new CustomEvent('snap-storage-failure', {
+            detail: { key, reason: quota ? 'quota' : 'other', message: e?.message }
+          }));
+          showToast(
+            quota
+              ? `Storage is full — "${key}" did not save. Export your data from Settings to avoid losing it.`
+              : `Couldn't save "${key}": ${e?.message || 'unknown error'}.`,
+            'error',
+            7000
+          );
+        } catch (notifyError) {
+          console.error('Storage-failure notifier itself failed:', notifyError);
+        }
+        return { ok: false, reason: quota ? 'quota' : 'other', error: e };
+      }
+    };
+
+    // Byte size of every persisted snap_* key, the number that actually matters against
+    // localStorage's ~5MB cap (ruling 5 — distinct from navigator.storage.estimate()).
+    const measureSnapStorageBytes = () => {
+      let total = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('snap_')) {
+          total += k.length + (localStorage.getItem(k)?.length || 0);
+        }
+      }
+      return total;
+    };
+
+    const formatBytes = (bytes) => {
+      if (typeof bytes !== 'number' || !Number.isFinite(bytes)) return '—';
+      if (bytes < 1024) return `${bytes} B`;
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+      return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    };
+
+    // Match detail retention (ruling 4). Never drops a record — only strips the heavy
+    // `gameResult` sub-object from all but the newest N. A comparator over `new Date(...)`
+    // returns NaN for an invalid timestamp, which is undefined behaviour in a sort
+    // comparator (this repo was bitten by exactly that in bbf928a) — sort by a numeric key
+    // that maps an unparsable timestamp to -Infinity (oldest) instead.
+    const MATCH_GAMERESULT_RETENTION = 200;
+    const matchSortKey = (m) => {
+      const t = new Date(m?.timestamp).getTime();
+      return Number.isFinite(t) ? t : Number.NEGATIVE_INFINITY;
+    };
+    const pruneMatchDetail = (matchList) => {
+      if (!Array.isArray(matchList) || matchList.length <= MATCH_GAMERESULT_RETENTION) {
+        return { pruned: matchList, strippedNow: false };
+      }
+      const withIndex = matchList.map((m, i) => ({ m, i, key: matchSortKey(m) }));
+      withIndex.sort((a, b) => (b.key - a.key) || (a.i - b.i));
+      const keepIds = new Set(withIndex.slice(0, MATCH_GAMERESULT_RETENTION).map(x => x.m.id));
+      let strippedNow = false;
+      const pruned = matchList.map(m => {
+        if (!m || !m.gameResult || keepIds.has(m.id)) return m;
+        strippedNow = true;
+        const { gameResult, ...rest } = m;
+        return rest;
+      });
+      return { pruned, strippedNow };
     };
 
     // CORS proxy helper - uses multiple fallback proxies. Top-level so any component
@@ -5753,12 +5850,16 @@ RULES:
               <p className="fr-readout text-2xl font-bold" style={{color:'#b8860b'}}>{winRate}%</p>
               <div className="fr-readout flex items-center justify-center gap-0.5 text-[11px] font-bold mt-1" style={{color: trendDiff > 0 ? '#b8860b' : 'var(--fr-ink-dim)'}}>
                 {weekWinRate !== null ? (
-                  <>
-                    <span className="material-symbols-outlined" style={{ fontSize: '12px' }} aria-hidden="true">
-                      {trendDiff >= 0 ? 'trending_up' : 'trending_down'}
-                    </span>
-                    {trendDiff > 0 ? '+' : ''}{trendDiff}%
-                  </>
+                  trendDiff !== 0 ? (
+                    <>
+                      <span className="material-symbols-outlined" style={{ fontSize: '12px' }} aria-hidden="true">
+                        {trendDiff > 0 ? 'trending_up' : 'trending_down'}
+                      </span>
+                      {trendDiff > 0 ? '+' : ''}{trendDiff}%
+                    </>
+                  ) : (
+                    <span style={{color:'var(--fr-ink-dim)'}}>Steady</span>
+                  )
                 ) : (
                   <span style={{color:'var(--fr-ink-dim)'}}>7d flat</span>
                 )}
@@ -10341,7 +10442,7 @@ RULES:
           const importResults = autoImportAll(results);
 
           if (newestGameFileMs > 0) {
-            localStorage.setItem('snap_game_data_mtime', new Date(newestGameFileMs).toISOString());
+            saveToStorage('snap_game_data_mtime', new Date(newestGameFileMs).toISOString(), { raw: true });
           }
 
           const now = new Date();
@@ -10349,7 +10450,19 @@ RULES:
           await db.put('settings', now.toISOString(), 'lastSyncTime');
           setLastSync(now);
 
-          showToast(`Sync complete!\n${importResults.map(r => '✓ ' + r).join('\n')}`);
+          // Slice D ruling 3: report honestly — a torn sync must not read as "Sync complete!".
+          if (importResults.ok) {
+            showToast(`Sync complete!\n${importResults.results.map(r => '✓ ' + r).join('\n')}`);
+          } else {
+            showToast(
+              `Sync finished with errors — some data was not saved:\n` +
+              `${importResults.results.map(r => '✓ ' + r).join('\n')}\n` +
+              `${importResults.failures.map(k => '✗ ' + k).join('\n')}\n` +
+              `Export your data from Settings to avoid losing anything.`,
+              'error',
+              8000
+            );
+          }
 
           if (onSyncComplete) onSyncComplete();
           window.dispatchEvent(new Event('snap-data-updated'));
@@ -10991,7 +11104,7 @@ RULES:
       return <span className="text-red-400 text-[10px] uppercase tracking-[0.1em] font-semibold">Failed</span>;
     };
 
-    const Settings = ({ settings, setSettings, collection, matches, setCollection, setMatches, aiConfig, setAiConfig, decks, setDecks }) => {
+    const Settings = ({ settings, setSettings, collection, matches, setCollection, setMatches, aiConfig, setAiConfig, decks, setDecks, storageWarning, onDismissStorageWarning }) => {
       const [showImport, setShowImport] = useState(false);
       const [importData, setImportData] = useState('');
       const [showAdvanced, setShowAdvanced] = useState(false);
@@ -11016,6 +11129,35 @@ RULES:
         const stored = localStorage.getItem('snap_performance_mode');
         return stored || 'auto';
       });
+
+      // Slice D ruling 5: storage gauge. `snapBytes` is the measured serialized size of
+      // every snap_* key — the number that matters against localStorage's ~5MB cap.
+      // `originEstimate` is navigator.storage.estimate(), shown separately and labelled as
+      // origin-wide (IndexedDB + Cache Storage included) so it's never mistaken for the
+      // localStorage figure.
+      const [storageGauge, setStorageGauge] = useState({ snapBytes: 0, originEstimate: null });
+      useEffect(() => {
+        let cancelled = false;
+        const refresh = async () => {
+          const snapBytes = measureSnapStorageBytes();
+          let originEstimate = null;
+          if (navigator.storage?.estimate) {
+            try {
+              const est = await navigator.storage.estimate();
+              originEstimate = { usage: est.usage, quota: est.quota };
+            } catch { /* unavailable — leave null */ }
+          }
+          if (!cancelled) setStorageGauge({ snapBytes, originEstimate });
+        };
+        refresh();
+        window.addEventListener('snap-storage-failure', refresh);
+        window.addEventListener('snap-data-updated', refresh);
+        return () => {
+          cancelled = true;
+          window.removeEventListener('snap-storage-failure', refresh);
+          window.removeEventListener('snap-data-updated', refresh);
+        };
+      }, [matches, collection, decks, settings, aiConfig]);
 
       // Phase 5: JSON Sync state
 
@@ -11171,7 +11313,7 @@ RULES:
       // Handle performance mode change
       const handlePerformanceModeChange = (mode) => {
         setPerformanceMode(mode);
-        localStorage.setItem('snap_performance_mode', mode);
+        saveToStorage('snap_performance_mode', mode, { raw: true });
         applyPerformanceMode();
         showToast(`Performance mode: ${mode === 'auto' ? 'Auto-detect' : mode === 'low' ? 'Low-end' : 'Full effects'}`);
       };
@@ -11304,7 +11446,7 @@ RULES:
             // flushed by the time the vault branch below dispatches snap-data-updated,
             // so the App's listener would re-read the still-stale localStorage value
             // and clobber the just-imported collection. Match saveToStorage's shape exactly.
-            localStorage.setItem('snap_collection', JSON.stringify(data.collection));
+            saveToStorage('snap_collection', data.collection);
             setCollection(data.collection);
             setMatches(data.matches);
             if (data.decks) setDecks(data.decks);
@@ -11335,11 +11477,11 @@ RULES:
                   // Reuse the folder-sync upsert semantics (upsertDecksById, also
                   // used by autoImportAll): match by id, update matched, append
                   // new, keep local hand-made decks absent from this payload.
-                  const existingDecks = JSON.parse(localStorage.getItem('snap_decks') || '[]');
+                  const existingDecks = loadFromStorage('snap_decks', []);
                   const { merged } = upsertDecksById(existingDecks, value, timestamp);
-                  localStorage.setItem('snap_decks', JSON.stringify(merged));
+                  saveToStorage('snap_decks', merged);
                 } else {
-                  localStorage.setItem(key, JSON.stringify(value));
+                  saveToStorage(key, value);
                 }
               });
               window.dispatchEvent(new Event('snap-data-updated'));
@@ -11857,6 +11999,48 @@ RULES:
                 }`} style={{background:settings.enableCreatorVideos ? '#fff' : 'var(--fr-ink)'}} />
               </button>
             </div>
+          </div>
+
+          {/* Storage Gauge (Slice D ruling 5/7) */}
+          <div className="fr-panel p-5 mb-4">
+            <div className="fr-tab"><h3>Storage</h3></div>
+            <div className="space-y-1 text-sm" style={{color:'var(--fr-ink)'}}>
+              <div className="flex justify-between">
+                <span style={{color:'var(--fr-ink-dim)'}}>App data (localStorage)</span>
+                <span className="fr-readout font-bold">{formatBytes(storageGauge.snapBytes)} / ~5 MB</span>
+              </div>
+              <div className="w-full h-2 rounded-full overflow-hidden" style={{background:'rgba(0,0,0,0.12)'}}>
+                <div
+                  className="h-full"
+                  style={{
+                    width: `${Math.min(100, (storageGauge.snapBytes / (5 * 1024 * 1024)) * 100)}%`,
+                    background: storageGauge.snapBytes > 4 * 1024 * 1024 ? 'var(--fr-red)' : 'var(--fr-blue)'
+                  }}
+                />
+              </div>
+              {storageGauge.originEstimate ? (
+                <p className="text-[11px] mt-1" style={{color:'var(--fr-ink-dim)'}}>
+                  Browser-reported origin storage (includes IndexedDB and Cache Storage, not just app
+                  data): {formatBytes(storageGauge.originEstimate.usage)} / {formatBytes(storageGauge.originEstimate.quota)}
+                </p>
+              ) : (
+                <p className="text-[11px] mt-1" style={{color:'var(--fr-ink-dim)'}}>Browser storage estimate unavailable.</p>
+              )}
+            </div>
+            {storageWarning && (
+              <div className="fr-panel fr-panel--red mt-3 p-3 flex items-start gap-2">
+                <span className="material-symbols-outlined" aria-hidden="true">warning</span>
+                <div className="flex-1">
+                  <p className="text-sm font-bold">
+                    Some data didn't save{storageWarning.reason === 'quota' ? ' — storage is full' : ''}.
+                  </p>
+                  <p className="text-xs" style={{color:'var(--fr-ink-dim)'}}>
+                    Export your data now (below) to avoid losing anything.
+                  </p>
+                </div>
+                <button onClick={onDismissStorageWarning} className="text-xs opacity-80 hover:opacity-100" aria-label="Dismiss storage warning">x</button>
+              </div>
+            )}
           </div>
 
           {/* Export/Import */}
@@ -12920,6 +13104,16 @@ RULES:
       // Victory/Defeat splash state
       const [victorySplash, setVictorySplash] = useState({ show: false, result: null, cubes: 0 });
 
+      // Slice D ruling 7: persistent (not just toast-and-gone) storage-failure state, set by
+      // saveToStorage's 'snap-storage-failure' event regardless of which component triggered
+      // the write. Shown in Settings until dismissed.
+      const [storageWarning, setStorageWarning] = useState(null);
+      useEffect(() => {
+        const handler = (e) => setStorageWarning({ ...e.detail, at: Date.now() });
+        window.addEventListener('snap-storage-failure', handler);
+        return () => window.removeEventListener('snap-storage-failure', handler);
+      }, []);
+
       // Subscribe to uniqueCards updates to trigger re-renders
       useEffect(() => {
         const unsubscribe = onUniqueCardsUpdate((cards) => {
@@ -12930,7 +13124,21 @@ RULES:
       }, []);
 
       useEffect(() => { saveToStorage('snap_collection', collection); }, [collection]);
-      useEffect(() => { saveToStorage('snap_matches', matches); }, [matches]);
+      // Slice D ruling 4/6: bound growth by stripping `gameResult` detail from all but the
+      // newest 200 records (never dropping a record), and announce the first strip once via
+      // a flag on `snap_settings` — not on every subsequent write.
+      useEffect(() => {
+        const { pruned, strippedNow } = pruneMatchDetail(matches);
+        const outcome = saveToStorage('snap_matches', pruned);
+        if (outcome.ok && strippedNow && !settings.matchDetailPruningNotified) {
+          setSettings(prev => prev.matchDetailPruningNotified ? prev : { ...prev, matchDetailPruningNotified: true });
+          showToast(
+            'Older matches kept their win/loss stats but lost per-card replay detail to stay within storage limits. Export from Settings to keep everything.',
+            'info',
+            7000
+          );
+        }
+      }, [matches, settings.matchDetailPruningNotified]);
       useEffect(() => { saveToStorage('snap_decks', decks); }, [decks]);
       useEffect(() => { saveToStorage('snap_settings', settings); }, [settings]);
       useEffect(() => { saveToStorage('snap_ai_config', aiConfig); }, [aiConfig]);
@@ -13234,7 +13442,7 @@ RULES:
             )}
             {activeTab === 'settings' && (
               <ErrorBoundary>
-                <Settings settings={settings} setSettings={setSettings} collection={collection} matches={matches} setCollection={setCollection} setMatches={setMatches} aiConfig={aiConfig} setAiConfig={setAiConfig} decks={decks} setDecks={setDecks} />
+                <Settings settings={settings} setSettings={setSettings} collection={collection} matches={matches} setCollection={setCollection} setMatches={setMatches} aiConfig={aiConfig} setAiConfig={setAiConfig} decks={decks} setDecks={setDecks} storageWarning={storageWarning} onDismissStorageWarning={() => setStorageWarning(null)} />
               </ErrorBoundary>
             )}
             </PageTransition>
