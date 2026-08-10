@@ -5036,7 +5036,7 @@ RULES:
     );
 
     // Dashboard Component - Player OS Home
-    const Dashboard = ({ collection, matches, onQuickMatch, cardDataVersion, lastMatchId, updateMatch, onDismissLastMatch }) => {
+    const Dashboard = ({ collection, matches, onQuickMatch, cardDataVersion, lastMatchId, updateMatch, onDismissLastMatch, autoCaptureActive, dupeWarning, onUndoDupeWarning }) => {
       const [importedStats, setImportedStats] = useState(null);
       const [rewards, setRewards] = useState(null);
       const [rank, setRank] = useState(null);
@@ -5286,10 +5286,25 @@ RULES:
 
           {/* Quick Match — demoted below the Arsenal, behavior unchanged */}
           <div className="fr-panel mb-4">
-            <div className="flex items-center gap-2 mb-4">
+            <div className={`flex items-center gap-2 ${autoCaptureActive ? 'mb-1' : 'mb-4'}`}>
               <span className="material-symbols-outlined" style={{ color: 'var(--fr-ink)' }} aria-hidden="true">bolt</span>
               <h3 className="font-semibold text-base" style={{ color: 'var(--fr-ink)' }}>Quick Match</h3>
             </div>
+            {autoCaptureActive && (
+              <p className="text-xs mb-3" style={{ color: 'var(--fr-ink-dim)' }}>
+                Auto-capture on — PC matches log themselves while this window is visible.
+              </p>
+            )}
+            {dupeWarning && matches.find(m => m.id === dupeWarning.id) && (
+              <div className="mb-3 p-3 rounded-lg flex items-center justify-between gap-2" style={{ background: '#fff3cd', border: '2px solid var(--fr-ink)' }}>
+                <span className="text-xs" style={{ color: 'var(--fr-ink)' }}>
+                  This looks like a match auto-capture already logged. Duplicate?
+                </span>
+                <button onClick={onUndoDupeWarning} className="fr-chip text-xs font-bold px-3 py-1 rounded-full shrink-0" style={{ border: '2px solid var(--fr-ink)' }}>
+                  Undo
+                </button>
+              </div>
+            )}
             <div className="mb-3" role="group" aria-label="Record win">
               <div className="text-xs uppercase tracking-[0.15em] font-semibold mb-2" style={{ color: 'var(--fr-ink)' }} id="win-label">Victory</div>
               <div className="flex gap-2" role="group" aria-labelledby="win-label">
@@ -9867,6 +9882,28 @@ RULES:
               );
             })}
           </div>
+          {schedule.pendingWeeks && schedule.pendingWeeks.afterWeek >= (analyzedWeeks[analyzedWeeks.length - 1]?.weekNumber ?? 0) && (
+            <div className="fr-panel p-5 mt-4">
+              <div className="fr-tab" style={{padding:0,margin:'0 0 12px'}}>
+                <h3 style={{fontSize:'18px'}}>Schedule Gap — {schedule.pendingWeeks.season}</h3>
+              </div>
+              <p className="fr-label" style={{marginBottom:'8px'}}>Data as of {schedule.lastUpdated}</p>
+              <p className="text-sm mb-3" style={{color:'var(--fr-ink)'}}>{schedule.pendingWeeks.reason}</p>
+              {schedule.pendingWeeks.knownCards.length > 0 && (
+                <div className="mb-3">
+                  <div className="fr-label mb-1">Known cards this season (week not yet confirmed)</div>
+                  <div className="flex flex-wrap gap-2">
+                    {schedule.pendingWeeks.knownCards.map((name, i) => (
+                      <span key={i} className="fr-chip text-xs font-bold px-2 py-1 rounded-full" style={{ border: '2px solid var(--fr-ink)' }}>{name}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {schedule.pendingWeeks.sourcesBlocked?.length > 0 && (
+                <p className="text-xs" style={{color:'var(--fr-ink-dim)'}}>Sources unreachable this refresh: {schedule.pendingWeeks.sourcesBlocked.join(', ')}</p>
+              )}
+            </div>
+          )}
         </div>
       );
     };
@@ -10066,10 +10103,19 @@ RULES:
               setIsLinked(true);
               const syncTime = await db.get('settings', 'lastSyncTime');
               if (syncTime) setLastSync(new Date(syncTime));
+              return;
             }
           }
+          // No saved handle, or the File System Access grant did not survive a browser
+          // restart (Chrome doesn't guarantee it will) — capture cannot actually run this
+          // session. Keep the stored flag truthful (Slice C) rather than leaving a stale
+          // "on" setting from a prior session; mirrors handleUnlink / the permission-loss
+          // path in the poll loop below. Bail out via `prev` unchanged when already false
+          // so this never fires a needless re-render.
+          setSettings(prev => prev.autoCaptureMatches ? { ...prev, autoCaptureMatches: false } : prev);
         } catch (err) {
           console.log('No saved folder handle or permission expired');
+          setSettings(prev => prev.autoCaptureMatches ? { ...prev, autoCaptureMatches: false } : prev);
         }
       }
 
@@ -12854,6 +12900,9 @@ RULES:
       const [collection, setCollection] = useState(() => loadFromStorage('snap_collection', { owned: [], lastUpdated: new Date().toISOString() }));
       const [matches, setMatches] = useState(() => loadFromStorage('snap_matches', []));
       const [lastMatchId, setLastMatchId] = useState(null);
+      // Duplicate-match warning (Slice C ruling 4/5) — {id, autoTimestamp} of the just-added
+      // manual record when it looks like a re-log of an auto-captured match, else null.
+      const [dupeWarning, setDupeWarning] = useState(null);
       const [decks, setDecks] = useState(() => loadFromStorage('snap_decks', []));
       const [settings, setSettings] = useState(() => loadFromStorage('snap_settings', { theme: 'dark', perfMode: 'auto', reducedMotion: false, autoCaptureMatches: false, lastCapturedGameId: null }));
       const [aiConfig, setAiConfig] = useState(() => loadFromStorage('snap_ai_config', {
@@ -12911,6 +12960,30 @@ RULES:
         document.title = (titles[activeTab] || 'AI Advisor') + ' - Snapapoulous Prime';
       }, [activeTab]);
 
+      // Slice C: `settings.autoCaptureMatches` must be truthful the moment the app loads —
+      // the Dashboard hint reads it directly and Home may mount before Settings ever does,
+      // so LinkedFolderSync's own `restoreFolderHandle` correction (which only runs once
+      // Settings mounts) is too late to prevent a stale "capturing" hint on a fresh load.
+      // This mirrors that same permission check at app level, once, without lifting
+      // `isLinked`/`folderHandle` state out of LinkedFolderSync — it only ever writes to
+      // `settings`, never touches local capture state.
+      useEffect(() => {
+        (async () => {
+          if (!settings.autoCaptureMatches) return;
+          try {
+            const db = await openSyncDB();
+            const handle = await db.get('settings', 'folderHandle');
+            const permission = handle ? await handle.queryPermission({ mode: 'read' }) : null;
+            if (permission !== 'granted') {
+              setSettings(prev => prev.autoCaptureMatches ? { ...prev, autoCaptureMatches: false } : prev);
+            }
+          } catch (err) {
+            setSettings(prev => prev.autoCaptureMatches ? { ...prev, autoCaptureMatches: false } : prev);
+          }
+        })();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, []);
+
       // Sync reduced motion setting on load and when settings change
       useEffect(() => {
         if (settings.reducedMotion) {
@@ -12942,17 +13015,42 @@ RULES:
         }
       }, []);
 
+      // Slice C ruling 4: the duplicate warning is scoped to Home — clear it on navigating away.
+      useEffect(() => {
+        if (activeTab !== 'dashboard') setDupeWarning(null);
+      }, [activeTab]);
+
       const handleQuickMatch = (result, cubes) => {
         const id = generateId();
+        const timestamp = new Date().toISOString();
         setMatches(prev => [...prev, {
           id,
-          timestamp: new Date().toISOString(),
+          timestamp,
           result, cubes,
-          opponent: '', deck: '', notes: '', snapped: 'NONE'
+          opponent: '', deck: '', notes: '', snapped: 'NONE',
+          source: 'manual'
         }]);
         setLastMatchId(id);
         // Trigger victory/defeat splash
         setVictorySplash({ show: true, result, cubes });
+
+        // Duplicate guard (Slice C ruling 4/5): warn, never block or auto-delete, when an
+        // auto-captured record with the same result/cubes exists within a 10-minute window.
+        // Checked against `matches` (state as of this render, i.e. before this add).
+        const nowMs = new Date(timestamp).getTime();
+        const dupe = matches.find(m => {
+          if (m.source !== 'auto' || m.result !== result || m.cubes !== cubes) return false;
+          const mMs = new Date(m.timestamp).getTime();
+          if (Number.isNaN(mMs)) return false; // invalid timestamp never counts as a match
+          return Math.abs(nowMs - mMs) <= 600000;
+        });
+        setDupeWarning(dupe ? { id, autoTimestamp: dupe.timestamp } : null);
+      };
+
+      const handleUndoDupeWarning = () => {
+        if (!dupeWarning) return;
+        setMatches(prev => prev.filter(m => m.id !== dupeWarning.id));
+        setDupeWarning(null);
       };
 
       const updateMatch = (id, patch) => setMatches(prev => prev.map(m => m.id === id ? { ...m, ...patch } : m));
@@ -13101,7 +13199,7 @@ RULES:
             <PageTransition activeTab={activeTab}>
             {activeTab === 'dashboard' && (
               <ErrorBoundary>
-                <Dashboard collection={collection} matches={matches} onQuickMatch={handleQuickMatch} cardDataVersion={cardDataVersion} lastMatchId={lastMatchId} updateMatch={updateMatch} onDismissLastMatch={() => setLastMatchId(null)} />
+                <Dashboard collection={collection} matches={matches} onQuickMatch={handleQuickMatch} cardDataVersion={cardDataVersion} lastMatchId={lastMatchId} updateMatch={updateMatch} onDismissLastMatch={() => setLastMatchId(null)} autoCaptureActive={!!settings?.autoCaptureMatches} dupeWarning={dupeWarning} onUndoDupeWarning={handleUndoDupeWarning} />
               </ErrorBoundary>
             )}
             {activeTab === 'ai' && (
