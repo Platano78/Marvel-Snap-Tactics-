@@ -158,6 +158,19 @@ Verified sample: deck `"Auto-Cable"`, 12 cards, 9 played, 19 energy, +4 cubes, w
     the existing Match History list and `MatchTurnAnalysis` detail. — Scope control; the
     recap UI is a follow-up once real records exist to design against.
 
+11. **Validate every field before appending — this is the trust boundary.** Reject the
+    record (skip, log, do not append) unless: `gameId` is a non-empty string; `cubes` is a
+    finite number; the derived timestamp parses to a valid `Date` that is **not in the
+    future**; and every location power is a finite number. Added 2026-08-10 after probing
+    the Today's Net trend fix (`64f0862`): a malformed timestamp creates an `"Invalid Date"`
+    bucket that silently pollutes the 7-day baseline, a future-dated match escapes the
+    `weekAgo` window and skews it badly, and a non-numeric cube value propagates a null
+    delta into the render. Manual entry cannot produce any of those — it writes
+    `new Date().toISOString()` and a fixed cube value from a button — but **auto-capture
+    reads parsed game JSON, which is exactly the untrusted input those consumers were never
+    written to survive.** `snap_matches` gains its first non-hand-typed writer here, so the
+    validation belongs at this boundary, not spread across every downstream reader.
+
 ## Implementation phases
 
 ### Phase 1 — Parser (`parseGameState`)
@@ -238,6 +251,11 @@ verify a mid-match file appends none.
   counter or console instrumentation, then remove it).
 - Existing sync still works end to end: run a normal folder sync, all 7 parsers still
   populate, no regression in Collection / Profile / Mastery.
+- **Validation gate (ruling 11).** Feed `parseGameState` a copy of the real
+  `GameState.json` mutated four ways — `Id` blanked, `FinalCubeValue` set to a string, a
+  future-dated capture timestamp, and a location power set to `null` — and show that each
+  is REJECTED with nothing appended to `snap_matches`. Then confirm the unmodified file is
+  still ACCEPTED. Paste all five outcomes.
 - Paste all outputs verbatim. Any failure = fix before reporting.
 - **Do NOT commit — orchestrator commits.**
 
@@ -274,3 +292,6 @@ this so the dead-end is not re-derived a third time.
 ## Amend log (append-only)
 
 - 2026-08-10 — created — orchestrator
+- 2026-08-10 — added Design ruling 11 (validate at the trust boundary) after malformed-input
+  probing during the Today's Net trend fix (`64f0862`) showed downstream match consumers
+  assume hand-typed data. Also added the corresponding HARD GATE. — orchestrator
