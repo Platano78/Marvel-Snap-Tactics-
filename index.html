@@ -4164,7 +4164,159 @@ RULES:
           console.error('Error parsing enhanced collection:', error);
           return null;
         }
+      },
+
+      /**
+       * Parse GameState.json for the most recently finished match.
+       * Auto Match Capture (Slice B) — spec: docs/plans/auto-match-capture-2026-08-10.md
+       *
+       * GameState.json is $id/$ref graph-serialized (no ServerState wrapper, unlike the
+       * other 7 parsers). RemoteGame.GameState holds the completed match; LocalGame is
+       * empty post-match — do NOT read it. Returns null for a mid-match file (no
+       * ClientResultMessage yet) or an unresolvable Winner ref.
+       *
+       * capturedAtMs defaults to Date.now() but the caller should pass the polled
+       * file's File.lastModified — the game writes GameState.json right as the match
+       * ends, so that mtime is a truer "when this match finished" than poll time.
+       */
+      parseGameState(json, capturedAtMs = Date.now()) {
+        try {
+          if (!json || typeof json !== 'object') return null;
+
+          // Build the $id -> object table by walking the whole document once.
+          const refTable = new Map();
+          const walkRefs = (obj) => {
+            if (obj && typeof obj === 'object') {
+              if (Array.isArray(obj)) { obj.forEach(walkRefs); return; }
+              if (Object.prototype.hasOwnProperty.call(obj, '$id')) refTable.set(obj['$id'], obj);
+              for (const k in obj) { if (k !== '$id') walkRefs(obj[k]); }
+            }
+          };
+          walkRefs(json);
+          const deref = (obj) => {
+            if (obj && typeof obj === 'object' && Object.keys(obj).length === 1 &&
+                Object.prototype.hasOwnProperty.call(obj, '$ref')) {
+              return refTable.get(obj['$ref']) || null;
+            }
+            return obj;
+          };
+
+          const remoteGame = deref(json.RemoteGame);
+          if (!remoteGame) return null;
+          const gs = deref(remoteGame.GameState);
+          if (!gs) return null;
+
+          const crm = gs.ClientResultMessage;
+          if (!crm) return null; // mid-match: no result message yet
+
+          const winner = deref(gs.Winner);
+          if (!winner || winner.EntityId == null) return null; // unresolvable winner
+
+          const accountItem = (crm.GameResultAccountItems || [])[0];
+          if (!accountItem) return null;
+
+          // Identify the local player by matching AccountId against the result
+          // message's account item — never assume a fixed EntityId.
+          const players = (gs._players || []).map(deref).filter(Boolean);
+          const localPlayer = players.find(p => {
+            const info = deref(p.PlayerInfo);
+            return info && info.AccountId === accountItem.AccountId;
+          });
+          if (!localPlayer) return null;
+
+          const opponentPlayer = players.find(p => p.EntityId !== localPlayer.EntityId) || null;
+          const opponentInfo = opponentPlayer ? (deref(opponentPlayer.PlayerInfo) || {}) : {};
+
+          // Player1/Player2 -> your/their power mapping, verified empirically against
+          // a real completed match: _players[0] corresponds to CurPlayer1Power,
+          // _players[1] to CurPlayer2Power. Determine which slot is local by EntityId.
+          const localIsPlayer1 = players[0] && players[0].EntityId === localPlayer.EntityId;
+
+          const locations = (gs._locations || []).map((l, idx) => {
+            const loc = deref(l) || {};
+            const yourPower = localIsPlayer1 ? loc.CurPlayer1Power : loc.CurPlayer2Power;
+            const theirPower = localIsPlayer1 ? loc.CurPlayer2Power : loc.CurPlayer1Power;
+            return {
+              defId: loc.LocationDefId ?? null,
+              slotIndex: loc.SlotIndex ?? idx,
+              yourPower: yourPower ?? null,
+              theirPower: theirPower ?? null,
+              won: loc.WinnerEntityId === localPlayer.EntityId
+            };
+          });
+
+          const deck = accountItem.Deck || {};
+          const deckCards = (deck.Cards || []).map(c => c.CardDefId).filter(Boolean);
+
+          // Snap turns (_turnsOnStakesRaiseRequested) come straight off each player —
+          // "you" from the local player's array, "them" from the opponent's.
+          const yourTurns = localPlayer._turnsOnStakesRaiseRequested || [];
+          const theirTurns = opponentPlayer ? (opponentPlayer._turnsOnStakesRaiseRequested || []) : [];
+
+          return {
+            type: 'gameResult',
+            gameId: crm.GameId ?? gs.Id ?? null,
+            leagueDefId: crm.LeagueDefId ?? gs.LeagueDefId ?? null,
+            result: winner.EntityId === localPlayer.EntityId ? 'WIN' : 'LOSS',
+            cubes: Number(accountItem.FinalCubeValue),
+            turnsTaken: crm.TurnsTaken ?? gs.Turn ?? null,
+            totalTurns: crm.TotalTurns ?? gs.TotalTurns ?? null,
+            energySpent: accountItem.EnergySpent ?? null,
+            deckName: deck.Name ?? null,
+            deckCards,
+            // Per-side card attribution isn't available (Location._cards[].OwnerEntityId
+            // is null) — these are the LOCAL player's own drawn/played cards only.
+            // ADR-007 honesty law: never infer the opponent's list by subtraction.
+            cardsDrawn: accountItem.CardDefIdsDrawn || [],
+            cardsPlayed: accountItem.CardDefIdsPlayed || [],
+            locations,
+            opponent: {
+              name: opponentInfo.Name ?? null,
+              rank: opponentInfo.HighWatermarkRank ?? null,
+              collectionScore: opponentInfo.CollectionScore ?? null
+            },
+            snap: {
+              you: yourTurns.length > 0,
+              them: theirTurns.length > 0,
+              yourTurns,
+              theirTurns
+            },
+            capturedAt: new Date(capturedAtMs).toISOString()
+          };
+        } catch (error) {
+          console.error('[parseGameState] parse error:', error.message);
+          return null;
+        }
       }
+    };
+
+    // Auto Match Capture — validate a parsed gameResult before it ever touches
+    // snap_matches. Design ruling 11: this is the trust boundary. snap_matches has
+    // only ever been written by hand-typed entry; this is its first parsed-JSON
+    // writer, and downstream consumers (Match History's 7-day trend baseline) were
+    // never written to survive malformed timestamps, non-numeric cubes, or NaN powers.
+    // Reject the whole record — never append a partial one.
+    const validateGameResult = (result) => {
+      if (!result) return { valid: false, reason: 'parse-failed' };
+      if (typeof result.gameId !== 'string' || result.gameId.length === 0) {
+        return { valid: false, reason: 'invalid gameId' };
+      }
+      if (!Number.isFinite(result.cubes)) {
+        return { valid: false, reason: 'invalid cubes' };
+      }
+      const ts = new Date(result.capturedAt);
+      if (isNaN(ts.getTime())) {
+        return { valid: false, reason: 'invalid timestamp' };
+      }
+      if (ts.getTime() > Date.now()) {
+        return { valid: false, reason: 'future-dated timestamp' };
+      }
+      for (const loc of result.locations) {
+        if (!Number.isFinite(loc.yourPower) || !Number.isFinite(loc.theirPower)) {
+          return { valid: false, reason: `invalid location power at ${loc.defId}` };
+        }
+      }
+      return { valid: true };
     };
 
     // ==================== INDEXEDDB HELPER (Phase 5) ====================
@@ -9885,12 +10037,15 @@ RULES:
     };
 
     // Phase 5: Linked Folder Sync Component (Chrome/Edge only)
-    const LinkedFolderSync = ({ onSyncComplete }) => {
+    const LinkedFolderSync = ({ onSyncComplete, settings, setSettings, matches, setMatches }) => {
       const [folderHandle, setFolderHandle] = useState(null);
       const [isLinked, setIsLinked] = useState(false);
       const [lastSync, setLastSync] = useState(null);
       const [syncing, setSyncing] = useState(false);
       const [error, setError] = useState(null);
+      // Auto Match Capture (Slice B) — session-only counter, never persisted.
+      const [capturedThisSession, setCapturedThisSession] = useState(0);
+      const [captureNotice, setCaptureNotice] = useState(null);
 
       // Check if File System Access API is supported
       const isSupported = typeof window !== 'undefined' && 'showDirectoryPicker' in window;
@@ -9964,10 +10119,94 @@ RULES:
           setFolderHandle(null);
           setIsLinked(false);
           setLastSync(null);
+          // Nothing left to poll — the capture-loop effect below already tears
+          // its interval down on isLinked change, but also turn the toggle off
+          // so a later re-link doesn't silently resurrect a stale "on" setting.
+          setSettings(prev => ({ ...prev, autoCaptureMatches: false }));
         } catch (err) {
           console.error('Failed to unlink:', err);
         }
       }
+
+      // ==================== Auto Match Capture (Slice B) ====================
+      // Spec: docs/plans/auto-match-capture-2026-08-10.md. Off by default; polls
+      // GameState.json directly (never added to the main sync fileMap — ruling 9)
+      // while this window is visible, and appends a validated, source:'auto'
+      // record to snap_matches on a newly-finished match.
+      async function pollForNewMatch() {
+        if (!folderHandle) return;
+        if (document.visibilityState !== 'visible') return;
+        try {
+          // NEVER call requestPermission here — it needs a user gesture and will
+          // throw from a timer context. Query only; disable capture otherwise.
+          const permission = await folderHandle.queryPermission({ mode: 'read' });
+          if (permission !== 'granted') {
+            setSettings(prev => ({ ...prev, autoCaptureMatches: false }));
+            setCaptureNotice('Auto-capture disabled — folder permission was revoked. Re-link to resume.');
+            return;
+          }
+
+          const fileHandle = await folderHandle.getFileHandle('GameState.json');
+          const file = await fileHandle.getFile();
+          const content = await file.text();
+          const json = JSON.parse(content);
+
+          const parsed = GameDataParser.parseGameState(json, file.lastModified);
+          if (!parsed) return; // mid-match or unresolvable — never throws, just skips
+          if (parsed.gameId === settings.lastCapturedGameId) return; // already captured
+
+          const check = validateGameResult(parsed);
+          if (!check.valid) {
+            console.warn(`[autoCapture] rejected: ${check.reason}`);
+            return;
+          }
+
+          const snapped = parsed.snap.you && parsed.snap.them ? 'BOTH'
+            : parsed.snap.you ? 'PLAYER'
+            : parsed.snap.them ? 'OPPONENT'
+            : 'NONE';
+
+          setMatches(prev => [...prev, {
+            id: generateId(),
+            timestamp: parsed.capturedAt,
+            result: parsed.result,
+            cubes: parsed.cubes,
+            opponent: parsed.opponent.name || '',
+            deck: parsed.deckName || '',
+            notes: '',
+            snapped,
+            source: 'auto',
+            gameId: parsed.gameId,
+            gameResult: parsed
+          }]);
+
+          setSettings(prev => ({ ...prev, lastCapturedGameId: parsed.gameId, lastCapturedAt: parsed.capturedAt }));
+          setCapturedThisSession(n => n + 1);
+          setCaptureNotice(null);
+          window.dispatchEvent(new Event('snap-data-updated'));
+        } catch (err) {
+          // Malformed or mid-write file must log and skip, never throw into React.
+          console.log('[autoCapture] poll skipped:', err.message);
+        }
+      }
+
+      useEffect(() => {
+        if (!settings?.autoCaptureMatches || !isLinked || !folderHandle) return;
+
+        pollForNewMatch(); // catch up immediately on enable/visible
+
+        const intervalId = window.setInterval(pollForNewMatch, 30000);
+        const onVisible = () => {
+          if (document.visibilityState === 'visible') pollForNewMatch();
+        };
+        document.addEventListener('visibilitychange', onVisible);
+
+        return () => {
+          window.clearInterval(intervalId);
+          document.removeEventListener('visibilitychange', onVisible);
+        };
+      }, [settings?.autoCaptureMatches, isLinked, folderHandle, settings?.lastCapturedGameId]);
+      // ==================== End Auto Match Capture ====================
 
       async function syncFromFolder(handle = folderHandle) {
         if (!handle) return;
@@ -10123,6 +10362,61 @@ RULES:
               )}
             </div>
           )}
+
+          {/* Auto Match Capture toggle — off by default, requires a linked folder.
+              Rendered in both linked/unlinked states so the disabled reason is visible. */}
+          <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid var(--fr-line, #ccc)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+              <div>
+                <p style={{ fontWeight: 600, color: 'var(--fr-ink, #1a1a1a)' }}>Auto-capture matches</p>
+                <p style={{ fontSize: '0.75em', color: 'var(--fr-ink-dim, #666)' }}>
+                  {isLinked
+                    ? 'Polls the linked folder while this window is visible.'
+                    : 'Link a game folder first — nothing to poll otherwise.'}
+                </p>
+              </div>
+              <button
+                role="switch"
+                aria-checked={!!settings?.autoCaptureMatches}
+                aria-label="Auto-capture matches"
+                disabled={!isLinked}
+                onClick={() => setSettings(prev => ({ ...prev, autoCaptureMatches: !prev.autoCaptureMatches }))}
+                style={{
+                  width: '44px', height: '44px', flexShrink: 0, border: 'none', background: 'transparent',
+                  cursor: isLinked ? 'pointer' : 'not-allowed', padding: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+              >
+                <span style={{
+                  display: 'block', width: '44px', height: '24px', borderRadius: '999px',
+                  border: '2px solid var(--fr-line, #ccc)', position: 'relative',
+                  background: settings?.autoCaptureMatches ? 'var(--fr-blue, #006EC7)' : '#efe9dd',
+                  opacity: isLinked ? 1 : 0.5
+                }}>
+                  <span style={{
+                    position: 'absolute', top: '1px', left: settings?.autoCaptureMatches ? '21px' : '1px',
+                    width: '18px', height: '18px', borderRadius: '50%', background: '#fff',
+                    transition: 'left 120ms ease', boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                  }} />
+                </span>
+              </button>
+            </div>
+
+            {isLinked && settings?.autoCaptureMatches && (
+              <p style={{ fontSize: '0.75em', color: 'var(--fr-ink-dim, #666)', marginTop: '8px' }}>
+                {capturedThisSession > 0
+                  ? `${capturedThisSession} match${capturedThisSession === 1 ? '' : 'es'} captured this session. `
+                  : ''}
+                {settings?.lastCapturedAt
+                  ? `Last capture: ${formatRelativeTime(settings.lastCapturedAt)}.`
+                  : 'No match captured yet.'}
+              </p>
+            )}
+
+            {captureNotice && (
+              <p style={{ fontSize: '0.75em', color: '#ef4444', marginTop: '8px' }}>{captureNotice}</p>
+            )}
+          </div>
 
           {error && (
             <div style={{ marginTop: '10px', padding: '10px', background: 'rgba(239,68,68,0.2)', borderRadius: '8px', color: '#ef4444', fontSize: '0.85em' }}>
@@ -11086,9 +11380,15 @@ RULES:
             </p>
 
             {/* Method 1: Linked Folder (Chrome/Edge) */}
-            <LinkedFolderSync onSyncComplete={() => {
-              setCollection(loadFromStorage('snap_collection', { owned: [], lastUpdated: new Date().toISOString() }));
-            }} />
+            <LinkedFolderSync
+              onSyncComplete={() => {
+                setCollection(loadFromStorage('snap_collection', { owned: [], lastUpdated: new Date().toISOString() }));
+              }}
+              settings={settings}
+              setSettings={setSettings}
+              matches={matches}
+              setMatches={setMatches}
+            />
 
           </div>
 
@@ -12555,7 +12855,7 @@ RULES:
       const [matches, setMatches] = useState(() => loadFromStorage('snap_matches', []));
       const [lastMatchId, setLastMatchId] = useState(null);
       const [decks, setDecks] = useState(() => loadFromStorage('snap_decks', []));
-      const [settings, setSettings] = useState(() => loadFromStorage('snap_settings', { theme: 'dark', perfMode: 'auto', reducedMotion: false }));
+      const [settings, setSettings] = useState(() => loadFromStorage('snap_settings', { theme: 'dark', perfMode: 'auto', reducedMotion: false, autoCaptureMatches: false, lastCapturedGameId: null }));
       const [aiConfig, setAiConfig] = useState(() => loadFromStorage('snap_ai_config', {
         provider: '',
         model: '',
