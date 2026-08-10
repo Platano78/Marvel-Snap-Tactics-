@@ -5499,6 +5499,30 @@ RULES:
 
       const trendDiff = weekWinRate !== null ? weekWinRate - winRate : 0;
 
+      // Today's Net trend — own unit (cubes), never the win-rate percentage above.
+      // Baseline = average daily net cubes over the trailing 7 days, excluding today,
+      // counting only days that actually had a match (zero-match days would drag the
+      // baseline toward 0 and make any active day look artificially strong).
+      const todayNetTrend = useMemo(() => {
+        if (todayStats.count === 0) return { state: 'no-games' };
+        const todayKey = new Date().toDateString();
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const dailyNet = new Map();
+        matches.forEach(m => {
+          const d = new Date(m.timestamp);
+          if (d.toDateString() === todayKey) return;
+          if (d < weekAgo) return;
+          const key = d.toDateString();
+          const delta = m.result === 'WIN' ? m.cubes : -m.cubes;
+          dailyNet.set(key, (dailyNet.get(key) || 0) + delta);
+        });
+        const dayNets = [...dailyNet.values()];
+        if (dayNets.length === 0) return { state: 'no-baseline' };
+        const avgDailyNet = dayNets.reduce((sum, v) => sum + v, 0) / dayNets.length;
+        return { state: 'ok', avgDailyNet, delta: Math.round(todayStats.net - avgDailyNet) };
+      }, [matches, todayStats]);
+
       const snapLabel = (snapped) => {
         switch (snapped) {
           case 'PLAYER': return 'You Snapped';
@@ -5535,16 +5559,24 @@ RULES:
               <p className="fr-readout text-2xl font-bold" style={{color:'var(--fr-ink)'}}>
                 {todayStats.net >= 0 ? '+' : ''}{todayStats.net}
               </p>
-              <div className="fr-readout flex items-center justify-center gap-0.5 text-[11px] font-bold mt-1" style={{color: trendDiff > 0 ? '#b8860b' : 'var(--fr-ink-dim)'}}>
-                {trendDiff !== 0 ? (
-                  <>
-                    <span className="material-symbols-outlined" style={{ fontSize: '12px' }} aria-hidden="true">
-                      {trendDiff > 0 ? 'trending_up' : 'trending_down'}
-                    </span>
-                    {trendDiff > 0 ? '+' : ''}{trendDiff}%
-                  </>
-                ) : (
-                  <span style={{color:'var(--fr-ink-dim)'}}>Steady</span>
+              <div className="fr-readout flex items-center justify-center gap-0.5 text-[11px] font-bold mt-1" style={{color: todayNetTrend.state === 'ok' && todayNetTrend.delta > 0 ? '#b8860b' : 'var(--fr-ink-dim)'}}>
+                {todayNetTrend.state === 'no-games' && (
+                  <span style={{color:'var(--fr-ink-dim)'}}>No games today</span>
+                )}
+                {todayNetTrend.state === 'no-baseline' && (
+                  <span style={{color:'var(--fr-ink-dim)'}}>No baseline yet</span>
+                )}
+                {todayNetTrend.state === 'ok' && (
+                  todayNetTrend.delta !== 0 ? (
+                    <>
+                      <span className="material-symbols-outlined" style={{ fontSize: '12px' }} aria-hidden="true">
+                        {todayNetTrend.delta > 0 ? 'trending_up' : 'trending_down'}
+                      </span>
+                      {todayNetTrend.delta > 0 ? '+' : ''}{todayNetTrend.delta} vs 7d avg
+                    </>
+                  ) : (
+                    <span style={{color:'var(--fr-ink-dim)'}}>Steady</span>
+                  )
                 )}
               </div>
             </div>
