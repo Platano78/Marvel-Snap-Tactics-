@@ -1,272 +1,243 @@
 {
-  "lastUpdated": "August 5, 2026",
-  "season": "Fractured Frontier",
-  "seasonPassCard": "Thanos: Fractured Frontier (5-Cost, Series 5 Premium. Game Start: Load an Infinity Shot. Your cards have 'Quickdraw: Thanos loads again.' On Reveal: Fire all loaded Shots -- Space/Mind/Reality/Power/Time/Soul Shots each apply a distinct effect. Power not stated here: sources disagreed, 7 vs 8, and could not be reconciled.)",
-  "newKeyword": "Quickdraw - Effects are active the first turn you draw them (next turn if cards are already revealing).",
+  "lastUpdated": "September 5, 2026",
+  "season": "AXIS: Inversion",
+  "seasonPassCard": "Superior Iron Man (5-Cost, 7-Power, Series 5 Premium Season Pass. Double Cost reductions to this. Ongoing: Double Power increases to this. Cost/Power cross-verified via destructoid.com and a snap.fan-indexed search result. Note: the Super Premium track's card this season is Anti-Polar Magneto, 6-Cost/9-Power, On Reveal: Add a 3 or 4-Cost card from your hand to each other location -- also cross-verified.)",
+  "newKeyword": null,
   "recentOTA": [
-    "Drax, Avatar of Life: 3/4 -> 3/3 (nerf, July 30 OTA, was the strongest 3-Cost card by a wide margin)",
-    "Galactus, First Steps: 6/12 -> 6/11 (nerf, July 30 OTA)",
-    "Fin Fang Foom: 7/12 -> 7/14 (buff, July 30 OTA, compensates for the effort needed to reach 7 Energy)",
-    "Karen Page: 4/5 -> 4/6 (buff, July 30 OTA)",
-    "Tombstone: 2/3 -> 2/4 (buff, July 30 OTA)",
-    "Apocalypse: 6/8 -> 6/9 (buff, July 30 OTA)",
-    "Colleen Wing: 2/3 -> 2/4 (buff, July 30 OTA)",
-    "Mother Askani: 4/3 -> 4/4, buff now only affects the copy, not the original (nerf, July 16 OTA)",
-    "Supergiant: 4/6 -> 4/5 (nerf, July 16 OTA, reduce dominant tech-card status)",
-    "Luke Cage: 3/2 protects all cards -> 2/2 protects only front-row cards (nerf, July 16 OTA)",
-    "Spider-Man 2099: reworked from 5/9 destroy-on-first-move -> 4/5 afflicts moved enemy card with -3 Power (rework, July 16 OTA, expands Moveable package)",
-    "Aunt May: 2/3 -> 2/4 (buff, July 16 OTA)",
-    "Agent 13: 1/2 -> 1/3 (buff, July 16 OTA)",
-    "Lady Bullseye: 2/2 -> 2/3 (buff, July 16 OTA)",
-    "Triton: 3/4 -> 3/6 (buff, July 16 OTA)"
+    "Sam Wilson Captain America: 2/3 -> 2/2 (nerf, Aug 27 OTA, outlier 2-Cost across Batroc and Aurora/Thanos decks all season)",
+    "Mister Fantastic First Steps: 3/4 -> 3/5 (buff, Aug 27 OTA, hasn't kept pace with other 3-Costs since his earlier nerf)",
+    "Strong Guy: 3/3 -> 3/4 (buff, Aug 27 OTA, positioned as a fringe pick alongside the incoming Anti-Polar Magneto)",
+    "Death: Fractured Frontier: 5/8 -> 5/9 (buff, Aug 27 OTA, win rate has been low despite the swingy resurrect effect)",
+    "Spider-Sense: rework, 5-Cost/+2 Power effect -> 6-Cost/+3 Power effect (Aug 27 OTA, intended as a real payoff for Moveable decks)",
+    "Klaw: rework, 5/4 (location to the right +7 Power) -> 4/2 (location to the right +6 Power) (Aug 27 OTA, experimental buff to widen play beyond new players)",
+    "Wilson Fisk: 5/9 -> 5/8 (nerf, Aug 13 OTA, dominant in big-character priority decks for months)",
+    "Mad Thinker: 1/2 -> 1/3 (buff, Aug 13 OTA)",
+    "Hydro-Man: 5/9 -> 5/10 (buff, Aug 13 OTA)",
+    "Drax: 4/5 -> 4/6 (buff, Aug 13 OTA)",
+    "Groot: 3/4 -> 3/5 (buff, Aug 13 OTA)",
+    "Hawkeye: 1/1 (+3 Power on reveal) -> 1/1 (+4 Power on reveal) (buff, Aug 13 OTA)",
+    "Firehair: 2/3 -> 2/4 (buff, Aug 13 OTA, enticing experiment alongside Death: Fractured Frontier)",
+    "NOTE: the Aug 18 patch (v56.4.1) was feature/bugfix only (Legacy Variants shop, animated emotes, Rush/Sprint mini-events, misc. card-interaction fixes) -- no balance changes, omitted here."
   ],
   "topArchetypes": [
     {
-      "name": "Lockdown Move",
+      "name": "Thanos Fractured Frontier",
       "tier": "S",
-      "description": "The longest-running top Move deck; doesn't rely solely on movement for its win condition, giving it outs other Move decks lack. Built around long-time Move staples (Scream, Kraven, Sam Wilson Captain America, Aero) rather than any single season's keyword, so it survived the Moveable-to-Quickdraw season transition intact."
+      "description": "Still the defining card of the ladder in early September: per the Aug 31 marvelsnapzone Ranked Meta Tier List snapshot (Fractured Frontier Week 4), 9 of the top 10 archetypes clearing 50%+ win rate in Infinite rank ran Thanos Fractured Frontier, with several builds reported above 60%. Neither the Aug 27 OTA nor the AXIS: Inversion season launch touched the card, so it carries over unchanged into the new season."
     },
     {
-      "name": "Fantomex / Morgan le Fay",
+      "name": "Ongoing Affliction / High Evolutionary",
       "tier": "S",
-      "description": "Current best-win-rate disruption deck; Fantomex + Morgan le Fay combine for strong points while the 3-Cost slot stays flexible for a final turn play."
+      "description": "The lone non-Thanos archetype in that same top-10 list. Hellcow: Fractured Frontier enabled a second High Evolutionary build (discounting Abomination via Affliction) alongside the traditional shell, which sharply increased the value of Luke Cage as the primary tech answer to both this and Thanos Fractured Frontier."
     },
     {
-      "name": "Nimrolactus",
-      "tier": "B (early-season spike)",
-      "description": "Shines in week 1 of a season while the ladder hasn't adjusted to respect Nimrod yet; nets a few surprise 4-8 cube wins before players learn to play around it."
+      "name": "Self-Destruct Deadpool (Destroy)",
+      "tier": "A",
+      "description": "Deadpool's regenerate-with-double-power-on-destroy loop, fed by Carnage/Venom/Killmonger/Deathlok/Knull, is independently listed as a current top deck by community guides; one card-tracking source places the Destroy archetype at Tier A overall."
     }
   ],
   "hotCards": [
-    "Thanos: Fractured Frontier",
-    "Jane Foster: Fractured Frontier",
-    "Psylocke: Fractured Frontier",
-    "Red Wolf: Fractured Frontier",
-    "Death: Fractured Frontier",
-    "Red Hulk: Fractured Frontier"
+    "Superior Iron Man",
+    "Anti-Polar Magneto",
+    "Red Onslaught",
+    "Kluh",
+    "Friendly Neighborhood Carnage",
+    "Scarlet Witch: Queen of Chaos"
   ],
   "techCards": [
-    "Mercury",
-    "Cosmo",
-    "Stardust",
-    "Mobius M. Mobius"
+    "Luke Cage",
+    "Strong Guy",
+    "Cosmo"
   ],
   "newSeasonCards": [
     {
-      "name": "Thanos: Fractured Frontier",
+      "name": "Superior Iron Man",
       "cost": 5,
-      "note": "Season Pass (Premium). Game Start: Load an Infinity Shot. Your cards have 'Quickdraw: Thanos loads again.' On Reveal: Fire all loaded Shots."
+      "note": "Season Pass (Premium). Double Cost reductions to this. Ongoing: Double Power increases to this. Power (7) cross-verified via destructoid.com and a snap.fan-indexed search result."
     },
     {
-      "name": "Jane Foster: Fractured Frontier",
-      "cost": 3,
-      "note": "Season Pass (Super Premium). On Reveal: judge 4 random characters (+1 Power if yours, -1 Power if the enemy's). Quickdraw: judge the worthy again. Power not independently confirmed."
+      "name": "Anti-Polar Magneto",
+      "cost": 6,
+      "note": "Season Pass (Super Premium). On Reveal: Add a 3 or 4-Cost card from your hand to each other location. Power (9) cross-verified via destructoid.com and a snap.fan-indexed search result."
     },
     {
-      "name": "Psylocke: Fractured Frontier",
-      "cost": 3,
-      "note": "Series 5. Reduces the cost of a card in hand. Stats (3-Cost/4-Power) come from a single datamine source, unconfirmed by a second outlet -- treat as approximate."
+      "name": "Red Onslaught",
+      "cost": 4,
+      "note": "Series 5, first new S5 card of the season (released Sept 1, 2026). Ongoing: Has 3 random Ongoing abilities. Power (4) from a single source (destructoid) -- unconfirmed by a second outlet."
     },
     {
-      "name": "Red Wolf: Fractured Frontier",
-      "cost": 2,
-      "note": "Series 5. Ongoing: gains +1 Power for each card in your hand. Stats from a single datamine source, unconfirmed by a second outlet."
-    },
-    {
-      "name": "Death: Fractured Frontier",
+      "name": "Kluh",
       "cost": 5,
-      "note": "Series 5. On Reveal: resurrect all of your destroyed cards to random locations. Power (7, single-source) unconfirmed by a second outlet."
+      "note": "Series 5 (released Sept 8, 2026 per destructoid). On Reveal: EACH player randomly gives a card in their hand -1 Cost for each different Cost among their cards in play. Power (10) from a single source -- unconfirmed by a second outlet."
     },
     {
-      "name": "Red Hulk: Fractured Frontier",
+      "name": "Rogue: Scion of Division",
+      "cost": 5,
+      "note": "Series 5 (released Sept 15, 2026 per destructoid). On Reveal: Steal the text of the highest-Cost card in your opponent's hand. Power (5) from a single source -- unconfirmed by a second outlet."
+    },
+    {
+      "name": "Entropic Havok",
       "cost": 3,
-      "note": "Series 5, Quickdraw card. Loses Power for each enemy card present on reveal. Base Power unconfirmed -- sources disagreed (7-8)."
+      "note": "Series 4, Limited Time Event card (released Sept 16, 2026 per destructoid/games.gg). Each turn, steal 1 bonus Energy from your opponent (if they have any). Power (3) from a single source -- unconfirmed by a second outlet."
     },
     {
-      "name": "Doctor Octopus: Fractured Frontier",
-      "cost": 2,
-      "note": "Series 4, Limited Time Event card (not obtained via Spotlight Cache). Hand/deck manipulation on reveal; exact wording not independently verified this refresh."
-    },
-    {
-      "name": "Hellcow: Fractured Frontier",
+      "name": "Friendly Neighborhood Carnage",
       "cost": 3,
-      "note": "Series 4, Limited Time Event card (not obtained via Spotlight Cache). End of Turn: afflicts other characters at this location with -1 Power."
+      "note": "Series 5 (released Sept 22, 2026 per destructoid). On Reveal: Move your other cards here to the right. +2 Power for each moved. Power (4) from a single source -- unconfirmed by a second outlet."
+    },
+    {
+      "name": "The Inversion",
+      "cost": 3,
+      "note": "Series 4, Limited Time Event spell card (released Sept 28, 2026 per destructoid/games.gg). On Reveal: Invert the Power of the lowest-Power card(s) here (positive becomes negative and vice versa). No Power stat given (non-character card)."
+    },
+    {
+      "name": "Scarlet Witch: Queen of Chaos",
+      "cost": 3,
+      "note": "Series 5 (released Sept 29, 2026 per destructoid). Start of Turn: Add an EXTREMELY random skill to your hand; it costs 0 this turn. Power (4) from a single source -- unconfirmed by a second outlet."
     }
   ],
   "tierList": [
     {
       "tier": "S",
-      "name": "Scream Move",
-      "archetype": "Move",
-      "winRate": 58.5,
-      "avgCubes": 0.3,
+      "name": "High Evolutionary Affliction",
+      "archetype": "Affliction",
+      "winRate": null,
+      "avgCubes": null,
       "popularity": null,
       "sampleCards": [
-        "Scream",
-        "Kraven",
-        "Sam Wilson Captain America",
-        "Miles Morales Spider-Man",
-        "Aero"
+        "High Evolutionary",
+        "Abomination",
+        "Cyclops",
+        "Misty Knight",
+        "Scorpion"
       ],
       "tag": "Trending"
     },
     {
       "tier": "S",
-      "name": "Discard Combo",
-      "archetype": "Discard",
-      "winRate": 57.5,
-      "avgCubes": 0.55,
+      "name": "Thanos Fractured Frontier Surfer",
+      "archetype": "Big Power / Ramp",
+      "winRate": null,
+      "avgCubes": null,
       "popularity": null,
       "sampleCards": [
-        "Wolverine",
-        "Daken",
-        "Moon Girl",
-        "Supergiant",
-        "Proxima Midnight"
-      ],
-      "tag": null
-    },
-    {
-      "tier": "S",
-      "name": "Virused 10 Power",
-      "archetype": "Big Power",
-      "winRate": 56.5,
-      "avgCubes": 0.5,
-      "popularity": null,
-      "sampleCards": [
-        "Tarantula",
-        "Starbrand",
-        "Skaar",
-        "Wilson Fisk",
-        "Ares"
-      ],
-      "tag": null
-    },
-    {
-      "tier": "S",
-      "name": "Disruptive Aurora",
-      "archetype": "Disruption",
-      "winRate": 58.5,
-      "avgCubes": 0.35,
-      "popularity": null,
-      "sampleCards": [
-        "Aurora",
-        "Venus",
-        "Cosmo",
-        "The Thing First Steps",
-        "Zombie Mister Fantastic"
-      ],
-      "tag": null
-    },
-    {
-      "tier": "A",
-      "name": "Nimrod Destroy",
-      "archetype": "Destroy",
-      "winRate": 57,
-      "avgCubes": 0.4,
-      "popularity": null,
-      "sampleCards": [
-        "Nimrod",
-        "Knull",
-        "Death",
-        "Shang-Chi",
-        "Bucky Barnes"
-      ],
-      "tag": null
-    },
-    {
-      "tier": "A",
-      "name": "Supergiant Rocks",
-      "archetype": "Ongoing",
-      "winRate": 57,
-      "avgCubes": 0.35,
-      "popularity": null,
-      "sampleCards": [
-        "Rhino",
-        "Debrii",
-        "Negasonic Teenage Warhead",
-        "Supergiant",
-        "Shadow King"
-      ],
-      "tag": null
-    },
-    {
-      "tier": "A",
-      "name": "War Machine Ramp",
-      "archetype": "Ramp",
-      "winRate": 56.5,
-      "avgCubes": 0.35,
-      "popularity": null,
-      "sampleCards": [
-        "War Machine",
-        "Jubilee",
-        "Dragon Lord",
-        "The Infinaut",
-        "Astral Projection"
-      ],
-      "tag": null
-    },
-    {
-      "tier": "A",
-      "name": "Lockdown Move",
-      "archetype": "Move",
-      "winRate": 56.5,
-      "avgCubes": 0.3,
-      "popularity": null,
-      "sampleCards": [
-        "Professor X",
-        "Spider-Man Brand New Day",
-        "Nightcrawler",
-        "Mary Jane",
-        "Silk"
-      ],
-      "tag": null
-    },
-    {
-      "tier": "A",
-      "name": "Fantomex",
-      "archetype": "Disruption",
-      "winRate": 55.5,
-      "avgCubes": 0.35,
-      "popularity": null,
-      "sampleCards": [
-        "Fantomex",
+        "Silver Surfer",
+        "Wolfsbane",
         "Killmonger",
-        "Shadow King",
-        "Gambit",
-        "Marrow"
+        "Daken",
+        "Mockingbird"
+      ],
+      "tag": "Trending"
+    },
+    {
+      "tier": "A",
+      "name": "Self-Destruct Deadpool",
+      "archetype": "Destroy",
+      "winRate": null,
+      "avgCubes": null,
+      "popularity": null,
+      "sampleCards": [
+        "Deadpool",
+        "Carnage",
+        "Venom",
+        "Killmonger",
+        "Deathlok"
       ],
       "tag": null
     },
     {
       "tier": "A",
-      "name": "Hela Discard",
-      "archetype": "Discard",
-      "winRate": 53.5,
-      "avgCubes": 0.45,
+      "name": "Wakanda Forever",
+      "archetype": "Ongoing / Buff",
+      "winRate": null,
+      "avgCubes": null,
       "popularity": null,
       "sampleCards": [
-        "Hela",
-        "Death",
-        "Ghost Rider",
-        "Gambit",
-        "Lady Sif"
+        "Black Panther",
+        "Wong",
+        "Odin",
+        "Nakia",
+        "Okoye"
       ],
       "tag": null
     },
     {
       "tier": "B",
-      "name": "End of Turn 2099",
-      "archetype": "End of Turn",
-      "winRate": 56.5,
-      "avgCubes": 0.25,
+      "name": "Wong Spectrum",
+      "archetype": "Double On-Reveal",
+      "winRate": null,
+      "avgCubes": null,
       "popularity": null,
       "sampleCards": [
-        "Doctor Doom 2099",
-        "Iron Lad",
-        "Cosmic Ghost Rider",
-        "Sandman",
-        "Moondragon"
+        "Wong",
+        "Spectrum",
+        "Mister Fantastic",
+        "Ebony Maw",
+        "Colossus"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "B",
+      "name": "Patriots, Drones, and Clones",
+      "archetype": "Zoo / Tokens",
+      "winRate": null,
+      "avgCubes": null,
+      "popularity": null,
+      "sampleCards": [
+        "Patriot",
+        "Ultron",
+        "Squirrel Girl",
+        "Blue Marvel",
+        "Onslaught"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "B",
+      "name": "Bast Beast Monkey",
+      "archetype": "Bounce",
+      "winRate": null,
+      "avgCubes": null,
+      "popularity": null,
+      "sampleCards": [
+        "Bast",
+        "Hit-Monkey",
+        "Beast",
+        "Falcon",
+        "Black Widow"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "B",
+      "name": "Knull Galactus",
+      "archetype": "Big Power / Destroy",
+      "winRate": null,
+      "avgCubes": null,
+      "popularity": null,
+      "sampleCards": [
+        "Knull",
+        "Galactus",
+        "Shang-Chi",
+        "Destroyer",
+        "Death"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "B",
+      "name": "Sera Mystique Summons",
+      "archetype": "Discount / Summon",
+      "winRate": null,
+      "avgCubes": null,
+      "popularity": null,
+      "sampleCards": [
+        "Sera",
+        "Mystique",
+        "America Chavez",
+        "Bishop",
+        "Scarlet Witch"
       ],
       "tag": null
     }
