@@ -1,243 +1,279 @@
 {
-  "lastUpdated": "September 5, 2026",
-  "season": "AXIS: Inversion",
-  "seasonPassCard": "Superior Iron Man (5-Cost, 7-Power, Series 5 Premium Season Pass. Double Cost reductions to this. Ongoing: Double Power increases to this. Cost/Power cross-verified via destructoid.com and a snap.fan-indexed search result. Note: the Super Premium track's card this season is Anti-Polar Magneto, 6-Cost/9-Power, On Reveal: Add a 3 or 4-Cost card from your hand to each other location -- also cross-verified.)",
+  "lastUpdated": "October 5, 2026",
+  "season": "Vampires vs. Zombies",
+  "seasonPassCard": "Vampire Killmonger (2-Cost, 2-Power, Series 5 Premium Season Pass, season begins Oct 6, 2026. End of Turn: If you spent all your Energy, get a Vampiric Spear -- Vampiric Spear is On Reveal: steal 2 Power from a character in your opponent's hand. Cost/Power cross-verified via marvelsnapzone.com's card page and its unreleased-cards listing, plus snapcomplete.com. Note: the Super Premium track's card this season is Zombie Blade, 2-Cost/3-Power, End of Turn: If you played an On Reveal, your Zombie Horde steals 1 Power from a character in your opponent's hand -- also cross-verified via marvelsnapzone.com and snapcomplete.com. AXIS: Inversion concludes Oct 5, 2026; Vampires vs. Zombies is confirmed via marvelsnap.com's official Oct 2, 2026 season-announcement post and marvelsnapzone.com's October 2026 season page.)",
   "newKeyword": null,
   "recentOTA": [
-    "Sam Wilson Captain America: 2/3 -> 2/2 (nerf, Aug 27 OTA, outlier 2-Cost across Batroc and Aurora/Thanos decks all season)",
-    "Mister Fantastic First Steps: 3/4 -> 3/5 (buff, Aug 27 OTA, hasn't kept pace with other 3-Costs since his earlier nerf)",
-    "Strong Guy: 3/3 -> 3/4 (buff, Aug 27 OTA, positioned as a fringe pick alongside the incoming Anti-Polar Magneto)",
-    "Death: Fractured Frontier: 5/8 -> 5/9 (buff, Aug 27 OTA, win rate has been low despite the swingy resurrect effect)",
-    "Spider-Sense: rework, 5-Cost/+2 Power effect -> 6-Cost/+3 Power effect (Aug 27 OTA, intended as a real payoff for Moveable decks)",
-    "Klaw: rework, 5/4 (location to the right +7 Power) -> 4/2 (location to the right +6 Power) (Aug 27 OTA, experimental buff to widen play beyond new players)",
-    "Wilson Fisk: 5/9 -> 5/8 (nerf, Aug 13 OTA, dominant in big-character priority decks for months)",
-    "Mad Thinker: 1/2 -> 1/3 (buff, Aug 13 OTA)",
-    "Hydro-Man: 5/9 -> 5/10 (buff, Aug 13 OTA)",
-    "Drax: 4/5 -> 4/6 (buff, Aug 13 OTA)",
-    "Groot: 3/4 -> 3/5 (buff, Aug 13 OTA)",
-    "Hawkeye: 1/1 (+3 Power on reveal) -> 1/1 (+4 Power on reveal) (buff, Aug 13 OTA)",
-    "Firehair: 2/3 -> 2/4 (buff, Aug 13 OTA, enticing experiment alongside Death: Fractured Frontier)",
-    "NOTE: the Aug 18 patch (v56.4.1) was feature/bugfix only (Legacy Variants shop, animated emotes, Rush/Sprint mini-events, misc. card-interaction fixes) -- no balance changes, omitted here."
+    "Thanos Fractured Frontier: reworked (Oct 1 OTA, nerf) -- Quickdraw no longer pre-loads an Infinity Shot at game start; it now loads one Infinity Shot per Quickdraw trigger instead. Per marvelsnap.com, the developers expected chaining this turn over turn to be harder than it turned out to be; it had become the undisputed best card in the game. Cross-verified marvelsnap.com + marvelsnapzone.com.",
+    "Domino: 2/4 -> 2/3 (nerf, Oct 1 OTA)",
+    "Jane Foster Fractured Frontier: 3/4 -> 3/3 (nerf, Oct 1 OTA, aimed at the Curved High Evolutionary / Ongoing Affliction synergy)",
+    "Tao Mandala (The Ancient One, location): 2-Cost -> 3-Cost (nerf, Oct 1 OTA)",
+    "Blink: 5/7 -> 5/8, and can now swap with cards costing the same or more Energy (previously only strictly more) (buff, Oct 1 OTA)",
+    "Zombie Captain Marvel: 4/5 -> 4/6 (buff, Oct 1 OTA)",
+    "Winter Soldier (Bucky Barnes): 2/7 -> 2/8 (buff, Oct 1 OTA)",
+    "Tombstone: 2/4 -> 2/5 (buff, Oct 1 OTA)",
+    "Kluh: 5/10 -> 5/11 (buff, Oct 1 OTA; second consecutive buff after the Sept 10 OTA below)",
+    "Basic Arrow (Hawkeye: Kate Bishop): +3 Power -> +4 Power bonus on reveal (buff, Oct 1 OTA, restoring strength to a fan-favorite that had fallen off)",
+    "Hellcow Fractured Frontier: text clarified to add 'Other' so it cannot destroy itself (Oct 1 OTA, no functional balance change)",
+    "Venus: 3/3 -> 3/2 (nerf, Sept 10 OTA; per marvelsnap.com, 'likely the strongest 3-Cost card in the game')",
+    "Scorpion: Brand New Day: 6/8 -> 6/6 (nerf, Sept 10 OTA, 'the strongest non-interactive deck in the metagame')",
+    "Blink: 5/8 -> 5/7 (nerf, Sept 10 OTA; note this was buffed back to 5/8 plus a text change in the Oct 1 OTA above)",
+    "Isca the Unbeaten: 4/3 -> 4/2 (nerf, Sept 10 OTA, 'solos a location by itself too often without much further investment')",
+    "Gambit: Horseman of Death: 3/5 -> 4/6 (nerf, Sept 10 OTA; Cost raised, not just Power, to curb excessive matchup variance from the repeatable ability)",
+    "Nicholas Scratch: 1/2 -> 1/3 (buff, Sept 10 OTA)",
+    "Vulture: move-trigger power bonus +3 -> +4 (buff, Sept 10 OTA)",
+    "The Collector: 2/2 -> 2/3 (buff, Sept 10 OTA)",
+    "Spider-Sense: Cost reduced 6 -> 5 (buff, Sept 10 OTA)",
+    "Superior Iron Man: 5/7 -> 5/8 (buff, Sept 10 OTA)",
+    "Mister Fantastic: First Steps: +2 Power -> +3 Power bonus (buff, Sept 10 OTA)",
+    "Majestic Wingbeat: +2 Power -> +3 Power bonus (buff, Sept 10 OTA)",
+    "NOTE: the Sept 15 patch (v57.x) was feature/progression only -- Character Mastery reward-track overhaul, Cubes now earnable from free reward tracks in limited-time modes, Draft Mode's Sept 28 return with Sanctum Showdown-style scoring plus 4 new Draft augments (Apex, Unstoppable, Taunt, Slingshot), and a cosmetic-only 'Start of Turn:' keyword-wording consistency pass on Entropic Havok, Jim Hammond Human Torch, Kitty Pryde, Mad Thinker, Merlin, Superior Spider-Man, Viv Vision, Ice Cube, Professor X, and Wolverine ('no functionality has changed'). No card balance changes in that patch, so it is omitted above. Both the Sept 10 and Oct 1 OTAs above are cross-verified against marvelsnap.com (primary) and marvelsnapzone.com (secondary); figures matched exactly on both."
   ],
   "topArchetypes": [
     {
-      "name": "Thanos Fractured Frontier",
+      "name": "Curved 4-Costs",
       "tier": "S",
-      "description": "Still the defining card of the ladder in early September: per the Aug 31 marvelsnapzone Ranked Meta Tier List snapshot (Fractured Frontier Week 4), 9 of the top 10 archetypes clearing 50%+ win rate in Infinite rank ran Thanos Fractured Frontier, with several builds reported above 60%. Neither the Aug 27 OTA nor the AXIS: Inversion season launch touched the card, so it carries over unchanged into the new season."
+      "description": "The #1 deck per the Oct 5, 2026 marvelsnapzone.com Ranked Meta Tier List (Axis: Inversion Final Week snapshot): 62.5% win rate / 0.55 avg cubes, built around Quicksilver, Domino, Caliban Horseman of Pestilence, Jubilee, Captain Marvel, En Sabah Nur plus the season's Anti-Polar Magneto and Rogue: Scion of Division pickups. Cross-verified from an unrelated dataset: snapcomplete.com's independent card-win-rate tracker (20,698 synced players) separately lists Caliban Horseman of Pestilence and En Sabah Nur among the single highest drawn-win-rate cards in the game (59.5% and 58.9%)."
     },
     {
-      "name": "Ongoing Affliction / High Evolutionary",
+      "name": "Created Chaos",
       "tier": "S",
-      "description": "The lone non-Thanos archetype in that same top-10 list. Hellcow: Fractured Frontier enabled a second High Evolutionary build (discounting Abomination via Affliction) alongside the traditional shell, which sharply increased the value of Luke Cage as the primary tech answer to both this and Thanos Fractured Frontier."
+      "description": "Second place in the same Oct 5 snapshot at 57.5% win rate / 0.5 avg cubes -- a random-generation shell running Majestic Wingbeat, Quinjet, Maria Hill, Iron Patriot, Valentina, Shadow King, Mother Askani, and Gambit Horseman of Death. snapcomplete.com's independent card tracker also flags Majestic Wingbeat as a top performer (52.0% drawn win rate across 33,683 games, the largest sample of any card tracked), corroborating the deck's strength from a second dataset."
     },
     {
-      "name": "Self-Destruct Deadpool (Destroy)",
+      "name": "Curved Disruption / Curved High Evolutionary",
       "tier": "A",
-      "description": "Deadpool's regenerate-with-double-power-on-destroy loop, fed by Carnage/Venom/Killmonger/Deathlok/Knull, is independently listed as a current top deck by community guides; one card-tracking source places the Destroy archetype at Tier A overall."
+      "description": "Two of five Tier 2 decks in the Oct 5 snapshot (60% and 59.5% win rate respectively). Curved High Evolutionary carried its Thanos Fractured Frontier + Jane Foster Fractured Frontier Ongoing Affliction synergy through the Oct 1 OTA nerf largely unscathed -- marvelsnapzone.com's own OTA analysis states the deck 'barely noticed the nerf' since it still runs both pieces alongside the High Evolutionary / Abomination discount engine."
     }
   ],
   "hotCards": [
-    "Superior Iron Man",
-    "Anti-Polar Magneto",
-    "Red Onslaught",
+    "Caliban, Horseman of Pestilence",
+    "En Sabah Nur",
+    "Majestic Wingbeat",
     "Kluh",
-    "Friendly Neighborhood Carnage",
-    "Scarlet Witch: Queen of Chaos"
+    "Thanos Fractured Frontier",
+    "Anti-Polar Magneto"
   ],
   "techCards": [
     "Luke Cage",
-    "Strong Guy",
     "Cosmo"
   ],
   "newSeasonCards": [
     {
-      "name": "Superior Iron Man",
-      "cost": 5,
-      "note": "Season Pass (Premium). Double Cost reductions to this. Ongoing: Double Power increases to this. Power (7) cross-verified via destructoid.com and a snap.fan-indexed search result."
+      "name": "Vampire Killmonger",
+      "cost": 2,
+      "note": "Season Pass (Premium), Series 5, season begins Oct 6, 2026. Power (2) and ability cross-verified via marvelsnapzone.com and snapcomplete.com."
     },
     {
-      "name": "Anti-Polar Magneto",
+      "name": "Zombie Blade",
+      "cost": 2,
+      "note": "Season Pass (Super Premium), Series 5, season begins Oct 6, 2026. Power (3) and ability cross-verified via marvelsnapzone.com and snapcomplete.com."
+    },
+    {
+      "name": "Zombie Venom",
+      "cost": 3,
+      "note": "Series 5, first new card of the season (releases Oct 6, 2026 per marvelsnap.com/marvelsnapzone.com). On Reveal: Destroy your first other card here; Horde +2 after a destruction. Power (3) from a single source (snapcomplete.com) -- unconfirmed by a second outlet."
+    },
+    {
+      "name": "Vampire Enchantress",
       "cost": 6,
-      "note": "Season Pass (Super Premium). On Reveal: Add a 3 or 4-Cost card from your hand to each other location. Power (9) cross-verified via destructoid.com and a snap.fan-indexed search result."
+      "note": "Series 5 (releases Oct 13, 2026). On Reveal: steal 1 Power from an enemy card here for each different Cost among your cards in play. Power (7) cross-verified via marvelsnapzone.com and snapcomplete.com."
     },
     {
-      "name": "Red Onslaught",
+      "name": "Zombie Nova",
+      "cost": 2,
+      "note": "Series 4, Limited-Time Event card (releases Oct 14, 2026 per marvelsnapzone.com). On Reveal and When Destroyed: Horde +3. Power (0) cross-verified via marvelsnapzone.com and snapcomplete.com."
+    },
+    {
+      "name": "Zombie Black Cat",
+      "cost": 3,
+      "note": "Series 5 (releases Oct 20, 2026). When Discarded: triggers another When Discarded card and jumps to the location with the fewest cards. Power (5) cross-verified via marvelsnapzone.com and snapcomplete.com."
+    },
+    {
+      "name": "Vampire Deacon Frost",
       "cost": 4,
-      "note": "Series 5, first new S5 card of the season (released Sept 1, 2026). Ongoing: Has 3 random Ongoing abilities. Power (4) from a single source (destructoid) -- unconfirmed by a second outlet."
+      "note": "Series 5 (releases Oct 27, 2026). On Reveal, Objective: once 3 of your cards have stolen Power, transforms into Crimson Behemoth (4-Cost/9-Power, On Reveal: steal all Power from a front-row enemy card). Power (5) from a single source (snapcomplete.com) -- unconfirmed by a second outlet."
     },
     {
-      "name": "Kluh",
-      "cost": 5,
-      "note": "Series 5 (released Sept 8, 2026 per destructoid). On Reveal: EACH player randomly gives a card in their hand -1 Cost for each different Cost among their cards in play. Power (10) from a single source -- unconfirmed by a second outlet."
-    },
-    {
-      "name": "Rogue: Scion of Division",
-      "cost": 5,
-      "note": "Series 5 (released Sept 15, 2026 per destructoid). On Reveal: Steal the text of the highest-Cost card in your opponent's hand. Power (5) from a single source -- unconfirmed by a second outlet."
-    },
-    {
-      "name": "Entropic Havok",
+      "name": "Vampire America Chavez",
       "cost": 3,
-      "note": "Series 4, Limited Time Event card (released Sept 16, 2026 per destructoid/games.gg). Each turn, steal 1 bonus Energy from your opponent (if they have any). Power (3) from a single source -- unconfirmed by a second outlet."
-    },
-    {
-      "name": "Friendly Neighborhood Carnage",
-      "cost": 3,
-      "note": "Series 5 (released Sept 22, 2026 per destructoid). On Reveal: Move your other cards here to the right. +2 Power for each moved. Power (4) from a single source -- unconfirmed by a second outlet."
-    },
-    {
-      "name": "The Inversion",
-      "cost": 3,
-      "note": "Series 4, Limited Time Event spell card (released Sept 28, 2026 per destructoid/games.gg). On Reveal: Invert the Power of the lowest-Power card(s) here (positive becomes negative and vice versa). No Power stat given (non-character card)."
-    },
-    {
-      "name": "Scarlet Witch: Queen of Chaos",
-      "cost": 3,
-      "note": "Series 5 (released Sept 29, 2026 per destructoid). Start of Turn: Add an EXTREMELY random skill to your hand; it costs 0 this turn. Power (4) from a single source -- unconfirmed by a second outlet."
+      "note": "Series 4, Limited-Time Event card (releases Oct 27, 2026 per marvelsnapzone.com). On Reveal: for each location you're winning, steal 1 Power from the top character of your opponent's deck. Power (4) from a single source (snapcomplete.com) -- unconfirmed by a second outlet."
     }
   ],
   "tierList": [
     {
       "tier": "S",
-      "name": "High Evolutionary Affliction",
-      "archetype": "Affliction",
-      "winRate": null,
-      "avgCubes": null,
+      "name": "Curved 4-Costs",
+      "archetype": "Curve / Big 4-Costs",
+      "winRate": 62.5,
+      "avgCubes": 0.55,
       "popularity": null,
       "sampleCards": [
-        "High Evolutionary",
-        "Abomination",
-        "Cyclops",
-        "Misty Knight",
-        "Scorpion"
+        "Quicksilver",
+        "Domino",
+        "Caliban, Horseman of Pestilence",
+        "Captain Marvel",
+        "En Sabah Nur"
       ],
       "tag": "Trending"
     },
     {
       "tier": "S",
-      "name": "Thanos Fractured Frontier Surfer",
-      "archetype": "Big Power / Ramp",
-      "winRate": null,
-      "avgCubes": null,
+      "name": "Created Chaos",
+      "archetype": "Chaos / Random Generation",
+      "winRate": 57.5,
+      "avgCubes": 0.5,
       "popularity": null,
       "sampleCards": [
-        "Silver Surfer",
-        "Wolfsbane",
-        "Killmonger",
-        "Daken",
-        "Mockingbird"
+        "Majestic Wingbeat",
+        "Shadow King",
+        "Mother Askani",
+        "Gambit Horseman of Death",
+        "Iron Man"
       ],
       "tag": "Trending"
     },
     {
       "tier": "A",
-      "name": "Self-Destruct Deadpool",
-      "archetype": "Destroy",
-      "winRate": null,
-      "avgCubes": null,
+      "name": "Curved Disruption",
+      "archetype": "Disruption / Tempo",
+      "winRate": 60,
+      "avgCubes": 0.3,
       "popularity": null,
       "sampleCards": [
-        "Deadpool",
-        "Carnage",
-        "Venom",
-        "Killmonger",
-        "Deathlok"
+        "Iceman",
+        "Nico Minoru",
+        "Hydra Bob",
+        "Cable",
+        "Mobius M. Mobius"
       ],
       "tag": null
     },
     {
       "tier": "A",
-      "name": "Wakanda Forever",
+      "name": "Curved High Evolutionary",
+      "archetype": "Affliction / High Evolutionary",
+      "winRate": 59.5,
+      "avgCubes": 0.35,
+      "popularity": null,
+      "sampleCards": [
+        "Nebula",
+        "Misty Knight",
+        "Cosmo",
+        "High Evolutionary",
+        "Abomination"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "A",
+      "name": "Fantomex",
+      "archetype": "Destroy / Discard",
+      "winRate": 58,
+      "avgCubes": 0.4,
+      "popularity": null,
+      "sampleCards": [
+        "The Hood",
+        "Blade",
+        "Carnage",
+        "Killmonger",
+        "Fantomex"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "A",
+      "name": "Superior Buffs",
       "archetype": "Ongoing / Buff",
-      "winRate": null,
-      "avgCubes": null,
+      "winRate": 56,
+      "avgCubes": 0.3,
       "popularity": null,
       "sampleCards": [
-        "Black Panther",
-        "Wong",
-        "Odin",
-        "Nakia",
-        "Okoye"
-      ],
-      "tag": null
-    },
-    {
-      "tier": "B",
-      "name": "Wong Spectrum",
-      "archetype": "Double On-Reveal",
-      "winRate": null,
-      "avgCubes": null,
-      "popularity": null,
-      "sampleCards": [
-        "Wong",
-        "Spectrum",
-        "Mister Fantastic",
-        "Ebony Maw",
-        "Colossus"
-      ],
-      "tag": null
-    },
-    {
-      "tier": "B",
-      "name": "Patriots, Drones, and Clones",
-      "archetype": "Zoo / Tokens",
-      "winRate": null,
-      "avgCubes": null,
-      "popularity": null,
-      "sampleCards": [
-        "Patriot",
-        "Ultron",
-        "Squirrel Girl",
-        "Blue Marvel",
-        "Onslaught"
-      ],
-      "tag": null
-    },
-    {
-      "tier": "B",
-      "name": "Bast Beast Monkey",
-      "archetype": "Bounce",
-      "winRate": null,
-      "avgCubes": null,
-      "popularity": null,
-      "sampleCards": [
-        "Bast",
-        "Hit-Monkey",
-        "Beast",
-        "Falcon",
-        "Black Widow"
-      ],
-      "tag": null
-    },
-    {
-      "tier": "B",
-      "name": "Knull Galactus",
-      "archetype": "Big Power / Destroy",
-      "winRate": null,
-      "avgCubes": null,
-      "popularity": null,
-      "sampleCards": [
-        "Knull",
-        "Galactus",
-        "Shang-Chi",
-        "Destroyer",
-        "Death"
-      ],
-      "tag": null
-    },
-    {
-      "tier": "B",
-      "name": "Sera Mystique Summons",
-      "archetype": "Discount / Summon",
-      "winRate": null,
-      "avgCubes": null,
-      "popularity": null,
-      "sampleCards": [
-        "Sera",
-        "Mystique",
         "America Chavez",
-        "Bishop",
-        "Scarlet Witch"
+        "Spider-Man Brand New Day",
+        "Joaquin Torres Falcon II",
+        "Viv Vision",
+        "Iron Man"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "A",
+      "name": "Curved Buffs",
+      "archetype": "Ongoing / Buff",
+      "winRate": 54.5,
+      "avgCubes": 0.25,
+      "popularity": null,
+      "sampleCards": [
+        "Kitty Pryde",
+        "King Eitri",
+        "Surge",
+        "Shadowlands Daredevil",
+        "Shou-Lao the Undying"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "B",
+      "name": "Chaotic Clog",
+      "archetype": "Chaos / Clog",
+      "winRate": 52,
+      "avgCubes": 0.15,
+      "popularity": null,
+      "sampleCards": [
+        "Mysterio",
+        "Werewolf By Night",
+        "Shadow King",
+        "Sentry",
+        "Annihilus"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "B",
+      "name": "Deadpool Destroy",
+      "archetype": "Destroy",
+      "winRate": 51.5,
+      "avgCubes": 0.15,
+      "popularity": null,
+      "sampleCards": [
+        "Deadpool",
+        "Carnage",
+        "Wolverine",
+        "Venom",
+        "Knull"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "B",
+      "name": "Small Buffed Cards",
+      "archetype": "Small Buffs / Zoo",
+      "winRate": 54.5,
+      "avgCubes": 0.15,
+      "popularity": null,
+      "sampleCards": [
+        "Clea",
+        "Nicholas Scratch",
+        "Angela",
+        "Marvel Boy",
+        "Shang-Chi"
+      ],
+      "tag": null
+    },
+    {
+      "tier": "B",
+      "name": "Buffed Zombies",
+      "archetype": "Zombies / Buff",
+      "winRate": 53,
+      "avgCubes": 0.15,
+      "popularity": null,
+      "sampleCards": [
+        "The Hunger",
+        "Web Sling",
+        "Merlin",
+        "Zombie Scarlet Witch",
+        "Venus"
       ],
       "tag": null
     }
